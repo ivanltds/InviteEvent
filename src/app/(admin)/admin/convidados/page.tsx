@@ -243,7 +243,9 @@ export default function AdminConvidados() {
                     <td>
                       <div className={styles.guestInfo}>
                         <span className={styles.guestName}>{invite.nome_principal}</span>
-                        <span className={styles.guestDate}>Cadastrado em: {new Date(invite.created_at).toLocaleDateString()}</span>
+                        <span className={styles.guestDate}>
+                          Cadastrado em: {invite.created_at ? new Date(invite.created_at).toLocaleDateString() : 'N/A'}
+                        </span>
                       </div>
                     </td>
                     <td>{invite.tipo}</td>

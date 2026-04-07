@@ -13,3 +13,5 @@ Como convidado, desejo que os textos e títulos do site se ajustem automaticamen
 - Aplicar `clamp(min, preferred, max)` no `globals.css` e CSS Modules.
 - Exemplo para h1: `font-size: clamp(2.5rem, 10vw, 5rem);`
 - Revisar `line-height` para evitar sobreposição em títulos multilinhas no mobile.
+
+## Status: DONE 🏆

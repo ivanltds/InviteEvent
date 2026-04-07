@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Check if we are in an admin route
   if (request.nextUrl.pathname.startsWith('/admin') && !request.nextUrl.pathname.endsWith('/admin')) {
     const authCookie = request.cookies.get('admin-auth')

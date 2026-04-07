@@ -1,0 +1,577 @@
+Crie um boilerplate para os requisitos em anexo:
+Deve usar nextjs, armazenar as imagens com o cloudinary.
+deve deixar no esquema para fazer deploy com vercel.
+
+# Documento de Requisitos — Site/Aplicativo de Casamento de Layslla e Marcus
+
+## Visão geral
+
+Este documento consolida os requisitos funcionais, visuais e administrativos para o desenvolvimento de um site-aplicativo de casamento em português do Brasil para Layslla e Marcus. O projeto deve combinar convite digital, central de informações aos convidados, RSVP, lista de presentes e um painel administrativo para organização do evento, seguindo padrões atuais de wedding websites com RSVP, gestão de convidados, registro de presentes e proteção por senha para áreas restritas.[1][2][3][4]
+
+O sistema deve ser pensado como uma aplicação modular, com foco em experiência mobile-first, uso real em evento e fácil manutenção. Plataformas atuais de casamento concentram experiência do convidado, gestão de lista de convidados, RSVP e edição de detalhes do evento em uma única experiência integrada.[1][5][6][7]
+
+## Contexto do casal
+
+Os noivos são **Layslla e Marcus**, um casal jovem. Eles se conheceram porque o noivo era amigo distante do primo da noiva; quando se encontraram, foi amor à primeira vista, e pouco tempo depois começaram a namorar. O casamento acontecerá em **13 de junho de 2026**, a mesma data em que foi feito o pedido de namoro, e esse simbolismo deve aparecer de forma destacada na narrativa do site.
+
+A personalidade do casal deve influenciar a comunicação e a direção criativa do projeto. Layslla tem temperamento forte, Marcus é super paciente, e essa combinação deve ser traduzida como uma união complementar que transformou os dois no casal perfeito.
+
+## Objetivo do produto
+
+O produto não deve ser apenas um convite estático. Ele deve funcionar como:
+
+- Convite digital.
+- Central de informações do casamento.
+- Sistema de confirmação de presença.
+- Página e gestão de lista de presentes.
+- Painel administrativo para organizadores.[1][5][2][6]
+
+## Perfis de acesso
+
+O aplicativo deve ter dois níveis de acesso:
+
+- **Convidado**.
+- **Organizador**.
+
+Ao entrar no site, toda pessoa deve acessar por padrão a experiência de convidado. Deve existir um botão visível de login para organizadores; ao clicar, o sistema deve solicitar uma senha fixa embutida no código. Se a senha digitada for **3781l@m@**, o sistema deve habilitar o modo organizador e liberar menus e telas administrativas adicionais. O uso de senha fixa é compatível com protótipos e sites simples com proteção restrita, mas não substitui autenticação real em produção.[3][8][4]
+
+## Requisitos da experiência do convidado
+
+A área pública deve conter as seguintes seções e comportamentos.
+
+### Home pública
+
+A home deve ser organizada como uma single page elegante, com navegação simples, rolagem fluida e alta legibilidade no celular. Sites de casamento recentes priorizam clareza, RSVP visível, estrutura enxuta e experiência mobile-first.[9][10][11]
+
+Elementos obrigatórios:
+
+1. Hero principal com nomes do casal, data do casamento e CTA principal para RSVP.
+2. Mensagem curta e calorosa de boas-vindas.
+3. História do casal.
+4. Seção “Os noivos”.
+5. Detalhes do evento.
+6. RSVP.
+7. FAQ.
+8. Link para página própria da lista de presentes.
+9. Contato de apoio.
+
+### Hero principal
+
+O hero deve conter:
+
+- Nome dos noivos com grande destaque.
+- Data: **13 de junho de 2026**.
+- Frase curta e emocional.
+- Botão principal de confirmação de presença.
+- Botão secundário para detalhes do evento.
+
+Os nomes **Layslla** e **Marcus** devem ser renderizados com tipografia cursiva exagerada, fina, estilosa, fluida e sofisticada, como assinatura artística central da identidade visual. Tendências atuais de convites valorizam tipografia expressiva, romantismo editorial e aparência mais autoral.[9][12]
+
+### História do casal
+
+A seção deve narrar, de forma breve e emocional:
+
+- o encontro por meio do primo da noiva;
+- o amor à primeira vista;
+- o início do namoro pouco depois;
+- o simbolismo de casar na mesma data do pedido de namoro.
+
+### Os noivos
+
+A seção deve apresentar o contraste complementar entre os dois:
+
+- Layslla: intensa, forte e decidida;
+- Marcus: paciente, leve e equilibrado.
+
+O texto deve comunicar que justamente essa diferença fez nascer o casal perfeito.
+
+### Detalhes do evento
+
+A seção deve exibir de forma clara:
+
+- Data.
+- Horário da cerimônia.
+- Horário da recepção.
+- Local da cerimônia.
+- Local da recepção.
+- Endereço completo.
+- Link para mapa.
+- Instruções de chegada.
+- Informações de estacionamento.[10][13][11]
+
+### RSVP
+
+O RSVP deve ficar em posição de fácil acesso e ser um dos elementos mais destacados da interface. Sistemas modernos de wedding website tratam RSVP e lista de convidados como elementos centrais da experiência do convidado.[1][6]
+
+Campos obrigatórios do formulário:
+
+- Nome.
+- Telefone opcional.
+- Confirmação de presença.
+- Quantidade de pessoas que irão comparecer.
+- Restrições alimentares.
+- Mensagem opcional.
+
+Comportamentos obrigatórios:
+
+- Exibir prazo de confirmação.
+- Mostrar feedback visual após o envio.
+- Associar a resposta ao convite específico do convidado.
+- Comparar a quantidade respondida com a quantidade autorizada para o convite.[1][6][14]
+
+### FAQ
+
+Deve existir uma seção de perguntas frequentes com dúvidas reais de convidados. Guias de wedding websites recomendam FAQ para reduzir dúvidas recorrentes e centralizar instruções.[13][15][16]
+
+Perguntas sugeridas:
+
+- Crianças podem ir?
+- Posso levar acompanhante?
+- Qual o traje?
+- Onde estacionar?
+- Como chegar?
+- Até quando confirmar?
+- Haverá lista de presentes?
+- Existe alguma orientação adicional?
+
+### Página da lista de presentes
+
+A lista de presentes deve ter página própria dentro do aplicativo, não apenas uma seção simples da home. Guias atuais recomendam páginas organizadas, atualização fácil e boa visualização dos itens disponíveis.[11][17][18]
+
+Cada item da lista deve conter:
+
+- Foto.
+- Nome do item.
+- Descrição curta opcional.
+- Preço.
+- Quantidade total.
+- Quantidade ainda aceita/disponível.
+- Status do item.
+- Botão de interesse, reserva ou marcação de intenção.
+
+Devem existir alguns itens previamente cadastrados como dados iniciais demonstrativos.
+
+### Contato de apoio
+
+A experiência pública deve oferecer contato de referência para dúvidas importantes no dia do evento, como cerimonialista, organizador ou familiar responsável.[10][11]
+
+## Requisitos administrativos
+
+O modo organizador deve liberar um menu administrativo adicional e telas de gestão específicas. Plataformas de casamento com foco em organização costumam incluir gestão de convidados, RSVP, convites, presentes e edição dos detalhes do evento.[1][2][6][7]
+
+### Menu administrativo
+
+Ao autenticar com a senha correta, o organizador deve ter acesso a um menu adicional com, no mínimo, as seguintes áreas:
+
+- Gestão do convite.
+- Gestão de convidados.
+- Gestão de presentes.
+- Lista de convidados confirmados.
+- Configurações visuais e de conteúdo.
+
+## Tela de Gestão do Convite
+
+Deve existir uma tela chamada **Gestão do Convite**, responsável por centralizar toda a parametrização aberta do evento e do conteúdo público. Em soluções modernas, nomes do casal, data, local, textos públicos, agenda e configuração das seções são editados a partir de um painel administrativo central.[7][19][20][21]
+
+### Objetivo da tela
+
+Essa tela deve funcionar como o centro de administração do convite e permitir editar, sem alterar código manualmente:
+
+- quem é o casal;
+- nomes exibidos;
+- datas e horários;
+- locais e endereços;
+- textos públicos;
+- visibilidade e ordem das seções;
+- mensagens de RSVP;
+- configurações abertas da organização.[7][19][22][23]
+
+### Abas ou blocos sugeridos
+
+#### 1. Dados principais
+
+Campos:
+
+- Nome da noiva.
+- Nome do noivo.
+- Forma de exibição dos nomes.
+- Frase principal.
+- Data do casamento.
+- Horário da cerimônia.
+- Horário da recepção.
+- Cidade e estado.
+- Status do evento: rascunho, em edição, publicado.[19][22][21]
+
+#### 2. Identidade visual
+
+Campos:
+
+- Estilo visual.
+- Cores principais.
+- Tipografia dos nomes do casal.
+- Tipografia dos títulos.
+- Tipografia do corpo.
+- Exibição de monograma.
+- Imagem principal do hero.
+- Fotos secundárias.[22][24]
+
+#### 3. Conteúdo público
+
+Campos:
+
+- Texto da home.
+- História do casal.
+- Texto da seção “Os noivos”.
+- Detalhes do evento.
+- FAQ.
+- Mensagens da lista de presentes.
+- Mensagens de confirmação e agradecimento.[7][19][23]
+
+#### 4. Agenda e datas
+
+Campos:
+
+- Data do casamento.
+- Eventos extras.
+- Horários.
+- Locais e endereços.
+- Observações específicas por evento.[7][20]
+
+#### 5. Configurações de exibição
+
+Campos e ações:
+
+- Ativar ou desativar seções.
+- Reordenar blocos.
+- Ativar ou ocultar countdown.
+- Definir visibilidade da lista de presentes no menu.
+- Definir visibilidade da história do casal.
+- Configurar FAQ expandido ou recolhido por padrão.[19][22][23]
+
+#### 6. Configurações de RSVP
+
+Campos:
+
+- Prazo de confirmação.
+- Mensagem antes do envio.
+- Mensagem após o envio.
+- Ativar campo de restrição alimentar.
+- Ativar campo de mensagem.
+- Ativar controle de acompanhantes.
+- Regra de tratamento para excedente de convidados.[7][19]
+
+### Comportamentos esperados
+
+Toda alteração feita na Gestão do Convite deve refletir automaticamente no site público. Em soluções administráveis, mudanças em nomes, datas, estrutura de seções e textos devem ser propagadas por toda a interface do convidado.[7][19][23]
+
+Exemplos:
+
+- Alterar a data do casamento deve atualizar hero, detalhes e contagem regressiva.
+- Alterar os nomes do casal deve refletir no topo do site e demais áreas de exibição.
+- Desativar uma seção deve removê-la do menu e da home.
+- Reordenar blocos deve alterar a sequência pública da página.[7][19][22]
+
+### Recursos de UX da Gestão do Convite
+
+Sugestões obrigatórias para melhor usabilidade:
+
+- Botão **Salvar alterações**.
+- Botão **Visualizar como convidado**.
+- Indicador de **rascunho / publicado**.
+- Aviso de alterações não salvas.
+- Prévia do hero com os nomes do casal.
+- Navegação por abas ou agrupamento de blocos.[19][22]
+
+## Gestão de convidados
+
+O sistema deve ter um módulo completo de cadastro e gestão de convidados, com foco em controle de convites, RSVP por grupo e rastreio de status. Plataformas modernas de gestão de convidados trabalham com convites por indivíduo, casal, família ou household e permitem controle detalhado de RSVP por unidade de convite.[25][14][26][27]
+
+### Cadastro de convidados
+
+O sistema deve permitir cadastrar convidados em três formatos:
+
+- **Individual**.
+- **Casal**.
+- **Família**.[25][28][27]
+
+Cada cadastro deve representar uma unidade de convite. Um mesmo convite pode conter 1, 2 ou várias pessoas, dependendo da configuração do grupo.[25][28][27]
+
+### Campos do cadastro do convite
+
+Cada convite deve conter:
+
+- Identificador único.
+- Tipo do convite.
+- Nome principal do convite.
+- Nomes das pessoas vinculadas.
+- Quantidade máxima de pessoas autorizadas.
+- Telefone ou contato opcional.
+- Observações internas.
+- Grupo ou tag, como família da noiva, família do noivo, amigos, padrinhos, trabalho.
+- Status do convite.
+- Link específico do convidado.[29][25][26]
+
+Exemplos de uso:
+
+- Individual: “João Silva”, limite 1.
+- Casal: “Ana e Bruno”, limite 2.
+- Família: “Família Souza”, com nomes internos e limite definido.[25][28][27]
+
+### Tela de gestão de convidados
+
+Deve existir uma listagem com todos os convidados/convites cadastrados, com opção de expandir cada linha para visualizar os detalhes individuais do convite. Interfaces com visão resumida e expansão de linha facilitam o acompanhamento sem perder contexto geral da lista.[6][26]
+
+Colunas mínimas da listagem:
+
+- Nome do convite.
+- Tipo: individual, casal, família.
+- Quantidade cadastrada.
+- Quantidade respondida.
+- Status do convite.
+- Status do RSVP.
+- Indicação de excedente.
+- Link individual do convidado.
+- Ações.[14][26]
+
+Ao expandir uma linha, exibir:
+
+- Nomes das pessoas vinculadas.
+- Telefone.
+- Observações internas.
+- Data de envio do convite.
+- Data da resposta.
+- Quantidade confirmada.
+- Restrições alimentares.
+- Mensagem deixada no RSVP.
+- Histórico básico de alterações, se implementado.[6][27]
+
+### Geração de link específico
+
+Cada convite deve poder gerar um link específico para o convidado, criando uma associação individual entre o convite e a experiência pública. Modelos de RSVP individualizado utilizam links ou identificadores exclusivos por grupo convidado.[30][26][31][32]
+
+Regras:
+
+- Deve haver botão **Gerar link específico**.
+- O sistema deve gerar um identificador exclusivo por convite.
+- O link deve abrir a experiência pública já associada ao convite correspondente.
+- O sistema deve permitir copiar facilmente esse link.
+- Ao gerar ou enviar o link, o status deve ser atualizado conforme a regra definida.[30][26][31]
+
+### Status do convite
+
+O sistema deve acompanhar claramente o ciclo do convite. Soluções de RSVP distinguem cadastros não enviados, enviados, pendentes, aceitos, recusados e situações que exigem revisão manual.[14][33][26]
+
+Status sugeridos:
+
+- **Rascunho**.
+- **Convidado**.
+- **Enviado**.
+- **Aguardando resposta**.
+- **Aceito**.
+- **Rejeitado**.
+- **Excedente solicitado**.
+- **Ajuste necessário**.[14][33][26]
+
+### Regra de excedente de pessoas
+
+O RSVP deve ser vinculado ao convite e não apenas a uma pessoa individual. Uma única resposta pode confirmar todo o grupo convidado.[25][28][27]
+
+O sistema deve comparar:
+
+- Quantidade máxima cadastrada no convite.
+- Quantidade de pessoas informada na resposta.
+
+Se a quantidade respondida for maior que a quantidade autorizada, o sistema deve:
+
+- marcar visualmente o convite com alerta;
+- alterar o status para **Excedente solicitado**;
+- exibir quantas pessoas foram autorizadas e quantas foram informadas;
+- destacar esse caso no painel para revisão do organizador.[14][30][28]
+
+### Ações na gestão de convidados
+
+A tela deve permitir:
+
+- Cadastrar novo convite.
+- Editar convite.
+- Expandir detalhes.
+- Gerar link específico.
+- Copiar link.
+- Marcar como enviado.
+- Reenviar ou regenerar link.
+- Alterar status manualmente.
+- Visualizar resposta recebida.
+- Sinalizar pendência.
+- Remover ou arquivar convite.[29][26]
+
+### Indicadores e filtros
+
+O topo da tela de gestão de convidados deve apresentar indicadores com visão rápida, como:
+
+- Total de convites.
+- Total de pessoas convidadas.
+- Enviados.
+- Aguardando resposta.
+- Aceitos.
+- Rejeitados.
+- Convites com excedente solicitado.[14][33][26]
+
+Também deve haver filtros por:
+
+- Tipo do convite.
+- Status.
+- Grupo.
+- Com excedente.
+- Com restrição alimentar.
+- Busca por nome.[6][29]
+
+## Gestão de presentes
+
+Deve existir uma tela de gestão de presentes no modo organizador, com operações completas de manutenção da lista. Guias de registro de presentes recomendam organização clara, atualização fácil dos itens e acompanhamento do status.[17][18]
+
+### Cadastro de item de presente
+
+Cada item deve permitir:
+
+- Upload de foto.
+- Nome.
+- Descrição curta opcional.
+- Preço.
+- Quantidade total.
+- Quantidade ainda aceita.
+- Status do item.
+
+### Ações administrativas
+
+A gestão de presentes deve permitir:
+
+- Cadastrar novo item.
+- Editar item.
+- Pausar item.
+- Remover item.
+- Visualizar status e disponibilidade.[17][18]
+
+A visualização pode ser em cards administrativos ou tabela, desde que tenha ações rápidas e boa usabilidade.
+
+## Requisitos visuais
+
+Wedding websites recentes valorizam visual editorial minimalista, romantismo contemporâneo, paletas suaves e narrativa mais pessoal, evitando aparência genérica de template.[9][12][34]
+
+### Direção estética obrigatória
+
+O projeto deve transmitir:
+
+- Romantismo contemporâneo.
+- Sofisticação leve.
+- Personalidade jovem.
+- Elegância autoral.
+- Boa leitura no celular.[9][12]
+
+### Tipografia
+
+A hierarquia tipográfica deve ser composta por:
+
+- Fonte cursiva fina, exagerada e sofisticada para os nomes dos noivos.
+- Fonte serifada elegante para títulos e subtítulos.
+- Fonte sans-serif limpa para interface, formulários e textos funcionais.
+
+As tendências de convites apontam para uso de tipografia expressiva, monogramas, traços delicados e refinamento visual com pouca poluição.[9][12]
+
+### Paleta sugerida
+
+Sugestão de cores:
+
+- Fundo marfim, champagne ou off-white.
+- Texto em cinza quente ou marrom profundo.
+- Acentos em verde-sálvia, terracota suave, rosé queimado ou vinho elegante.
+- Dourado extremamente sutil em detalhes.[12][34]
+
+### Elementos visuais recomendados
+
+- Monograma do casal.
+- Divisores delicados.
+- Ilustrações finas ou florais minimalistas.
+- Textura sutil de papel, tecido ou grão leve.
+- Fotos do casal em momentos pontuais.
+- Contagem regressiva opcional.
+- Transições suaves e discretas.[12][9]
+
+### O que evitar
+
+Evitar:
+
+- Visual genérico de template.
+- Gradientes chamativos.
+- Excesso de animações.
+- Autoplay de música.
+- Muitas fotos pequenas.
+- Excesso de cards iguais.
+- Poluição visual.
+- Textos longos demais.
+- Ícones decorativos em excesso.
+- Layout pesado no celular.[9]
+
+## Requisitos de UX
+
+A experiência deve equilibrar emoção e utilidade. Guias recentes destacam que wedding websites funcionais precisam resolver dúvidas com rapidez, manter RSVP fácil de encontrar e concentrar instruções práticas em poucos toques.[10][11][35]
+
+Diretrizes:
+
+- Mobile-first.
+- Navegação intuitiva.
+- Textos curtos e escaneáveis.
+- Botões grandes.
+- Contraste adequado.
+- Conteúdo importante não pode ficar escondido.
+- O painel do organizador deve parecer parte do mesmo produto, e não um sistema desconectado.[9][10][11]
+
+## Requisitos técnicos
+
+O projeto deve ser desenvolvido como aplicação web modular em HTML, CSS e JavaScript. A estrutura deve permitir separar claramente conteúdo público, configurações do evento, convidados, presentes e preferências visuais, seguindo um padrão de parametrização central reutilizável em várias telas.[23][36][37]
+
+Requisitos técnicos obrigatórios:
+
+- HTML, CSS e JavaScript.
+- Estrutura modular por seções/componentes.
+- Responsivo com prioridade total para mobile.
+- Experiência pública e administrativa no mesmo projeto.
+- Autenticação simples por senha fixa no código.
+- Dados iniciais simulados para convidados e presentes.
+- Código organizado e fácil de manter.
+- Camada central de configurações do evento.[7][23][36]
+
+## Modelo conceitual de módulos
+
+A aplicação deve ser organizada logicamente em módulos:
+
+| Módulo | Responsabilidade |
+|---|---|
+| Configurações do evento | Parametrizar nomes do casal, datas, locais, textos, seções e regras visuais |
+| Conteúdo público | Renderizar home, história, detalhes, FAQ e contato |
+| RSVP | Registrar respostas e comparar quantidade autorizada versus respondida |
+| Convites/Convidados | Gerir cadastros individual, casal ou família, links e status |
+| Presentes | Exibir e administrar a lista de presentes |
+| Autenticação simples | Liberar acesso de organizador por senha fixa |
+
+A organização por módulos facilita manutenção, reaproveitamento de dados e sincronização entre painel administrativo e experiência pública.[7][23][36]
+
+## Critérios de aceitação
+
+O projeto será considerado aderente a este documento se atender, no mínimo, aos seguintes critérios:
+
+- Exibir corretamente o convite público de Layslla e Marcus.
+- Permitir edição administrativa dos nomes dos noivos, datas e demais informações abertas do evento.
+- Possuir login com senha fixa para organizador.
+- Disponibilizar tela de Gestão do Convite.
+- Disponibilizar gestão completa de convidados.
+- Permitir cadastro de convites individual, casal e família.
+- Gerar link específico por convite.
+- Controlar status do convite e status do RSVP.
+- Identificar excedente de convidados automaticamente.
+- Disponibilizar página própria para lista de presentes.
+- Permitir cadastrar, editar, pausar e remover itens da lista de presentes.
+- Apresentar visual premium, romântico, jovem e mobile-first.[1][17][6][14]
+
+## Observação de segurança
+
+A senha fixa no código atende ao escopo de protótipo, MVP ou projeto simples, mas não deve ser considerada solução segura para produção com dados sensíveis. Plataformas profissionais costumam usar mecanismos mais robustos para proteção e autenticação.[3][8][4]

@@ -1,0 +1,36 @@
+
+
+# Environment & Secrets (AIOX)
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# Dependencies (AIOX)
+node_modules/
+node_modules
+
+# Build & Logs (AIOX)
+dist/
+build/
+*.log
+logs/
+.next/
+out/
+.swc/
+
+# Testing
+coverage/
+
+# IDE & OS (AIOX)
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# AIOX Local (AIOX)
+.aiox-core/local/
+.claude/settings.local.json
+.aiox/install-log.txt

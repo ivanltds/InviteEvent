@@ -1,0 +1,52 @@
+.section {
+  padding: 5rem 2rem;
+  background-color: var(--color-champagne);
+  text-align: center;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.section h2 {
+  font-size: 4rem;
+  color: var(--color-terracota);
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  font-size: 1.8rem;
+  color: var(--color-salvia);
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15rem;
+}
+
+.text {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #555;
+  margin-bottom: 1.5rem;
+}
+
+.highlight {
+  font-size: 1.3rem;
+  line-height: 1.8;
+  color: var(--color-terracota);
+  font-family: var(--font-editorial);
+  font-style: italic;
+  margin-top: 2rem;
+  padding: 2rem;
+  border-top: 1px solid rgba(226, 114, 91, 0.3);
+  border-bottom: 1px solid rgba(226, 114, 91, 0.3);
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 3rem 1.5rem;
+  }
+  .section h2 {
+    font-size: 3rem;
+  }
+}

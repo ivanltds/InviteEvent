@@ -1,0 +1,81 @@
+.managerContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.faqForm {
+  background: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border: 1px solid #eee;
+}
+
+.faqForm input, .faqForm textarea {
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.faqForm textarea {
+  min-height: 80px;
+}
+
+.formActions {
+  display: flex;
+  gap: 1rem;
+}
+
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.faqItem {
+  padding: 1rem;
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.faqItem p {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.itemActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.itemActions button {
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  background: white;
+}
+
+.deleteBtn {
+  color: #e2725b;
+  border-color: #e2725b !important;
+}
+
+.saveBtn {
+  background: var(--color-salvia);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+}

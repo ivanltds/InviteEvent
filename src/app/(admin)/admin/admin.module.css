@@ -1,0 +1,140 @@
+.loginContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--color-marfim);
+  padding: 1rem;
+}
+
+.loginForm {
+  background: white;
+  padding: 3rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.loginForm h2 {
+  font-size: 3rem;
+  color: var(--color-salvia);
+  margin-bottom: 1rem;
+}
+
+.loginForm p {
+  margin-bottom: 2rem;
+  color: #666;
+}
+
+.input {
+  width: 100%;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.loginBtn {
+  width: 100%;
+  padding: 1rem;
+  background-color: var(--color-salvia);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-family: var(--font-editorial);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+}
+
+.loginBtn:hover {
+  background-color: #9a9474;
+}
+
+.error {
+  color: var(--color-terracota);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.adminContent {
+  padding: 4rem;
+  max-width: 1200px;
+}
+
+.header {
+  margin-bottom: 4rem;
+}
+
+.headerTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  color: var(--color-salvia);
+  margin: 0;
+}
+
+.logoutBtn {
+  background: var(--color-terracota);
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-editorial);
+  font-weight: 500;
+  transition: opacity 0.2s;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.05rem;
+}
+
+.logoutBtn:hover {
+  opacity: 0.8;
+}
+
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.card {
+  background: white;
+  padding: 3rem 2rem;
+  text-align: center;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card h3 {
+  font-family: var(--font-editorial);
+  font-size: 1.8rem;
+  color: var(--color-salvia);
+}
+
+.card p {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  border-color: var(--color-salvia);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}

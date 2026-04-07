@@ -1,0 +1,97 @@
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  background-color: white;
+  border-right: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  padding: 2.5rem 2rem;
+  border-bottom: 1px solid #f9f9f9;
+}
+
+.logo h2 {
+  font-size: 2rem;
+  color: var(--color-salvia);
+  margin-bottom: 0.2rem;
+}
+
+.logo p {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+  color: #999;
+}
+
+.nav {
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-grow: 1;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  color: #666;
+  transition: all 0.2s;
+  font-family: var(--font-sans);
+}
+
+.navItem:hover {
+  background-color: var(--color-marfim);
+  color: var(--color-salvia);
+}
+
+.active {
+  background-color: var(--color-marfim);
+  color: var(--color-salvia);
+  font-weight: bold;
+}
+
+.icon {
+  font-size: 1.2rem;
+}
+
+.footer {
+  padding: 2rem;
+  border-top: 1px solid #f9f9f9;
+}
+
+.viewSite {
+  display: block;
+  text-align: center;
+  padding: 0.8rem;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.viewSite:hover {
+  background-color: var(--color-salvia);
+  color: white;
+}
+
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 80px;
+  }
+  .name, .logo p, .logo h2 {
+    display: none;
+  }
+  .logo {
+    text-align: center;
+    padding: 1rem;
+  }
+}

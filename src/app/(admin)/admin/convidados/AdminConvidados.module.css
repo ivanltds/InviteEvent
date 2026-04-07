@@ -1,0 +1,278 @@
+.adminMain {
+  padding: 2rem;
+  background-color: #f9f9f9;
+  min-height: 100vh;
+}
+
+.adminHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+
+.adminHeader h1 {
+  font-size: 2rem;
+  color: var(--color-salvia);
+}
+
+.headerActions {
+  display: flex;
+  gap: 1rem;
+}
+
+.exportBtn {
+  background-color: transparent;
+  border: 1px solid var(--color-salvia);
+  color: var(--color-salvia);
+  padding: 0.8rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.exportBtn:hover {
+  background-color: var(--color-salvia);
+  color: white;
+}
+
+.addBtn {
+  background-color: var(--color-terracota);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+/* Modal Styling */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  padding: 3rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.modal h2 {
+  margin-bottom: 2rem;
+  color: var(--color-salvia);
+}
+
+.fieldGroup {
+  margin-bottom: 1.5rem;
+}
+
+.fieldGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.fieldGroup input, .fieldGroup select {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.saveBtn {
+  flex: 1;
+  background-color: var(--color-salvia);
+  color: white;
+  border: none;
+  padding: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancelBtn {
+  flex: 1;
+  background-color: #eee;
+  border: none;
+  padding: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.statCard {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  text-align: center;
+}
+
+.statCard h3 {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.statNumber {
+  font-size: 2.5rem;
+  font-family: var(--font-editorial);
+  color: var(--color-salvia);
+  font-weight: bold;
+}
+
+.statNumber.alert {
+  color: var(--color-terracota);
+}
+
+.tableContainer {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table th, .table td {
+  padding: 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.table th {
+  background-color: #fafafa;
+  color: #666;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+.guestInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.guestName {
+  font-weight: bold;
+  color: var(--foreground);
+}
+
+.guestDate {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.statusBadge {
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.pendingBadge {
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: bold;
+  background-color: #f5f5f5;
+  color: #999;
+}
+
+.confirmado {
+  background-color: #e6fffa;
+  color: #285e61;
+}
+
+.excedente_solicitado {
+  background-color: #fff5f5;
+  color: #9b2c2c;
+}
+
+.msgCell {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #666;
+}
+
+.actionsCell {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.copyBtn {
+  background: var(--color-champagne);
+  color: #8b7d6b;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.editBtn {
+  background: #f0f4f8;
+  color: #4a90e2;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.deleteBtn {
+  background: #fff5f5;
+  color: #e53e3e;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.detailBtn {
+  background: transparent;
+  border: 1px solid #ddd;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.loading, .empty {
+  text-align: center;
+  padding: 3rem;
+  color: #999;
+}

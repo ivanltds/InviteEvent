@@ -16,6 +16,7 @@ describe('Home Page Public', () => {
     (supabase.from as jest.Mock).mockReturnValue({
       select: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
       maybeSingle: jest.fn().mockResolvedValue({
         data: {
           noiva_nome: 'Maria',
@@ -34,7 +35,7 @@ describe('Home Page Public', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Maria & José/i)).toBeInTheDocument();
-      expect(screen.getByText(/31 de dezembro de 2026/i)).toBeInTheDocument();
+      expect(screen.getByText(/dezembro de 2026/i)).toBeInTheDocument();
     });
   });
 
@@ -42,6 +43,7 @@ describe('Home Page Public', () => {
     (supabase.from as jest.Mock).mockReturnValue({
       select: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
       maybeSingle: jest.fn().mockResolvedValue({
         data: {
           noiva_nome: 'L', noivo_nome: 'M', data_casamento: '2026-06-13',

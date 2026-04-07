@@ -79,3 +79,33 @@
   border-radius: 4px;
   cursor: pointer;
 }
+
+@media (max-width: 768px) {
+  .managerContainer {
+    padding: 0.5rem;
+  }
+
+  .faqForm,
+  .faqList {
+    width: 100%;
+  }
+
+  .faqItem {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .faqForm input,
+  .faqForm textarea,
+  .saveBtn,
+  .itemActions button {
+    width: 100%;
+  }
+
+  .formActions,
+  .itemActions {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+}

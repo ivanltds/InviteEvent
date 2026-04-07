@@ -25,12 +25,19 @@
   color: var(--accent);
 }
 
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .links {
   list-style: none;
   display: flex;
   gap: 2rem;
   margin: 0;
   padding: 0;
+  align-items: center;
 }
 
 .links a {
@@ -45,6 +52,31 @@
 
 .links a:hover {
   color: var(--accent);
+}
+
+.admLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--accent);
+  color: white !important;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.8rem !important;
+  font-weight: bold;
+}
+
+.admLinkMobile {
+  display: none;
+  background-color: var(--accent);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  line-height: 0;
+}
+
+.admLink:hover, .admLinkMobile:hover {
+  opacity: 0.9;
 }
 
 .hamburger {
@@ -80,6 +112,14 @@
 @media (max-width: 768px) {
   .hamburger {
     display: flex;
+  }
+
+  .admLinkMobile {
+    display: flex;
+  }
+  
+  .desktopOnly {
+    display: none;
   }
 
   .links {

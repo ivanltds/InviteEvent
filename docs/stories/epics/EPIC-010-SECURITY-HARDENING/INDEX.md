@@ -11,6 +11,7 @@ Este épico foca em transformar a segurança por "obscuridade" em segurança de 
 - [ ] **STORY-029:** Auditoria e Refinamento de RLS (Supabase).
 - [ ] **STORY-030:** Uploads Assinados para Cloudinary (Signed Uploads).
 - [ ] **STORY-031:** Proteção contra Spam e Rate Limiting no RSVP.
+- [x] **STORY-032:** Admin UX & Security Emergency Refinement.
 
 ## Notas de Arquitetura
 - Migração de `process.env.NEXT_PUBLIC_ADMIN_PASSWORD` para variáveis privadas no servidor.

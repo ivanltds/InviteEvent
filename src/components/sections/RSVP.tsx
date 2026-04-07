@@ -97,7 +97,7 @@ export default function RSVP() {
     return (
       <section className={styles.section} id="rsvp">
         <div className={styles.successContainer}>
-          <h2 className="cursive">{isRecusado ? 'Poxa, que pena!' : 'Coração quentinho!'}</h2>
+          <h2 className="cursive">{isRecusado ? 'Poxa, que pena!' : 'Confirmado!'}</h2>
           <p>
             {isRecusado 
               ? 'Sentiremos sua falta no nosso grande dia, mas agradecemos por nos avisar.' 
@@ -110,7 +110,7 @@ export default function RSVP() {
           )}
           {alertaExcedente && !isRecusado && (
             <p className={styles.excedenteMsg}>
-              ✨ Ficamos muito felizes em saber que mais pessoas querem celebrar conosco! Como nosso espaço foi planejado com carinho para um número específico, vamos conferir a disponibilidade e entraremos em contato com você em breve.
+              Ficamos muito felizes em saber que mais pessoas querem celebrar conosco! Como nosso espaço foi planejado com carinho para um número específico, vamos conferir a disponibilidade e entraremos em contato com você em breve.
             </p>
           )}
           <button onClick={() => setEnviado(false)} className={styles.resetBtn}>Voltar ao início</button>

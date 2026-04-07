@@ -14,19 +14,25 @@ export default function Historia() {
 
   useEffect(() => {
     async function fetchHistory() {
-      const { data } = await supabase
-        .from('configuracoes')
-        .select('historia_titulo, historia_subtitulo, historia_texto, historia_conclusao')
-        .eq('id', 1)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('configuracoes')
+          .select('historia_titulo, historia_subtitulo, historia_texto, historia_conclusao')
+          .eq('id', 1)
+          .maybeSingle();
 
-      if (data) {
-        setContent({
-          titulo: data.historia_titulo || 'Nossa História',
-          subtitulo: data.historia_subtitulo || 'O Início de Tudo',
-          texto: data.historia_texto || content.texto,
-          conclusao: data.historia_conclusao || content.conclusao
-        });
+        if (error) throw error;
+
+        if (data) {
+          setContent({
+            titulo: data.historia_titulo || 'Nossa História',
+            subtitulo: data.historia_subtitulo || 'O Início de Tudo',
+            texto: data.historia_texto || content.texto,
+            conclusao: data.historia_conclusao || content.conclusao
+          });
+        }
+      } catch (e) {
+        console.error('Erro ao buscar história (usando fallback):', e);
       }
     }
     fetchHistory();
@@ -49,4 +55,3 @@ export default function Historia() {
     </section>
   );
 }
-

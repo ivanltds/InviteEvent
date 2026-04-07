@@ -196,3 +196,24 @@
   border-radius: 4px;
   cursor: pointer;
 }
+
+@media (max-width: 768px) {
+  .adminMain {
+    padding: 1rem;
+  }
+
+  .adminHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .tableContainer {
+    overflow-x: auto;
+  }
+
+  .modal {
+    width: 95%;
+    padding: 1.5rem;
+  }
+}

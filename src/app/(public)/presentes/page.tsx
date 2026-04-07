@@ -127,7 +127,9 @@ export default function PresentesPage() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={item.imagem_url} alt={item.nome} className={styles.itemImage} />
                   ) : (
-                    <span className={styles.categoryIcon}>🎁</span>
+                    <span className={styles.categoryIcon}>
+                      <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" strokeWidth="1" fill="none"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
+                    </span>
                   )}
                 </div>
                 <div className={styles.info}>
@@ -191,7 +193,9 @@ export default function PresentesPage() {
               </>
             ) : (
               <div className={styles.successMessage}>
-                <div style={{fontSize: '4rem', marginBottom: '1rem'}}>✨</div>
+                <div style={{marginBottom: '1rem'}}>
+                  <svg viewBox="0 0 24 24" width="64" height="64" stroke="currentColor" strokeWidth="1" fill="none" style={{color: 'var(--accent)'}}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                </div>
                 <h3>Muito Obrigado!</h3>
                 <p>Recebemos sua intenção de presente. Seu carinho torna nosso dia ainda mais especial!</p>
                 <button className={styles.giftBtn} style={{marginTop: '2rem'}} onClick={() => setShowModal(false)}>

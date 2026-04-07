@@ -13,18 +13,24 @@ export default function OsNoivos() {
 
   useEffect(() => {
     async function fetchBios() {
-      const { data } = await supabase
-        .from('configuracoes')
-        .select('noiva_bio, noivo_bio, noivos_conclusao')
-        .eq('id', 1)
-        .maybeSingle();
-      
-      if (data) {
-        setBios({
-          noiva: data.noiva_bio || bios.noiva,
-          noivo: data.noivo_bio || bios.noivo,
-          conclusao: data.noivos_conclusao || bios.conclusao
-        });
+      try {
+        const { data, error } = await supabase
+          .from('configuracoes')
+          .select('noiva_bio, noivo_bio, noivos_conclusao')
+          .eq('id', 1)
+          .maybeSingle();
+        
+        if (error) throw error;
+
+        if (data) {
+          setBios({
+            noiva: data.noiva_bio || bios.noiva,
+            noivo: data.noivo_bio || bios.noivo,
+            conclusao: data.noivos_conclusao || bios.conclusao
+          });
+        }
+      } catch (e) {
+        console.error('Erro ao buscar bios (usando fallback):', e);
       }
     }
     fetchBios();

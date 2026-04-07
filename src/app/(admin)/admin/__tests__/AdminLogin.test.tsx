@@ -1,11 +1,22 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import AdminLogin from '../page';
 
+// Mock next/navigation
+const mockPush = jest.fn();
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+  }),
+}));
+
 describe('Admin Login Page', () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
+    jest.clearAllMocks();
     process.env = { ...originalEnv, NEXT_PUBLIC_ADMIN_PASSWORD: 'testpassword' };
+    // Clear cookies
+    document.cookie = 'admin-auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
   });
 
   afterAll(() => {
@@ -27,9 +38,10 @@ describe('Admin Login Page', () => {
     fireEvent.click(button);
 
     expect(screen.getByText(/Senha incorreta/i)).toBeInTheDocument();
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
-  test('deve autorizar e mostrar o dashboard se a senha estiver correta', () => {
+  test('deve redirecionar para o dashboard se a senha estiver correta', () => {
     render(<AdminLogin />);
     const input = screen.getByPlaceholderText(/Senha/i);
     const button = screen.getByRole('button', { name: /Entrar/i });
@@ -37,7 +49,13 @@ describe('Admin Login Page', () => {
     fireEvent.change(input, { target: { value: 'testpassword' } });
     fireEvent.click(button);
 
-    expect(screen.getByText(/Dashboard Geral/i)).toBeInTheDocument();
-    expect(screen.getByText(/Gestão de Convidados/i)).toBeInTheDocument();
+    expect(mockPush).toHaveBeenCalledWith('/admin/dashboard');
+    expect(document.cookie).toContain('admin-auth=testpassword');
+  });
+
+  test('deve redirecionar se já estiver autenticado via cookie', () => {
+    document.cookie = 'admin-auth=testpassword; path=/';
+    render(<AdminLogin />);
+    expect(mockPush).toHaveBeenCalledWith('/admin/dashboard');
   });
 });

@@ -176,12 +176,12 @@ export default function AdminPresentes() {
                 >
                   {({ open }) => (
                     <button type="button" className={styles.uploadBtn} onClick={() => open()}>
-                      {newItem.imagem_url ? 'Foto Carregada ✅' : 'Subir Foto'}
+                      {newItem.imagem_url ? 'Foto Carregada' : 'Subir Foto'}
                     </button>
                   )}
                 </CldUploadWidget>
               ) : (
-                <p className={styles.error}>⚠️ Configure o Cloudinary no .env para habilitar upload.</p>
+                <p className={styles.error}>Aviso: Configure o Cloudinary no .env para habilitar upload.</p>
               )}
               {newItem.imagem_url && <p className={styles.urlLabel}>URL detectada: {newItem.imagem_url.substring(0, 40)}...</p>}
             </div>

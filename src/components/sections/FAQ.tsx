@@ -29,17 +29,24 @@ export default function FAQ() {
 
   useEffect(() => {
     async function fetchFaqs() {
-      const { data } = await supabase
-        .from('faq')
-        .select('pergunta, resposta')
-        .order('ordem', { ascending: true });
+      try {
+        const { data, error } = await supabase
+          .from('faq')
+          .select('pergunta, resposta')
+          .order('ordem', { ascending: true });
 
-      if (data && data.length > 0) {
-        setFaqs(data.map(item => ({
-          question: item.pergunta,
-          answer: item.resposta
-        })));
-      } else {
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          setFaqs(data.map((item: any) => ({
+            question: item.pergunta,
+            answer: item.resposta
+          })));
+        } else {
+          setFaqs(DEFAULT_FAQS);
+        }
+      } catch (e) {
+        console.error('Erro ao buscar FAQs (usando fallback):', e);
         setFaqs(DEFAULT_FAQS);
       }
     }

@@ -14,20 +14,31 @@ export default function DynamicStyles() {
 
   useEffect(() => {
     async function fetchConfig() {
-      const { data } = await supabase
-        .from('configuracoes')
-        .select('bg_primary, text_main, accent_color, font_cursive, font_serif')
-        .eq('id', 1)
-        .maybeSingle();
-      
-      if (data) {
-        setStyles({
-          bg: data.bg_primary || '#fdfbf7',
-          text: data.text_main || '#4a4a4a',
-          accent: data.accent_color || '#8fa89b',
-          fontCursive: data.font_cursive || "'Pinyon Script', cursive",
-          fontSerif: data.font_serif || "'Playfair Display', serif"
-        });
+      // Usamos fetchConfig para garantir que o tema seja aplicado
+      try {
+        const query = supabase
+          .from('configuracoes')
+          .select('bg_primary, text_main, accent_color, font_cursive, font_serif')
+          .eq('id', 1);
+        
+        const { data, error } = await query.maybeSingle();
+        
+        if (error) {
+          console.warn('Supabase não respondeu com dados (esperado se não configurado):', error.message);
+          return;
+        }
+        
+        if (data) {
+          setStyles({
+            bg: data.bg_primary || '#fdfbf7',
+            text: data.text_main || '#4a4a4a',
+            accent: data.accent_color || '#8fa89b',
+            fontCursive: data.font_cursive || "'Pinyon Script', cursive",
+            fontSerif: data.font_serif || "'Playfair Display', serif"
+          });
+        }
+      } catch (e) {
+        console.error('Falha crítica ao carregar estilos dinâmicos (fallback aplicado):', e);
       }
     }
     fetchConfig();

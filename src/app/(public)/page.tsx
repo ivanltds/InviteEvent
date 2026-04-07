@@ -29,33 +29,37 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchConfig() {
-      const { data } = await supabase
-        .from('configuracoes')
-        .select('noiva_nome, noivo_nome, data_casamento, mostrar_faq, mostrar_historia, mostrar_noivos, mostrar_presentes')
-        .eq('id', 1)
-        .maybeSingle();
-      
-      if (data) {
-        const date = new Date(data.data_casamento);
-        const formattedDate = date.toLocaleDateString('pt-BR', { 
-          day: '2-digit', 
-          month: 'long', 
-          year: 'numeric' 
-        });
+      try {
+        const { data } = await supabase
+          .from('configuracoes')
+          .select('noiva_nome, noivo_nome, data_casamento, mostrar_faq, mostrar_historia, mostrar_noivos, mostrar_presentes')
+          .eq('id', 1)
+          .maybeSingle();
         
-        setCouple({
-          noiva: data.noiva_nome,
-          noivo: data.noivo_nome,
-          data: formattedDate,
-          rawDate: data.data_casamento
-        });
+        if (data) {
+          const date = new Date(data.data_casamento);
+          const formattedDate = date.toLocaleDateString('pt-BR', { 
+            day: '2-digit', 
+            month: 'long', 
+            year: 'numeric' 
+          });
+          
+          setCouple({
+            noiva: data.noiva_nome,
+            noivo: data.noivo_nome,
+            data: formattedDate,
+            rawDate: data.data_casamento
+          });
 
-        setVisibility({
-          historia: data.mostrar_historia !== false,
-          noivos: data.mostrar_noivos !== false,
-          faq: data.mostrar_faq !== false,
-          presentes: data.mostrar_presentes !== false
-        });
+          setVisibility({
+            historia: data.mostrar_historia !== false,
+            noivos: data.mostrar_noivos !== false,
+            faq: data.mostrar_faq !== false,
+            presentes: data.mostrar_presentes !== false
+          });
+        }
+      } catch (e) {
+        console.error('Erro ao buscar configurações iniciais (usando fallback):', e);
       }
     }
     fetchConfig();

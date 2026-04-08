@@ -1,6 +1,7 @@
 .container {
   padding: 3rem;
-  max-width: 900px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .header {
@@ -9,41 +10,50 @@
 
 .header h1 {
   font-size: 2.5rem;
-  color: var(--color-salvia);
+  color: var(--accent-safe);
   margin-bottom: 0.5rem;
 }
 
 .header p {
-  color: #666;
+  color: var(--text-main-safe);
+  opacity: 0.7;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 3rem;
+  align-items: start;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 3rem;
+  gap: 2rem;
 }
 
 .section {
-  background: white;
+  background: var(--bg-primary);
   padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0,0,0,0.05);
 }
 
 .section h2 {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   text-transform: uppercase;
   letter-spacing: 0.1rem;
-  color: var(--color-salvia);
-  margin-bottom: 2rem;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 1rem;
+  color: var(--accent-safe);
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  padding-bottom: 0.8rem;
 }
 
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .field {
@@ -53,16 +63,25 @@
 }
 
 .field label {
-  font-weight: bold;
-  font-size: 0.9rem;
-  color: #444;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-main-safe);
+  opacity: 0.8;
 }
 
-.field input {
-  padding: 0.8rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
+.field input, .select {
+  padding: 0.7rem;
+  border: 1px solid rgba(0,0,0,0.1);
+  background: var(--bg-primary);
+  color: var(--text-main-safe);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+.field input:focus, .select:focus {
+  border-color: var(--accent-safe);
+  outline: none;
 }
 
 .fieldFull {
@@ -73,89 +92,120 @@
 }
 
 .fieldFull label {
-  font-weight: bold;
-  font-size: 0.9rem;
-  color: #444;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-main-safe);
+  opacity: 0.8;
 }
 
 .fieldFull textarea {
-  padding: 0.8rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
+  padding: 0.7rem;
+  border: 1px solid rgba(0,0,0,0.1);
+  background: var(--bg-primary);
+  color: var(--text-main-safe);
+  border-radius: 6px;
+  font-size: 0.95rem;
   font-family: inherit;
-  min-height: 100px;
+  min-height: 80px;
   resize: vertical;
 }
 
 .tallTextarea {
-  min-height: 200px !important;
+  min-height: 150px !important;
 }
 
 .colorPickerGroup {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.8rem;
 }
 
 .colorPickerGroup input[type='color'] {
-  width: 50px;
-  height: 50px;
-  padding: 0;
-  border: 1px solid #ddd;
+  width: 40px;
+  height: 40px;
+  padding: 2px;
+  border: 1px solid rgba(0,0,0,0.1);
+  background: var(--bg-primary);
   border-radius: 4px;
   cursor: pointer;
 }
 
 .colorPickerGroup span {
   font-family: monospace;
-  font-size: 0.9rem;
-  color: #666;
+  font-size: 0.85rem;
+  color: var(--text-main-safe);
+  opacity: 0.6;
 }
 
 .saveBtn {
-  background-color: var(--color-salvia);
-  color: white;
+  background-color: var(--accent);
+  color: var(--text-on-accent);
   border: none;
-  padding: 1.2rem;
-  border-radius: 4px;
-  font-family: var(--font-editorial);
-  font-size: 1.2rem;
+  padding: 1rem;
+  border-radius: 6px;
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: transform 0.2s, background-color 0.2s;
+  margin-top: 1rem;
 }
 
 .saveBtn:hover:not(:disabled) {
-  background-color: #9a9474;
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.saveBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .checkboxGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .checkboxLabel {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  font-size: 1rem;
-  color: #444;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  color: var(--text-main-safe);
+  opacity: 0.8;
   cursor: pointer;
 }
 
 .checkboxLabel input {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   cursor: pointer;
+}
+
+.previewColumn {
+  position: sticky;
+  top: 2rem;
 }
 
 .loading {
   padding: 5rem;
   text-align: center;
-  font-family: var(--font-editorial);
+  font-family: var(--font-serif);
   font-size: 1.5rem;
-  color: #999;
+  color: var(--text-main-safe);
+  opacity: 0.5;
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .previewColumn {
+    position: static;
+    order: -1;
+    margin-bottom: 2rem;
+  }
 }
 
 @media (max-width: 768px) {

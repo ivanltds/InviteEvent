@@ -1,6 +1,6 @@
 .adminMain {
   padding: 2rem;
-  background-color: #f9f9f9;
+  background-color: var(--bg-primary);
   min-height: 100vh;
 }
 
@@ -13,7 +13,7 @@
 
 .adminHeader h1 {
   font-size: 2rem;
-  color: var(--color-salvia);
+  color: var(--accent-safe);
 }
 
 .headerActions {
@@ -23,8 +23,8 @@
 
 .exportBtn {
   background-color: transparent;
-  border: 1px solid var(--color-salvia);
-  color: var(--color-salvia);
+  border: 1px solid var(--accent-safe);
+  color: var(--accent-safe);
   padding: 0.8rem 1.5rem;
   border-radius: 4px;
   cursor: pointer;
@@ -33,13 +33,13 @@
 }
 
 .exportBtn:hover {
-  background-color: var(--color-salvia);
-  color: white;
+  background-color: var(--accent-safe);
+  color: var(--text-on-accent);
 }
 
 .addBtn {
-  background-color: var(--color-terracota);
-  color: white;
+  background-color: var(--accent);
+  color: var(--text-on-accent);
   border: none;
   padding: 0.8rem 1.5rem;
   border-radius: 4px;
@@ -63,16 +63,17 @@
 }
 
 .modal {
-  background: white;
+  background: var(--bg-primary);
   padding: 3rem;
   border-radius: 8px;
   width: 100%;
   max-width: 500px;
+  border: 1px solid rgba(0,0,0,0.1);
 }
 
 .modal h2 {
   margin-bottom: 2rem;
-  color: var(--color-salvia);
+  color: var(--accent-safe);
 }
 
 .fieldGroup {
@@ -83,12 +84,15 @@
   display: block;
   margin-bottom: 0.5rem;
   font-weight: bold;
+  color: var(--text-main-safe);
 }
 
 .fieldGroup input, .fieldGroup select {
   width: 100%;
   padding: 0.8rem;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(0,0,0,0.1);
+  background: var(--bg-primary);
+  color: var(--text-main-safe);
   border-radius: 4px;
 }
 
@@ -100,8 +104,8 @@
 
 .saveBtn {
   flex: 1;
-  background-color: var(--color-salvia);
-  color: white;
+  background-color: var(--accent);
+  color: var(--text-on-accent);
   border: none;
   padding: 1rem;
   border-radius: 4px;
@@ -110,7 +114,8 @@
 
 .cancelBtn {
   flex: 1;
-  background-color: #eee;
+  background-color: rgba(0,0,0,0.05);
+  color: var(--text-main-safe);
   border: none;
   padding: 1rem;
   border-radius: 4px;
@@ -125,35 +130,38 @@
 }
 
 .statCard {
-  background: white;
+  background: var(--bg-primary);
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.05);
   text-align: center;
 }
 
 .statCard h3 {
   font-size: 1rem;
-  color: #666;
+  color: var(--text-main-safe);
+  opacity: 0.6;
   margin-bottom: 1rem;
   text-transform: uppercase;
 }
 
 .statNumber {
   font-size: 2.5rem;
-  font-family: var(--font-editorial);
-  color: var(--color-salvia);
+  font-family: var(--font-serif);
+  color: var(--accent-safe);
   font-weight: bold;
 }
 
 .statNumber.alert {
-  color: var(--color-terracota);
+  color: #e53e3e;
 }
 
 .tableContainer {
-  background: white;
+  background: var(--bg-primary);
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.05);
   overflow-x: auto;
 }
 
@@ -165,12 +173,14 @@
 
 .table th, .table td {
   padding: 1.5rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  color: var(--text-main-safe);
 }
 
 .table th {
-  background-color: #fafafa;
-  color: #666;
+  background-color: rgba(0,0,0,0.02);
+  color: var(--text-main-safe);
+  opacity: 0.7;
   font-weight: bold;
   text-transform: uppercase;
   font-size: 0.85rem;
@@ -233,7 +243,7 @@
 }
 
 .copyBtn {
-  background: var(--color-champagne);
+  background: #fdf5e6;
   color: #8b7d6b;
   border: none;
   padding: 0.4rem 0.8rem;

@@ -7,7 +7,7 @@ Este épico foca em transformar a segurança por "obscuridade" em segurança de 
 
 ## Histórias (Stories)
 - [ ] **STORY-027:** Autenticação Server-Side para Admin (Proteção Real).
-- [ ] **STORY-028:** Ofuscação de Slugs de Convite (Anti-Guessing).
+- [x] **STORY-028:** Ofuscação de Slugs de Convite (Anti-Guessing). -> **DONE**
 - [ ] **STORY-029:** Auditoria e Refinamento de RLS (Supabase).
 - [ ] **STORY-030:** Uploads Assinados para Cloudinary (Signed Uploads).
 - [ ] **STORY-031:** Proteção contra Spam e Rate Limiting no RSVP.

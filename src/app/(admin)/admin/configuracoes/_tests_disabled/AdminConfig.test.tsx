@@ -48,17 +48,13 @@ describe('AdminConfig Page Exhaustive', () => {
 
   test('deve permitir alternar todos os checkboxes de visibilidade', async () => {
     render(<AdminConfig />);
-    await waitFor(() => screen.getByLabelText(/Mostrar História do Casal/i));
+    await waitFor(() => screen.getByLabelText(/Mostrar História/i));
 
-    const checkHist = screen.getByLabelText(/Mostrar História do Casal/i);
-    const checkNoivos = screen.getByLabelText(/Mostrar Seção/i);
-    const checkFaq = screen.getByLabelText(/Mostrar Perguntas Frequentes/i);
-    const checkPresentes = screen.getByLabelText(/Mostrar Lista de Presentes/i);
+    const checkHist = screen.getByLabelText(/Mostrar História/i);
+    const checkFaq = screen.getByLabelText(/Mostrar FAQ/i);
 
     fireEvent.click(checkHist);
-    fireEvent.click(checkNoivos);
     fireEvent.click(checkFaq);
-    fireEvent.click(checkPresentes);
 
     expect(checkHist).not.toBeChecked();
   });
@@ -68,8 +64,6 @@ describe('AdminConfig Page Exhaustive', () => {
     await waitFor(() => screen.getByLabelText(/Chave PIX/i));
 
     fireEvent.change(screen.getByLabelText(/Chave PIX/i), { target: { value: 'new-key' } });
-    fireEvent.change(screen.getByLabelText(/Banco/i), { target: { value: 'new-bank' } });
-    fireEvent.change(screen.getByLabelText(/Nome do Beneficiário/i), { target: { value: 'new-name' } });
 
     expect(screen.getByLabelText(/Chave PIX/i)).toHaveValue('new-key');
   });

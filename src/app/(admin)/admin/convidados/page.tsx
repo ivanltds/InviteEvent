@@ -28,12 +28,7 @@ export default function AdminConvidados() {
 
   const handleAddInvite = async (e: React.FormEvent) => {
     e.preventDefault();
-    const slug = formData.nome_principal
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-');
+    const slug = inviteService.generateObfuscatedSlug(formData.nome_principal);
 
     const { success, error } = await inviteService.createInvite({
       ...formData,

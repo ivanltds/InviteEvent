@@ -12,9 +12,9 @@
 }
 
 .number {
-  font-family: var(--font-editorial);
+  font-family: var(--font-serif);
   font-size: 3rem;
-  color: var(--color-salvia);
+  color: var(--accent-safe);
   line-height: 1;
 }
 
@@ -22,7 +22,8 @@
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.1rem;
-  color: #999;
+  color: var(--text-main-safe);
+  opacity: 0.6;
   margin-top: 0.5rem;
 }
 

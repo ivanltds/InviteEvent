@@ -7,7 +7,6 @@ import { rsvpService } from '@/lib/services/rsvpService';
 import { Convite } from '@/lib/types/database';
 
 export default function RSVP() {
-  const [slug, setSlug] = useState('');
   const [conviteEncontrado, setConviteEncontrado] = useState<Convite | null>(null);
   const [formData, setFormData] = useState({
     nome: '',
@@ -21,12 +20,14 @@ export default function RSVP() {
   const [alertaExcedente, setAlertaExcedente] = useState(false);
   const [loading, setLoading] = useState(false);
   const [deadline, setDeadline] = useState('13 de Maio de 2026');
+  const [noInviteFound, setNoInviteFound] = useState(false);
 
   // Busca convite por slug vindo da URL e configurações
   useEffect(() => {
     async function init() {
       if (typeof window !== 'undefined') {
         // Fetch Deadline
+        setLoading(true);
         const config = await rsvpService.getRSVPConfig();
         if (config?.prazo_rsvp) {
           const date = new Date(config.prazo_rsvp);
@@ -40,27 +41,18 @@ export default function RSVP() {
           if (data) {
             setConviteEncontrado(data);
             setFormData(prev => ({ ...prev, nome: data.nome_principal }));
+            setNoInviteFound(false);
+          } else {
+            setNoInviteFound(true);
           }
+        } else {
+          setNoInviteFound(true);
         }
+        setLoading(false);
       }
     }
     init();
   }, []);
-
-  const handleBuscarConvite = async () => {
-    if (!slug) return;
-    setLoading(true);
-    
-    const data = await rsvpService.searchInvite(slug);
-
-    if (data) {
-      setConviteEncontrado(data);
-      setFormData(prev => ({ ...prev, nome: data.nome_principal }));
-    } else {
-      alert('Convite não encontrado. Por favor, verifique o nome ou link.');
-    }
-    setLoading(false);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,7 +105,6 @@ export default function RSVP() {
               Ficamos muito felizes em saber que mais pessoas querem celebrar conosco! Como nosso espaço foi planejado com carinho para um número específico, vamos conferir a disponibilidade e entraremos em contato com você em breve.
             </p>
           )}
-          <button onClick={() => setEnviado(false)} className={styles.resetBtn}>Voltar ao início</button>
         </div>
       </section>
     );
@@ -125,28 +116,22 @@ export default function RSVP() {
         <h2 className="cursive">Vamos celebrar juntos?</h2>
         <p className={styles.deadline}>Por favor, nos conte se você vem até {deadline}</p>
 
-        {!conviteEncontrado ? (
+        {loading ? (
           <div className={styles.searchBox}>
-            <p>Procure seu nome para encontrar seu convite:</p>
-            <div className={styles.searchInputGroup}>
-              <input 
-                type="text" 
-                placeholder="Ex: Família Souza" 
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                className={styles.input}
-              />
-              <button onClick={handleBuscarConvite} className={styles.primaryBtn} disabled={loading}>
-                {loading ? 'Buscando...' : 'Encontrar'}
-              </button>
-            </div>
+            <p>Carregando convite...</p>
           </div>
-        ) : (
+        ) : noInviteFound ? (
+          <div className={styles.searchBox}>
+            <p><strong>Acesso Restrito</strong></p>
+            <p style={{ marginTop: '1rem', opacity: 0.8 }}>
+              Para confirmar sua presença, utilize o link individual enviado pelos noivos.
+            </p>
+          </div>
+        ) : conviteEncontrado && (
           <form onSubmit={handleSubmit} className={styles.form}>
             <div className={styles.conviteInfo}>
               <p>Olá, <strong>{conviteEncontrado.nome_principal}</strong>!</p>
               <p>Reservamos <strong>{conviteEncontrado.limite_pessoas} {conviteEncontrado.limite_pessoas === 1 ? 'vaga' : 'vagas'}</strong> para o seu grupo.</p>
-              <button onClick={() => setConviteEncontrado(null)} className={styles.changeInvite}>Não é você? Clique aqui</button>
             </div>
 
             <div className={styles.fieldGroup}>

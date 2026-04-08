@@ -34,9 +34,22 @@ section[id] {
   scroll-margin-top: 80px;
 }
 
-h1, h2, h3 {
+h1 {
   font-family: var(--font-serif);
   font-weight: 400;
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
+}
+
+h2 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+}
+
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
 }
 
 .cursive {

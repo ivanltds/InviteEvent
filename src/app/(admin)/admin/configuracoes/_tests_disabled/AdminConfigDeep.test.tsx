@@ -26,9 +26,7 @@ describe('AdminConfig Deep Fields Fixed', () => {
     await waitFor(() => screen.getByLabelText(/^Título da História$/));
 
     fireEvent.change(screen.getByLabelText(/^Título da História$/), { target: { value: 'New T' } });
-    fireEvent.change(screen.getByLabelText(/^Subtítulo da História$/), { target: { value: 'New S' } });
     
     expect(screen.getByLabelText(/^Título da História$/)).toHaveValue('New T');
-    expect(screen.getByLabelText(/^Subtítulo da História$/)).toHaveValue('New S');
   });
 });

@@ -1,6 +1,6 @@
 .section {
   padding: 5rem 2rem;
-  background-color: var(--color-champagne);
+  background-color: var(--bg-primary);
   text-align: center;
 }
 
@@ -10,43 +10,41 @@
 }
 
 .section h2 {
-  font-size: 4rem;
-  color: var(--color-terracota);
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  color: var(--accent-safe);
   margin-bottom: 1rem;
 }
 
 .subtitle {
-  font-size: 1.8rem;
-  color: var(--color-salvia);
+  font-size: clamp(1.2rem, 4vw, 1.8rem);
+  color: var(--accent-safe);
+  opacity: 0.8;
   margin-bottom: 2rem;
   text-transform: uppercase;
   letter-spacing: 0.15rem;
 }
 
 .text {
-  font-size: 1.1rem;
+  font-size: clamp(1rem, 2.5vw, 1.1rem);
   line-height: 1.8;
-  color: #555;
+  color: var(--text-main-safe);
   margin-bottom: 1.5rem;
 }
 
 .highlight {
-  font-size: 1.3rem;
+  font-size: clamp(1.1rem, 3.5vw, 1.3rem);
   line-height: 1.8;
-  color: var(--color-terracota);
-  font-family: var(--font-editorial);
+  color: var(--accent-safe);
+  font-family: var(--font-serif);
   font-style: italic;
   margin-top: 2rem;
   padding: 2rem;
-  border-top: 1px solid rgba(226, 114, 91, 0.3);
-  border-bottom: 1px solid rgba(226, 114, 91, 0.3);
+  border-top: 1px solid rgba(0,0,0,0.1);
+  border-bottom: 1px solid rgba(0,0,0,0.1);
 }
 
 @media (max-width: 768px) {
   .section {
     padding: 3rem 1.5rem;
-  }
-  .section h2 {
-    font-size: 3rem;
   }
 }

@@ -14,7 +14,6 @@ export default function DynamicStyles() {
 
   useEffect(() => {
     async function fetchConfig() {
-      // Usamos fetchConfig para garantir que o tema seja aplicado
       try {
         const query = supabase
           .from('configuracoes')
@@ -24,7 +23,7 @@ export default function DynamicStyles() {
         const { data, error } = await query.maybeSingle();
         
         if (error) {
-          console.warn('Supabase não respondeu com dados (esperado se não configurado):', error.message);
+          console.warn('Supabase não respondeu com dados:', error.message);
           return;
         }
         
@@ -38,34 +37,99 @@ export default function DynamicStyles() {
           });
         }
       } catch (e) {
-        console.error('Falha crítica ao carregar estilos dinâmicos (fallback aplicado):', e);
+        console.error('Falha crítica ao carregar estilos dinâmicos:', e);
       }
     }
     fetchConfig();
   }, []);
 
+  // Extrair nomes das fontes para carregar do Google Fonts
+  // Exemplo: "'Playfair Display', serif" -> "Playfair+Display"
+  const getFontFamilyName = (fontStr: string) => {
+    const match = fontStr.match(/'([^']+)'/);
+    return match ? match[1].replace(/\s+/g, '+') : null;
+  };
+
+  const getContrastColor = (hexcolor: string) => {
+    if (!hexcolor) return '#ffffff';
+    hexcolor = hexcolor.replace('#', '');
+    if (hexcolor.length === 3) {
+      hexcolor = hexcolor.split('').map(c => c + c).join('');
+    }
+    const r = parseInt(hexcolor.substr(0, 2), 16);
+    const g = parseInt(hexcolor.substr(2, 2), 16);
+    const b = parseInt(hexcolor.substr(4, 2), 16);
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    return yiq >= 128 ? '#1a1a1a' : '#ffffff';
+  };
+
+  // Garante que uma cor de texto seja legível contra um fundo
+  const getLegibleText = (bgHex: string, textHex: string) => {
+    const getLuminance = (hex: string) => {
+      hex = hex.replace('#', '');
+      if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+      const r = parseInt(hex.substr(0, 2), 16) / 255;
+      const g = parseInt(hex.substr(2, 2), 16) / 255;
+      const b = parseInt(hex.substr(4, 2), 16) / 255;
+      const a = [r, g, b].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+      return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+    };
+
+    const lum1 = getLuminance(bgHex);
+    const lum2 = getLuminance(textHex);
+    const ratio = (Math.max(lum1, lum2) + 0.05) / (Math.min(lum1, lum2) + 0.05);
+
+    // Se o contraste for baixo (< 3:1), força um fallback
+    if (ratio < 3) {
+      return lum1 > 0.5 ? '#1a1a1a' : '#ffffff';
+    }
+    return textHex;
+  };
+
+  const cursiveName = getFontFamilyName(styles.fontCursive);
+  const serifName = getFontFamilyName(styles.fontSerif);
+  
+  const googleFontsUrl = (cursiveName && serifName) 
+    ? `https://fonts.googleapis.com/css2?family=${cursiveName}&family=${serifName}&display=swap`
+    : null;
+
   return (
-    <style dangerouslySetInnerHTML={{ __html: `
-      :root {
-        --bg-primary: ${styles.bg};
-        --text-main: ${styles.text};
-        --accent: ${styles.accent};
-        --font-cursive: ${styles.fontCursive};
-        --font-serif: ${styles.fontSerif};
-      }
-      
-      body {
-        background-color: var(--bg-primary);
-        color: var(--text-main);
-      }
-      
-      .cursive {
-        font-family: var(--font-cursive) !important;
-      }
-      
-      h1, h2, h3, h4, h5, h6 {
-        font-family: var(--font-serif);
-      }
-    `}} />
+    <>
+      {googleFontsUrl && (
+        <style dangerouslySetInnerHTML={{ __html: `@import url('${googleFontsUrl}');` }} />
+      )}
+      <style dangerouslySetInnerHTML={{ __html: `
+        :root {
+          --bg-primary: ${styles.bg};
+          --text-main: ${styles.text};
+          --accent: ${styles.accent};
+          
+          /* Variáveis Calculadas para Segurança Visual */
+          --text-on-accent: ${getContrastColor(styles.accent)};
+          --text-main-safe: ${getLegibleText(styles.bg, styles.text)};
+          --accent-safe: ${getLegibleText(styles.bg, styles.accent)};
+          
+          --font-cursive: ${styles.fontCursive};
+          --font-serif: ${styles.fontSerif};
+          --font-pinyon: ${styles.fontCursive};
+          --font-playfair: ${styles.fontSerif};
+          --font-editorial: ${styles.fontSerif};
+        }
+        
+        body {
+          background-color: var(--bg-primary);
+          color: var(--text-main-safe);
+        }
+        
+        .cursive {
+          font-family: var(--font-cursive) !important;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+          font-family: var(--font-serif);
+          color: var(--accent-safe);
+        }
+      `}} />
+    </>
   );
 }

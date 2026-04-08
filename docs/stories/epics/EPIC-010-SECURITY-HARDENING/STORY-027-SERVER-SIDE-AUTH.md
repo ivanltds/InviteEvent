@@ -9,4 +9,4 @@ Migrar a validação de acesso ao painel administrativo do lado do cliente para 
 3. **Middleware de Proteção:** Criar um `middleware.ts` que bloqueie o acesso a todas as rotas em `/admin/*` se o usuário não estiver autenticado.
 4. **Login Seguro:** A validação deve ocorrer em uma Server Action ou Rota de API.
 
-## Status: Draft
+## Status: Ready 🚀

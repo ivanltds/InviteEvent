@@ -22,7 +22,7 @@
   font-family: var(--font-pinyon);
   font-size: 2rem;
   text-decoration: none;
-  color: var(--accent);
+  color: var(--accent-safe);
 }
 
 .navActions {
@@ -42,7 +42,7 @@
 
 .links a {
   text-decoration: none;
-  color: var(--text-main);
+  color: var(--text-main-safe);
   font-weight: 500;
   font-size: 0.9rem;
   text-transform: uppercase;
@@ -51,15 +51,14 @@
 }
 
 .links a:hover {
-  color: var(--accent);
+  color: var(--accent-safe);
 }
-
 .admLink {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   background-color: var(--accent);
-  color: white !important;
+  color: var(--text-on-accent) !important;
   padding: 0.5rem 1rem;
   border-radius: 4px;
   font-size: 0.8rem !important;
@@ -69,7 +68,7 @@
 .admLinkMobile {
   display: none;
   background-color: var(--accent);
-  color: white;
+  color: var(--text-on-accent);
   padding: 0.5rem;
   border-radius: 4px;
   line-height: 0;
@@ -128,7 +127,7 @@
     right: -100%;
     width: 250px;
     height: 100vh;
-    background: white;
+    background: var(--bg-primary);
     flex-direction: column;
     justify-content: center;
     align-items: center;

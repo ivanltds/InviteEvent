@@ -1,6 +1,6 @@
 .section {
   padding: 6rem 2rem;
-  background-color: var(--color-champagne);
+  background-color: var(--bg-primary);
   text-align: center;
 }
 
@@ -11,13 +11,14 @@
 
 .section h2 {
   font-size: 4rem;
-  color: var(--color-terracota);
+  color: var(--accent-safe);
   margin-bottom: 1rem;
 }
 
 .intro {
   font-size: 1.2rem;
-  color: #555;
+  color: var(--text-main-safe);
+  opacity: 0.8;
   margin-bottom: 4rem;
   font-style: italic;
 }
@@ -30,15 +31,16 @@
 
 .card {
   flex: 1;
-  background: white;
+  background: var(--bg-primary);
   padding: 3rem 2rem;
   border-radius: 8px;
   box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.05);
 }
 
 .card h3 {
   font-size: 2rem;
-  color: var(--color-salvia);
+  color: var(--accent-safe);
   margin-bottom: 2rem;
   text-transform: uppercase;
   letter-spacing: 0.1rem;
@@ -46,7 +48,7 @@
 
 .info p {
   margin-bottom: 0.5rem;
-  color: #444;
+  color: var(--text-main-safe);
 }
 
 .date {
@@ -56,9 +58,9 @@
 
 .time {
   font-size: 1.5rem;
-  color: var(--color-terracota);
+  color: var(--accent-safe);
   margin-bottom: 1.5rem !important;
-  font-family: var(--font-editorial);
+  font-family: var(--font-serif);
 }
 
 .location {
@@ -69,14 +71,15 @@
 .address {
   font-size: 1rem;
   margin-bottom: 2rem !important;
-  color: #777;
+  color: var(--text-main-safe);
+  opacity: 0.7;
 }
 
 .mapLink {
   display: inline-block;
   padding: 0.8rem 1.5rem;
-  border: 1px solid var(--color-salvia);
-  color: var(--color-salvia);
+  border: 1px solid var(--accent-safe);
+  color: var(--accent-safe);
   text-transform: uppercase;
   font-size: 0.9rem;
   letter-spacing: 0.05rem;
@@ -84,8 +87,8 @@
 }
 
 .mapLink:hover {
-  background: var(--color-salvia);
-  color: white;
+  background: var(--accent-safe);
+  color: var(--text-on-accent);
 }
 
 @media (max-width: 768px) {

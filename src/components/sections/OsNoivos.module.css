@@ -1,6 +1,6 @@
 .section {
   padding: 6rem 2rem;
-  background-color: var(--color-marfim);
+  background-color: var(--bg-primary);
   text-align: center;
 }
 
@@ -10,8 +10,8 @@
 }
 
 .section h2 {
-  font-size: 3.5rem;
-  color: var(--color-salvia);
+  font-size: clamp(2rem, 7vw, 3.5rem);
+  color: var(--accent-safe);
   margin-bottom: 4rem;
 }
 
@@ -24,35 +24,40 @@
 
 .card {
   padding: 3rem 2rem;
-  background: white;
+  background: var(--bg-primary);
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-  border-top: 3px solid var(--color-salvia);
+  border: 1px solid rgba(0,0,0,0.05);
+  border-top: 3px solid var(--accent-safe);
 }
 
 .card h3 {
-  font-size: 3rem;
-  color: var(--color-terracota);
+  font-size: clamp(2rem, 6vw, 3rem);
+  color: var(--accent-safe);
   margin-bottom: 1.5rem;
 }
 
 .desc {
-  font-size: 1.1rem;
+  font-size: clamp(1rem, 2.5vw, 1.1rem);
   line-height: 1.6;
-  color: #666;
+  color: var(--text-main-safe);
 }
 
 .conclusion {
-  font-family: var(--font-editorial);
-  font-size: 1.4rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.1rem, 3.5vw, 1.4rem);
   line-height: 1.8;
-  color: var(--foreground);
+  color: var(--text-main-safe);
   max-width: 700px;
   margin: 0 auto;
   font-style: italic;
 }
 
 @media (max-width: 768px) {
+  .section {
+    padding: 4rem 1.5rem;
+  }
+  
   .grid {
     grid-template-columns: 1fr;
     gap: 2rem;

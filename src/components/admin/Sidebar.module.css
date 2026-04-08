@@ -1,8 +1,8 @@
 .sidebar {
   width: 260px;
   height: 100vh;
-  background-color: white;
-  border-right: 1px solid #eee;
+  background-color: var(--bg-primary);
+  border-right: 1px solid rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -13,12 +13,12 @@
 
 .logo {
   padding: 2.5rem 2rem;
-  border-bottom: 1px solid #f9f9f9;
+  border-bottom: 1px solid rgba(0,0,0,0.02);
 }
 
 .logo h2 {
   font-size: 2rem;
-  color: var(--color-salvia);
+  color: var(--accent-safe);
   margin-bottom: 0.2rem;
 }
 
@@ -26,7 +26,8 @@
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.1rem;
-  color: #999;
+  color: var(--text-main-safe);
+  opacity: 0.5;
 }
 
 .nav {
@@ -43,20 +44,23 @@
   gap: 1rem;
   padding: 1rem 1.5rem;
   border-radius: 8px;
-  color: #666;
+  color: var(--text-main-safe);
+  opacity: 0.8;
   transition: all 0.2s;
   font-family: var(--font-sans);
 }
 
 .navItem:hover {
-  background-color: var(--color-marfim);
-  color: var(--color-salvia);
+  background-color: rgba(0, 0, 0, 0.04);
+  color: var(--accent-safe);
+  opacity: 1;
 }
 
 .active {
-  background-color: var(--color-marfim);
-  color: var(--color-salvia);
+  background-color: var(--accent);
+  color: var(--text-on-accent);
   font-weight: bold;
+  opacity: 1;
 }
 
 .icon {
@@ -65,22 +69,22 @@
 
 .footer {
   padding: 2rem;
-  border-top: 1px solid #f9f9f9;
+  border-top: 1px solid rgba(0,0,0,0.05);
 }
 
 .viewSite {
   display: block;
   text-align: center;
   padding: 0.8rem;
-  background-color: #f5f5f5;
+  background-color: rgba(0,0,0,0.03);
   border-radius: 4px;
   font-size: 0.9rem;
-  color: #666;
+  color: var(--text-main-safe);
 }
 
 .viewSite:hover {
-  background-color: var(--color-salvia);
-  color: white;
+  background-color: var(--accent);
+  color: var(--text-on-accent);
 }
 
 @media (max-width: 1024px) {

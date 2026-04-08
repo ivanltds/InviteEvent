@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS presentes (
 CREATE TABLE IF NOT EXISTS comprovantes (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   presente_id UUID REFERENCES presentes(id) ON DELETE CASCADE,
-  convite_id UUID REFERENCES convites(id) ON DELETE SET NULL, -- Novo Vínculo
+  convite_id UUID REFERENCES convites(id) ON DELETE CASCADE, -- Corrigido: CASCADE para limpeza total
   convidado_nome TEXT,
   url_comprovante TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

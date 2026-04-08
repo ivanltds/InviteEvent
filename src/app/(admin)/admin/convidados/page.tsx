@@ -80,7 +80,7 @@ export default function AdminConvidados() {
   };
 
   const copyInviteLink = (slug: string) => {
-    const url = `${window.location.origin}/invite/${slug}`;
+    const url = `${window.location.origin}/inv/${slug}`;
     navigator.clipboard.writeText(url);
     alert('Link copiado para o clipboard!');
   };

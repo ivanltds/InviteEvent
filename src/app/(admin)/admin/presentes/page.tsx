@@ -20,7 +20,8 @@ export default function AdminPresentes() {
   const [presentes, setPresentes] = useState<Presente[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
-  const [newItem, setNewItem] = useState({ 
+  const [editingItem, setEditingItem] = useState<Presente | null>(null);
+  const [formData, setFormData] = useState({ 
     nome: '', 
     preco: 0, 
     descricao: '', 
@@ -43,37 +44,68 @@ export default function AdminPresentes() {
   };
 
   useEffect(() => {
-    setTimeout(() => {
-      fetchPresentes();
-    }, 0);
+    fetchPresentes();
   }, []);
 
-  const handleAdd = async (e: React.FormEvent) => {
+  const resetForm = () => {
+    setFormData({ nome: '', preco: 0, descricao: '', imagem_url: '', status: 'disponivel', quantidade_total: 1 });
+    setIsAdding(false);
+    setEditingItem(null);
+  };
+
+  const handleEditClick = (item: Presente) => {
+    setEditingItem(item);
+    setFormData({
+      nome: item.nome,
+      preco: item.preco,
+      descricao: item.descricao || '',
+      imagem_url: item.imagem_url || '',
+      status: item.status,
+      quantidade_total: item.quantidade_total
+    });
+    setIsAdding(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
-    // Garantimos que os dados estão limpos e no formato correto
     const payload = {
-      nome: newItem.nome.trim(),
-      preco: Number(newItem.preco),
-      descricao: newItem.descricao.trim(),
-      imagem_url: newItem.imagem_url,
-      status: newItem.status,
-      quantidade_total: Number(newItem.quantidade_total)
+      nome: formData.nome.trim(),
+      preco: Number(formData.preco),
+      descricao: formData.descricao.trim(),
+      imagem_url: formData.imagem_url,
+      status: formData.status,
+      quantidade_total: Number(formData.quantidade_total)
     };
 
-    const { data, error } = await supabase
-      .from('presentes')
-      .insert([payload])
-      .select();
+    if (editingItem) {
+      // Update
+      const { data, error } = await supabase
+        .from('presentes')
+        .update(payload)
+        .eq('id', editingItem.id)
+        .select();
 
-    if (!error && data) {
-      setPresentes(prev => [data[0] as Presente, ...prev]);
-      setIsAdding(false);
-      setNewItem({ nome: '', preco: 0, descricao: '', imagem_url: '', status: 'disponivel', quantidade_total: 1 });
+      if (!error && data) {
+        setPresentes(presentes.map(p => p.id === editingItem.id ? (data[0] as Presente) : p));
+        resetForm();
+      } else {
+        alert(`Erro ao atualizar: ${error?.message}`);
+      }
     } else {
-      console.error('Erro detalhado Supabase (Add):', error);
-      alert(`Erro ao adicionar item: ${error?.message || 'Erro desconhecido'}`);
+      // Create
+      const { data, error } = await supabase
+        .from('presentes')
+        .insert([payload])
+        .select();
+
+      if (!error && data) {
+        setPresentes(prev => [data[0] as Presente, ...prev]);
+        resetForm();
+      } else {
+        alert(`Erro ao adicionar: ${error?.message}`);
+      }
     }
     setLoading(false);
   };
@@ -118,16 +150,16 @@ export default function AdminPresentes() {
 
       {isAdding && (
         <section className={styles.modalOverlay}>
-          <form className={styles.modal} onSubmit={handleAdd}>
-            <h2>Adicionar Novo Presente</h2>
+          <form className={styles.modal} onSubmit={handleSubmit}>
+            <h2>{editingItem ? 'Editar Presente' : 'Adicionar Novo Presente'}</h2>
             <div className={styles.fieldGroup}>
               <label htmlFor="itemName">Nome do Item:</label>
               <input 
                 id="itemName"
                 type="text" 
                 required 
-                value={newItem.nome}
-                onChange={(e) => setNewItem({...newItem, nome: e.target.value})}
+                value={formData.nome}
+                onChange={(e) => setFormData({...formData, nome: e.target.value})}
               />
             </div>
             <div className={styles.fieldGroup}>
@@ -136,8 +168,8 @@ export default function AdminPresentes() {
                 id="itemPrice"
                 type="number" 
                 required 
-                value={newItem.preco || ''}
-                onChange={(e) => setNewItem({...newItem, preco: e.target.value === '' ? 0 : parseFloat(e.target.value)})}
+                value={formData.preco || ''}
+                onChange={(e) => setFormData({...formData, preco: e.target.value === '' ? 0 : parseFloat(e.target.value)})}
               />
             </div>
             <div className={styles.fieldGroup}>
@@ -147,16 +179,16 @@ export default function AdminPresentes() {
                 type="number" 
                 min="1"
                 required 
-                value={newItem.quantidade_total}
-                onChange={(e) => setNewItem({...newItem, quantidade_total: parseInt(e.target.value) || 1})}
+                value={formData.quantidade_total}
+                onChange={(e) => setFormData({...formData, quantidade_total: parseInt(e.target.value) || 1})}
               />
             </div>
             <div className={styles.fieldGroup}>
               <label htmlFor="itemDesc">Descrição:</label>
               <textarea 
                 id="itemDesc"
-                value={newItem.descricao}
-                onChange={(e) => setNewItem({...newItem, descricao: e.target.value})}
+                value={formData.descricao}
+                onChange={(e) => setFormData({...formData, descricao: e.target.value})}
               />
             </div>
             
@@ -165,30 +197,30 @@ export default function AdminPresentes() {
               {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? (
                 <CldUploadWidget 
                   uploadPreset="invite_preset"
-                  signatureEndpoint={undefined} // Garante modo não assinado
                   onSuccess={(result: any) => {
                     const url = result?.info?.secure_url;
                     if (url) {
-                      setNewItem(prev => ({...prev, imagem_url: url}));
-                      console.log('URL da Imagem salva:', url);
+                      setFormData(prev => ({...prev, imagem_url: url}));
                     }
                   }}
                 >
                   {({ open }) => (
                     <button type="button" className={styles.uploadBtn} onClick={() => open()}>
-                      {newItem.imagem_url ? 'Foto Carregada' : 'Subir Foto'}
+                      {formData.imagem_url ? 'Alterar Foto' : 'Subir Foto'}
                     </button>
                   )}
                 </CldUploadWidget>
               ) : (
-                <p className={styles.error}>Aviso: Configure o Cloudinary no .env para habilitar upload.</p>
+                <p className={styles.error}>Configure o Cloudinary para habilitar upload.</p>
               )}
-              {newItem.imagem_url && <p className={styles.urlLabel}>URL detectada: {newItem.imagem_url.substring(0, 40)}...</p>}
+              {formData.imagem_url && <p className={styles.urlLabel}>Foto selecionada.</p>}
             </div>
 
             <div className={styles.actions}>
-              <button type="submit" className={styles.saveBtn}>Salvar Presente</button>
-              <button type="button" className={styles.cancelBtn} onClick={() => setIsAdding(false)}>Cancelar</button>
+              <button type="submit" className={styles.saveBtn}>
+                {editingItem ? 'Salvar Alterações' : 'Criar Presente'}
+              </button>
+              <button type="button" className={styles.cancelBtn} onClick={resetForm}>Cancelar</button>
             </div>
           </form>
         </section>
@@ -203,6 +235,7 @@ export default function AdminPresentes() {
               <tr>
                 <th>Item</th>
                 <th>Preço</th>
+                <th>Qtd Total</th>
                 <th>Status</th>
                 <th>Ações</th>
               </tr>
@@ -217,14 +250,18 @@ export default function AdminPresentes() {
                     </div>
                   </td>
                   <td>{Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                  <td>{item.quantidade_total}</td>
                   <td>
                     <span className={`${styles.statusBadge} ${styles[item.status]}`}>
                       {item.status}
                     </span>
                   </td>
                   <td className={styles.actionsCell}>
+                    <button onClick={() => handleEditClick(item)}>
+                      Editar
+                    </button>
                     <button onClick={() => handleToggleStatus(item.id, item.status)}>
-                      Alternar Status
+                      Pausar/Ativar
                     </button>
                     <button className={styles.deleteBtn} onClick={() => handleDelete(item.id)}>Remover</button>
                   </td>

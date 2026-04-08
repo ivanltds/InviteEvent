@@ -10,8 +10,15 @@
 
 ### Project Structure
 - `docs/stories/epics/` — Epic directories with INDEX.md + stories
+- `app/(public)/` — Landing Page (Sales)
+- `app/(public)/inv/[slug]` — Private Invitation Experience
 - `.aiox-core/development/templates/` — Story templates
 - `.aiox-core/development/checklists/` — Draft checklists
+
+### Strategic Pivot: Event-as-a-Service (SaaS)
+- Core route (`/`) is for platform marketing.
+- Client events are encapsulated in `/inv/[slug]`.
+- Future state: Dynamic `evento_id` context in all services.
 
 ### Git Rules
 - NEVER push — delegate to @devops

@@ -1,11 +1,12 @@
 # EPIC-011: Abstração de Core para Plataforma (Event-as-a-Service)
 
-## Status: ⚪ Draft
+## Status: 🟡 IN_PROGRESS
 
 ## Descrição
 Este épico foca em "des-casamentizar" o motor do sistema, permitindo que o InviteEventAI suporte múltiplos eventos simultâneos e diferentes tipos de celebração (aniversários, chás, festas).
 
 ## Histórias (Stories)
+- [x] **STORY-037:** Landing Page de Vendas e Abstração de Rotas. -> **DONE**
 - [ ] **STORY-032:** Migração de Singleton para Multi-tenancy (Tabela `eventos`).
 - [ ] **STORY-033:** Abstração de Entidades Principais via Metadados JSONB.
 - [ ] **STORY-034:** Feature Flags por Evento (Ativação Modular de Recursos).

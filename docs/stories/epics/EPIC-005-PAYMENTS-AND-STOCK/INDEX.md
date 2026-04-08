@@ -10,6 +10,7 @@ Este épico foca na robustez do sistema de presentes, integrando pagamentos via 
 - [x] **STORY-018:** Gestão de "estoque" de presentes (quantidade_total) -> **DONE**
 - [x] **STORY-019:** Fluxo de Pagamento via PIX (anexar comprovante) -> **DONE**
 - [x] **STORY-020:** Acesso Público à Lista de Presentes (UX Híbrida) -> **DONE**
+- [x] **STORY-038:** Edição de Quantidade e Detalhes de Presentes (Admin) -> **DONE**
 
 ## QA Results
 - **STORY-016:** PASS (Painel Admin de Status OK)

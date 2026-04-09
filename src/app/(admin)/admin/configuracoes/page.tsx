@@ -6,10 +6,12 @@ import { configService } from '@/lib/services/configService';
 import { Configuracao } from '@/lib/types/database';
 import FAQManager from '@/components/admin/FAQManager';
 import ConfigPreview from '@/components/admin/ConfigPreview';
+import TeamManagement from '@/components/admin/TeamManagement';
+import { useEvent } from '@/lib/contexts/EventContext';
 
-const DEFAULT_CONFIG: Omit<Configuracao, 'id'> = {
-  noiva_nome: 'Layslla',
-  noivo_nome: 'Marcus',
+const DEFAULT_CONFIG: Omit<Configuracao, 'id' | 'evento_id'> = {
+  noiva_nome: 'Noiva',
+  noivo_nome: 'Noivo',
   data_casamento: '2026-06-13',
   prazo_rsvp: '2026-05-13',
   horario_cerimonia: '16:00',
@@ -28,9 +30,9 @@ const DEFAULT_CONFIG: Omit<Configuracao, 'id'> = {
   historia_subtitulo: 'O Início de Tudo',
   historia_texto: 'Tudo começou através de um amigo distante do primo da noiva...',
   historia_conclusao: 'O dia 13 de junho não é apenas uma data qualquer. Foi o dia em que o pedido de namoro aconteceu, e agora, será o dia em que diremos "sim" para o resto de nossas vidas.',
-  noiva_bio: 'Intensa, forte e decidida.',
-  noivo_bio: 'Paciente, leve e equilibrado.',
-  noivos_conclusao: 'Nossas diferenças não nos afastam, mas nos complementam de forma única. Onde há intensidade, há também paciência. E é justamente nessa união perfeita de temperamentos que encontramos o amor verdadeiro.',
+  noiva_bio: 'Bio da Noiva...',
+  noivo_bio: 'Bio do Noivo...',
+  noivos_conclusao: 'Mensagem Final do Casal...',
   bg_primary: '#fdfbf7',
   text_main: '#4a4a4a',
   accent_color: '#8fa89b',
@@ -39,53 +41,115 @@ const DEFAULT_CONFIG: Omit<Configuracao, 'id'> = {
 };
 
 export default function AdminConfig() {
+  const { currentEvent, loading: eventLoading } = useEvent();
   const [config, setConfig] = useState<Configuracao | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const fetchConfig = async () => {
-    setLoading(true);
-    const data = await configService.getConfig();
-    if (data) {
-      setConfig(data);
-    } else {
-      // Initialize with default if not exists
-      await configService.updateConfig(DEFAULT_CONFIG);
-      const newData = await configService.getConfig();
-      setConfig(newData);
+    if (!currentEvent) {
+      console.log('[Config] Nenhum evento selecionado.');
+      return;
     }
-    setLoading(false);
+    
+    setLoading(true);
+    try {
+      console.log('[Config] Buscando dados para evento:', currentEvent.id);
+      const data = await configService.getConfig(currentEvent.id);
+      
+      if (data) {
+        console.log('[Config] Dados carregados com sucesso.');
+        setConfig(data);
+      } else {
+        console.warn('[Config] Registro não encontrado. Inicializando padrão...');
+        const newPayload = { 
+          ...DEFAULT_CONFIG, 
+          evento_id: currentEvent.id,
+          noiva_nome: 'Noiva',
+          noivo_nome: 'Noivo'
+        };
+        
+        const { success, error } = await configService.updateConfig(currentEvent.id, newPayload);
+        
+        if (success) {
+          console.log('[Config] Registro inicial criado. Buscando novamente...');
+          const newData = await configService.getConfig(currentEvent.id);
+          if (newData) {
+            setConfig(newData);
+          } else {
+            console.error('[Config] Falha ao recuperar registro recém-criado. RLS pode estar bloqueando SELECT.');
+            throw new Error('Permissão de leitura negada para o novo registro.');
+          }
+        } else {
+          console.error('[Config] Erro ao criar registro inicial:', error);
+          throw error || new Error('Falha na criação do registro de configuração.');
+        }
+      }
+    } catch (err: any) {
+      console.error('[Config] Erro crítico:', err);
+      alert('Erro ao carregar configurações: ' + (err.message || 'Erro desconhecido'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    fetchConfig();
-  }, []);
+    if (currentEvent) {
+      fetchConfig();
+    } else if (!eventLoading) {
+      setLoading(false);
+    }
+  }, [currentEvent, eventLoading]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!config) return;
+    if (!config || !currentEvent) return;
 
     setSaving(true);
-    // Remove metadata fields before update
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, created_at, updated_at, ...updateData } = config;
-    const { success, error } = await configService.updateConfig(updateData);
+    try {
+      // Remove metadata fields before update
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id, created_at, updated_at, ...updateData } = config;
+      const { success, error } = await configService.updateConfig(currentEvent.id, updateData);
 
-    if (success) {
-      alert('Configurações salvas com sucesso!');
-    } else {
-      console.error('Erro ao salvar:', error);
-      alert('Erro ao salvar configurações.');
+      if (success) {
+        alert('Configurações salvas com sucesso!');
+      } else {
+        console.error('Erro ao salvar:', error);
+        alert('Erro ao salvar configurações: ' + error?.message);
+      }
+    } catch (err: any) {
+      alert('Erro inesperado: ' + err.message);
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
-  if (loading || !config) return <div className={styles.loading}>Carregando configurações...</div>;
+  if (eventLoading || (loading && currentEvent)) return <div className={styles.loading}>Carregando configurações...</div>;
+
+  if (!currentEvent) {
+    return (
+      <main className={styles.container}>
+        <h1>Configurações</h1>
+        <p>Selecione um evento para gerenciar as configurações.</p>
+      </main>
+    );
+  }
+
+  if (!config) {
+    return (
+      <main className={styles.container}>
+        <h1>Configurações</h1>
+        <p>Erro ao carregar as configurações do evento. Por favor, tente novamente.</p>
+        <button onClick={fetchConfig} className={styles.saveBtn}>Tentar Novamente</button>
+      </main>
+    );
+  }
 
   return (
     <main className={styles.container}>
       <header className={styles.header}>
-        <h1>Configurações do Evento</h1>
+        <h1>Configurações do Evento: {currentEvent.nome}</h1>
         <p>Ajuste a identidade visual e as informações do seu grande dia.</p>
       </header>
 
@@ -403,7 +467,12 @@ export default function AdminConfig() {
 
           <section className={styles.section} style={{ marginTop: '3rem' }}>
             <h2>Perguntas Frequentes (FAQ)</h2>
-            <FAQManager />
+            <FAQManager eventoId={currentEvent.id} />
+          </section>
+
+          <section className={styles.section} style={{ marginTop: '3rem' }}>
+            <h2>Equipe de Organizadores</h2>
+            <TeamManagement />
           </section>
         </div>
 

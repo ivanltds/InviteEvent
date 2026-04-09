@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import styles from './AdminPresentes.module.css';
 import { supabase } from '@/lib/supabase';
 import { CldUploadWidget } from 'next-cloudinary';
+import { useEvent } from '@/lib/contexts/EventContext';
 
 interface Presente {
   id: string;
@@ -28,6 +29,7 @@ interface ComprovanteJoin {
 }
 
 export default function AdminPresentes() {
+  const { currentEvent, loading: eventLoading } = useEvent();
   const [activeTab, setActiveTab] = useState<'catalogo' | 'recebidos'>('catalogo');
   const [presentes, setPresentes] = useState<Presente[]>([]);
   const [comprovantes, setComprovantes] = useState<ComprovanteJoin[]>([]);
@@ -44,10 +46,12 @@ export default function AdminPresentes() {
   });
 
   const fetchPresentes = async () => {
+    if (!currentEvent) return;
     setLoading(true);
     const { data, error } = await supabase
       .from('presentes')
       .select('*')
+      .eq('evento_id', currentEvent.id)
       .order('created_at', { ascending: false });
 
     if (data && !error) {
@@ -57,10 +61,12 @@ export default function AdminPresentes() {
   };
 
   const fetchComprovantes = async () => {
+    if (!currentEvent) return;
     setLoading(true);
     const { data, error } = await supabase
       .from('comprovantes')
-      .select('*, presente:presentes(nome), convite:convites(nome_principal)')
+      .select('*, presente:presentes!inner(nome, evento_id), convite:convites(nome_principal)')
+      .eq('presente.evento_id', currentEvent.id)
       .order('created_at', { ascending: false });
 
     if (data && !error) {
@@ -75,7 +81,7 @@ export default function AdminPresentes() {
     } else {
       fetchComprovantes();
     }
-  }, [activeTab]);
+  }, [activeTab, currentEvent]);
 
   const resetForm = () => {
     setFormData({ nome: '', preco: 0, descricao: '', imagem_url: '', status: 'disponivel', quantidade_total: 1 });
@@ -98,6 +104,7 @@ export default function AdminPresentes() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentEvent) return;
     setLoading(true);
     
     const qtyTotal = Number(formData.quantidade_total);
@@ -115,7 +122,8 @@ export default function AdminPresentes() {
       descricao: formData.descricao.trim(),
       imagem_url: formData.imagem_url,
       status: newStatus,
-      quantidade_total: qtyTotal
+      quantidade_total: qtyTotal,
+      evento_id: currentEvent.id
     };
 
     if (editingItem) {
@@ -195,10 +203,21 @@ export default function AdminPresentes() {
     }
   };
 
+  if (eventLoading) return <div className={styles.loading}>Carregando...</div>;
+
+  if (!currentEvent) {
+    return (
+      <main className={styles.adminMain}>
+        <h1>Presentes</h1>
+        <p>Selecione um evento para gerenciar os presentes.</p>
+      </main>
+    );
+  }
+
   return (
     <main className={styles.adminMain}>
       <header className={styles.adminHeader}>
-        <h1>Gestão de Presentes</h1>
+        <h1>Gestão de Presentes: {currentEvent.nome}</h1>
         <button className={styles.addBtn} onClick={() => setIsAdding(true)}>Novo Item</button>
       </header>
 

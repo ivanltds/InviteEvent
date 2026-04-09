@@ -52,19 +52,6 @@ describe('authService - STORY-039 (Supabase Auth)', () => {
     expect(global.fetch).toHaveBeenCalledWith('/api/auth/session', expect.anything());
   });
 
-  it('deve realizar o "claim" automático se o evento não tiver dono', async () => {
-    (supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({
-      data: { user: { id: 'new-owner-id' }, session: { access_token: 'tok' } },
-      error: null
-    });
-    (global.fetch as jest.Mock).mockResolvedValue({ ok: true });
-
-    await authService.login(MOCK_EMAIL, MOCK_PASSWORD);
-
-    // Deve tentar atualizar configuracoes onde user_id is null
-    expect(supabase.from).toHaveBeenCalledWith('configuracoes');
-  });
-
   it('deve retornar falso em caso de erro no Supabase', async () => {
     (supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({
       data: { user: null, session: null },

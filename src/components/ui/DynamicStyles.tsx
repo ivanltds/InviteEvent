@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 export default function DynamicStyles() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [styles, setStyles] = useState({
     bg: '#fdfbf7',
     text: '#4a4a4a',
@@ -15,10 +18,22 @@ export default function DynamicStyles() {
   useEffect(() => {
     async function fetchConfig() {
       try {
+        // 1. Identificar Slug (Path: /inv/[slug] ou Query: ?invite=slug)
+        const pathSlug = pathname?.startsWith('/inv/') ? pathname.split('/')[2] : null;
+        const querySlug = searchParams?.get('invite');
+        const activeSlug = pathSlug || querySlug;
+
+        if (!activeSlug) return;
+
+        // 2. Buscar o evento_id do convite
+        const { data: invite } = await supabase.from('convites').select('evento_id').eq('slug', activeSlug).maybeSingle();
+        if (!invite) return;
+
+        // 3. Buscar a config do evento
         const query = supabase
           .from('configuracoes')
           .select('bg_primary, text_main, accent_color, font_cursive, font_serif')
-          .eq('id', 1);
+          .eq('evento_id', invite.evento_id);
         
         const { data, error } = await query.maybeSingle();
         

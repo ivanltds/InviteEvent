@@ -66,32 +66,17 @@ export default function PresentesPage() {
       setIsInvited(true);
       setInvite(inviteData as Convite);
 
-      // 2. Buscar configurações do casamento
-      let configData: Config | null = null;
-      
-      // Tentar busca direta (ID 1 ou primeiro registro)
-      const { data: directConfig, error: configError } = await supabase
-        .from('configuracoes')
-        .select('pix_chave, pix_banco, pix_nome, pix_tipo')
-        .limit(1)
-        .maybeSingle();
-
-      if (configError) {
-        console.warn('Erro ao buscar config, tentando fallback:', configError);
-      }
-
-      if (directConfig) {
-        configData = directConfig as Config;
-      } else {
-        // Fallback emergencial: Se o RLS bloquear, tentamos usar o ID 1 explicitamente via RPC no futuro
-        // Por enquanto, apenas avisamos e deixamos o estado carregar para não travar a tela
-        console.warn('RLS pode estar bloqueando a leitura da configuração.');
-      }
-
-      const [presentesRes] = await Promise.all([
+      // 2. Buscar configurações e presentes para este evento específico
+      const [configRes, presentesRes] = await Promise.all([
+        supabase
+          .from('configuracoes')
+          .select('pix_chave, pix_banco, pix_nome, pix_tipo')
+          .eq('evento_id', inviteData.evento_id)
+          .maybeSingle(),
         supabase
           .from('presentes')
           .select('*')
+          .eq('evento_id', inviteData.evento_id)
           .neq('status', 'pausado')
           .order('preco', { ascending: true })
       ]);
@@ -100,10 +85,10 @@ export default function PresentesPage() {
         setPresentes(presentesRes.data as Presente[]);
       }
       
-      if (configData) {
-        setConfig(configData);
+      if (configRes.data) {
+        setConfig(configRes.data as Config);
       } else {
-        console.error('Nenhuma configuração encontrada no banco de dados.');
+        console.error('Nenhuma configuração encontrada para este evento.');
       }
       
       setLoading(false);

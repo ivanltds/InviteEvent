@@ -1,6 +1,23 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AdminConvidados from '../page';
 import { inviteService } from '@/lib/services/inviteService';
+import { configService } from '@/lib/services/configService';
+
+// Mock do configService
+jest.mock('@/lib/services/configService', () => ({
+  configService: {
+    getConfig: jest.fn().mockResolvedValue({ whatsapp_template: 'Olá {nome}' }),
+  },
+}));
+
+jest.mock('@/lib/contexts/EventContext', () => ({
+  useEvent: () => ({
+    currentEvent: { id: 'e1', nome: 'Evento Teste', slug: 'evento-teste' },
+    events: [{ id: 'e1', nome: 'Evento Teste', slug: 'evento-teste' }],
+    loading: false,
+    userProfile: { id: 'u1', is_master: true }
+  }),
+}));
 
 jest.mock('@/lib/services/inviteService', () => ({
   inviteService: {

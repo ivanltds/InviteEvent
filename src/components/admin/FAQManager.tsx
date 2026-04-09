@@ -9,19 +9,22 @@ interface FAQ {
   pergunta: string;
   resposta: string;
   ordem: number;
+  evento_id?: string;
 }
 
-export default function FAQManager() {
+export default function FAQManager({ eventoId }: { eventoId?: string }) {
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ pergunta: '', resposta: '', ordem: 0 });
 
   const fetchFaqs = async () => {
+    if (!eventoId) return;
     setLoading(true);
     const { data } = await supabase
       .from('faq')
       .select('*')
+      .eq('evento_id', eventoId)
       .order('ordem', { ascending: true });
     
     if (data) setFaqs(data);
@@ -29,18 +32,17 @@ export default function FAQManager() {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchFaqs();
-    }, 0);
-    return () => clearTimeout(timer);
-  }, []);
+    fetchFaqs();
+  }, [eventoId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!eventoId) return;
+
     if (editingId) {
       await supabase.from('faq').update(formData).eq('id', editingId);
     } else {
-      await supabase.from('faq').insert([formData]);
+      await supabase.from('faq').insert([{ ...formData, evento_id: eventoId }]);
     }
     setFormData({ pergunta: '', resposta: '', ordem: 0 });
     setEditingId(null);
@@ -58,6 +60,8 @@ export default function FAQManager() {
       fetchFaqs();
     }
   };
+
+  if (!eventoId) return <p>Selecione um evento para gerenciar o FAQ.</p>;
 
   return (
     <div className={styles.managerContainer}>

@@ -2,41 +2,26 @@
 
 import { useState, useEffect } from 'react';
 import styles from "./Historia.module.css";
-import { supabase } from '@/lib/supabase';
+import { Configuracao } from '@/lib/types/database';
 
-export default function Historia() {
+export default function Historia({ config }: { config: Configuracao }) {
   const [content, setContent] = useState({
-    titulo: 'Nossa História',
-    subtitulo: 'O Início de Tudo',
-    texto: 'Tudo começou através de um amigo distante do primo da noiva. O que era para ser apenas um encontro casual se transformou no momento mais importante das nossas vidas. Foi amor à primeira vista. A conexão foi tão forte e imediata que, pouco tempo depois, já estávamos namorando.',
-    conclusao: 'O dia 13 de junho não é apenas uma data qualquer. Foi o dia em que o pedido de namoro aconteceu, e agora, será o dia em que diremos "sim" para o resto de nossas vidas.'
+    titulo: config.historia_titulo || 'Nossa História',
+    subtitulo: config.historia_subtitulo || 'O Início de Tudo',
+    texto: config.historia_texto || 'Tudo começou através de um amigo distante do primo da noiva. O que era para ser apenas um encontro casual se transformou no momento mais importante das nossas vidas. Foi amor à primeira vista. A conexão foi tão forte e imediata que, pouco tempo depois, já estávamos namorando.',
+    conclusao: config.historia_conclusao || 'O dia 13 de junho não é apenas uma data qualquer. Foi o dia em que o pedido de namoro aconteceu, e agora, será o dia em que diremos "sim" para o resto de nossas vidas.'
   });
 
   useEffect(() => {
-    async function fetchHistory() {
-      try {
-        const { data, error } = await supabase
-          .from('configuracoes')
-          .select('historia_titulo, historia_subtitulo, historia_texto, historia_conclusao')
-          .eq('id', 1)
-          .maybeSingle();
-
-        if (error) throw error;
-
-        if (data) {
-          setContent({
-            titulo: data.historia_titulo || 'Nossa História',
-            subtitulo: data.historia_subtitulo || 'O Início de Tudo',
-            texto: data.historia_texto || content.texto,
-            conclusao: data.historia_conclusao || content.conclusao
-          });
-        }
-      } catch (e) {
-        console.error('Erro ao buscar história (usando fallback):', e);
-      }
+    if (config) {
+      setContent({
+        titulo: config.historia_titulo || 'Nossa História',
+        subtitulo: config.historia_subtitulo || 'O Início de Tudo',
+        texto: config.historia_texto || content.texto,
+        conclusao: config.historia_conclusao || content.conclusao
+      });
     }
-    fetchHistory();
-  }, []);
+  }, [config]);
 
   return (
     <section className={styles.section} id="historia">

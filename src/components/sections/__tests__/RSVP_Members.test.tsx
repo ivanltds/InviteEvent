@@ -45,9 +45,10 @@ describe('RSVP Component with Members', () => {
           select: jest.fn().mockReturnThis(),
           eq: jest.fn().mockReturnThis(),
           maybeSingle: jest.fn().mockResolvedValue({ 
-            data: { id: 'c1', nome_principal: 'Família Silva', limite_pessoas: 2, slug: 'teste-membros' }, 
+            data: { id: 'c1', nome_principal: 'Família Silva', limite_pessoas: 2, slug: 'teste-membros', evento_id: 'e1' }, 
             error: null 
-          })
+          }),
+          single: jest.fn().mockResolvedValue({ data: { id: 'c1', evento_id: 'e1' }, error: null })
         };
       }
       if (table === 'convidados_membros') {
@@ -66,6 +67,7 @@ describe('RSVP Component with Members', () => {
           order: jest.fn().mockReturnThis(),
           limit: jest.fn().mockReturnThis(),
           maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+          single: jest.fn().mockResolvedValue({ data: null, error: null }),
           insert: jest.fn().mockResolvedValue({ error: null })
         };
       }
@@ -73,7 +75,8 @@ describe('RSVP Component with Members', () => {
         insert: jest.fn().mockResolvedValue({ error: null }),
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null })
+        maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+        single: jest.fn().mockResolvedValue({ data: null, error: null })
       };
     });
   });

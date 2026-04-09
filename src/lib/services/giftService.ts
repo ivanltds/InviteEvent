@@ -2,11 +2,14 @@ import { supabase } from '@/lib/supabase';
 import { Presente } from '@/lib/types/database';
 
 export const giftService = {
-  async getAllGifts(): Promise<Presente[]> {
-    const { data, error } = await supabase
-      .from('presentes')
-      .select('*')
-      .order('preco', { ascending: true });
+  async getAllGifts(eventoId?: string): Promise<Presente[]> {
+    let query = supabase.from('presentes').select('*');
+    
+    if (eventoId) {
+      query = query.eq('evento_id', eventoId);
+    }
+
+    const { data, error } = await query.order('preco', { ascending: true });
 
     if (error) {
       console.error('Error fetching gifts:', error);

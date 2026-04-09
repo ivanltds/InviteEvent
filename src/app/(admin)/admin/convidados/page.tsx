@@ -6,8 +6,10 @@ import { inviteService, InviteWithRSVP } from '@/lib/services/inviteService';
 import { InviteType, Configuracao } from '@/lib/types/database';
 import { generateWhatsappLink } from '@/lib/utils/whatsapp';
 import { configService } from '@/lib/services/configService';
+import { useEvent } from '@/lib/contexts/EventContext';
 
 export default function AdminConvidados() {
+  const { currentEvent, loading: eventLoading } = useEvent();
   const [invites, setInvites] = useState<InviteWithRSVP[]>([]);
   const [config, setConfig] = useState<Configuracao | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,10 +24,11 @@ export default function AdminConvidados() {
   const [members, setMembers] = useState<{ id?: string; nome: string }[]>([]);
 
   const fetchData = async () => {
+    if (!currentEvent) return;
     setLoading(true);
     const [allInvites, configData] = await Promise.all([
-      inviteService.getAllInvites(),
-      configService.getConfig()
+      inviteService.getAllInvites(currentEvent.id),
+      configService.getConfig(currentEvent.id)
     ]);
     setInvites(allInvites);
     setConfig(configData);
@@ -34,7 +37,7 @@ export default function AdminConvidados() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [currentEvent]);
 
   const handleSendWhatsapp = (invite: InviteWithRSVP) => {
     if (!config) return;
@@ -58,16 +61,19 @@ export default function AdminConvidados() {
 
   const handleAddInvite = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentEvent) return;
+
     const slug = inviteService.generateObfuscatedSlug(formData.nome_principal);
 
     const { success, error } = await inviteService.createInvite({
       ...formData,
+      evento_id: currentEvent.id,
       slug
     });
 
     if (success) {
       // Buscar o convite recém criado para obter o ID
-      const all = await inviteService.getAllInvites();
+      const all = await inviteService.getAllInvites(currentEvent.id);
       const newInvite = all.find(i => i.slug === slug);
       
       if (newInvite && members.length > 0) {
@@ -75,7 +81,7 @@ export default function AdminConvidados() {
       }
 
       setIsAdding(false);
-      setFormData({ nome_principal: '', limite_pessoas: 1, tipo: 'individual' });
+      setFormData({ nome_principal: '', limite_pessoas: 1, tipo: 'individual', telefone: '' });
       setMembers([]);
       fetchData();
     } else {
@@ -94,7 +100,7 @@ export default function AdminConvidados() {
         await inviteService.saveMembers(editingInvite.id, members);
       }
       setEditingInvite(null);
-      setFormData({ nome_principal: '', limite_pessoas: 1, tipo: 'individual' });
+      setFormData({ nome_principal: '', limite_pessoas: 1, tipo: 'individual', telefone: '' });
       setMembers([]);
       fetchData();
     } else {
@@ -201,10 +207,21 @@ export default function AdminConvidados() {
     document.body.removeChild(link);
   };
 
+  if (eventLoading || (loading && currentEvent)) return <div className={styles.loading}>Carregando convidados...</div>;
+
+  if (!currentEvent) {
+    return (
+      <main className={styles.adminMain}>
+        <h1>Convidados</h1>
+        <p>Selecione um evento para gerenciar os convidados.</p>
+      </main>
+    );
+  }
+
   return (
     <main className={styles.adminMain}>
       <header className={styles.adminHeader}>
-        <h1>Gestão de Convidados</h1>
+        <h1>Gestão de Convidados: {currentEvent.nome}</h1>
         <div className={styles.headerActions}>
           <button className={styles.exportBtn} onClick={exportToCSV}>Exportar CSV</button>
           <button className={styles.addBtn} onClick={() => setIsAdding(true)}>Novo Convite</button>

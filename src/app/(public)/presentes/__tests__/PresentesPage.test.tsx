@@ -32,29 +32,26 @@ describe('PresentesPage Public', () => {
     
     // Mock do Supabase para carregar dados
     (supabase.from as jest.Mock).mockImplementation((table) => {
+      const mockChain: any = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        neq: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        maybeSingle: jest.fn(),
+      };
+
       if (table === 'convites') {
-        return {
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          maybeSingle: jest.fn().mockResolvedValue({ data: { id: '1' }, error: null }),
-        };
+        mockChain.maybeSingle.mockResolvedValue({ data: { id: '1', evento_id: 'e1' }, error: null });
+      } else if (table === 'presentes') {
+        mockChain.maybeSingle.mockResolvedValue({ data: mockPresentes, error: null });
+        mockChain.then = (fn: any) => Promise.resolve(fn({ data: mockPresentes, error: null }));
+      } else if (table === 'configuracoes') {
+        mockChain.maybeSingle.mockResolvedValue({ data: mockConfig, error: null });
+        mockChain.then = (fn: any) => Promise.resolve(fn({ data: mockConfig, error: null }));
       }
-      if (table === 'presentes') {
-        return {
-          select: jest.fn().mockReturnThis(),
-          neq: jest.fn().mockReturnThis(),
-          order: jest.fn().mockResolvedValue({ data: mockPresentes, error: null }),
-        };
-      }
-      if (table === 'configuracoes') {
-        return {
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          limit: jest.fn().mockReturnThis(),
-          maybeSingle: jest.fn().mockResolvedValue({ data: mockConfig, error: null }),
-        };
-      }
-      return {};
+
+      return mockChain;
     });
   });
 

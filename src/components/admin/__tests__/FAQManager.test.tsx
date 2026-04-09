@@ -13,6 +13,7 @@ const mockUpdate = jest.fn().mockReturnThis();
 const mockDelete = jest.fn().mockReturnThis();
 const mockEq = jest.fn().mockResolvedValue({ error: null });
 const mockSelect = jest.fn().mockImplementation(() => ({
+  eq: jest.fn().mockReturnThis(),
   order: jest.fn().mockResolvedValue({ data: mockFaqs, error: null }),
 }));
 
@@ -35,7 +36,7 @@ describe('FAQManager Component Fixed', () => {
   });
 
   test('deve listar FAQs ao carregar', async () => {
-    render(<FAQManager />);
+    render(<FAQManager eventoId="e1" />);
     
     await waitFor(() => {
       expect(screen.getByText(/P1/)).toBeInTheDocument();
@@ -44,7 +45,7 @@ describe('FAQManager Component Fixed', () => {
   });
 
   test('deve permitir adicionar nova pergunta', async () => {
-    render(<FAQManager />);
+    render(<FAQManager eventoId="e1" />);
     
     fireEvent.change(screen.getByPlaceholderText('Pergunta'), { target: { value: 'Nova P' } });
     fireEvent.change(screen.getByPlaceholderText('Resposta'), { target: { value: 'Nova R' } });
@@ -53,12 +54,12 @@ describe('FAQManager Component Fixed', () => {
     fireEvent.click(screen.getByText('Adicionar'));
     
     await waitFor(() => {
-      expect(mockInsert).toHaveBeenCalledWith([{ pergunta: 'Nova P', resposta: 'Nova R', ordem: 3 }]);
+      expect(mockInsert).toHaveBeenCalledWith([{ pergunta: 'Nova P', resposta: 'Nova R', ordem: 3, evento_id: 'e1' }]);
     });
   });
 
   test('deve permitir editar uma pergunta existente', async () => {
-    render(<FAQManager />);
+    render(<FAQManager eventoId="e1" />);
     
     await waitFor(() => screen.getByText(/P1/));
     
@@ -79,7 +80,7 @@ describe('FAQManager Component Fixed', () => {
   });
 
   test('deve permitir excluir uma pergunta', async () => {
-    render(<FAQManager />);
+    render(<FAQManager eventoId="e1" />);
     
     await waitFor(() => screen.getByText(/P1/));
     
@@ -93,3 +94,4 @@ describe('FAQManager Component Fixed', () => {
     });
   });
 });
+

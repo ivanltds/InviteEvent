@@ -2,6 +2,21 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import AdminConfig from '../configuracoes/page';
 
+// Mock do FAQManager
+jest.mock('@/components/admin/FAQManager', () => () => <div data-testid="faq-manager">FAQ</div>);
+// Mock do TeamManagement
+jest.mock('@/components/admin/TeamManagement', () => () => <div data-testid="team-management">Team</div>);
+
+// Mock do useEvent
+jest.mock('@/lib/contexts/EventContext', () => ({
+  useEvent: jest.fn(() => ({
+    currentEvent: { id: 'e1', nome: 'Evento Teste', slug: 'evento-teste' },
+    events: [{ id: 'e1', nome: 'Evento Teste', slug: 'evento-teste' }],
+    loading: false,
+    userProfile: { id: 'u1', is_master: true }
+  })),
+}));
+
 // Mock do Supabase
 jest.mock('@/lib/supabase', () => ({
   supabase: {

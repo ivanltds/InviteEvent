@@ -20,15 +20,20 @@ export const inviteService = {
     return `${base}-${suffix}`;
   },
 
-  async getAllInvites(): Promise<InviteWithRSVP[]> {
-    const { data, error } = await supabase
+  async getAllInvites(eventoId?: string): Promise<InviteWithRSVP[]> {
+    let query = supabase
       .from('convites')
       .select(`
         *,
         rsvp (*),
         membros:convidados_membros (*)
-      `)
-      .order('created_at', { ascending: false });
+      `);
+    
+    if (eventoId) {
+      query = query.eq('evento_id', eventoId);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching invites:', error);

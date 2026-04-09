@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 
 // Mock consistente para o encadeamento do Supabase
 const mockMaybeSingle = jest.fn();
+const mockSingle = jest.fn();
 
 jest.mock('@/lib/supabase', () => ({
   supabase: {
@@ -19,7 +20,8 @@ jest.mock('@/lib/supabase', () => ({
         return {
           select: jest.fn().mockReturnThis(),
           eq: jest.fn().mockReturnThis(),
-          maybeSingle: mockMaybeSingle
+          maybeSingle: mockMaybeSingle,
+          single: mockSingle
         };
       }
       if (table === 'convidados_membros') {
@@ -38,13 +40,15 @@ jest.mock('@/lib/supabase', () => ({
           order: jest.fn().mockReturnThis(),
           limit: jest.fn().mockReturnThis(),
           maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+          single: jest.fn().mockResolvedValue({ data: null, error: null }),
           insert: jest.fn().mockResolvedValue({ error: null })
         };
       }
       return {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null })
+        maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+        single: jest.fn().mockResolvedValue({ data: null, error: null })
       };
     }),
   },
@@ -61,6 +65,7 @@ describe('RSVP Component (Restricted Access)', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSingle.mockResolvedValue({ data: { id: 'c1', evento_id: 'e1' }, error: null });
     mockMaybeSingle.mockResolvedValue({ 
       data: { prazo_rsvp: '2026-06-13' }, 
       error: null 

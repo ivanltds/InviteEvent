@@ -1,20 +1,17 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import Sidebar from '../Sidebar';
-import { supabase } from '@/lib/supabase';
+import { useEvent } from '@/lib/contexts/EventContext';
+import { configService } from '@/lib/services/configService';
 
-// Mock do Supabase para retornar nomes customizados
-jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    from: jest.fn(() => ({
-      select: jest.fn(() => ({
-        eq: jest.fn(() => ({
-          maybeSingle: jest.fn(() => Promise.resolve({ 
-            data: { noiva_nome: 'Noiva Teste', noivo_nome: 'Noivo Teste' }, 
-            error: null 
-          })),
-        })),
-      })),
-    })),
+// Mock do EventContext
+jest.mock('@/lib/contexts/EventContext', () => ({
+  useEvent: jest.fn(),
+}));
+
+// Mock do configService
+jest.mock('@/lib/services/configService', () => ({
+  configService: {
+    getConfig: jest.fn(),
   },
 }));
 
@@ -24,11 +21,23 @@ jest.mock('next/navigation', () => ({
 }));
 
 describe('Admin Sidebar Component (TDD)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (useEvent as jest.Mock).mockReturnValue({
+      currentEvent: { id: 'e1', nome: 'Evento Teste', slug: 'evento-teste' },
+      events: [{ id: 'e1', nome: 'Evento Teste', slug: 'evento-teste' }],
+      loading: false,
+      userProfile: { id: 'u1', is_master: true }
+    });
+    (configService.getConfig as jest.Mock).mockResolvedValue({ 
+      noiva_nome: 'Noiva Teste', 
+      noivo_nome: 'Noivo Teste' 
+    });
+  });
+
   it('should display the couple initials or names from database instead of hardcoded L & M', async () => {
     render(<Sidebar />);
     
-    // Esperamos que o componente busque no banco e exiba "N & N" ou os nomes reais
-    // Este teste deve FALHAR inicialmente porque o componente tem "L & M" fixo.
     await waitFor(() => {
       const initials = screen.getByText(/N & N/i);
       expect(initials).toBeInTheDocument();

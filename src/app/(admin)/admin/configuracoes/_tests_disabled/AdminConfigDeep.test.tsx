@@ -3,6 +3,18 @@ import '@testing-library/jest-dom';
 import AdminConfig from '../page';
 import { configService } from '@/lib/services/configService';
 
+// Mock do useEvent
+jest.mock('@/lib/contexts/EventContext', () => ({
+  useEvent: () => ({
+    currentEvent: { id: 'e1', nome: 'Evento Teste', slug: 'evento-teste' },
+    events: [{ id: 'e1', nome: 'Evento Teste', slug: 'evento-teste' }],
+    loading: false,
+    userProfile: { id: 'u1', is_master: true },
+    refreshEvents: jest.fn(),
+    setCurrentEvent: jest.fn(),
+  }),
+}));
+
 jest.mock('@/lib/services/configService', () => ({
   configService: {
     getConfig: jest.fn(),
@@ -30,14 +42,18 @@ describe('AdminConfig Deep Fields Fixed', () => {
 
   test('deve permitir alterar todos os textos usando labels exatos', async () => {
     render(<AdminConfig />);
+    
+    // Esperar sair do loading
+    await waitFor(() => expect(screen.queryByText(/Carregando configurações/i)).not.toBeInTheDocument());
+    
     // Nova label simplificada para Título (dentro da seção História)
-    await waitFor(() => screen.getByLabelText(/^Título$/));
+    const inputTitulo = await screen.findByLabelText(/^Título$/);
 
-    fireEvent.change(screen.getByLabelText(/^Título$/), { target: { value: 'New T' } });
-    fireEvent.change(screen.getByLabelText(/^Subtítulo$/), { target: { value: 'New S' } });
-    fireEvent.change(screen.getByLabelText(/O Texto da História/i), { target: { value: 'New Text' } });
-    fireEvent.change(screen.getByLabelText(/Destaque Final/i), { target: { value: 'New C' } });
+    fireEvent.change(inputTitulo, { target: { value: 'New T' } });
+    fireEvent.change(await screen.findByLabelText(/^Subtítulo$/), { target: { value: 'New S' } });
+    fireEvent.change(await screen.findByLabelText(/O Texto da História/i), { target: { value: 'New Text' } });
+    fireEvent.change(await screen.findByLabelText(/Destaque Final/i), { target: { value: 'New C' } });
 
-    expect(screen.getByLabelText(/^Título$/)).toHaveValue('New T');
+    expect(inputTitulo).toHaveValue('New T');
   });
 });

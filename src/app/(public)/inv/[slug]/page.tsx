@@ -10,6 +10,8 @@ import FAQ from "@/components/sections/FAQ";
 import RSVP from "@/components/sections/RSVP";
 import Countdown from "@/components/sections/Countdown";
 import { supabase } from '@/lib/supabase';
+import { rsvpService } from '@/lib/services/rsvpService';
+import { Configuracao } from '@/lib/types/database';
 import Link from 'next/link';
 import HeroCarousel from '@/components/ui/HeroCarousel';
 
@@ -17,6 +19,9 @@ export default function InvitationPage() {
   const params = useParams();
   const slug = params.slug as string;
 
+  const [config, setConfig] = useState<Configuracao | null>(null);
+  const [loading, setLoading] = useState(true);
+  
   const [couple, setCouple] = useState({ 
     noiva: 'Layslla', 
     noivo: 'Marcus', 
@@ -32,16 +37,26 @@ export default function InvitationPage() {
   });
 
   useEffect(() => {
-    async function fetchConfig() {
+    async function init() {
       try {
-        const { data } = await supabase
+        setLoading(true);
+        // 1. Buscar o convite pelo slug
+        const invite = await rsvpService.getInviteBySlug(slug);
+        if (!invite) {
+          setLoading(false);
+          return;
+        }
+
+        // 2. Buscar config baseada no evento_id do convite
+        const { data: configData } = await supabase
           .from('configuracoes')
-          .select('noiva_nome, noivo_nome, data_casamento, mostrar_faq, mostrar_historia, mostrar_noivos, mostrar_presentes')
-          .eq('id', 1)
+          .select('*')
+          .eq('evento_id', invite.evento_id)
           .maybeSingle();
         
-        if (data) {
-          const date = new Date(data.data_casamento);
+        if (configData) {
+          setConfig(configData);
+          const date = new Date(configData.data_casamento);
           const formattedDate = date.toLocaleDateString('pt-BR', { 
             day: '2-digit', 
             month: 'long', 
@@ -49,25 +64,39 @@ export default function InvitationPage() {
           });
           
           setCouple({
-            noiva: data.noiva_nome,
-            noivo: data.noivo_nome,
+            noiva: configData.noiva_nome,
+            noivo: configData.noivo_nome,
             data: formattedDate,
-            rawDate: data.data_casamento
+            rawDate: configData.data_casamento
           });
 
           setVisibility({
-            historia: data.mostrar_historia !== false,
-            noivos: data.mostrar_noivos !== false,
-            faq: data.mostrar_faq !== false,
-            presentes: data.mostrar_presentes !== false
+            historia: configData.mostrar_historia !== false,
+            noivos: configData.mostrar_noivos !== false,
+            faq: configData.mostrar_faq !== false,
+            presentes: configData.mostrar_presentes !== false
           });
         }
       } catch (e) {
-        console.error('Erro ao buscar configurações iniciais:', e);
+        console.error('Erro ao inicializar convite:', e);
+      } finally {
+        setLoading(false);
       }
     }
-    fetchConfig();
-  }, []);
+    init();
+  }, [slug]);
+
+  if (loading) return <div className={styles.loading}>Acolhendo seu convite...</div>;
+
+  if (!config) {
+    return (
+      <div className={styles.errorContainer}>
+        <h1>Convite não encontrado</h1>
+        <p>Por favor, verifique o link enviado pelos noivos.</p>
+        <Link href="/">Voltar para a Home</Link>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -89,11 +118,11 @@ export default function InvitationPage() {
         </section>
       </main>
       
-      {visibility.historia && <Historia />}
-      {visibility.noivos && <OsNoivos />}
-      <Detalhes />
+      {visibility.historia && <Historia config={config} />}
+      {visibility.noivos && <OsNoivos config={config} />}
+      <Detalhes config={config} />
       <RSVP inviteSlug={slug} />
-      {visibility.faq && <FAQ />}
+      {visibility.faq && <FAQ eventoId={config.evento_id} />}
     </>
   );
 }

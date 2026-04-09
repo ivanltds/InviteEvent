@@ -3,6 +3,12 @@ import AdminConvidados from '../page';
 import { supabase } from '@/lib/supabase';
 import { inviteService } from '@/lib/services/inviteService';
 
+import { useEvent } from '@/lib/contexts/EventContext';
+
+jest.mock('@/lib/contexts/EventContext', () => ({
+  useEvent: jest.fn(),
+}));
+
 // Mock do inviteService
 jest.mock('@/lib/services/inviteService', () => ({
   inviteService: {
@@ -59,6 +65,12 @@ Object.assign(navigator, {
 describe('Admin Convidados - Fluxo de Criação (TDD)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (useEvent as jest.Mock).mockReturnValue({
+      currentEvent: { id: 'e1', nome: 'Evento Teste', slug: 'evento-teste' },
+      events: [{ id: 'e1', nome: 'Evento Teste', slug: 'evento-teste' }],
+      loading: false,
+      userProfile: { id: 'u1', is_master: true }
+    });
     mockInvites = [
       { id: 'c1', nome_principal: 'João Silva', limite_pessoas: 2, slug: 'joao-silva', tipo: 'casal', created_at: new Date().toISOString(), rsvp: [], membros: [] }
     ];

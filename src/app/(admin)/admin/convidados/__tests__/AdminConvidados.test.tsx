@@ -2,6 +2,12 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AdminConvidados from '../page';
 import { inviteService } from '@/lib/services/inviteService';
 import { configService } from '@/lib/services/configService';
+import { useEvent } from '@/lib/contexts/EventContext';
+
+// Mock do EventContext
+jest.mock('@/lib/contexts/EventContext', () => ({
+  useEvent: jest.fn(),
+}));
 
 // Mock do inviteService
 jest.mock('@/lib/services/inviteService', () => ({
@@ -47,6 +53,11 @@ const mockInvites = [
 describe('AdminConvidados Component Fixed', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (useEvent as jest.Mock).mockReturnValue({
+      currentEvent: { id: 'e1', nome: 'Evento Teste', slug: 'evento-teste' },
+      loading: false,
+      userProfile: { id: 'u1', is_master: true }
+    });
     (inviteService.getAllInvites as jest.Mock).mockResolvedValue(mockInvites);
     window.alert = jest.fn();
     
@@ -81,6 +92,8 @@ describe('AdminConvidados Component Fixed', () => {
 
   test('deve abrir modal e permitir adicionar novo convite', async () => {
     render(<AdminConvidados />);
+    
+    await waitFor(() => expect(screen.queryByText(/Carregando convidados/i)).not.toBeInTheDocument());
     
     const openBtn = screen.getByRole('button', { name: /Novo Convite/i });
     fireEvent.click(openBtn);

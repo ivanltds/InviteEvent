@@ -78,12 +78,22 @@ export const rsvpService = {
     return { success: !error, error: error ? new Error(error.message) : null };
   },
 
-  async getRSVPConfig(): Promise<Configuracao | null> {
-    const { data, error } = await supabase
-      .from('configuracoes')
-      .select('*')
-      .eq('id', 1)
-      .maybeSingle();
+  async getRSVPConfig(inviteId?: string): Promise<Configuracao | null> {
+    let query = supabase.from('configuracoes').select('*');
+    
+    if (inviteId) {
+      // Buscar o evento_id do convite primeiro
+      const { data: invite } = await supabase.from('convites').select('evento_id').eq('id', inviteId).single();
+      if (invite?.evento_id) {
+        query = query.eq('evento_id', invite.evento_id);
+      } else {
+        query = query.eq('id', 1);
+      }
+    } else {
+      query = query.eq('id', 1);
+    }
+
+    const { data, error } = await query.maybeSingle();
 
     if (error) {
       console.error('Error fetching config:', error);

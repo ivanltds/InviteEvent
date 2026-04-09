@@ -1,6 +1,17 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AdminPresentes from '../page';
 import { supabase } from '@/lib/supabase';
+import { useEvent } from '@/lib/contexts/EventContext';
+
+// Mock do EventContext
+jest.mock('@/lib/contexts/EventContext', () => ({
+  useEvent: jest.fn(() => ({
+    currentEvent: { id: 'e1', nome: 'Evento Teste', slug: 'evento-teste' },
+    events: [{ id: 'e1', nome: 'Evento Teste', slug: 'evento-teste' }],
+    loading: false,
+    userProfile: { id: 'u1', is_master: true }
+  })),
+}));
 
 // Mock do Supabase
 const mockSelect = jest.fn();
@@ -11,6 +22,9 @@ jest.mock('@/lib/supabase', () => ({
   supabase: {
     from: jest.fn(() => ({
       select: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          order: mockSelect
+        })),
         order: mockSelect
       })),
       insert: mockInsert,
@@ -35,6 +49,7 @@ const mockPresentes = [
 describe('Admin Presentes - Full Lifecycle (TDD)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
     mockSelect.mockResolvedValue({ data: mockPresentes, error: null });
   });
 

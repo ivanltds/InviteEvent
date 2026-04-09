@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import styles from './Dashboard.module.css';
 import { inviteService } from '@/lib/services/inviteService';
 import { supabase } from '@/lib/supabase';
+import { useEvent } from '@/lib/contexts/EventContext';
 
 export default function AdminDashboard() {
+  const { currentEvent, loading: eventLoading } = useEvent();
   const [stats, setStats] = useState({
     totalConvites: 0,
     convitesRespondidos: 0,
@@ -23,8 +25,12 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     async function fetchAll() {
+      if (!currentEvent) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
-      const invites = await inviteService.getAllInvites();
+      const invites = await inviteService.getAllInvites(currentEvent.id);
       const calculated = inviteService.calculateDashboardStats(invites);
       setStats(calculated);
 
@@ -37,25 +43,40 @@ export default function AdminDashboard() {
         }));
       setRestricoes(comRestricao);
 
-      // Buscar dados financeiros (presentes recebidos)
-      const { data: comprovantes } = await supabase.from('comprovantes').select('presente:presentes(preco)');
+      // Buscar dados financeiros (presentes recebidos para este evento)
+      const { data: comprovantes } = await supabase
+        .from('comprovantes')
+        .select('presente:presentes(preco, evento_id)')
+        .eq('presente.evento_id', currentEvent.id);
+      
       if (comprovantes) {
-        const total = comprovantes.reduce((acc: number, curr: any) => acc + (curr.presente?.preco || 0), 0);
+        // Filtrar no JS pois a query eq no nested join pode variar por versão do PostgREST
+        const filtered = comprovantes.filter((c: any) => c.presente?.evento_id === currentEvent.id);
+        const total = filtered.reduce((acc: number, curr: any) => acc + (curr.presente?.preco || 0), 0);
         setFinanceiro(prev => ({ ...prev, recebido: total }));
       }
 
       setLoading(false);
     }
     fetchAll();
-  }, []);
+  }, [currentEvent]);
 
-  if (loading) return <div className={styles.container}><p>Carregando dashboard...</p></div>;
+  if (eventLoading || (loading && currentEvent)) return <div className={styles.container}><p>Carregando dashboard...</p></div>;
+
+  if (!currentEvent) {
+    return (
+      <div className={styles.container}>
+        <h1>Bem-vindo!</h1>
+        <p>Você ainda não possui eventos vinculados ou selecionados.</p>
+      </div>
+    );
+  }
 
   return (
     <main className={styles.container}>
       <header className={styles.header}>
         <div>
-          <h1>Dashboard Geral</h1>
+          <h1>Dashboard: {currentEvent.nome}</h1>
           <p>Visão em tempo real do seu grande dia.</p>
         </div>
       </header>

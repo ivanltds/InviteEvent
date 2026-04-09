@@ -3,7 +3,7 @@ import '@testing-library/jest-dom'
 // Mock global do Supabase para todos os testes
 const mockQueryBuilder = {
   select: jest.fn().mockReturnThis(),
-  insert: jest.fn().mockResolvedValue({ data: null, error: null }),
+  insert: jest.fn().mockReturnThis(),
   update: jest.fn().mockReturnThis(),
   delete: jest.fn().mockReturnThis(),
   eq: jest.fn().mockReturnThis(),
@@ -13,6 +13,7 @@ const mockQueryBuilder = {
   order: jest.fn().mockReturnThis(),
   maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
   single: jest.fn().mockResolvedValue({ data: null, error: null }),
+  then: jest.fn().mockResolvedValue({ data: null, error: null }),
 };
 
 jest.mock('@supabase/supabase-js', () => ({

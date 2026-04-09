@@ -1,6 +1,14 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AdminConvidados from '../page';
 import { inviteService } from '@/lib/services/inviteService';
+import { configService } from '@/lib/services/configService';
+
+// Mock do configService
+jest.mock('@/lib/services/configService', () => ({
+  configService: {
+    getConfig: jest.fn().mockResolvedValue({ whatsapp_template: 'Olá {nome}' }),
+  },
+}));
 
 jest.mock('@/lib/services/inviteService', () => ({
   inviteService: {
@@ -16,6 +24,15 @@ jest.mock('@/lib/services/inviteService', () => ({
       excedentes: 0
     }),
   },
+}));
+
+jest.mock('@/lib/contexts/EventContext', () => ({
+  useEvent: () => ({
+    currentEvent: { id: 'e1', nome: 'Evento Teste', slug: 'evento-teste' },
+    events: [{ id: 'e1', nome: 'Evento Teste', slug: 'evento-teste' }],
+    loading: false,
+    userProfile: { id: 'u1', is_master: true }
+  }),
 }));
 
 const mockInvite = { 
@@ -34,12 +51,16 @@ describe('AdminConvidados CRUD Paths', () => {
     (inviteService.updateInvite as jest.Mock).mockResolvedValue({ success: true });
     render(<AdminConvidados />);
     
-    await waitFor(() => screen.getByText('João'));
-    fireEvent.click(screen.getByText('Editar'));
+    // Esperar sair do loading
+    await waitFor(() => expect(screen.queryByText(/Carregando convidados/i)).not.toBeInTheDocument());
     
-    expect(screen.getByRole('heading', { name: /Editar Convite/i })).toBeInTheDocument();
+    const editBtn = await screen.findByText('Editar');
+    fireEvent.click(editBtn);
     
-    fireEvent.click(screen.getByRole('button', { name: /Salvar Alterações/i }));
+    expect(await screen.findByRole('heading', { name: /Editar Convite/i })).toBeInTheDocument();
+    
+    const saveBtn = screen.getByRole('button', { name: /Salvar Alterações/i });
+    fireEvent.click(saveBtn);
     
     await waitFor(() => {
       expect(inviteService.updateInvite).toHaveBeenCalled();
@@ -61,10 +82,14 @@ describe('AdminConvidados CRUD Paths', () => {
 
   test('deve permitir cancelar edição', async () => {
     render(<AdminConvidados />);
-    await waitFor(() => screen.getByText('João'));
-    fireEvent.click(screen.getByText('Editar'));
+    // Esperar sair do loading
+    await waitFor(() => expect(screen.queryByText(/Carregando convidados/i)).not.toBeInTheDocument());
     
-    fireEvent.click(screen.getByRole('button', { name: /Cancelar/i }));
+    const editBtn = await screen.findByText('Editar');
+    fireEvent.click(editBtn);
+    
+    const cancelBtn = await screen.findByRole('button', { name: /Cancelar/i });
+    fireEvent.click(cancelBtn);
     expect(screen.queryByRole('heading', { name: /Editar Convite/i })).not.toBeInTheDocument();
   });
 });

@@ -17,13 +17,6 @@ export const authService = {
         return false;
       }
 
-      // 2. Lógica de "Claim" (STORY-039): 
-      // Associa o evento atual ao usuário se ele ainda não tiver dono
-      await supabase
-        .from('configuracoes')
-        .update({ user_id: data.user.id })
-        .is('user_id', null);
-
       // 3. Proxy de Sessão (Server-side Cookies):
       // Enviamos o token para uma API Route para que ela defina o cookie HTTP-only
       const response = await fetch('/api/auth/session', {

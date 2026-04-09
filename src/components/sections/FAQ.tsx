@@ -15,7 +15,7 @@ const DEFAULT_FAQS = [
   },
   {
     question: "Até quando devo confirmar minha presença?",
-    answer: "Por favor, confirme sua presença até o dia 13 de Maio de 2026, para que possamos organizar tudo com perfeição."
+    answer: "Por favor, confirme sua presença o quanto antes, para que possamos organizar tudo com perfeição."
   },
   {
     question: "Haverá lista de presentes?",
@@ -23,16 +23,22 @@ const DEFAULT_FAQS = [
   }
 ];
 
-export default function FAQ() {
+export default function FAQ({ eventoId }: { eventoId?: string }) {
   const [faqs, setFaqs] = useState<{question: string, answer: string}[]>([]);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchFaqs() {
       try {
+        if (!eventoId) {
+          setFaqs(DEFAULT_FAQS);
+          return;
+        }
+
         const { data, error } = await supabase
           .from('faq')
           .select('pergunta, resposta')
+          .eq('evento_id', eventoId)
           .order('ordem', { ascending: true });
 
         if (error) throw error;
@@ -51,7 +57,7 @@ export default function FAQ() {
       }
     }
     fetchFaqs();
-  }, []);
+  }, [eventoId]);
 
   const toggleFaq = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);

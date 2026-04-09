@@ -1,6 +1,13 @@
+import { Configuracao } from "@/lib/types/database";
 import styles from "./Detalhes.module.css";
 
-export default function Detalhes() {
+export default function Detalhes({ config }: { config?: Configuracao }) {
+  const dateStr = config ? new Date(config.data_casamento).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  }) : '13 de Junho de 2026';
+
   return (
     <section className={styles.section} id="detalhes">
       <div className={styles.container}>
@@ -11,21 +18,21 @@ export default function Detalhes() {
           <div className={styles.card}>
             <h3>A Cerimônia</h3>
             <div className={styles.info}>
-              <p className={styles.date}>13 de Junho de 2026</p>
-              <p className={styles.time}>16:00</p>
-              <p className={styles.location}>Igreja Matriz de Nossa Senhora</p>
-              <p className={styles.address}>Praça da Matriz, Centro - Cidade, Estado</p>
-              <a href="#" className={styles.mapLink} target="_blank" rel="noopener noreferrer">Ver no Mapa</a>
+              <p className={styles.date}>{dateStr}</p>
+              <p className={styles.time}>{config?.horario_cerimonia || '16:00'}</p>
+              <p className={styles.location}>{config?.local_cerimonia || 'Igreja Matriz'}</p>
+              <p className={styles.address}>{config?.endereco_cerimonia || 'Praça da Matriz, Centro'}</p>
+              <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(config?.endereco_cerimonia || '')}`} className={styles.mapLink} target="_blank" rel="noopener noreferrer">Ver no Mapa</a>
             </div>
           </div>
           
           <div className={styles.card}>
             <h3>A Recepção</h3>
             <div className={styles.info}>
-              <p className={styles.date}>13 de Junho de 2026</p>
-              <p className={styles.time}>18:30</p>
-              <p className={styles.location}>Espaço Jardins do Lago</p>
-              <p className={styles.address}>Estrada das Flores, KM 2 - Cidade, Estado</p>
+              <p className={styles.date}>{dateStr}</p>
+              <p className={styles.time}>{config?.horario_recepcao || '18:30'}</p>
+              <p className={styles.location}>Local a confirmar</p>
+              <p className={styles.address}>Mesmo endereço ou local próximo</p>
               <a href="#" className={styles.mapLink} target="_blank" rel="noopener noreferrer">Ver no Mapa</a>
             </div>
           </div>

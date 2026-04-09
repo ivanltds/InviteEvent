@@ -54,7 +54,14 @@ export default function RSVP({ inviteSlug: propSlug }: RSVPProps) {
             setConviteEncontrado(data);
             setFormData(prev => ({ ...prev, nome: data.nome_principal }));
             
-            // 3. Buscar membros e RSVP existente
+            // 3. Fetch Config baseada no convite
+            const config = await rsvpService.getRSVPConfig(data.id);
+            if (config?.prazo_rsvp) {
+              const date = new Date(config.prazo_rsvp);
+              setDeadline(date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }));
+            }
+
+            // 4. Buscar membros e RSVP existente
             const [members, rsvp] = await Promise.all([
               rsvpService.getInviteMembers(data.id),
               rsvpService.getExistingRSVP(data.id)
@@ -277,7 +284,7 @@ export default function RSVP({ inviteSlug: propSlug }: RSVPProps) {
 
             {formData.confirmacao === 'sim' && conviteEncontrado.tipo !== 'individual' && (
               <>
-                {membros.length > 0 ? (
+                {membros && membros.length > 0 ? (
                   <div className={styles.fieldGroup}>
                     <label>
                       {conviteEncontrado.tipo === 'casal' ? 'Confirmem a presença de vocês:' : 'Quem da família virá celebrar conosco?'}

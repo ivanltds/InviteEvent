@@ -2,39 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import styles from "./OsNoivos.module.css";
-import { supabase } from '@/lib/supabase';
+import { Configuracao } from '@/lib/types/database';
 
-export default function OsNoivos() {
+export default function OsNoivos({ config }: { config: Configuracao }) {
   const [bios, setBios] = useState({
-    noiva: 'Intensa, forte e decidida. A chama que ilumina a relação e traz a força necessária para enfrentar qualquer desafio.',
-    noivo: 'Paciente, leve e equilibrado. A brisa suave que traz tranquilidade e estabilidade aos dias mais corridos.',
-    conclusao: 'Nossas diferenças não nos afastam, mas nos complementam de forma única. Onde há intensidade, há também paciência. E é justamente nessa união perfeita de temperamentos que encontramos o amor verdadeiro.'
+    noiva: config.noiva_bio || 'Intensa, forte e decidida. A chama que ilumina a relação e traz a força necessária para enfrentar qualquer desafio.',
+    noivo: config.noivo_bio || 'Paciente, leve e equilibrado. A brisa suave que traz tranquilidade e estabilidade aos dias mais corridos.',
+    conclusao: config.noivos_conclusao || 'Nossas diferenças não nos afastam, mas nos complementam de forma única. Onde há intensidade, há também paciência. E é justamente nessa união perfeita de temperamentos que encontramos o amor verdadeiro.'
   });
 
   useEffect(() => {
-    async function fetchBios() {
-      try {
-        const { data, error } = await supabase
-          .from('configuracoes')
-          .select('noiva_bio, noivo_bio, noivos_conclusao')
-          .eq('id', 1)
-          .maybeSingle();
-        
-        if (error) throw error;
-
-        if (data) {
-          setBios({
-            noiva: data.noiva_bio || bios.noiva,
-            noivo: data.noivo_bio || bios.noivo,
-            conclusao: data.noivos_conclusao || bios.conclusao
-          });
-        }
-      } catch (e) {
-        console.error('Erro ao buscar bios (usando fallback):', e);
-      }
+    if (config) {
+      setBios({
+        noiva: config.noiva_bio || bios.noiva,
+        noivo: config.noivo_bio || bios.noivo,
+        conclusao: config.noivos_conclusao || bios.conclusao
+      });
     }
-    fetchBios();
-  }, []);
+  }, [config]);
 
   return (
     <section className={styles.section} id="os-noivos">
@@ -42,11 +27,11 @@ export default function OsNoivos() {
         <h2 className="cursive">O Casal Perfeito</h2>
         <div className={styles.grid}>
           <div className={styles.card}>
-            <h3 className="cursive">Layslla</h3>
+            <h3 className="cursive">{config.noiva_nome}</h3>
             <p className={styles.desc}>{bios.noiva}</p>
           </div>
           <div className={styles.card}>
-            <h3 className="cursive">Marcus</h3>
+            <h3 className="cursive">{config.noivo_nome}</h3>
             <p className={styles.desc}>{bios.noivo}</p>
           </div>
         </div>

@@ -1,8 +1,31 @@
 export type InviteType = 'individual' | 'casal' | 'familia';
 export type RSVPStatus = 'confirmado' | 'recusado' | 'excedente_solicitado';
+export type OrganizerRole = 'owner' | 'organizador';
+
+export interface Perfil {
+  id: string;
+  email: string;
+  is_master: boolean;
+  created_at: string;
+}
+
+export interface Evento {
+  id: string;
+  nome: string;
+  slug: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EventoOrganizador {
+  evento_id: string;
+  user_id: string;
+  role: OrganizerRole;
+}
 
 export interface Convite {
   id: string;
+  evento_id: string;
   nome_principal: string;
   limite_pessoas: number;
   tipo: InviteType;
@@ -35,6 +58,7 @@ export interface RSVP {
 
 export interface Presente {
   id: string;
+  evento_id: string;
   nome: string;
   preco: number;
   descricao?: string;
@@ -44,6 +68,7 @@ export interface Presente {
   quantidade_reservada: number;
   created_at?: string;
   updated_at?: string;
+  user_id?: string;
 }
 
 export interface Comprovante {
@@ -57,6 +82,7 @@ export interface Comprovante {
 
 export interface Configuracao {
   id: number;
+  evento_id: string;
   noiva_nome: string;
   noivo_nome: string;
   data_casamento: string;
@@ -88,4 +114,6 @@ export interface Configuracao {
   font_serif?: string;
   created_at?: string;
   updated_at?: string;
+  user_id?: string;
 }
+

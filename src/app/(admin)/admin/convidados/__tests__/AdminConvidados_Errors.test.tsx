@@ -1,6 +1,23 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AdminConvidados from '../page';
 import { inviteService } from '@/lib/services/inviteService';
+import { configService } from '@/lib/services/configService';
+
+// Mock do configService
+jest.mock('@/lib/services/configService', () => ({
+  configService: {
+    getConfig: jest.fn().mockResolvedValue({ whatsapp_template: 'Olá {nome}' }),
+  },
+}));
+
+jest.mock('@/lib/contexts/EventContext', () => ({
+  useEvent: () => ({
+    currentEvent: { id: 'e1', nome: 'Evento Teste', slug: 'evento-teste' },
+    events: [{ id: 'e1', nome: 'Evento Teste', slug: 'evento-teste' }],
+    loading: false,
+    userProfile: { id: 'u1', is_master: true }
+  }),
+}));
 
 jest.mock('@/lib/services/inviteService', () => ({
   inviteService: {
@@ -34,9 +51,13 @@ describe('AdminConvidados Error Paths', () => {
     (inviteService.updateInvite as jest.Mock).mockResolvedValue({ success: false, error: new Error('Update Error') });
     render(<AdminConvidados />);
     
-    await waitFor(() => screen.getByText('João'));
-    fireEvent.click(screen.getByText('Editar'));
-    fireEvent.click(screen.getByRole('button', { name: /Salvar Alterações/i }));
+    // Esperar sair do loading
+    await waitFor(() => expect(screen.queryByText(/Carregando convidados/i)).not.toBeInTheDocument());
+    
+    const editBtn = await screen.findByText('Editar');
+    fireEvent.click(editBtn);
+    const saveBtn = await screen.findByRole('button', { name: /Salvar Alterações/i });
+    fireEvent.click(saveBtn);
     
     await waitFor(() => {
       expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('Update Error'));
@@ -47,8 +68,11 @@ describe('AdminConvidados Error Paths', () => {
     (inviteService.deleteInvite as jest.Mock).mockResolvedValue({ success: false, error: new Error('Delete Error') });
     render(<AdminConvidados />);
     
-    await waitFor(() => screen.getByText('João'));
-    fireEvent.click(screen.getByText('Excluir'));
+    // Esperar sair do loading
+    await waitFor(() => expect(screen.queryByText(/Carregando convidados/i)).not.toBeInTheDocument());
+    
+    const deleteBtn = await screen.findByText('Excluir');
+    fireEvent.click(deleteBtn);
     
     await waitFor(() => {
       expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('Delete Error'));

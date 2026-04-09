@@ -30,8 +30,34 @@
   opacity: 0.5;
 }
 
+.eventSelector {
+  padding: 1rem 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.eventSelector label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  font-weight: bold;
+  opacity: 0.4;
+  padding-left: 0.5rem;
+}
+
+.select {
+  background: rgba(0,0,0,0.03);
+  border: 1px solid rgba(0,0,0,0.05);
+  color: var(--text-main-safe);
+  padding: 0.6rem;
+  border-radius: 6px;
+  width: 100%;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
 .nav {
-  padding: 2rem 1rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;

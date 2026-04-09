@@ -7,6 +7,7 @@ export interface Convite {
   limite_pessoas: number;
   tipo: InviteType;
   slug: string;
+  telefone?: string;
   created_at: string;
   user_id?: string;
 }

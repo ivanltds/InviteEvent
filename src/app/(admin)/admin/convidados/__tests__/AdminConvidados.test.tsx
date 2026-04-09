@@ -38,6 +38,7 @@ const mockInvites = [
     tipo: 'individual', 
     limite_pessoas: 1, 
     slug: 'joao-silva', 
+    telefone: '11999999999',
     created_at: '2023-01-01',
     rsvp: [{ status: 'confirmado', confirmados: 1, mensagem: 'M1', restricoes: 'R1' }]
   },
@@ -74,7 +75,7 @@ describe('AdminConvidados Component Fixed', () => {
     expect(whatsappBtn).toBeInTheDocument();
     
     fireEvent.click(whatsappBtn);
-    expect(spyOpen).toHaveBeenCalledWith(expect.stringContaining('wa.me'), '_blank');
+    expect(spyOpen).toHaveBeenCalledWith(expect.stringContaining('11999999999'), '_blank');
     spyOpen.mockRestore();
   });
 
@@ -87,13 +88,15 @@ describe('AdminConvidados Component Fixed', () => {
     expect(screen.getByRole('heading', { name: /Novo Convite/i })).toBeInTheDocument();
     
     fireEvent.change(screen.getByLabelText(/Nome do Convite/i), { target: { value: 'Família Teste' } });
+    fireEvent.change(screen.getByLabelText(/Telefone/i), { target: { value: '11888888888' } });
     (inviteService.createInvite as jest.Mock).mockResolvedValue({ success: true });
     
     fireEvent.click(screen.getByRole('button', { name: /Criar Convite/i }));
     
     await waitFor(() => {
       expect(inviteService.createInvite).toHaveBeenCalledWith(expect.objectContaining({
-        nome_principal: 'Família Teste'
+        nome_principal: 'Família Teste',
+        telefone: '11888888888'
       }));
     });
   });

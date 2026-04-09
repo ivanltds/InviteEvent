@@ -16,7 +16,8 @@ export default function AdminConvidados() {
   const [formData, setFormData] = useState({
     nome_principal: '',
     limite_pessoas: 1,
-    tipo: 'individual' as InviteType
+    tipo: 'individual' as InviteType,
+    telefone: ''
   });
   const [members, setMembers] = useState<{ id?: string; nome: string }[]>([]);
 
@@ -38,8 +39,11 @@ export default function AdminConvidados() {
   const handleSendWhatsapp = (invite: InviteWithRSVP) => {
     if (!config) return;
     
+    // Prioriza o telefone do convite (cadastrado pelo admin)
+    // Se não houver, tenta o do RSVP (preenchido pelo convidado)
     const rsvp = invite.rsvp && invite.rsvp[0];
-    const telefone = rsvp?.telefone || '';
+    const telefone = invite.telefone || rsvp?.telefone || '';
+    
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
     const link = `${baseUrl}/inv/${invite.slug}`;
     
@@ -114,7 +118,8 @@ export default function AdminConvidados() {
     setFormData({
       nome_principal: invite.nome_principal,
       limite_pessoas: invite.limite_pessoas,
-      tipo: invite.tipo
+      tipo: invite.tipo,
+      telefone: invite.telefone || ''
     });
     setMembers(invite.membros || []);
   };
@@ -222,6 +227,16 @@ export default function AdminConvidados() {
               />
             </div>
             <div className={styles.fieldGroup}>
+              <label htmlFor="telefone">Telefone (WhatsApp)</label>
+              <input 
+                id="telefone"
+                type="tel" 
+                placeholder="(00) 00000-0000"
+                value={formData.telefone}
+                onChange={(e) => setFormData({...formData, telefone: e.target.value})}
+              />
+            </div>
+            <div className={styles.fieldGroup}>
               <label htmlFor="type">Tipo</label>
               <select 
                 id="type"
@@ -265,7 +280,7 @@ export default function AdminConvidados() {
                 onClick={() => {
                   setIsAdding(false);
                   setEditingInvite(null);
-                  setFormData({ nome_principal: '', limite_pessoas: 1, tipo: 'individual' });
+                  setFormData({ nome_principal: '', limite_pessoas: 1, tipo: 'individual', telefone: '' });
                 }}
               >
                 Cancelar

@@ -5,12 +5,16 @@ export async function POST(request: Request) {
     const { password } = await request.json();
     const adminPassword = process.env.ADMIN_PASSWORD;
 
+    if (!adminPassword) {
+      console.error('ADMIN_PASSWORD não configurado no .env');
+      return NextResponse.json({ success: false, message: 'Erro de configuração' }, { status: 500 });
+    }
+
     if (password === adminPassword) {
       const response = NextResponse.json({ success: true });
-      
+
       // Define o cookie de sessão (HTTP-only para segurança)
-      response.cookies.set('auth_token', adminPassword, {
-        httpOnly: true,
+      response.cookies.set('auth_token', adminPassword as string, {        httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
         path: '/',

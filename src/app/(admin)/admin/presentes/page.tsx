@@ -39,7 +39,7 @@ export default function AdminPresentes() {
     preco: 0, 
     descricao: '', 
     imagem_url: '', 
-    status: 'disponivel' as const,
+    status: 'disponivel' as Presente['status'],
     quantidade_total: 1 
   });
 

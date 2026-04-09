@@ -16,8 +16,21 @@ interface Presente {
   quantidade_reservada: number;
 }
 
+interface ComprovanteJoin {
+  id: string;
+  presente_id: string;
+  convite_id: string;
+  convidado_nome: string;
+  url_comprovante: string;
+  created_at: string;
+  presente: { nome: string };
+  convite: { nome_principal: string };
+}
+
 export default function AdminPresentes() {
+  const [activeTab, setActiveTab] = useState<'catalogo' | 'recebidos'>('catalogo');
   const [presentes, setPresentes] = useState<Presente[]>([]);
+  const [comprovantes, setComprovantes] = useState<ComprovanteJoin[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [editingItem, setEditingItem] = useState<Presente | null>(null);
@@ -43,9 +56,26 @@ export default function AdminPresentes() {
     setLoading(false);
   };
 
+  const fetchComprovantes = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('comprovantes')
+      .select('*, presente:presentes(nome), convite:convites(nome_principal)')
+      .order('created_at', { ascending: false });
+
+    if (data && !error) {
+      setComprovantes(data as any[]);
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
-    fetchPresentes();
-  }, []);
+    if (activeTab === 'catalogo') {
+      fetchPresentes();
+    } else {
+      fetchComprovantes();
+    }
+  }, [activeTab]);
 
   const resetForm = () => {
     setFormData({ nome: '', preco: 0, descricao: '', imagem_url: '', status: 'disponivel', quantidade_total: 1 });
@@ -70,13 +100,22 @@ export default function AdminPresentes() {
     e.preventDefault();
     setLoading(true);
     
+    const qtyTotal = Number(formData.quantidade_total);
+    const qtyReservada = editingItem ? editingItem.quantidade_reservada : 0;
+    
+    // Recalcular status baseado no estoque, a menos que esteja pausado
+    let newStatus = formData.status;
+    if (newStatus !== 'pausado') {
+      newStatus = qtyReservada >= qtyTotal ? 'reservado' : 'disponivel';
+    }
+
     const payload = {
       nome: formData.nome.trim(),
       preco: Number(formData.preco),
       descricao: formData.descricao.trim(),
       imagem_url: formData.imagem_url,
-      status: formData.status,
-      quantidade_total: Number(formData.quantidade_total)
+      status: newStatus,
+      quantidade_total: qtyTotal
     };
 
     if (editingItem) {
@@ -111,7 +150,7 @@ export default function AdminPresentes() {
   };
 
   const handleToggleStatus = async (id: string, currentStatus: string) => {
-    const nextStatus = currentStatus === 'disponivel' ? 'reservado' : 'disponivel';
+    const nextStatus = currentStatus === 'disponivel' ? 'pausado' : 'disponivel';
     const { error } = await supabase
       .from('presentes')
       .update({ status: nextStatus })
@@ -141,12 +180,42 @@ export default function AdminPresentes() {
     }
   };
 
+  const handleDeleteComprovante = async (id: string) => {
+    if (confirm('Tem certeza que deseja remover este comprovante?')) {
+      const { error } = await supabase
+        .from('comprovantes')
+        .delete()
+        .eq('id', id);
+
+      if (!error) {
+        setComprovantes(comprovantes.filter(c => c.id !== id));
+      } else {
+        alert(`Erro ao remover comprovante: ${error.message}`);
+      }
+    }
+  };
+
   return (
     <main className={styles.adminMain}>
       <header className={styles.adminHeader}>
         <h1>Gestão de Presentes</h1>
         <button className={styles.addBtn} onClick={() => setIsAdding(true)}>Novo Item</button>
       </header>
+
+      <div className={styles.tabs}>
+        <button 
+          className={`${styles.tabBtn} ${activeTab === 'catalogo' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('catalogo')}
+        >
+          Catálogo
+        </button>
+        <button 
+          className={`${styles.tabBtn} ${activeTab === 'recebidos' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('recebidos')}
+        >
+          Recebidos
+        </button>
+      </div>
 
       {isAdding && (
         <section className={styles.modalOverlay}>
@@ -228,14 +297,14 @@ export default function AdminPresentes() {
 
       <section className={styles.tableContainer}>
         {loading ? (
-          <p className={styles.loading}>Carregando presentes...</p>
-        ) : (
+          <p className={styles.loading}>Carregando...</p>
+        ) : activeTab === 'catalogo' ? (
           <table className={styles.table}>
             <thead>
               <tr>
                 <th>Item</th>
                 <th>Preço</th>
-                <th>Qtd Total</th>
+                <th>Estoque</th>
                 <th>Status</th>
                 <th>Ações</th>
               </tr>
@@ -250,10 +319,10 @@ export default function AdminPresentes() {
                     </div>
                   </td>
                   <td>{Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                  <td>{item.quantidade_total}</td>
+                  <td>{item.quantidade_total - item.quantidade_reservada} / {item.quantidade_total}</td>
                   <td>
                     <span className={`${styles.statusBadge} ${styles[item.status]}`}>
-                      {item.status}
+                      {item.status === 'reservado' && item.quantidade_reservada < item.quantidade_total ? 'Pausado' : item.status}
                     </span>
                   </td>
                   <td className={styles.actionsCell}>
@@ -269,7 +338,46 @@ export default function AdminPresentes() {
               ))}
               {presentes.length === 0 && (
                 <tr>
-                  <td colSpan={4} className={styles.empty}>Nenhum presente cadastrado.</td>
+                  <td colSpan={5} className={styles.empty}>Nenhum presente cadastrado.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        ) : (
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Presente</th>
+                <th>Convidado</th>
+                <th>Comprovante</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {comprovantes.map((comp) => (
+                <tr key={comp.id}>
+                  <td>{new Date(comp.created_at).toLocaleDateString('pt-BR')}</td>
+                  <td>{comp.presente?.nome || 'Item removido'}</td>
+                  <td>
+                    <div className={styles.guestInfo}>
+                      <strong>{comp.convidado_nome}</strong>
+                      {comp.convite && <span className={styles.inviteTag}>Convite: {comp.convite.nome_principal}</span>}
+                    </div>
+                  </td>
+                  <td>
+                    <a href={comp.url_comprovante} target="_blank" rel="noopener noreferrer">
+                      <img src={comp.url_comprovante} alt="Comprovante" className={styles.comprovanteThumb} title="Clique para ampliar" />
+                    </a>
+                  </td>
+                  <td className={styles.actionsCell}>
+                    <button className={styles.deleteBtn} onClick={() => handleDeleteComprovante(comp.id)}>Remover</button>
+                  </td>
+                </tr>
+              ))}
+              {comprovantes.length === 0 && (
+                <tr>
+                  <td colSpan={5} className={styles.empty}>Nenhum comprovante recebido ainda.</td>
                 </tr>
               )}
             </tbody>

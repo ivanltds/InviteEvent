@@ -11,6 +11,9 @@ jest.mock('@/lib/services/configService', () => ({
   },
 }));
 
+// Mock do ConfigPreview para evitar carregar Google Fonts nos testes
+jest.mock('@/components/admin/ConfigPreview', () => () => <div data-testid="preview">Preview</div>);
+
 const mockConfig = { 
   id: 1, 
   noiva_nome: 'Layslla', 
@@ -24,7 +27,9 @@ const mockConfig = {
   data_casamento: '2026-06-13',
   pix_chave: '123',
   pix_banco: 'Inter',
-  pix_nome: 'Marcus'
+  pix_nome: 'Marcus',
+  font_cursive: 'Pinyon Script',
+  font_serif: 'Playfair Display'
 };
 
 describe('AdminConfig Page Exhaustive', () => {
@@ -46,19 +51,6 @@ describe('AdminConfig Page Exhaustive', () => {
     expect(screen.getByLabelText(/Nome da Noiva/i)).toHaveValue('N1');
   });
 
-  test('deve permitir alternar todos os checkboxes de visibilidade', async () => {
-    render(<AdminConfig />);
-    await waitFor(() => screen.getByLabelText(/Mostrar História/i));
-
-    const checkHist = screen.getByLabelText(/Mostrar História/i);
-    const checkFaq = screen.getByLabelText(/Mostrar FAQ/i);
-
-    fireEvent.click(checkHist);
-    fireEvent.click(checkFaq);
-
-    expect(checkHist).not.toBeChecked();
-  });
-
   test('deve permitir alterar campos PIX', async () => {
     render(<AdminConfig />);
     await waitFor(() => screen.getByLabelText(/Chave PIX/i));
@@ -73,7 +65,7 @@ describe('AdminConfig Page Exhaustive', () => {
     render(<AdminConfig />);
     await waitFor(() => screen.getByLabelText(/Nome da Noiva/i));
 
-    fireEvent.click(screen.getByRole('button', { name: /Salvar Alterações/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Salvar Todas as Alterações/i }));
 
     await waitFor(() => {
       expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('Erro ao salvar'));

@@ -23,6 +23,7 @@ const DEFAULT_CONFIG: Omit<Configuracao, 'id'> = {
   pix_chave: '',
   pix_banco: '',
   pix_nome: '',
+  pix_tipo: 'cpf',
   historia_titulo: 'Nossa História',
   historia_subtitulo: 'O Início de Tudo',
   historia_texto: 'Tudo começou através de um amigo distante do primo da noiva...',
@@ -330,12 +331,28 @@ export default function AdminConfig() {
               <h2>Pagamentos PIX (Presentes)</h2>
               <div className={styles.grid}>
                 <div className={styles.field}>
+                  <label htmlFor="pix_tipo">Tipo de Chave</label>
+                  <select 
+                    id="pix_tipo"
+                    className={styles.select}
+                    value={config.pix_tipo}
+                    onChange={(e) => setConfig({...config, pix_tipo: e.target.value as any})}
+                  >
+                    <option value="cpf">CPF</option>
+                    <option value="cnpj">CNPJ</option>
+                    <option value="email">E-mail</option>
+                    <option value="telefone">Celular (Telefone)</option>
+                    <option value="aleatoria">Chave Aleatória</option>
+                  </select>
+                </div>
+                <div className={styles.field}>
                   <label htmlFor="pix_chave">Chave PIX</label>
                   <input
                     id="pix_chave"
                     type="text"
                     value={config.pix_chave}
                     onChange={(e) => setConfig({...config, pix_chave: e.target.value})}
+                    placeholder="Somente números para CPF/Celular"
                   />
                 </div>
                 <div className={styles.field}>

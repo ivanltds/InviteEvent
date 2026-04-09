@@ -16,6 +16,38 @@
   color: var(--accent-safe);
 }
 
+.tabs {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.tabBtn {
+  background: none;
+  border: none;
+  padding: 1rem 0;
+  color: var(--text-main-safe);
+  opacity: 0.5;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+
+.tabBtn:hover {
+  opacity: 1;
+}
+
+.activeTab {
+  opacity: 1 !important;
+  color: var(--accent-safe) !important;
+  border-bottom-color: var(--accent-safe) !important;
+}
+
 .addBtn {
   background-color: var(--accent);
   color: var(--text-on-accent);
@@ -25,6 +57,46 @@
   cursor: pointer;
   text-transform: uppercase;
   font-weight: bold;
+}
+
+.comprovanteThumb {
+  width: 80px;
+  height: 50px;
+  object-fit: contain;
+  border-radius: 4px;
+  background-color: rgba(0,0,0,0.05);
+  cursor: pointer;
+}
+
+.viewBtn {
+  background: none;
+  border: 1px solid var(--accent-safe);
+  color: var(--accent-safe);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.viewBtn:hover {
+  background-color: var(--accent-safe);
+  color: white;
+}
+
+.guestInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.inviteTag {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  background: rgba(0,0,0,0.05);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  width: fit-content;
 }
 
 .tableContainer {

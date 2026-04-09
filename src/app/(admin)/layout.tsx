@@ -4,42 +4,40 @@ import { useState, useEffect } from 'react';
 import Sidebar from "@/components/admin/Sidebar";
 import { usePathname } from 'next/navigation';
 import styles from './AdminLayout.module.css';
+import { supabase } from '@/lib/supabase';
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const [isAuthorized, setIsAuthorized] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
-    const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || '3781l@m@';
-    const checkAuth = () => {
-      const authCookie = document.cookie.split('; ').find(row => row.startsWith('admin-auth='));
-      setIsAuthorized(!!(authCookie && authCookie.split('=')[1] === adminPassword));
-    };
-
-    checkAuth();
-    window.addEventListener('focus', checkAuth);
-    return () => window.removeEventListener('focus', checkAuth);
-  }, [pathname]);
+    // Apenas para garantir que o cliente Supabase está ok no lado do cliente
+    async function checkSession() {
+      await supabase.auth.getSession();
+      setSessionChecked(true);
+    }
+    checkSession();
+  }, []);
 
   // Close sidebar on navigation (mobile)
   useEffect(() => {
     setIsSidebarOpen(false);
   }, [pathname]);
 
-  const showSidebar = isAuthorized && pathname !== '/admin';
+  const isLoginPage = pathname === '/admin/login';
 
-  if (!isAuthorized && pathname !== '/admin') {
-    return null; // or a loading state, middleware handles redirect
+  if (!sessionChecked && !isLoginPage) {
+    return <div className={styles.loading}>Verificando sessão...</div>;
   }
 
   return (
     <div className={styles.adminLayout}>
-      {showSidebar && (
+      {!isLoginPage && (
         <>
           <div className={`${styles.sidebarWrapper} ${isSidebarOpen ? styles.sidebarOpen : ''}`}>
             <Sidebar />
@@ -54,12 +52,12 @@ export default function AdminLayout({
             >
               <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
-            <span className={styles.mobileTitle}>L & M Admin</span>
+            <span className={styles.mobileTitle}>InviteEventAI Admin</span>
           </header>
         </>
       )}
       
-      <div className={`${styles.mainContent} ${showSidebar ? styles.withSidebar : ''}`}>
+      <div className={`${styles.mainContent} ${!isLoginPage ? styles.withSidebar : ''}`}>
         {children}
       </div>
     </div>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import styles from './Sidebar.module.css';
 import { supabase } from '@/lib/supabase';
+import { authService } from '@/lib/services/authService';
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -27,6 +28,12 @@ export default function Sidebar() {
     }
     fetchNames();
   }, []);
+
+  const handleLogout = async () => {
+    if (confirm('Deseja realmente sair?')) {
+      await authService.logout();
+    }
+  };
 
   const menuItems = [
     { 
@@ -76,6 +83,13 @@ export default function Sidebar() {
             <span className={styles.name}>{item.name}</span>
           </Link>
         ))}
+        
+        <button onClick={handleLogout} className={styles.navItem} style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer' }}>
+          <span className={styles.icon}>
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          </span>
+          <span className={styles.name}>Sair</span>
+        </button>
       </nav>
       <div className={styles.footer}>
         <Link href="/" className={styles.viewSite}>Ver Site Público</Link>

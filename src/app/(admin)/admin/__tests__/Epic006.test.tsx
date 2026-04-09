@@ -33,10 +33,11 @@ describe('EPIC-006: Gestão de Conteúdo Dinâmico', () => {
     
     // Espera o carregamento inicial
     await waitFor(() => {
-      expect(screen.getByLabelText(/^Título da História$/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/^Texto da História$/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/^Bio da Noiva$/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/^Bio do Noivo$/i)).toBeInTheDocument();
+      // Usando regex mais flexível para as novas labels
+      expect(screen.getByLabelText(/^Título$/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/O Texto da História/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/Bio da Noiva/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/Bio do Noivo/i)).toBeInTheDocument();
     });
   });
 
@@ -44,7 +45,7 @@ describe('EPIC-006: Gestão de Conteúdo Dinâmico', () => {
     render(<AdminConfig />);
     
     await waitFor(() => {
-      const inputTitulo = screen.getByLabelText(/^Título da História$/i);
+      const inputTitulo = screen.getByLabelText(/^Título$/i);
       fireEvent.change(inputTitulo, { target: { value: 'Novo Título' } });
       expect(inputTitulo).toHaveValue('Novo Título');
     });

@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import AdminConfig from '../page';
 import { configService } from '@/lib/services/configService';
 
@@ -9,6 +10,8 @@ jest.mock('@/lib/services/configService', () => ({
   },
 }));
 
+jest.mock('@/components/admin/ConfigPreview', () => () => <div data-testid="preview">Preview</div>);
+
 describe('AdminConfig Saving Errors', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -16,13 +19,13 @@ describe('AdminConfig Saving Errors', () => {
   });
 
   test('deve lidar com erro ao salvar configurações', async () => {
-    (configService.getConfig as jest.Mock).mockResolvedValue({ noiva_nome: 'L' });
-    (configService.updateConfig as jest.Mock).mockResolvedValue({ success: false, error: new Error('DB Error') });
+    (configService.getConfig as jest.Mock).mockResolvedValue({ id: 1, noiva_nome: 'L' });
+    (configService.updateConfig as jest.Mock).mockResolvedValue({ success: false, error: new Error('DB Fail') });
 
     render(<AdminConfig />);
     await waitFor(() => screen.getByLabelText(/Nome da Noiva/i));
 
-    fireEvent.click(screen.getByRole('button', { name: /Salvar Alterações/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Salvar Todas as Alterações/i }));
 
     await waitFor(() => {
       expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('Erro ao salvar'));

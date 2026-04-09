@@ -8,8 +8,7 @@ describe('Navbar Component Expanded', () => {
     const links = [
       { name: 'Nossa História', href: '/#historia' },
       { name: 'O Evento', href: '/#detalhes' },
-      { name: 'RSVP', href: '/#rsvp' },
-      { name: 'Presentes', href: '/presentes' }
+      { name: 'RSVP', href: '/#rsvp' }
     ];
 
     links.forEach(link => {

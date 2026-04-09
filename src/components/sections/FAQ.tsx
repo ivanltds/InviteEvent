@@ -19,7 +19,7 @@ const DEFAULT_FAQS = [
   },
   {
     question: "Haverá lista de presentes?",
-    answer: "Sim! Temos uma lista de presentes aqui mesmo no site. Você pode acessá-la pelo menu."
+    answer: "Sim! Temos uma lista de presentes aqui mesmo no site. Você pode acessá-la através do link que enviamos no seu convite."
   }
 ];
 

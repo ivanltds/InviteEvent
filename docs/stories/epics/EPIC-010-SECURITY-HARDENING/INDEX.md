@@ -6,7 +6,8 @@
 Este épico foca em transformar a segurança por "obscuridade" em segurança de nível profissional, protegendo os dados dos noivos e convidados através de autenticação robusta, ofuscação de identificadores e controle rigoroso de acesso.
 
 ## Histórias (Stories)
-- [ ] **STORY-027:** Autenticação Server-Side para Admin (Proteção Real).
+- [ ] **STORY-039:** Migração para Supabase Auth & Vínculo de Propriedade. -> **BACKLOG (CRITICAL)**
+- [ ] **STORY-027:** Autenticação Server-Side para Admin (Proteção Real). -> **IN_PROGRESS**
 - [x] **STORY-028:** Ofuscação de Slugs de Convite (Anti-Guessing). -> **DONE**
 - [ ] **STORY-029:** Auditoria e Refinamento de RLS (Supabase).
 - [ ] **STORY-030:** Uploads Assinados para Cloudinary (Signed Uploads).

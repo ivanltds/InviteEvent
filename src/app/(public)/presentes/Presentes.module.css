@@ -67,13 +67,43 @@
   object-fit: cover;
 }
 
-.loading, .empty {
+.loading, .empty, .restricted {
   text-align: center;
   padding: 5rem;
   font-family: var(--font-serif);
   font-size: 1.5rem;
   color: #999;
   font-style: italic;
+}
+
+.restricted {
+  max-width: 600px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  padding: 4rem 2rem;
+  font-style: normal;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.restricted h2 {
+  color: var(--accent-safe);
+  font-size: 2.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.restricted p {
+  color: var(--text-main-safe);
+  opacity: 0.8;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.lockIcon {
+  color: var(--accent-safe);
+  margin-bottom: 2rem;
+  opacity: 0.5;
 }
 
 .info {
@@ -196,12 +226,59 @@
   margin-bottom: 2rem;
 }
 
+.pixContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.qrCodeContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.05);
+  width: 100%;
+}
+
+.qrCode {
+  width: 180px;
+  height: 180px;
+}
+
+.copyCodeBtn {
+  background-color: var(--accent-safe);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.2rem;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 0.9rem;
+  width: 100%;
+  transition: transform 0.2s;
+}
+
+.copyCodeBtn:active {
+  transform: scale(0.98);
+}
+
+.pixDetails {
+  width: 100%;
+}
+
 .pixCard {
   background: rgba(0,0,0,0.03);
   padding: 1.5rem;
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px dashed var(--accent-safe);
-  margin-bottom: 2rem;
+  text-align: left;
 }
 
 .pixKeyLabel {
@@ -213,11 +290,36 @@
   margin-bottom: 0.5rem;
 }
 
+.pixKeyRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
 .pixKey {
   font-weight: bold;
   font-size: 1.2rem;
   color: var(--text-main-safe);
   word-break: break-all;
+}
+
+.miniCopyBtn {
+  background: none;
+  border: 1px solid rgba(0,0,0,0.1);
+  color: var(--accent-safe);
+  padding: 0.4rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.miniCopyBtn:hover {
+  background-color: rgba(0,0,0,0.05);
 }
 
 .pixBank {

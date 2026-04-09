@@ -7,6 +7,9 @@ jest.mock('@/lib/services/inviteService', () => ({
   inviteService: {
     getAllInvites: jest.fn(),
     createInvite: jest.fn(),
+    updateInvite: jest.fn(),
+    deleteInvite: jest.fn(),
+    generateObfuscatedSlug: jest.fn((name) => `slug-${name.toLowerCase().replace(/ /g, '-')}`),
   },
 }));
 
@@ -49,7 +52,6 @@ describe('AdminConvidados Component Fixed', () => {
     const openBtn = screen.getByRole('button', { name: /Novo Convite/i });
     fireEvent.click(openBtn);
     
-    // Agora buscamos pelo Heading do modal para diferenciar do botão
     expect(screen.getByRole('heading', { name: /Novo Convite/i })).toBeInTheDocument();
     
     fireEvent.change(screen.getByLabelText(/Nome do Convite/i), { target: { value: 'Família Teste' } });
@@ -65,7 +67,6 @@ describe('AdminConvidados Component Fixed', () => {
   });
 
   test('deve permitir exportar CSV', async () => {
-    // Mock do clique para evitar erro de navegação no jsdom
     const spyClick = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
     render(<AdminConvidados />);

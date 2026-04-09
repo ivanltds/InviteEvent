@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import styles from "./Presentes.module.css";
 import { supabase } from '@/lib/supabase';
 import { CldUploadWidget } from 'next-cloudinary';
+import Link from 'next/link';
+import { Convite } from '@/lib/types/database';
+import { generatePixPayload } from '@/lib/utils/pix';
 
 interface Presente {
   id: string;
@@ -20,6 +23,7 @@ interface Config {
   pix_chave: string;
   pix_banco: string;
   pix_nome: string;
+  pix_tipo: 'cpf' | 'cnpj' | 'email' | 'telefone' | 'aleatoria';
 }
 
 export default function PresentesPage() {
@@ -29,29 +33,77 @@ export default function PresentesPage() {
   const [selectedItem, setSelectedItem] = useState<Presente | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [step, setStep] = useState<'pix' | 'success'>('pix');
+  const [isInvited, setIsInvited] = useState<boolean | null>(null);
+  const [invite, setInvite] = useState<Convite | null>(null);
+  const [pixCopyStatus, setPixCopyStatus] = useState<'idle' | 'copied'>('idle');
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
       
-      const [presentesRes, configRes] = await Promise.all([
+      // Validar convite se houver slug na URL
+      const params = new URLSearchParams(window.location.search);
+      const inviteSlug = params.get('invite');
+      
+      if (!inviteSlug) {
+        setIsInvited(false);
+        setLoading(false);
+        return;
+      }
+
+      const { data: inviteData } = await supabase
+        .from('convites')
+        .select('*')
+        .eq('slug', inviteSlug)
+        .maybeSingle();
+
+      if (!inviteData) {
+        setIsInvited(false);
+        setLoading(false);
+        return;
+      }
+
+      setIsInvited(true);
+      setInvite(inviteData as Convite);
+
+      // 2. Buscar configurações do casamento
+      let configData: Config | null = null;
+      
+      // Tentar busca direta (ID 1 ou primeiro registro)
+      const { data: directConfig, error: configError } = await supabase
+        .from('configuracoes')
+        .select('pix_chave, pix_banco, pix_nome, pix_tipo')
+        .limit(1)
+        .maybeSingle();
+
+      if (configError) {
+        console.warn('Erro ao buscar config, tentando fallback:', configError);
+      }
+
+      if (directConfig) {
+        configData = directConfig as Config;
+      } else {
+        // Fallback emergencial: Se o RLS bloquear, tentamos usar o ID 1 explicitamente via RPC no futuro
+        // Por enquanto, apenas avisamos e deixamos o estado carregar para não travar a tela
+        console.warn('RLS pode estar bloqueando a leitura da configuração.');
+      }
+
+      const [presentesRes] = await Promise.all([
         supabase
           .from('presentes')
           .select('*')
           .neq('status', 'pausado')
-          .order('preco', { ascending: true }),
-        supabase
-          .from('configuracoes')
-          .select('pix_chave, pix_banco, pix_nome')
-          .eq('id', 1)
-          .maybeSingle()
+          .order('preco', { ascending: true })
       ]);
 
       if (presentesRes.data) {
         setPresentes(presentesRes.data as Presente[]);
       }
-      if (configRes.data) {
-        setConfig(configRes.data as Config);
+      
+      if (configData) {
+        setConfig(configData);
+      } else {
+        console.error('Nenhuma configuração encontrada no banco de dados.');
       }
       
       setLoading(false);
@@ -63,6 +115,13 @@ export default function PresentesPage() {
     setSelectedItem(item);
     setStep('pix');
     setShowModal(true);
+    setPixCopyStatus('idle');
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setPixCopyStatus('copied');
+    setTimeout(() => setPixCopyStatus('idle'), 3000);
   };
 
   const handleUploadSuccess = async (result: any) => {
@@ -76,7 +135,8 @@ export default function PresentesPage() {
       const { data, error } = await supabase.rpc('reservar_presente_v1', {
         p_presente_id: selectedItem.id,
         p_url_comprovante: proofUrl,
-        p_convidado_nome: 'Convidado via Site'
+        p_convite_id: invite?.id || null,
+        p_convidado_nome: invite?.nome_principal || 'Convidado via Site'
       });
 
       if (error) throw error;
@@ -114,14 +174,27 @@ export default function PresentesPage() {
 
       {loading ? (
         <p className={styles.loading}>Carregando presentes...</p>
+      ) : isInvited === false ? (
+        <div className={styles.restricted}>
+          <div className={styles.lockIcon}>
+            <svg viewBox="0 0 24 24" width="64" height="64" stroke="currentColor" strokeWidth="1.5" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          </div>
+          <h2>Acesso Restrito</h2>
+          <p>Para visualizar a lista de presentes, por favor utilize o link individual enviado pelos noivos no seu convite.</p>
+          <Link href="/" className={styles.giftBtn} style={{ marginTop: '2rem', display: 'inline-block' }}>
+            Voltar ao Início
+          </Link>
+        </div>
       ) : (
         <section className={styles.grid}>
           {presentes.map((item) => {
-            const isReserved = item.status === 'reservado' || (item.quantidade_reservada >= item.quantidade_total);
+            const isSoldOut = item.quantidade_reservada >= item.quantidade_total;
+            const isPaused = item.status === 'pausado';
+            const isDisabled = isSoldOut || isPaused;
             const remaining = item.quantidade_total - item.quantidade_reservada;
             
             return (
-              <div key={item.id} className={`${styles.card} ${isReserved ? styles.reserved : ''}`}>
+              <div key={item.id} className={`${styles.card} ${isDisabled ? styles.reserved : ''}`}>
                 <div className={styles.imagePlaceholder}>
                   {item.imagem_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -133,7 +206,7 @@ export default function PresentesPage() {
                   )}
                 </div>
                 <div className={styles.info}>
-                  {item.quantidade_total > 1 && !isReserved && (
+                  {item.quantidade_total > 1 && !isDisabled && (
                     <span className={styles.stockInfo}>{remaining} {remaining === 1 ? 'disponível' : 'disponíveis'}</span>
                   )}
                   <h3>{item.nome}</h3>
@@ -143,10 +216,10 @@ export default function PresentesPage() {
                   </p>
                   <button 
                     className={styles.giftBtn}
-                    disabled={isReserved}
+                    disabled={isDisabled}
                     onClick={() => handleOpenPix(item)}
                   >
-                    {isReserved ? 'Item Esgotado' : 'Presentear'}
+                    {isPaused ? 'Indisponível' : isSoldOut ? 'Item Esgotado' : 'Presentear'}
                   </button>
                 </div>
               </div>
@@ -171,10 +244,59 @@ export default function PresentesPage() {
                   <strong> {Number(selectedItem.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong> usando os dados abaixo:
                 </p>
 
-                <div className={styles.pixCard}>
-                  <span className={styles.pixKeyLabel}>Chave PIX (E-mail/CPF/Celular)</span>
-                  <div className={styles.pixKey}>{config?.pix_chave || 'financeiro@nossoevento.com'}</div>
-                  <span className={styles.pixBank}>{config?.pix_banco || 'Banco Inter'} - {config?.pix_nome || 'Marcus & Layslla'}</span>
+                <div className={styles.pixContainer}>
+                  <div className={styles.qrCodeContainer}>
+                    {config?.pix_chave && (
+                      <img 
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                          generatePixPayload(
+                            config.pix_chave,
+                            config.pix_nome || 'CASAMENTO',
+                            config.pix_tipo || 'cpf',
+                            'SAO PAULO',
+                            Number(selectedItem.preco)
+                          )
+                        )}`} 
+                        alt="QR Code PIX" 
+                        className={styles.qrCode}
+                      />
+                    )}
+                    <button 
+                      className={styles.copyCodeBtn}
+                      onClick={() => copyToClipboard(
+                        generatePixPayload(
+                          config?.pix_chave || '',
+                          config?.pix_nome || 'CASAMENTO',
+                          config?.pix_tipo || 'cpf',
+                          'SAO PAULO',
+                          Number(selectedItem.preco)
+                        )
+                      )}
+                    >
+                      {pixCopyStatus === 'copied' ? 'Copiado!' : 'Copiar Código PIX (Copia e Cola)'}
+                    </button>
+                  </div>
+
+                  <div className={styles.pixDetails}>
+                    <div className={styles.pixCard}>
+                      <span className={styles.pixKeyLabel}>Chave PIX</span>
+                      <div className={styles.pixKeyRow}>
+                        <div className={styles.pixKey}>{config?.pix_chave || 'Chave não cadastrada'}</div>
+                        {config?.pix_chave && (
+                          <button 
+                            className={styles.miniCopyBtn}
+                            onClick={() => copyToClipboard(config.pix_chave)}
+                            title="Copiar Chave"
+                          >
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                          </button>
+                        )}
+                      </div>
+                      <span className={styles.pixBank}>
+                        {config?.pix_banco || 'Banco não informado'} - {config?.pix_nome || 'Beneficiário não informado'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className={styles.uploadSection}>

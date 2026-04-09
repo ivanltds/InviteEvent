@@ -96,7 +96,7 @@ export default function RSVP() {
               : 'Sua confirmação foi recebida. Mal podemos esperar para celebrar com você!'}
           </p>
           {!isRecusado && (
-            <Link href="/presentes" className={styles.primaryBtn} style={{ marginTop: '2rem', display: 'inline-block' }}>
+            <Link href={`/presentes?invite=${conviteEncontrado?.slug}`} className={styles.primaryBtn} style={{ marginTop: '2rem', display: 'inline-block' }}>
               Ver Lista de Presentes
             </Link>
           )}

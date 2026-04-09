@@ -9,6 +9,6 @@ describe('Navbar Component', () => {
     expect(screen.getByText('Nossa História')).toBeInTheDocument();
     expect(screen.getByText('O Evento')).toBeInTheDocument();
     expect(screen.getByText('RSVP')).toBeInTheDocument();
-    expect(screen.getByText('Presentes')).toBeInTheDocument();
+    expect(screen.queryByText('Presentes')).not.toBeInTheDocument();
   });
 });

@@ -62,6 +62,7 @@ export interface Configuracao {
   pix_chave?: string;
   pix_banco?: string;
   pix_nome?: string;
+  pix_tipo?: 'cpf' | 'cnpj' | 'email' | 'telefone' | 'aleatoria';
   historia_titulo?: string;
   historia_subtitulo?: string;
   historia_texto?: string;

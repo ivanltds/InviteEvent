@@ -1,6 +1,14 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import AdminLogin from '../page';
 
+// Mock do useRouter
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    refresh: jest.fn(),
+  }),
+}));
+
 describe('AdminLogin Error Branch', () => {
   test('deve limpar erro ao digitar novamente', () => {
     render(<AdminLogin />);

@@ -54,7 +54,10 @@ export default function LoginPage() {
         <input 
           type="email" 
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (error) setError('');
+          }}
           placeholder="E-mail"
           className={styles.input}
           required
@@ -63,7 +66,10 @@ export default function LoginPage() {
         <input 
           type="password" 
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            if (error) setError('');
+          }}
           placeholder="Senha"
           className={styles.input}
           required

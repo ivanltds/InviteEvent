@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AdminConvidados from '../page';
 import { inviteService } from '@/lib/services/inviteService';
+import { configService } from '@/lib/services/configService';
 
 // Mock do inviteService
 jest.mock('@/lib/services/inviteService', () => ({
@@ -10,6 +11,23 @@ jest.mock('@/lib/services/inviteService', () => ({
     updateInvite: jest.fn(),
     deleteInvite: jest.fn(),
     generateObfuscatedSlug: jest.fn((name) => `slug-${name.toLowerCase().replace(/ /g, '-')}`),
+    calculateDashboardStats: jest.fn().mockReturnValue({
+      totalConvites: 0,
+      convitesRespondidos: 0,
+      pessoasConfirmadas: 0,
+      pessoasRecusadas: 0,
+      pessoasPendentes: 0,
+      excedentes: 0
+    }),
+  },
+}));
+
+// Mock do configService
+jest.mock('@/lib/services/configService', () => ({
+  configService: {
+    getConfig: jest.fn().mockResolvedValue({
+      whatsapp_template: 'Olá {nome}, aqui está o seu link: {link}',
+    }),
   },
 }));
 
@@ -44,6 +62,20 @@ describe('AdminConvidados Component Fixed', () => {
   test('deve listar convidados ao carregar', async () => {
     render(<AdminConvidados />);
     await waitFor(() => expect(screen.getByText('João Silva')).toBeInTheDocument());
+  });
+
+  test('deve renderizar o botão do WhatsApp e abrir link ao clicar', async () => {
+    const spyOpen = jest.spyOn(window, 'open').mockImplementation(() => null);
+    render(<AdminConvidados />);
+    
+    await waitFor(() => expect(screen.getByText('João Silva')).toBeInTheDocument());
+    
+    const whatsappBtn = screen.getByTitle('Enviar convite via WhatsApp');
+    expect(whatsappBtn).toBeInTheDocument();
+    
+    fireEvent.click(whatsappBtn);
+    expect(spyOpen).toHaveBeenCalledWith(expect.stringContaining('wa.me'), '_blank');
+    spyOpen.mockRestore();
   });
 
   test('deve abrir modal e permitir adicionar novo convite', async () => {

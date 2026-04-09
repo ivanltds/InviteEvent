@@ -50,6 +50,7 @@ describe('PresentesPage Public', () => {
         return {
           select: jest.fn().mockReturnThis(),
           eq: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
           maybeSingle: jest.fn().mockResolvedValue({ data: mockConfig, error: null }),
         };
       }

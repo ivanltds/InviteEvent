@@ -196,3 +196,62 @@
     padding: 0;
   }
 }
+
+/* Lista de Membros */
+.membersList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.memberItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.memberItem:hover {
+  border-color: var(--accent-safe);
+  background-color: rgba(0,0,0,0.01);
+}
+
+.checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(0,0,0,0.2);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  color: white;
+  flex-shrink: 0;
+}
+
+.checkbox.checked {
+  background-color: var(--accent-safe);
+  border-color: var(--accent-safe);
+}
+
+.memberItem span {
+  font-size: 1.1rem;
+  color: var(--text-main-safe);
+}
+
+.errorMessage {
+  background-color: #fff5f5;
+  color: #c53030;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #feb2b2;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  text-align: center;
+}

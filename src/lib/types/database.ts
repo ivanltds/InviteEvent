@@ -5,8 +5,17 @@ export interface Convite {
   id: string;
   nome_principal: string;
   limite_pessoas: number;
-  tipo: InviteType | string;
+  tipo: InviteType;
   slug: string;
+  created_at: string;
+  user_id?: string;
+}
+
+export interface ConviteMembro {
+  id: string;
+  convite_id: string;
+  nome: string;
+  confirmado: boolean | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -63,6 +72,7 @@ export interface Configuracao {
   pix_banco?: string;
   pix_nome?: string;
   pix_tipo?: 'cpf' | 'cnpj' | 'email' | 'telefone' | 'aleatoria';
+  whatsapp_template?: string;
   historia_titulo?: string;
   historia_subtitulo?: string;
   historia_texto?: string;

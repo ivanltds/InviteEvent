@@ -44,7 +44,7 @@ export default function LandingPage() {
             </div>
             <h1>Crie uma experiência digital inesquecível para o seu casamento</h1>
             <p>
-              Transforme seu convite em um portal interativo. Gestão de RSVP, lista de presentes, 
+              Transforme seu convite em um portal interativo. Gestão de presenças, lista de presentes, 
               personalização visual completa e segurança para seus convidados.
             </p>
             <div className={styles.heroActions}>
@@ -81,7 +81,7 @@ export default function LandingPage() {
           <div className={styles.featureGrid}>
             <div className={styles.featureCard}>
               <div className={styles.iconWrapper}><Icons.CheckCircle /></div>
-              <h3>RSVP Inteligente</h3>
+              <h3>Presença Confirmada</h3>
               <p>Confirmações de presença integradas com gestão de acompanhantes e restrições alimentares.</p>
             </div>
 

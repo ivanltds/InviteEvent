@@ -3,28 +3,54 @@
 import { useState, useEffect } from 'react';
 import styles from './AdminConvidados.module.css';
 import { inviteService, InviteWithRSVP } from '@/lib/services/inviteService';
+import { InviteType, Configuracao } from '@/lib/types/database';
+import { generateWhatsappLink } from '@/lib/utils/whatsapp';
+import { configService } from '@/lib/services/configService';
 
 export default function AdminConvidados() {
   const [invites, setInvites] = useState<InviteWithRSVP[]>([]);
+  const [config, setConfig] = useState<Configuracao | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [editingInvite, setEditingInvite] = useState<InviteWithRSVP | null>(null);
   const [formData, setFormData] = useState({
     nome_principal: '',
     limite_pessoas: 1,
-    tipo: 'individual'
+    tipo: 'individual' as InviteType
   });
+  const [members, setMembers] = useState<{ id?: string; nome: string }[]>([]);
 
   const fetchData = async () => {
     setLoading(true);
-    const data = await inviteService.getAllInvites();
-    setInvites(data);
+    const [allInvites, configData] = await Promise.all([
+      inviteService.getAllInvites(),
+      configService.getConfig()
+    ]);
+    setInvites(allInvites);
+    setConfig(configData);
     setLoading(false);
   };
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleSendWhatsapp = (invite: InviteWithRSVP) => {
+    if (!config) return;
+    
+    const rsvp = invite.rsvp && invite.rsvp[0];
+    const telefone = rsvp?.telefone || '';
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const link = `${baseUrl}/inv/${invite.slug}`;
+    
+    const url = generateWhatsappLink(
+      telefone, 
+      config.whatsapp_template || '', 
+      { nome: invite.nome_principal, link }
+    );
+    
+    window.open(url, '_blank');
+  };
 
   const handleAddInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,8 +62,17 @@ export default function AdminConvidados() {
     });
 
     if (success) {
+      // Buscar o convite recém criado para obter o ID
+      const all = await inviteService.getAllInvites();
+      const newInvite = all.find(i => i.slug === slug);
+      
+      if (newInvite && members.length > 0) {
+        await inviteService.saveMembers(newInvite.id, members);
+      }
+
       setIsAdding(false);
       setFormData({ nome_principal: '', limite_pessoas: 1, tipo: 'individual' });
+      setMembers([]);
       fetchData();
     } else {
       alert('Erro ao criar convite: ' + (error?.message || 'Erro desconhecido'));
@@ -51,8 +86,12 @@ export default function AdminConvidados() {
     const { success, error } = await inviteService.updateInvite(editingInvite.id, formData);
 
     if (success) {
+      if (members.length > 0) {
+        await inviteService.saveMembers(editingInvite.id, members);
+      }
       setEditingInvite(null);
       setFormData({ nome_principal: '', limite_pessoas: 1, tipo: 'individual' });
+      setMembers([]);
       fetchData();
     } else {
       alert('Erro ao atualizar convite: ' + (error?.message || 'Erro desconhecido'));
@@ -77,6 +116,21 @@ export default function AdminConvidados() {
       limite_pessoas: invite.limite_pessoas,
       tipo: invite.tipo
     });
+    setMembers(invite.membros || []);
+  };
+
+  const addMemberField = () => {
+    setMembers([...members, { nome: '' }]);
+  };
+
+  const removeMemberField = (index: number) => {
+    setMembers(members.filter((_, i) => i !== index));
+  };
+
+  const updateMemberName = (index: number, name: string) => {
+    const newMembers = [...members];
+    newMembers[index].nome = name;
+    setMembers(newMembers);
   };
 
   const copyInviteLink = (slug: string) => {
@@ -86,45 +140,56 @@ export default function AdminConvidados() {
   };
 
   const getStats = () => {
-    const totalConvites = invites.filter(i => i.rsvp && i.rsvp.length > 0).length;
-    const totalPessoas = invites.reduce((acc, curr) => {
-      const rsvp = curr.rsvp && curr.rsvp[0];
-      return acc + (rsvp?.confirmados || 0);
-    }, 0);
-    
-    const excedentes = invites.reduce((acc, curr) => {
-      const rsvp = curr.rsvp && curr.rsvp[0];
-      if (rsvp?.status === 'excedente_solicitado') {
-        return acc + (rsvp.confirmados - curr.limite_pessoas);
-      }
-      return acc;
-    }, 0);
-
-    return { totalConvites, totalPessoas, excedentes };
+    const calculated = inviteService.calculateDashboardStats(invites);
+    return { 
+      totalConvites: calculated.convitesRespondidos, 
+      totalPessoas: calculated.pessoasConfirmadas, 
+      excedentes: calculated.excedentes 
+    };
   };
 
   const stats = getStats();
 
   const exportToCSV = () => {
-    const headers = ['Nome', 'Tipo', 'Limite', 'Status', 'Confirmados', 'Mensagem'];
-    const rows = invites.map(i => {
+    const headers = ['Convite Principal', 'Nome do Membro', 'Confirmado', 'Tipo', 'Restrições Alimentares', 'Mensagem', 'Telefone'];
+    const rows: string[] = [];
+
+    invites.forEach(i => {
       const rsvp = i.rsvp && i.rsvp[0];
-      return [
-        i.nome_principal,
-        i.tipo,
-        i.limite_pessoas,
-        rsvp?.status || 'Pendente',
-        rsvp?.confirmados || 0,
-        rsvp?.mensagem || ''
-      ].join(',');
+      
+      // Se houver membros nominais, exporta um por linha
+      if (i.membros && i.membros.length > 0) {
+        i.membros.forEach(m => {
+          rows.push([
+            `"${i.nome_principal}"`,
+            `"${m.nome}"`,
+            m.confirmado === true ? 'Sim' : m.confirmado === false ? 'Não' : 'Pendente',
+            `"${i.tipo}"`,
+            `"${rsvp?.restricoes || ''}"`,
+            `"${rsvp?.mensagem || ''}"`,
+            `"${rsvp?.telefone || ''}"`
+          ].join(','));
+        });
+      } else {
+        // Fallback para convites sem membros nominais
+        rows.push([
+          `"${i.nome_principal}"`,
+          'N/A',
+          rsvp ? (rsvp.confirmados > 0 ? 'Sim' : 'Não') : 'Pendente',
+          `"${i.tipo}"`,
+          `"${rsvp?.restricoes || ''}"`,
+          `"${rsvp?.mensagem || ''}"`,
+          `"${rsvp?.telefone || ''}"`
+        ].join(','));
+      }
     });
 
     const csvContent = [headers.join(','), ...rows].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', 'lista_convidados.csv');
+    link.setAttribute('download', `lista_convidados_${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -157,28 +222,39 @@ export default function AdminConvidados() {
               />
             </div>
             <div className={styles.fieldGroup}>
-              <label htmlFor="limit">Limite de Pessoas</label>
-              <input 
-                id="limit"
-                type="number" 
-                min="1"
-                required 
-                value={formData.limite_pessoas}
-                onChange={(e) => setFormData({...formData, limite_pessoas: parseInt(e.target.value)})}
-              />
-            </div>
-            <div className={styles.fieldGroup}>
               <label htmlFor="type">Tipo</label>
               <select 
                 id="type"
                 value={formData.tipo}
-                onChange={(e) => setFormData({...formData, tipo: e.target.value})}
+                onChange={(e) => setFormData({...formData, tipo: e.target.value as InviteType})}
               >
                 <option value="individual">Individual</option>
                 <option value="casal">Casal</option>
                 <option value="familia">Família</option>
               </select>
             </div>
+
+            <div className={styles.fieldGroup}>
+              <label>Membros Nominais (Opcional - Para confirmação individual)</label>
+              <div className={styles.membersManager}>
+                {members.map((member, index) => (
+                  <div key={index} className={styles.memberRow}>
+                    <input 
+                      type="text" 
+                      placeholder="Nome do membro"
+                      value={member.nome}
+                      onChange={(e) => updateMemberName(index, e.target.value)}
+                      className={styles.memberInput}
+                    />
+                    <button type="button" className={styles.removeMemberBtn} onClick={() => removeMemberField(index)}>&times;</button>
+                  </div>
+                ))}
+                <button type="button" className={styles.addMemberBtn} onClick={addMemberField}>
+                  + Adicionar Membro
+                </button>
+              </div>
+            </div>
+
             <div className={styles.actions}>
               <button type="submit" className={styles.saveBtn}>
                 {editingInvite ? 'Salvar Alterações' : 'Criar Convite'}
@@ -225,8 +301,7 @@ export default function AdminConvidados() {
               <tr>
                 <th>Convidado</th>
                 <th>Tipo</th>
-                <th>Limite</th>
-                <th>RSVP</th>
+                <th>Confirmação</th>
                 <th>Ações</th>
               </tr>
             </thead>
@@ -244,7 +319,6 @@ export default function AdminConvidados() {
                       </div>
                     </td>
                     <td>{invite.tipo}</td>
-                    <td>{invite.limite_pessoas}</td>
                     <td>
                       {rsvp ? (
                         <span className={`${styles.statusBadge} ${styles[rsvp.status]}`}>
@@ -256,6 +330,13 @@ export default function AdminConvidados() {
                     </td>
                     <td>
                       <div className={styles.actionsCell}>
+                        <button 
+                          className={styles.whatsappBtn} 
+                          onClick={() => handleSendWhatsapp(invite)}
+                          title="Enviar convite via WhatsApp"
+                        >
+                          Whats
+                        </button>
                         <button className={styles.copyBtn} onClick={() => copyInviteLink(invite.slug)}>
                           Link
                         </button>

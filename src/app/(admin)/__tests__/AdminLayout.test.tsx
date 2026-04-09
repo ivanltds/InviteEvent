@@ -1,9 +1,18 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import AdminLayout from '../layout';
 import { usePathname } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 
 jest.mock('next/navigation', () => ({
   usePathname: jest.fn(),
+}));
+
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: {
+      getSession: jest.fn().mockResolvedValue({ data: { session: null }, error: null }),
+    },
+  },
 }));
 
 jest.mock('@/components/admin/Sidebar', () => {
@@ -13,31 +22,43 @@ jest.mock('@/components/admin/Sidebar', () => {
 });
 
 describe('AdminLayout', () => {
+  const originalEnv = process.env;
+
   beforeEach(() => {
     jest.clearAllMocks();
     (usePathname as jest.Mock).mockReturnValue('/admin/convidados');
+    process.env = { ...originalEnv, NEXT_PUBLIC_ADMIN_PASSWORD: 'password' };
     // Limpa cookies
     document.cookie = 'admin-auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
   });
 
-  test('não deve mostrar sidebar se não autorizado', () => {
-    render(<AdminLayout><div>Content</div></AdminLayout>);
-    expect(screen.queryByTestId('sidebar')).not.toBeInTheDocument();
+  afterAll(() => {
+    process.env = originalEnv;
   });
 
-  test('deve mostrar sidebar se autorizado e não na página de login', () => {
-    process.env.NEXT_PUBLIC_ADMIN_PASSWORD = 'password';
+  test('não deve mostrar sidebar se não autorizado', async () => {
+    render(<AdminLayout><div>Content</div></AdminLayout>);
+    await waitFor(() => {
+      expect(screen.queryByTestId('sidebar')).not.toBeInTheDocument();
+    });
+  });
+
+  test('deve mostrar sidebar se autorizado e não na página de login', async () => {
     document.cookie = 'admin-auth=password';
     
     render(<AdminLayout><div>Content</div></AdminLayout>);
-    expect(screen.getByTestId('sidebar')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('sidebar')).toBeInTheDocument();
+    });
   });
 
-  test('não deve mostrar sidebar na página de login mesmo autorizado', () => {
-    (usePathname as jest.Mock).mockReturnValue('/admin');
+  test('não deve mostrar sidebar na página de login mesmo autorizado', async () => {
+    (usePathname as jest.Mock).mockReturnValue('/admin/login');
     document.cookie = 'admin-auth=password';
     
     render(<AdminLayout><div>Content</div></AdminLayout>);
-    expect(screen.queryByTestId('sidebar')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByTestId('sidebar')).not.toBeInTheDocument();
+    });
   });
 });

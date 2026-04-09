@@ -3,19 +3,50 @@ import RSVP from '../RSVP';
 import { supabase } from '@/lib/supabase';
 
 // Mock consistente para o encadeamento do Supabase
-const mockInsert = jest.fn().mockResolvedValue({ error: null });
 const mockMaybeSingle = jest.fn();
-
-const mockQueryBuilder = {
-  select: jest.fn().mockReturnThis(),
-  eq: jest.fn().mockReturnThis(),
-  maybeSingle: mockMaybeSingle,
-  insert: mockInsert,
-};
 
 jest.mock('@/lib/supabase', () => ({
   supabase: {
-    from: jest.fn(() => mockQueryBuilder),
+    from: jest.fn().mockImplementation((table) => {
+      if (table === 'configuracoes') {
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          maybeSingle: mockMaybeSingle
+        };
+      }
+      if (table === 'convites') {
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          maybeSingle: mockMaybeSingle
+        };
+      }
+      if (table === 'convidados_membros') {
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          order: jest.fn().mockResolvedValue({ data: [], error: null }),
+          update: jest.fn().mockReturnThis(),
+          then: jest.fn().mockResolvedValue({ data: [], error: null })
+        };
+      }
+      if (table === 'rsvp') {
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+          insert: jest.fn().mockResolvedValue({ error: null })
+        };
+      }
+      return {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null })
+      };
+    }),
   },
 }));
 
@@ -49,12 +80,12 @@ describe('RSVP Component (Restricted Access)', () => {
     render(<RSVP />);
     
     await waitFor(() => {
-      expect(screen.getByText(/Acesso Restrito/i)).toBeInTheDocument();
+      expect(screen.getByText('Acesso Restrito')).toBeInTheDocument();
     });
   });
 
   it('deve carregar o formulário quando um convite válido é fornecido', async () => {
-    // Mock do URLSearchParams retornando o slug
+    // Mock do URLSearchParams retornando um convite
     global.URLSearchParams = jest.fn().mockImplementation(() => ({
       get: jest.fn().mockReturnValue('joao-silva')
     }));
@@ -62,7 +93,7 @@ describe('RSVP Component (Restricted Access)', () => {
     mockMaybeSingle
       .mockResolvedValueOnce({ data: { prazo_rsvp: '2026-06-13' }, error: null })
       .mockResolvedValueOnce({ 
-        data: { id: 'c1', nome_principal: 'João Silva', limite_pessoas: 2, slug: 'joao-silva' }, 
+        data: { id: 'c1', nome_principal: 'João Silva', tipo: 'individual', slug: 'joao-silva', limite_pessoas: 1 }, 
         error: null 
       });
 

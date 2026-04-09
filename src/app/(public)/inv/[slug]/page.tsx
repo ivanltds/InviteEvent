@@ -92,7 +92,7 @@ export default function InvitationPage() {
       {visibility.historia && <Historia />}
       {visibility.noivos && <OsNoivos />}
       <Detalhes />
-      <RSVP />
+      <RSVP inviteSlug={slug} />
       {visibility.faq && <FAQ />}
     </>
   );

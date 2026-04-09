@@ -1,12 +1,27 @@
 import { proxy } from '../proxy';
+import { NextResponse } from 'next/server';
 
-const mockNext = jest.fn(() => ({ status: 200, type: 'next' }));
-const mockRedirect = jest.fn((url) => ({ status: 307, url: url.toString(), type: 'redirect' }));
+// Mock do Supabase
+const mockGetUser = jest.fn();
+jest.mock('@supabase/supabase-js', () => ({
+  createClient: () => ({
+    auth: {
+      getUser: mockGetUser
+    }
+  })
+}));
 
+// Mock do NextResponse
 jest.mock('next/server', () => ({
   NextResponse: {
-    next: () => mockNext(),
-    redirect: (url: any) => mockRedirect(url),
+    next: jest.fn().mockReturnValue({ status: 200 }),
+    redirect: jest.fn().mockImplementation((url) => ({ 
+      status: 307, 
+      url: url.toString(),
+      cookies: {
+        delete: jest.fn()
+      }
+    })),
   },
 }));
 
@@ -15,22 +30,26 @@ describe('Proxy Admin Auth', () => {
     nextUrl: { pathname: path },
     url: `http://localhost${path}`,
     cookies: {
-      get: jest.fn((name) => name === 'admin-auth' && cookieValue ? { value: cookieValue } : undefined),
+      get: jest.fn((name) => name === 'sb-access-token' && cookieValue ? { value: cookieValue } : undefined),
     },
   });
 
-  test('deve redirecionar se não autorizado em rota admin', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('deve redirecionar se não autorizado em rota admin', async () => {
     const req = createMockRequest('/admin/convidados') as any;
-    const res = proxy(req);
-    expect(mockRedirect).toHaveBeenCalled();
+    const res = await proxy(req);
+    expect(NextResponse.redirect).toHaveBeenCalled();
     expect(res?.status).toBe(307);
   });
 
-  test('deve permitir acesso se cookie for válido', () => {
-    const pass = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || '3781l@m@';
-    const req = createMockRequest('/admin/convidados', pass) as any;
-    const res = proxy(req);
-    expect(mockNext).toHaveBeenCalled();
+  test('deve permitir acesso se token for válido', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: '1' } }, error: null });
+    const req = createMockRequest('/admin/convidados', 'valid-token') as any;
+    const res = await proxy(req);
+    expect(NextResponse.next).toHaveBeenCalled();
     expect(res?.status).toBe(200);
   });
 });

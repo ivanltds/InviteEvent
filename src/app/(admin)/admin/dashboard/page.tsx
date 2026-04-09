@@ -1,49 +1,132 @@
 'use client';
 
-import styles from '../admin.module.css';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import styles from './Dashboard.module.css';
+import { inviteService } from '@/lib/services/inviteService';
+import { supabase } from '@/lib/supabase';
 
 export default function AdminDashboard() {
-  const router = useRouter();
+  const [stats, setStats] = useState({
+    totalConvites: 0,
+    convitesRespondidos: 0,
+    pessoasConfirmadas: 0,
+    pessoasRecusadas: 0,
+    pessoasPendentes: 0,
+    excedentes: 0
+  });
+  const [financeiro, setFinanceiro] = useState({
+    totalPresentes: 0,
+    recebido: 0
+  });
+  const [restricoes, setRestricoes] = useState<{nome: string, texto: string}[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleLogout = () => {
-    document.cookie = 'admin-auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-    router.push('/admin');
-  };
+  useEffect(() => {
+    async function fetchAll() {
+      setLoading(true);
+      const invites = await inviteService.getAllInvites();
+      const calculated = inviteService.calculateDashboardStats(invites);
+      setStats(calculated);
+
+      // Restrições alimentares
+      const comRestricao = invites
+        .filter(i => i.rsvp && i.rsvp[0]?.restricoes)
+        .map(i => ({ 
+          nome: i.nome_principal, 
+          texto: i.rsvp[0].restricoes || ''
+        }));
+      setRestricoes(comRestricao);
+
+      // Buscar dados financeiros (presentes recebidos)
+      const { data: comprovantes } = await supabase.from('comprovantes').select('presente:presentes(preco)');
+      if (comprovantes) {
+        const total = comprovantes.reduce((acc: number, curr: any) => acc + (curr.presente?.preco || 0), 0);
+        setFinanceiro(prev => ({ ...prev, recebido: total }));
+      }
+
+      setLoading(false);
+    }
+    fetchAll();
+  }, []);
+
+  if (loading) return <div className={styles.container}><p>Carregando dashboard...</p></div>;
 
   return (
-    <main className={styles.adminContent}>
+    <main className={styles.container}>
       <header className={styles.header}>
-        <div className={styles.headerTitle}>
+        <div>
           <h1>Dashboard Geral</h1>
-          <button onClick={handleLogout} className={styles.logoutBtn}>Sair</button>
+          <p>Visão em tempo real do seu grande dia.</p>
         </div>
-        <p>Bem-vindo, Organizador! Gerencie seu evento através do menu lateral.</p>
       </header>
-      
-      <div className={styles.dashboardGrid}>
-        <Link href="/admin/convidados" className={styles.card}>
-          <div className={styles.cardIcon}>
-            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-          </div>
-          <h3>Gestão de Convidados</h3>
-          <p>Gerencie quem vai à festa.</p>
-        </Link>
-        <Link href="/admin/presentes" className={styles.card}>
-          <div className={styles.cardIcon}>
-            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
-          </div>
-          <h3>Lista de Presentes</h3>
-          <p>Acompanhe os presentes.</p>
-        </Link>
-        <Link href="/admin/configuracoes" className={styles.card}>
-          <div className={styles.cardIcon}>
-            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-          </div>
-          <h3>Configurações</h3>
-          <p>Nomes, datas e locais.</p>
-        </Link>
+
+      <section className={styles.statsGrid}>
+        <div className={styles.statCard}>
+          <h3>Pessoas Confirmadas</h3>
+          <p className={styles.statNumber}>{stats.pessoasConfirmadas}</p>
+          <p className={styles.statSub}>presenças garantidas</p>
+        </div>
+        <div className={styles.statCard}>
+          <h3>Pendentes</h3>
+          <p className={styles.statNumber} style={{ color: '#ecc94b' }}>{stats.pessoasPendentes}</p>
+          <p className={styles.statSub}>aguardando resposta</p>
+        </div>
+        <div className={styles.statCard}>
+          <h3>Convites Respondidos</h3>
+          <p className={styles.statNumber}>{stats.convitesRespondidos} / {stats.totalConvites}</p>
+          <p className={styles.statSub}>{Math.round((stats.convitesRespondidos / stats.totalConvites) * 100) || 0}% de adesão</p>
+        </div>
+        <div className={styles.statCard}>
+          <h3>Financeiro Presentes</h3>
+          <p className={styles.statNumber} style={{ color: '#48bb78' }}>
+            {financeiro.recebido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+          </p>
+          <p className={styles.statSub}>recebidos via PIX</p>
+        </div>
+      </section>
+
+      <div className={styles.dashboardLayout}>
+        <div className={styles.mainPanel}>
+          <h2 className={styles.sectionTitle}>Monitor de Restrições Alimentares</h2>
+          {restricoes.length > 0 ? (
+            <div className={styles.restrictionsList}>
+              {restricoes.map((item, idx) => (
+                <div key={idx} className={styles.restrictionCard}>
+                  <strong>{item.nome}</strong>
+                  <p>{item.texto}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ padding: '4rem 2rem', textAlign: 'center', background: '#fcfcfc', borderRadius: '8px', border: '1px dashed #ddd' }}>
+              <p style={{ opacity: 0.6 }}>Nenhuma restrição alimentar informada até o momento.</p>
+            </div>
+          )}
+        </div>
+        
+        <div className={styles.sidePanel}>
+          <h2 className={styles.sectionTitle}>Resumo Operacional</h2>
+          <ul className={styles.recentActivity}>
+             <li className={styles.activityItem}>
+               <span>Total de Convites</span>
+               <span className={styles.badge + ' ' + styles.badgeInfo}>{stats.totalConvites}</span>
+             </li>
+             <li className={styles.activityItem}>
+               <span>Pessoas Recusadas</span>
+               <span className={styles.badge}>{stats.pessoasRecusadas}</span>
+             </li>
+             <li className={styles.activityItem}>
+               <span>Excedentes Solicitados</span>
+               <span className={styles.badge} style={{ backgroundColor: stats.excedentes > 0 ? '#fff5f5' : 'transparent', color: stats.excedentes > 0 ? '#c53030' : 'inherit' }}>
+                 {stats.excedentes}
+               </span>
+             </li>
+             <li className={styles.activityItem}>
+               <span>Meta Financeira</span>
+               <span className={styles.badgeSuccess}>Ativa</span>
+             </li>
+          </ul>
+        </div>
       </div>
     </main>
   );

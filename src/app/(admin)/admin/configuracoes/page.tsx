@@ -280,7 +280,7 @@ export default function AdminConfig() {
                   />
                 </div>
                 <div className={styles.field}>
-                  <label htmlFor="prazo_rsvp">Prazo Limite RSVP</label>
+                  <label htmlFor="prazo_rsvp">Prazo para Confirmações</label>
                   <input
                     id="prazo_rsvp"
                     type="date"
@@ -364,7 +364,7 @@ export default function AdminConfig() {
                     onChange={(e) => setConfig({...config, pix_banco: e.target.value})}
                   />
                 </div>
-                <div className={styles.fieldFull}>
+                <div className={styles.field}>
                   <label htmlFor="pix_nome">Nome do Beneficiário</label>
                   <input
                     id="pix_nome"
@@ -373,8 +373,28 @@ export default function AdminConfig() {
                     onChange={(e) => setConfig({...config, pix_nome: e.target.value})}
                   />
                 </div>
-              </div>
-            </section>
+                </div>
+                </section>
+
+                <section className={styles.section}>
+                <h2>Mensagem do WhatsApp (Convite)</h2>
+                <div className={styles.grid}>
+                <div className={styles.field} style={{ gridColumn: '1 / -1' }}>
+                  <label htmlFor="whatsapp_template">Template da Mensagem</label>
+                  <textarea
+                    id="whatsapp_template"
+                    rows={4}
+                    value={config.whatsapp_template}
+                    onChange={(e) => setConfig({...config, whatsapp_template: e.target.value})}
+                    placeholder="Use {nome} e {link} para personalizar automaticamente."
+                    className={styles.textarea}
+                  />
+                  <p className={styles.helpText}>
+                    Variáveis disponíveis: <strong>{'{nome}'}</strong> (Nome do convite) e <strong>{'{link}'}</strong> (Link individual).
+                  </p>
+                </div>
+                </div>
+                </section>
 
             <button type="submit" className={styles.saveBtn} disabled={saving}>
               {saving ? 'Salvando...' : 'Salvar Todas as Alterações'}

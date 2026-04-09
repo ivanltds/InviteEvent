@@ -85,7 +85,7 @@ describe('Admin Presentes - Full Lifecycle (TDD)', () => {
     fireEvent.click(toggleBtn);
     
     await waitFor(() => {
-      expect(mockUpdate).toHaveBeenCalledWith({ status: 'reservado' });
+      expect(mockUpdate).toHaveBeenCalledWith({ status: 'pausado' });
     });
   });
 });

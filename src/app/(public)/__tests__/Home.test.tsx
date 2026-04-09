@@ -16,7 +16,7 @@ describe('Landing Page (Marketing)', () => {
     
     // Busca específica para evitar conflito com o texto de descrição no Hero
     expect(screen.getByRole('heading', { name: /Lista de Presentes/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /RSVP Inteligente/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Presença Confirmada/i })).toBeInTheDocument();
   });
 
   test('deve conter o CTA para o admin', () => {

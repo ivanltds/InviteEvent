@@ -7,6 +7,14 @@ jest.mock('@/lib/services/inviteService', () => ({
     getAllInvites: jest.fn(),
     updateInvite: jest.fn(),
     deleteInvite: jest.fn(),
+    calculateDashboardStats: jest.fn().mockReturnValue({
+      totalConvites: 0,
+      convitesRespondidos: 0,
+      pessoasConfirmadas: 0,
+      pessoasRecusadas: 0,
+      pessoasPendentes: 0,
+      excedentes: 0
+    }),
   },
 }));
 

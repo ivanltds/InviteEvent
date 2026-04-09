@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { RSVP, Convite, Configuracao } from '@/lib/types/database';
+import { RSVP, Convite, Configuracao, ConviteMembro } from '@/lib/types/database';
 
 export const rsvpService = {
   async getInviteBySlug(slug: string): Promise<Convite | null> {
@@ -10,10 +10,49 @@ export const rsvpService = {
       .maybeSingle();
 
     if (error) {
-      console.error('Error fetching invite:', error);
+      console.error('Error fetching invite by slug:', error);
       return null;
     }
     return data as Convite;
+  },
+
+  async getInviteMembers(inviteId: string): Promise<ConviteMembro[]> {
+    const { data, error } = await supabase
+      .from('convidados_membros')
+      .select('*')
+      .eq('convite_id', inviteId)
+      .order('nome', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching members:', error);
+      return [];
+    }
+    return data as ConviteMembro[];
+  },
+
+  async updateMemberStatus(memberId: string, confirmado: boolean): Promise<boolean> {
+    const { error } = await supabase
+      .from('convidados_membros')
+      .update({ confirmado })
+      .eq('id', memberId);
+
+    return !error;
+  },
+
+  async getExistingRSVP(inviteId: string): Promise<RSVP | null> {
+    const { data, error } = await supabase
+      .from('rsvp')
+      .select('*')
+      .eq('convite_id', inviteId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching existing RSVP:', error);
+      return null;
+    }
+    return data as RSVP;
   },
 
   async searchInvite(query: string): Promise<Convite | null> {

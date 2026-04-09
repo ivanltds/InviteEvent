@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Pinyon_Script, Inter } from "next/font/google";
 import "./globals.css";
+import { Suspense } from "react";
 import Navbar from "@/components/ui/Navbar";
 import DynamicStyles from "@/components/ui/DynamicStyles";
 
@@ -33,7 +34,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${playfair.variable} ${pinyon.variable} ${inter.variable}`} data-scroll-behavior="smooth">
       <body>
-        <DynamicStyles />
+        <Suspense fallback={null}>
+          <DynamicStyles />
+        </Suspense>
         <Navbar />
         {children}
       </body>

@@ -112,9 +112,9 @@ export const eventService = {
       .eq('evento_id', eventId);
     
     if (error) return [];
-    return data.map(item => ({
+    return (data as any[]).map((item: any) => ({
       ...item,
-      email: (item as any).user?.email || 'N/A'
+      email: item.user?.email || 'N/A'
     }));
   },
 

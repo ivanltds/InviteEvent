@@ -1,154 +1,134 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import styles from './Dashboard.module.css';
-import { inviteService } from '@/lib/services/inviteService';
-import { supabase } from '@/lib/supabase';
 import { useEvent } from '@/lib/contexts/EventContext';
+import { eventService } from '@/lib/services/eventService';
+import styles from './Dashboard.module.css';
+import { Evento } from '@/lib/types/database';
+import { useRouter } from 'next/navigation';
 
-export default function AdminDashboard() {
-  const { currentEvent, loading: eventLoading } = useEvent();
-  const [stats, setStats] = useState({
-    totalConvites: 0,
-    convitesRespondidos: 0,
-    pessoasConfirmadas: 0,
-    pessoasRecusadas: 0,
-    pessoasPendentes: 0,
-    excedentes: 0
-  });
-  const [financeiro, setFinanceiro] = useState({
-    totalPresentes: 0,
-    recebido: 0
-  });
-  const [restricoes, setRestricoes] = useState<{nome: string, texto: string}[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function DashboardPage() {
+  const { events, setCurrentEvent, refreshEvents, loading: contextLoading } = useEvent();
+  const [isCreating, setIsCreating] = useState(false);
+  const [eventName, setEventName] = useState('');
+  const [stats, setStats] = useState<Record<string, { totalConvites: number, totalConfirmados: number }>>({});
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    async function fetchAll() {
-      if (!currentEvent) {
-        setLoading(false);
-        return;
+    async function fetchStats() {
+      const newStats: any = {};
+      for (const event of events) {
+        const s = await eventService.getEventStats(event.id);
+        newStats[event.id] = s;
       }
-      setLoading(true);
-      const invites = await inviteService.getAllInvites(currentEvent.id);
-      const calculated = inviteService.calculateDashboardStats(invites);
-      setStats(calculated);
-
-      // Restrições alimentares
-      const comRestricao = invites
-        .filter(i => i.rsvp && i.rsvp[0]?.restricoes)
-        .map(i => ({ 
-          nome: i.nome_principal, 
-          texto: i.rsvp[0].restricoes || ''
-        }));
-      setRestricoes(comRestricao);
-
-      // Buscar dados financeiros (presentes recebidos para este evento)
-      const { data: comprovantes } = await supabase
-        .from('comprovantes')
-        .select('presente:presentes(preco, evento_id)')
-        .eq('presente.evento_id', currentEvent.id);
-      
-      if (comprovantes) {
-        // Filtrar no JS pois a query eq no nested join pode variar por versão do PostgREST
-        const filtered = comprovantes.filter((c: any) => c.presente?.evento_id === currentEvent.id);
-        const total = filtered.reduce((acc: number, curr: any) => acc + (curr.presente?.preco || 0), 0);
-        setFinanceiro(prev => ({ ...prev, recebido: total }));
-      }
-
-      setLoading(false);
+      setStats(newStats);
     }
-    fetchAll();
-  }, [currentEvent]);
+    if (events.length > 0) fetchStats();
+  }, [events]);
 
-  if (eventLoading || (loading && currentEvent)) return <div className={styles.container}><p>Carregando dashboard...</p></div>;
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
-  if (!currentEvent) {
-    return (
-      <div className={styles.container}>
-        <h1>Bem-vindo!</h1>
-        <p>Você ainda não possui eventos vinculados ou selecionados.</p>
-      </div>
-    );
-  }
+    const { data, error: err } = await eventService.createEvent(eventName);
+
+    if (err) {
+      setError(err.message);
+      setLoading(false);
+    } else if (data) {
+      await refreshEvents();
+      setCurrentEvent(data);
+      setIsCreating(false);
+      setEventName('');
+      setLoading(false);
+      // Redireciona para convidados do novo evento
+      router.push('/admin/convidados');
+    }
+  };
+
+  const calculateDaysLeft = (date: string) => {
+    const diff = new Date(date).getTime() - new Date().getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return days > 0 ? days : 0;
+  };
+
+  if (contextLoading) return <div className={styles.loading}>Carregando painel...</div>;
 
   return (
     <main className={styles.container}>
       <header className={styles.header}>
-        <div>
-          <h1>Dashboard: {currentEvent.nome}</h1>
-          <p>Visão em tempo real do seu grande dia.</p>
-        </div>
+        <h1 className="cursive">Meus Casamentos</h1>
+        <button onClick={() => setIsCreating(true)} className={styles.addBtn}>
+          + Novo Casamento
+        </button>
       </header>
 
-      <section className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <h3>Pessoas Confirmadas</h3>
-          <p className={styles.statNumber}>{stats.pessoasConfirmadas}</p>
-          <p className={styles.statSub}>presenças garantidas</p>
+      {events.length === 0 ? (
+        <div className={styles.emptyState}>
+          <p>Você ainda não gerencia nenhum casamento.</p>
+          <button onClick={() => setIsCreating(true)} className={styles.createFirstBtn}>
+            Criar meu primeiro evento agora
+          </button>
         </div>
-        <div className={styles.statCard}>
-          <h3>Pendentes</h3>
-          <p className={styles.statNumber} style={{ color: '#ecc94b' }}>{stats.pessoasPendentes}</p>
-          <p className={styles.statSub}>aguardando resposta</p>
-        </div>
-        <div className={styles.statCard}>
-          <h3>Convites Respondidos</h3>
-          <p className={styles.statNumber}>{stats.convitesRespondidos} / {stats.totalConvites}</p>
-          <p className={styles.statSub}>{Math.round((stats.convitesRespondidos / stats.totalConvites) * 100) || 0}% de adesão</p>
-        </div>
-        <div className={styles.statCard}>
-          <h3>Financeiro Presentes</h3>
-          <p className={styles.statNumber} style={{ color: '#48bb78' }}>
-            {financeiro.recebido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-          </p>
-          <p className={styles.statSub}>recebidos via PIX</p>
-        </div>
-      </section>
-
-      <div className={styles.dashboardLayout}>
-        <div className={styles.mainPanel}>
-          <h2 className={styles.sectionTitle}>Monitor de Restrições Alimentares</h2>
-          {restricoes.length > 0 ? (
-            <div className={styles.restrictionsList}>
-              {restricoes.map((item, idx) => (
-                <div key={idx} className={styles.restrictionCard}>
-                  <strong>{item.nome}</strong>
-                  <p>{item.texto}</p>
+      ) : (
+        <div className={styles.grid}>
+          {events.map(event => (
+            <div key={event.id} className={styles.card} onClick={() => {
+              setCurrentEvent(event);
+              router.push('/admin/convidados');
+            }}>
+              <div className={styles.cardHeader}>
+                <h3>{event.nome}</h3>
+                <span className={styles.slug}>inv/{event.slug}</span>
+              </div>
+              
+              <div className={styles.metrics}>
+                <div className={styles.metric}>
+                  <span>Convidados</span>
+                  <strong>{stats[event.id]?.totalConvites ?? '...'}</strong>
                 </div>
-              ))}
+                <div className={styles.metric}>
+                  <span>Confirmados</span>
+                  <strong>{stats[event.id]?.totalConfirmados ?? '...'}</strong>
+                </div>
+              </div>
+
+              <div className={styles.footer}>
+                <button className={styles.manageBtn}>Gerenciar</button>
+              </div>
             </div>
-          ) : (
-            <div style={{ padding: '4rem 2rem', textAlign: 'center', background: '#fcfcfc', borderRadius: '8px', border: '1px dashed #ddd' }}>
-              <p style={{ opacity: 0.6 }}>Nenhuma restrição alimentar informada até o momento.</p>
-            </div>
-          )}
+          ))}
         </div>
-        
-        <div className={styles.sidePanel}>
-          <h2 className={styles.sectionTitle}>Resumo Operacional</h2>
-          <ul className={styles.recentActivity}>
-             <li className={styles.activityItem}>
-               <span>Total de Convites</span>
-               <span className={styles.badge + ' ' + styles.badgeInfo}>{stats.totalConvites}</span>
-             </li>
-             <li className={styles.activityItem}>
-               <span>Pessoas Recusadas</span>
-               <span className={styles.badge}>{stats.pessoasRecusadas}</span>
-             </li>
-             <li className={styles.activityItem}>
-               <span>Excedentes Solicitados</span>
-               <span className={styles.badge} style={{ backgroundColor: stats.excedentes > 0 ? '#fff5f5' : 'transparent', color: stats.excedentes > 0 ? '#c53030' : 'inherit' }}>
-                 {stats.excedentes}
-               </span>
-             </li>
-             <li className={styles.activityItem}>
-               <span>Meta Financeira</span>
-               <span className={styles.badgeSuccess}>Ativa</span>
-             </li>
-          </ul>
+      )}
+
+      {isCreating && (
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
+            <h2 className="cursive">Novo Casamento</h2>
+            <form onSubmit={handleCreate}>
+              <label>Nome do Evento (Ex: Casamento de Maria e João)</label>
+              <input 
+                type="text" 
+                value={eventName}
+                onChange={(e) => setEventName(e.target.value)}
+                placeholder="Nomes do casal..."
+                required
+                autoFocus
+              />
+              {error && <p className={styles.error}>{error}</p>}
+              <div className={styles.modalActions}>
+                <button type="button" onClick={() => setIsCreating(false)} disabled={loading}>Cancelar</button>
+                <button type="submit" className={styles.saveBtn} disabled={loading}>
+                  {loading ? 'Criando...' : 'Criar Evento'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
+      )}
     </main>
   );
 }

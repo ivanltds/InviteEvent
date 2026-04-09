@@ -15,7 +15,7 @@ Este backlog contém as histórias de usuário restantes, organizadas por priori
 
 3. **[EPIC-010] STORY-029: Auditoria e Refinamento de RLS (Supabase)**
    - **Por que:** Garantir que um casal não acesse dados de outro.
-   - **Status:** Draft
+   - **Status:** ✅ DONE 🏆
 
 4. **[CORE] STORY-040: Cobertura de Testes Unitários do Core**
    - **Por que:** Garantir estabilidade dos helpers de Code Intel e automação.
@@ -30,9 +30,17 @@ Este backlog contém as histórias de usuário restantes, organizadas por priori
    - **Por que:** Separar marketing do convite privado `/inv/[slug]`.
    - **Status:** ✅ DONE 🏆
 
-6. **[EPIC-011] STORY-032: Migração Final Multi-tenancy**
-   - **Por que:** Finalizar o isolamento total de dados no banco (PKs ajustadas).
-   - **Status:** 🛠️ In Progress
+6. **[EPIC-011] STORY-041: Dashboard Consolidado de Eventos**
+   - **Por que:** Facilitar a navegação entre múltiplos casamentos.
+   - **Status:** ✅ DONE 🏆
+
+7. **[EPIC-011] STORY-042: Fluxo de Criação de Novo Casamento**
+   - **Por que:** Permitir onboarding atômico e seguro de novos clientes.
+   - **Status:** ✅ DONE 🏆
+
+8. **[EPIC-011] STORY-032: Gestão de Membros Multi-Organizador**
+   - **Por que:** Permitir que o proprietário convide ajudantes para o evento.
+   - **Status:** ✅ DONE 🏆
 
 ---
 

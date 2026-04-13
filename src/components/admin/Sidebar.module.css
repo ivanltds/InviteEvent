@@ -1,19 +1,15 @@
 .sidebar {
-  width: 260px;
-  height: 100vh;
-  background: white;
-  border-right: 1px solid #eee;
+  width: 100%;
+  height: 100%;
+  background: var(--admin-sidebar-bg);
+  border-right: 1px solid var(--admin-sidebar-border);
   display: flex;
   flex-direction: column;
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 100;
 }
 
 .logo {
   padding: 2rem 1.5rem;
-  border-bottom: 1px solid #f9f9f9;
+  border-bottom: 1px solid var(--admin-sidebar-border);
 }
 
 .logo h2 {
@@ -32,13 +28,13 @@
 
 .contextSwitcher {
   padding: 1.5rem;
-  border-bottom: 1px solid #eee;
-  background: #fcfcfc;
+  border-bottom: 1px solid var(--admin-sidebar-border);
+  background: var(--admin-content-bg);
 }
 
 .activeEvent {
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-card-border);
   padding: 0.8rem 1rem;
   border-radius: 10px;
   cursor: pointer;
@@ -53,7 +49,7 @@
 .eventInfo strong {
   display: block;
   font-size: 0.95rem;
-  color: #333;
+  color: var(--admin-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -76,7 +72,7 @@
 .sectionTitle {
   font-size: 0.7rem;
   text-transform: uppercase;
-  color: #bbb;
+  color: var(--admin-sidebar-text-muted);
   font-weight: 700;
   margin-bottom: 1rem;
   padding-left: 0.5rem;
@@ -87,7 +83,7 @@
   align-items: center;
   gap: 1rem;
   padding: 0.8rem 1rem;
-  color: #666;
+  color: var(--admin-sidebar-text);
   text-decoration: none;
   border-radius: 8px;
   transition: all 0.2s;
@@ -117,13 +113,7 @@
 
 .bottomNav {
   margin-top: auto;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--admin-sidebar-border);
   padding-top: 1rem;
 }
 
-@media (max-width: 1024px) {
-  .sidebar {
-    left: -260px;
-    transition: left 0.3s;
-  }
-}

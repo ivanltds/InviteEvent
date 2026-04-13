@@ -45,7 +45,10 @@ export default function AdminLayout({
             <div className={`${styles.sidebarWrapper} ${isSidebarOpen ? styles.sidebarOpen : ''}`}>
               <Sidebar />
             </div>
-            {isSidebarOpen && <div className={styles.overlay} onClick={() => setIsSidebarOpen(false)}></div>}
+            <div 
+              className={`${styles.overlay} ${isSidebarOpen ? styles.overlayVisible : ''}`} 
+              onClick={() => setIsSidebarOpen(false)}
+            ></div>
             
             <header className={styles.mobileHeader}>
               <button 

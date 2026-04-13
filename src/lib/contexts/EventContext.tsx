@@ -5,6 +5,8 @@ import { Evento, Perfil } from '@/lib/types/database';
 import { eventService } from '@/lib/services/eventService';
 import { supabase } from '@/lib/supabase';
 
+import { AuthChangeEvent, Session } from '@supabase/supabase-js';
+
 interface EventContextType {
   currentEvent: Evento | null;
   events: Evento[];
@@ -56,7 +58,7 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
     fetchData();
 
     // Sincronização automática com estado de login (essencial para cadastro PLG)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent) => {
       if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
         fetchData();
       }

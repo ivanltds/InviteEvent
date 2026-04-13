@@ -381,7 +381,11 @@ export default function AdminConvidados() {
                         >
                           Whats
                         </button>
-                        <button className={styles.copyBtn} onClick={() => copyInviteLink(invite.slug)}>
+                        <button 
+                          className={styles.copyBtn} 
+                          onClick={() => copyInviteLink(invite.slug)}
+                          data-invite-slug={invite.slug}
+                        >
                           Link
                         </button>
                         <button className={styles.editBtn} onClick={() => startEdit(invite)}>

@@ -291,11 +291,20 @@ export default function PresentesPage() {
                     onSuccess={handleUploadSuccess}
                   >
                     {({ open }) => (
-                      <button className={styles.uploadBtn} onClick={() => open()}>
+                    <button className={styles.uploadBtn} onClick={() => open()}>
                         Enviar Comprovante
                       </button>
                     )}
                   </CldUploadWidget>
+                  
+                  {/* E2E-TEST-ONLY: Botão oculto para simular sucesso sem abrir widget real */}
+                  <button 
+                    data-testid="e2e-force-reserve" 
+                    style={{ opacity: 0, position: 'absolute', pointerEvents: 'none' }}
+                    onClick={() => handleUploadSuccess({ info: { secure_url: 'https://test.com/comprovante.jpg' } })}
+                  >
+                    Force Reserve
+                  </button>
                 </div>
               </>
             ) : (

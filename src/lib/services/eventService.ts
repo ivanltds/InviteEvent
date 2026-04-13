@@ -101,7 +101,6 @@ export const eventService = {
       .from('configuracoes')
       .insert([{ 
         evento_id: event.id,
-        user_id: user.id, // Legado compat
         noiva_nome: 'Noiva',
         noivo_nome: 'Noivo',
         data_casamento: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]

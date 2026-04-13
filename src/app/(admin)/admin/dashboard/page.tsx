@@ -21,7 +21,7 @@ export default function DashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (currentEvent && !(currentEvent as any).onboarding_completed) {
+    if (currentEvent && !currentEvent.onboarding_completed) {
       setShowWizard(true);
     } else {
       setShowWizard(false);
@@ -117,7 +117,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {(!currentEvent.config || !currentEvent.is_active) && (
+      {(!currentEvent.onboarding_completed || !currentEvent.is_active) && (
         <div style={{ background: 'rgba(245,158,11,0.1)', color: 'var(--admin-warning)', padding: '15px 20px', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h4 style={{ margin: 0, fontSize: '1rem' }}>🎉 Bem-vindo ao painel do seu evento!</h4>

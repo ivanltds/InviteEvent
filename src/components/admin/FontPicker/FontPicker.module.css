@@ -1,0 +1,172 @@
+/* STORY-057 + STORY-058: FontPicker — usando tokens admin fixos */
+
+.fontPicker {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--admin-card-border);
+  padding-bottom: 0;
+}
+
+.tab {
+  padding: 0.6rem 1.2rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--admin-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  margin-bottom: -1px;
+}
+
+.tab:hover {
+  color: var(--admin-text-primary);
+}
+
+.tabActive {
+  color: var(--admin-accent);
+  border-bottom-color: var(--admin-accent);
+}
+
+.tabDescription {
+  font-size: 0.82rem;
+  color: var(--admin-text-muted);
+  margin-top: -0.5rem;
+}
+
+/* Font Grid */
+.fontGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+/* Font Card */
+.fontCard {
+  position: relative;
+  background: var(--admin-input-bg);
+  border: 1px solid var(--admin-card-border);
+  border-radius: 10px;
+  padding: 1rem;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, transform 0.15s, background 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-height: 110px;
+}
+
+.fontCard:hover {
+  background: var(--admin-sidebar-hover-bg);
+  transform: translateY(-1px);
+  border-color: var(--admin-input-border);
+}
+
+.fontCard.selected {
+  border-color: var(--admin-accent);
+  background: var(--admin-sidebar-active-bg);
+}
+
+.fontCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fontName {
+  font-size: 0.72rem;
+  font-family: var(--font-sans);
+  color: var(--admin-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+.categoryBadge {
+  font-size: 0.9rem;
+  color: #fbbf24;
+}
+
+.fontPreview {
+  font-size: 1.6rem;
+  line-height: 1.2;
+  color: var(--admin-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.categoryLabel {
+  font-size: 0.68rem;
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fontCard.selected .categoryLabel {
+  color: var(--admin-sidebar-active-text);
+}
+
+.selectedIndicator {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.6rem;
+  width: 18px;
+  height: 18px;
+  background: var(--admin-accent);
+  color: white;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Selection Summary */
+.selectionSummary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--admin-input-bg);
+  border: 1px solid var(--admin-card-border);
+  border-radius: 8px;
+}
+
+.summaryLabel {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--admin-text-muted);
+  margin-bottom: 0.3rem;
+}
+
+.summaryPreview {
+  font-size: 1.3rem;
+  color: var(--admin-text-primary);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 768px) {
+  .fontGrid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .selectionSummary {
+    grid-template-columns: 1fr;
+  }
+}

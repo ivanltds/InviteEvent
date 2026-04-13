@@ -113,6 +113,29 @@ export const inviteService = {
     return { success: !error, error: error ? new Error(error.message) : null };
   },
 
+  async updateRSVPManually(inviteId: string, confirmados: number, status: 'confirmado' | 'recusado'): Promise<{ success: boolean; error?: Error | null }> {
+    const payload = {
+      convite_id: inviteId,
+      confirmados,
+      status,
+      mensagem: 'Adicionado Manualmente pelo Admin'
+    };
+    
+    const { error } = await supabase
+      .from('rsvp')
+      .upsert(payload, { onConflict: 'convite_id' });
+
+    if (error) return { success: false, error: new Error(error.message) };
+    
+    // Replica o batch update para os membros nominais
+    await supabase
+      .from('convidados_membros')
+      .update({ confirmado: status === 'confirmado' })
+      .eq('convite_id', inviteId);
+
+    return { success: true };
+  },
+
   calculateDashboardStats(invites: InviteWithRSVP[]) {
     let totalConvites = invites.length;
     let convitesRespondidos = 0;

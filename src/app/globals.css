@@ -1,14 +1,45 @@
 :root {
-  /* Paleta de Cores Padrão (Fallback) */
+  /* Paleta de Cores Padrão do Convite (Fallback — sobrescrita pelo evento) */
   --bg-primary: #FAF9F6;
   --text-main: #333333;
   --accent: #B2AC88;
-  
+
   /* Tipografia Padrão (Fallback) */
   --font-serif: 'Playfair Display', serif;
   --font-cursive: 'Pinyon Script', cursive;
   --font-sans: 'Inter', sans-serif;
+
+  /*
+   * STORY-058: Tokens do Admin Chrome — FIXOS e INVIOLÁVEIS.
+   * Nunca herdam do evento. Garantem contraste WCAG AA sempre.
+   * Use --admin-* em TODOS os componentes do painel administrativo.
+   */
+  --admin-bg: #fdfbf7;
+  --admin-sidebar-bg: #ffffff;
+  --admin-sidebar-text: #333333;
+  --admin-sidebar-text-muted: #6b7280;
+  --admin-sidebar-active-bg: rgba(143, 168, 155, 0.15); /* #8fa89b with opacity */
+  --admin-sidebar-active-text: #7a9487;
+  --admin-sidebar-hover-bg: rgba(0, 0, 0, 0.04);
+  --admin-sidebar-border: rgba(0, 0, 0, 0.08);
+  --admin-header-bg: #ffffff;
+  --admin-header-text: #333333;
+  --admin-content-bg: #fdfbf7;
+  --admin-card-bg: #ffffff;
+  --admin-card-border: rgba(0, 0, 0, 0.08);
+  --admin-input-bg: #ffffff;
+  --admin-input-border: #d1d5db;
+  --admin-input-text: #1f2937;
+  --admin-accent: #8fa89b;
+  --admin-accent-hover: #7a9487;
+  --admin-text-primary: #333333;
+  --admin-text-secondary: #4b5563;
+  --admin-text-muted: #9ca3af;
+  --admin-success: #10b981;
+  --admin-warning: #f59e0b;
+  --admin-danger: #ef4444;
 }
+
 
 html {
   height: 100%;

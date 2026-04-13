@@ -1,0 +1,118 @@
+.container {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.tableWrapper {
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-top: 2rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  background: #fcfcfc;
+  padding: 1.2rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  color: #888;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.table td {
+  padding: 1.2rem;
+  border-bottom: 1px solid #eee;
+  color: #333;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.editBtn {
+  background: none;
+  border: 1px solid #ddd;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--primary-color);
+}
+
+.deleteBtn {
+  background: none;
+  border: 1px solid #fbd5d5;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #dc3545;
+}
+
+.deleteBtn:hover {
+  background: #fff5f5;
+}
+
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 450px;
+}
+
+.modalContent form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.modalContent label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #666;
+}
+
+.modalContent input {
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.modalActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.modalActions button {
+  padding: 0.8rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.modalActions button[type="submit"] {
+  background: var(--accent-safe);
+  color: white;
+}

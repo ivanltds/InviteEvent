@@ -3,13 +3,22 @@
 import { useState, useEffect } from 'react';
 import styles from './HeroCarousel.module.css';
 
-export default function HeroCarousel() {
+interface HeroCarouselProps {
+  imagesOverride?: string[];
+}
+
+export default function HeroCarousel({ imagesOverride }: HeroCarouselProps = {}) {
   const [images, setImages] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchImages() {
+      if (imagesOverride && imagesOverride.length > 0) {
+        setImages(imagesOverride);
+        setLoading(false);
+        return;
+      }
       try {
         const response = await fetch('/api/hero-images');
         const data = await response.json();
@@ -23,7 +32,7 @@ export default function HeroCarousel() {
       }
     }
     fetchImages();
-  }, []);
+  }, [imagesOverride]);
 
   useEffect(() => {
     if (images.length <= 1) return;

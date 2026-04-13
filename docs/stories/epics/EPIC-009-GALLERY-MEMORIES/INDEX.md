@@ -1,15 +1,16 @@
 # EPIC-009: Galeria de Memórias Interativa
 
-## Status: ⚪ Draft
+## Status: 🟡 IN_PROGRESS (Admin DONE, Público PENDING)
 
 ## Descrição
 Implementação de uma galeria de fotos dinâmica e interativa, inspirada no layout Pinterest, permitindo que os convidados visualizem e baixem fotos do casal e do evento.
 
 ## Stories
-- [ ] **STORY-029:** Galeria de Fotos Interativa (Visual & Memórias).
+- [x] **Admin Galeria:** CRUD de álbuns e fotos com upload Cloudinary assinado. -> **✅ DONE** (`/admin/galeria`)
+- [ ] **STORY-050:** Galeria Pública de Fotos (Experiência do Convidado). -> **📋 TODO**
 
 ## Notas de Arquitetura
-- Armazenamento: Cloudinary (pasta `invite/galeria`).
-- Persistência: Novos campos na tabela `configuracoes`.
-- Frontend: Implementação de Masonry Grid ou CSS Grid elegante.
-- Interação: Event listener de `dblclick` para trigger de download de imagem via URL do Cloudinary.
+- Armazenamento: Cloudinary com uploads assinados via `/api/media/sign`.
+- Persistência: Tabelas `albums` e `fotos_galeria` com `evento_id`.
+- Frontend Admin: Grid de fotos com upload múltiplo e progress tracking.
+- Frontend Público: **PENDENTE** — Masonry Grid + Lightbox + Download.

@@ -1,8 +1,8 @@
 .sidebar {
   width: 260px;
   height: 100vh;
-  background-color: var(--bg-primary);
-  border-right: 1px solid rgba(0,0,0,0.05);
+  background: white;
+  border-right: 1px solid #eee;
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -12,116 +12,118 @@
 }
 
 .logo {
-  padding: 2.5rem 2rem;
-  border-bottom: 1px solid rgba(0,0,0,0.02);
+  padding: 2rem 1.5rem;
+  border-bottom: 1px solid #f9f9f9;
 }
 
 .logo h2 {
-  font-size: 2rem;
-  color: var(--accent-safe);
-  margin-bottom: 0.2rem;
+  font-size: 1.8rem;
+  color: var(--admin-accent);
+  margin: 0;
 }
 
 .logo p {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
+  color: #aaa;
   text-transform: uppercase;
   letter-spacing: 0.1rem;
-  color: var(--text-main-safe);
-  opacity: 0.5;
+  margin: 0.3rem 0 0 0;
 }
 
-.eventSelector {
-  padding: 1rem 1rem 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+.contextSwitcher {
+  padding: 1.5rem;
+  border-bottom: 1px solid #eee;
+  background: #fcfcfc;
 }
 
-.eventSelector label {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  font-weight: bold;
-  opacity: 0.4;
-  padding-left: 0.5rem;
-}
-
-.select {
-  background: rgba(0,0,0,0.03);
-  border: 1px solid rgba(0,0,0,0.05);
-  color: var(--text-main-safe);
-  padding: 0.6rem;
-  border-radius: 6px;
-  width: 100%;
+.activeEvent {
+  background: white;
+  border: 1px solid #ddd;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.activeEvent:hover {
+  border-color: var(--admin-accent);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.eventInfo strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eventInfo span {
+  font-size: 0.75rem;
+  color: var(--admin-accent);
+  font-weight: 600;
 }
 
 .nav {
-  padding: 1rem;
+  flex: 1;
+  padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  flex-grow: 1;
+  gap: 2rem;
+}
+
+.sectionTitle {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #bbb;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  padding-left: 0.5rem;
 }
 
 .navItem {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 1.5rem;
+  padding: 0.8rem 1rem;
+  color: #666;
+  text-decoration: none;
   border-radius: 8px;
-  color: var(--text-main-safe);
-  opacity: 0.8;
   transition: all 0.2s;
-  font-family: var(--font-sans);
+  margin-bottom: 0.3rem;
 }
 
 .navItem:hover {
-  background-color: rgba(0, 0, 0, 0.04);
-  color: var(--accent-safe);
-  opacity: 1;
+  background: var(--admin-sidebar-hover-bg);
+  color: var(--admin-accent);
 }
 
-.active {
-  background-color: var(--accent);
-  color: var(--text-on-accent);
+.navItem.active {
+  background: var(--admin-sidebar-active-bg);
+  color: var(--admin-sidebar-active-text);
   font-weight: bold;
-  opacity: 1;
 }
 
 .icon {
-  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
 }
 
-.footer {
-  padding: 2rem;
-  border-top: 1px solid rgba(0,0,0,0.05);
+.name {
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
-.viewSite {
-  display: block;
-  text-align: center;
-  padding: 0.8rem;
-  background-color: rgba(0,0,0,0.03);
-  border-radius: 4px;
-  font-size: 0.9rem;
-  color: var(--text-main-safe);
-}
-
-.viewSite:hover {
-  background-color: var(--accent);
-  color: var(--text-on-accent);
+.bottomNav {
+  margin-top: auto;
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
 }
 
 @media (max-width: 1024px) {
   .sidebar {
-    width: 80px;
-  }
-  .name, .logo p, .logo h2 {
-    display: none;
-  }
-  .logo {
-    text-align: center;
-    padding: 1rem;
+    left: -260px;
+    transition: left 0.3s;
   }
 }

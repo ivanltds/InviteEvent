@@ -21,6 +21,10 @@ export const configService = {
   },
 
   async updateConfig(eventoId: string, config: Partial<Configuracao>): Promise<{ success: boolean; error?: Error | null }> {
+    if (!config) {
+      return { success: false, error: new Error('Missing config object to update') };
+    }
+
     // Removemos o ID explicitamente para evitar conflito com a sequence do banco
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, ...dataWithoutId } = config;

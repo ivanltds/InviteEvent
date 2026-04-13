@@ -1,0 +1,276 @@
+/* STORY-056: EnvelopeGateway — All keyframe animations */
+
+/* =============================================
+   FASE 1: Envelope fechado — pulsação do selo
+   ============================================= */
+@keyframes sealPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 148, 58, 0.5); }
+  50%       { box-shadow: 0 0 0 16px rgba(200, 148, 58, 0); }
+}
+
+@keyframes envelopeFloat {
+  0%, 100% { transform: translateY(0px) rotate(-1deg); }
+  50%       { transform: translateY(-8px) rotate(1deg); }
+}
+
+@keyframes envelopeFadeIn {
+  from { opacity: 0; transform: scale(0.92) translateY(20px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* =============================================
+   FASE 2: Abertura do envelope
+   ============================================= */
+@keyframes flapOpen {
+  0%   { transform: rotateX(0deg) scaleY(1); }
+  100% { transform: rotateX(-180deg) scaleY(1); }
+}
+
+@keyframes envelopeExpand {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.05); }
+  100% { transform: scale(0) translateY(-50px); opacity: 0; }
+}
+
+@keyframes brightFlash {
+  0%   { opacity: 0; }
+  50%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* =============================================
+   FASE 3: Sequência de texto revelado
+   ============================================= */
+@keyframes frameSlideIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes frameSlideOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-20px); }
+}
+
+@keyframes charReveal {
+  from { opacity: 0; transform: translateY(8px); filter: blur(4px); }
+  to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+@keyframes botanicalFadeIn {
+  from { opacity: 0; transform: scale(0.8) rotate(-10deg); }
+  to   { opacity: 0.4; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes nameGlow {
+  0%, 100% { text-shadow: 0 0 20px rgba(200, 148, 58, 0.3); }
+  50%       { text-shadow: 0 0 40px rgba(200, 148, 58, 0.7), 0 0 80px rgba(200, 148, 58, 0.2); }
+}
+
+/* =============================================
+   FASE 4: Transição para o convite
+   ============================================= */
+@keyframes gatewayFadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; pointer-events: none; }
+}
+
+@keyframes inviteReveal {
+  from { opacity: 0; transform: scale(0.98); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* =============================================
+   Partículas decorativas
+   ============================================= */
+@keyframes petalFloat {
+  0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(-120px) translateX(var(--petal-x, 20px)) rotate(180deg); opacity: 0; }
+}
+
+/* =============================================
+   Background transition (escuro → claro)
+   ============================================= */
+@keyframes bgTransition {
+  from { background-color: #0f0c1a; }
+  to   { background-color: var(--bg-primary, #fdfbf7); }
+}
+
+/* =============================================
+   Accessibility: Respeitar prefers-reduced-motion
+   ============================================= */
+@media (prefers-reduced-motion: reduce) {
+  .envelopeWrapper,
+  .flap,
+  .seal,
+  .frame,
+  .nameText,
+  .petal {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* =============================================
+   Layout principal do gateway
+   ============================================= */
+.gateway {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, #1a1424 0%, #0f0c1a 100%);
+  overflow: hidden;
+}
+
+/* Skip button */
+.skipBtn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.6);
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  opacity: 0;
+  animation: frameSlideIn 0.4s ease 1s forwards;
+}
+
+.skipBtn:hover {
+  background: rgba(255,255,255,0.15);
+  color: white;
+}
+
+/* FASE 1: Envelope */
+.envelopeWrapper {
+  position: relative;
+  cursor: pointer;
+  animation: envelopeFadeIn 1.4s ease forwards, envelopeFloat 5s ease-in-out 1.6s infinite;
+}
+
+.envelopeSvg {
+  width: min(340px, 80vw);
+  filter: drop-shadow(0 20px 60px rgba(0,0,0,0.6));
+  transition: filter 0.3s;
+}
+
+.envelopeWrapper:hover .envelopeSvg {
+  filter: drop-shadow(0 25px 80px rgba(200,148,58,0.3));
+}
+
+.seal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -30%);
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-cursive);
+  font-size: 1.4rem;
+  color: white;
+  animation: sealPulse 2s ease-in-out infinite;
+  cursor: pointer;
+  box-shadow: inset 0 2px 4px rgba(255,255,255,0.2), 0 4px 15px rgba(0,0,0,0.4);
+}
+
+.sealText {
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  pointer-events: none;
+  user-select: none;
+}
+
+.ctaText {
+  position: absolute;
+  bottom: -2.5rem;
+  width: 100%;
+  text-align: center;
+  font-family: var(--font-serif, 'Playfair Display', serif);
+  font-size: 0.85rem;
+  color: rgba(200, 190, 160, 0.8);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  animation: frameSlideIn 0.6s ease 0.8s both;
+}
+
+/* FASE 3: Frames de revelação */
+.revealFrame {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  animation: frameSlideIn 1s ease forwards;
+}
+
+.frameTitle {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  color: inherit; /* Usa textMain do container */
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+
+.frameTitleSerif {
+  font-family: var(--font-serif, 'Playfair Display', serif);
+  font-size: clamp(1rem, 2.5vw, 1.4rem);
+  color: inherit;
+  opacity: 0.7;
+  letter-spacing: 0.1em;
+  font-style: italic;
+  margin-bottom: 0.5rem;
+}
+
+.namePrimary {
+  font-size: clamp(3rem, 10vw, 6.5rem);
+  color: inherit;
+  line-height: 1;
+  animation: nameGlow 3s ease-in-out infinite;
+}
+
+.nameAnd {
+  color: #c8943a;
+  animation: nameGlow 1.5s ease-in-out infinite;
+}
+
+.nameDate {
+  font-family: var(--font-serif, 'Playfair Display', serif);
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: inherit;
+  opacity: 0.7;
+  margin-top: 1.5rem;
+}
+
+/* Decorações botânicas SVG (background) */
+.botanical {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  animation: botanicalFadeIn 1s ease 0.5s forwards;
+}
+
+.botanicalLeft  { left: -2rem; top: 50%; transform: translateY(-50%) rotate(90deg); }
+.botanicalRight { right: -2rem; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+
+/* Gate: overlay para transição final */
+.fadeOverlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-primary, #fdfbf7);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10000;
+  animation: inviteReveal 0.6s ease forwards;
+}

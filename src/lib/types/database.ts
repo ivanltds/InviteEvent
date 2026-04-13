@@ -5,6 +5,9 @@ export type OrganizerRole = 'owner' | 'organizador';
 export interface Perfil {
   id: string;
   email: string;
+  nome?: string;
+  cpf?: string;
+  telefone?: string;
   is_master: boolean;
   created_at: string;
 }
@@ -13,6 +16,8 @@ export interface Evento {
   id: string;
   nome: string;
   slug: string;
+  is_active?: boolean;
+  onboarding_completed?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -105,6 +110,8 @@ export interface Configuracao {
   historia_texto?: string;
   noiva_bio?: string;
   noivo_bio?: string;
+  noiva_foto_url?: string;
+  noivo_foto_url?: string;
   historia_conclusao?: string;
   noivos_conclusao?: string;
   bg_primary?: string;

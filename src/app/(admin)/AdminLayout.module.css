@@ -1,7 +1,15 @@
+/*
+ * STORY-058: AdminLayout.module.css
+ * Admin chrome SEMPRE usa variáveis --admin-* fixas.
+ * NUNCA usa --bg-primary, --accent ou variáveis do tema do evento.
+ * Isso garante legibilidade WCAG AA independente da cor escolhida pelo organizador.
+ */
+
 .adminLayout {
   display: flex;
   min-height: 100vh;
-  background-color: var(--bg-primary);
+  background-color: var(--admin-content-bg);
+  color: var(--admin-text-primary);
 }
 
 .sidebarWrapper {
@@ -18,6 +26,7 @@
   flex: 1;
   width: 100%;
   min-height: 100vh;
+  background-color: var(--admin-content-bg);
 }
 
 .withSidebar {
@@ -25,6 +34,7 @@
   width: calc(100% - 260px);
 }
 
+/* Header mobile — usa tokens FIXOS do admin, não do evento */
 .mobileHeader {
   display: none;
   position: fixed;
@@ -32,8 +42,8 @@
   left: 0;
   width: 100%;
   height: 60px;
-  background: var(--bg-primary);
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  background: var(--admin-header-bg);           /* FIX STORY-058: era var(--bg-primary) */
+  border-bottom: 1px solid var(--admin-sidebar-border);
   padding: 0 1.5rem;
   align-items: center;
   z-index: 900;
@@ -45,13 +55,18 @@
   cursor: pointer;
   padding: 0.5rem;
   margin-right: 1rem;
-  color: var(--accent-safe);
+  color: var(--admin-header-text);              /* FIX STORY-058: era var(--accent-safe) */
+  transition: opacity 0.2s;
+}
+
+.hamburger:hover {
+  opacity: 0.7;
 }
 
 .mobileTitle {
-  font-family: var(--font-pinyon);
+  font-family: var(--font-cursive);
   font-size: 1.5rem;
-  color: var(--accent-safe);
+  color: var(--admin-accent);                   /* FIX STORY-058: era var(--accent-safe) */
 }
 
 .overlay {
@@ -60,8 +75,20 @@
   left: 0;
   width: 100%;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.6);
   z-index: 950;
+  backdrop-filter: blur(2px);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: var(--admin-text-secondary);
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  background: var(--admin-content-bg);
 }
 
 @media (max-width: 1024px) {
@@ -78,16 +105,16 @@
   .mobileHeader {
     display: flex;
   }
-  
+
   .sidebarWrapper {
     transform: translateX(-100%);
     width: 260px;
   }
-  
+
   .sidebarOpen {
     transform: translateX(0);
   }
-  
+
   .withSidebar {
     margin-left: 0;
     width: 100%;

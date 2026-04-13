@@ -3,25 +3,36 @@ import { Evento, EventoOrganizador, Perfil } from '@/lib/types/database';
 
 export const eventService = {
   async getMyEvents(): Promise<Evento[]> {
-    const { data: profile } = await supabase.from('perfis').select('is_master').single();
+    const { data: userResponse } = await supabase.auth.getUser();
+    const user = userResponse.user;
+    if (!user) return [];
+
+    // 1. Verificar se é master
+    const { data: profile } = await supabase.from('perfis').select('is_master').eq('id', user.id).maybeSingle();
     
     if (profile?.is_master) {
       const { data } = await supabase.from('eventos').select('*').order('created_at', { ascending: false });
       return data || [];
     }
 
-    const { data: userResponse } = await supabase.auth.getUser();
-    const user = userResponse.user;
+    // 2. Buscar eventos onde o usuário é organizador ou owner
+    // Fazemos uma busca na tabela de ligação e depois pegamos os eventos
+    const { data: userEvents } = await supabase
+      .from('evento_organizadores')
+      .select('evento_id')
+      .eq('user_id', user.id);
 
-    if (!user) return [];
+    if (!userEvents || userEvents.length === 0) return [];
 
-    const { data } = await supabase
+    const eventIds = userEvents.map((ue: any) => ue.evento_id);
+
+    const { data: events } = await supabase
       .from('eventos')
-      .select('*, evento_organizadores!inner(*)')
-      .eq('evento_organizadores.user_id', user.id)
+      .select('*')
+      .in('id', eventIds)
       .order('created_at', { ascending: false });
     
-    return data || [];
+    return events || [];
   },
 
   async checkSlugAvailability(slug: string): Promise<boolean> {
@@ -48,16 +59,26 @@ export const eventService = {
 
     if (!user) return { data: null, error: new Error('Usuário não autenticado') };
 
-    // 1. Validar disponibilidade do slug
-    const isAvailable = await this.checkSlugAvailability(slug);
+    // 1. Validar e Resolver Slug (Diferenciação automática para nomes iguais)
+    let finalSlug = slug;
+    let isAvailable = await this.checkSlugAvailability(finalSlug);
+    
+    // Se o slug já existe (ex: 'thiago-e-andreia'), tentamos gerar um variante única
     if (!isAvailable) {
-      return { data: null, error: new Error(`O endereço 'inv/${slug}' já está sendo usado por outro casamento. Escolha um nome diferente.`) };
+      const suffix = Math.random().toString(36).substring(2, 6);
+      finalSlug = `${slug}-${suffix}`;
+      isAvailable = await this.checkSlugAvailability(finalSlug);
+      
+      // Fallback extremo se o randômico também colidir (improvável)
+      if (!isAvailable) {
+        finalSlug = `${slug}-${Date.now().toString().slice(-4)}`;
+      }
     }
 
     // 2. Criar o evento
     const { data: event, error: eventError } = await supabase
       .from('eventos')
-      .insert([{ nome, slug }])
+      .insert([{ nome, slug: finalSlug }])
       .select()
       .single();
 
@@ -159,5 +180,30 @@ export const eventService = {
       .eq('user_id', user.id);
     
     return !err2;
+  },
+
+  async activateEvent(eventId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('eventos')
+      .update({ is_active: true, payment_status: 'paid' })
+      .eq('id', eventId);
+    
+    return !error;
+  },
+
+  async updateEvent(eventId: string, updates: { nome?: string, slug?: string }): Promise<boolean> {
+    const { error } = await supabase
+      .from('eventos')
+      .update(updates)
+      .eq('id', eventId);
+    return !error;
+  },
+
+  async deleteEvent(eventId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('eventos')
+      .delete()
+      .eq('id', eventId);
+    return !error;
   }
 };

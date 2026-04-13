@@ -1,12 +1,21 @@
 'use client';
 
+/**
+ * STORY-049: force-dynamic previne prerendering estático em build.
+ * Esta página usa hooks (useState/useEffect) e contexto Supabase que
+ * não funcionam durante SSG — exige renderização dinâmica no servidor.
+ */
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
+
 import styles from './AdminConfig.module.css';
 import { configService } from '@/lib/services/configService';
 import { Configuracao } from '@/lib/types/database';
 import FAQManager from '@/components/admin/FAQManager';
 import ConfigPreview from '@/components/admin/ConfigPreview';
 import TeamManagement from '@/components/admin/TeamManagement';
+import FontPicker from '@/components/admin/FontPicker/FontPicker';
 import { useEvent } from '@/lib/contexts/EventContext';
 
 const DEFAULT_CONFIG: Omit<Configuracao, 'id' | 'evento_id'> = {
@@ -48,20 +57,16 @@ export default function AdminConfig() {
 
   const fetchConfig = async () => {
     if (!currentEvent) {
-      console.log('[Config] Nenhum evento selecionado.');
       return;
     }
     
     setLoading(true);
     try {
-      console.log('[Config] Buscando dados para evento:', currentEvent.id);
       const data = await configService.getConfig(currentEvent.id);
       
       if (data) {
-        console.log('[Config] Dados carregados com sucesso.');
         setConfig(data);
       } else {
-        console.warn('[Config] Registro não encontrado. Inicializando padrão...');
         const newPayload = { 
           ...DEFAULT_CONFIG, 
           evento_id: currentEvent.id,
@@ -197,49 +202,17 @@ export default function AdminConfig() {
                 </div>
               </div>
 
-              <div className={styles.grid} style={{ marginTop: '2rem' }}>
-                <div className={styles.field}>
-                  <label htmlFor="font_cursive">Estilo de Fonte Principal (Nomes)</label>
-                  <select
-                    id="font_cursive"
-                    className={styles.select}
-                    value={config.font_cursive}
-                    onChange={(e) => setConfig({...config, font_cursive: e.target.value})}
-                  >
-                    <option value="'Pinyon Script', cursive">Pinyon Script (Clássico)</option>
-                    <option value="'Great Vibes', cursive">Great Vibes (Elegante)</option>
-                    <option value="'Dancing Script', cursive">Dancing Script (Moderno)</option>
-                    <option value="'Alex Brush', cursive">Alex Brush (Fluido)</option>
-                    <option value="'Parisienne', cursive">Parisienne (Sofisticado)</option>
-                    <option value="'Rochester', cursive">Rochester (Vintage)</option>
-                    <option value="'Italianno', cursive">Italianno (Formal)</option>
-                    <option value="'Allura', cursive">Allura (Artesanal)</option>
-                    <option value="'Homemade Apple', cursive">Homemade Apple (Casual)</option>
-                    <option value="'Marck Script', cursive">Marck Script (Expressivo)</option>
-                    <option value="'Satisfy', cursive">Satisfy (Amigável)</option>
-                    <option value="'Courgette', cursive">Courgette (Legível)</option>
-                  </select>
-                </div>
-                <div className={styles.field}>
-                  <label htmlFor="font_serif">Estilo de Fonte Serifada (Títulos)</label>
-                  <select
-                    id="font_serif"
-                    className={styles.select}
-                    value={config.font_serif}
-                    onChange={(e) => setConfig({...config, font_serif: e.target.value})}
-                  >
-                    <option value="'Playfair Display', serif">Playfair Display (Premium)</option>
-                    <option value="'Lora', serif">Lora (Contemporânea)</option>
-                    <option value="'Cinzel', serif">Cinzel (Atravessada)</option>
-                    <option value="'Cormorant Garamond', serif">Cormorant Garamond (Delicada)</option>
-                    <option value="'EB Garamond', serif">EB Garamond (Tradicional)</option>
-                    <option value="'Libre Baskerville', serif">Libre Baskerville (Forte)</option>
-                    <option value="'Cardo', serif">Cardo (Acadêmica)</option>
-                    <option value="'Marcellus', serif">Marcellus (Escultural)</option>
-                    <option value="'Prata', serif">Prata (Moderna)</option>
-                  </select>
-                </div>
+              <div style={{ marginTop: '2.5rem' }}>
+                <h2>Tipografia Premium</h2>
+                <FontPicker
+                  currentCursive={config.font_cursive || "'Pinyon Script', cursive"}
+                  currentSerif={config.font_serif || "'Playfair Display', serif"}
+                  coupleNames={`${config.noiva_nome} & ${config.noivo_nome}`}
+                  onCursiveChange={(css) => setConfig({ ...config, font_cursive: css })}
+                  onSerifChange={(css) => setConfig({ ...config, font_serif: css })}
+                />
               </div>
+
             </section>
 
             <section className={styles.section}>

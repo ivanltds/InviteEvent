@@ -11,7 +11,12 @@ Como organizador, desejo uma tela centralizada que liste todos os casamentos que
 3. **Navegação de Contexto:** Ao clicar em um evento, o `EventContext` deve ser atualizado e o usuário levado para o dashboard específico do evento.
 4. **Estado Vazio:** Se o usuário não tiver eventos, exibir um CTA proeminente para "Criar meu Primeiro Casamento".
 
-## Status: 🚀 Ready
+## Status: ✅ DONE 🏆
+
+## Notas de Implementação
+- `/admin/dashboard/page.tsx`: Lista eventos do organizador com métricas
+- `EventContext.tsx`: Gerencia `currentEvent` global com context switcher
+- Estado vazio com CTA para OnboardingWizard integrado
 
 ## Detalhes de UX (Uma)
 - **Visual:** Cards com bordas suaves, tipografia serifada nos títulos.

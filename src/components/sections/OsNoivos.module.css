@@ -29,6 +29,31 @@
   box-shadow: 0 10px 30px rgba(0,0,0,0.03);
   border: 1px solid rgba(0,0,0,0.05);
   border-top: 3px solid var(--accent-safe);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.photoContainer {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 6px solid white;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+  background: #eee;
+}
+
+.photoContainer img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.card:hover .photoContainer img {
+  transform: scale(1.1);
 }
 
 .card h3 {
@@ -61,5 +86,10 @@
   .grid {
     grid-template-columns: 1fr;
     gap: 2rem;
+  }
+
+  .photoContainer {
+    width: 180px;
+    height: 180px;
   }
 }

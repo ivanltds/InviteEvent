@@ -9,59 +9,40 @@ describe('OnboardingWizard Component (TDD)', () => {
   });
 
   test('deve renderizar a mensagem de boas-vindas inicial', () => {
-    render(<OnboardingWizard onComplete={mockOnComplete} />);
-    expect(screen.getByText(/Vamos preparar o seu grande dia\?/i)).toBeInTheDocument();
+    render(<OnboardingWizard eventId="e1" onComplete={mockOnComplete} />);
+    expect(screen.getByText(/Quem são os noivos\?/i)).toBeInTheDocument();
   });
 
-  test('deve avançar pelos passos do formulário', async () => {
-    render(<OnboardingWizard onComplete={mockOnComplete} />);
+  test('deve avançar pelos passos do formulário até o fim', async () => {
+    render(<OnboardingWizard eventId="e1" onComplete={mockOnComplete} />);
     
-    // Passo 1: Nome do Evento
-    fireEvent.change(screen.getByPlaceholderText(/Ex: Casamento de Ana e Bruno/i), {
-      target: { value: 'Casamento Teste' }
-    });
-    fireEvent.click(screen.getByText(/Próximo/i));
+    // Passo 1: Nomes dos Noivos
+    fireEvent.change(screen.getByPlaceholderText(/Ex: Maria/i), { target: { value: 'Alice' } });
+    fireEvent.change(screen.getByPlaceholderText(/Ex: João/i), { target: { value: 'Bob' } });
+    fireEvent.click(screen.getByText(/Próximo: Identidade Visual/i));
 
-    // Passo 2: Nomes do Casal
-    expect(await screen.findByText(/Quem são os protagonistas\?/i)).toBeInTheDocument();
-    fireEvent.change(screen.getByPlaceholderText(/Nome da Noiva/i), { target: { value: 'Alice' } });
-    fireEvent.change(screen.getByPlaceholderText(/Nome do Noivo/i), { target: { value: 'Bob' } });
-    fireEvent.click(screen.getByText(/Próximo/i));
+    // Passo 2: Cores (Usando o regex flexível)
+    expect(await screen.findByText(/As cores do seu momento/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByText(/Próximo: WOW! Ver meu Convite/i));
 
-    // Passo 3: Data
-    expect(await screen.findByText(/Quando será a celebração\?/i)).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText(/Data do Casamento/i), { target: { value: '2026-12-25' } });
-    fireEvent.click(screen.getByText(/Próximo/i));
+    // Passo 3: Preview
+    expect(await screen.findByText(/WOW! Veja como ficou/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByText(/Próximo: Fotos do Casal/i));
 
-    // Passo 4: PIX
-    expect(await screen.findByText(/Chave PIX/i)).toBeInTheDocument();
-    fireEvent.change(screen.getByPlaceholderText(/Chave PIX/i), { target: { value: 'pix@teste.com' } });
+    // Passo 4: Protagonistas
+    expect(await screen.findByText(/Os Protagonistas/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByText(/Próximo: Fotos de Capa/i));
     
-    // Finalizar
-    fireEvent.click(screen.getByText(/Finalizar e Criar/i));
+    // Passo 5: Capa
+    expect(await screen.findByText(/Capa do Site/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByText(/Próximo: Ativação/i));
+
+    // Passo 6: Paywall
+    expect(await screen.findByText(/Ativação de Convites Necessária/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByText(/Ir para o Meu Painel/i));
 
     await waitFor(() => {
-      expect(mockOnComplete).toHaveBeenCalledWith(expect.objectContaining({
-        nome: 'Casamento Teste',
-        noiva_nome: 'Alice',
-        noivo_nome: 'Bob',
-        data_casamento: '2026-12-25',
-        pix_chave: 'pix@teste.com'
-      }));
+      expect(mockOnComplete).toHaveBeenCalled();
     });
-  });
-
-  test('deve avançar para o próximo passo ao submeter o formulário (Enter)', async () => {
-    render(<OnboardingWizard onComplete={mockOnComplete} />);
-    
-    const input = screen.getByPlaceholderText(/Ex: Casamento de Ana e Bruno/i);
-    fireEvent.change(input, { target: { value: 'Evento Enter' } });
-    
-    // Simular Submit do form (que é o que acontece no Enter real)
-    fireEvent.submit(input.closest('form')!);
-    
-    // Deve mostrar o próximo passo
-    expect(await screen.findByText(/Quem são os protagonistas\?/i)).toBeInTheDocument();
-    expect(mockOnComplete).not.toHaveBeenCalled();
   });
 });

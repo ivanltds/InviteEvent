@@ -1,86 +1,105 @@
 'use client';
 
-import { useState } from 'react';
-import styles from './AdminEvents.module.css';
+import { useState, useEffect } from 'react';
 import { useEvent } from '@/lib/contexts/EventContext';
 import { eventService } from '@/lib/services/eventService';
-import { configService } from '@/lib/services/configService';
-import OnboardingWizard from '@/components/admin/OnboardingWizard';
+import { Evento } from '@/lib/types/database';
+import styles from './Eventos.module.css';
 
-export default function AdminEvents() {
-  const { events, refreshEvents, setCurrentEvent, currentEvent } = useEvent();
-  const [isAdding, setIsAdding] = useState(false);
-  const [loading, setLoading] = useState(false);
+export default function EventosManagerPage() {
+  const { userProfile, refreshEvents } = useEvent();
+  const [eventList, setEventList] = useState<Evento[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingEvent, setEditingEvent] = useState<Evento | null>(null);
+  const [formData, setFormData] = useState({ nome: '', slug: '' });
 
-  const handleCreate = async (data: any) => {
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
     setLoading(true);
-    try {
-      // 1. Criar o evento básico (isso já adiciona o criador como owner no banco)
-      const { data: event, error } = await eventService.createEvent(data.nome);
-      
-      if (error || !event) throw error || new Error('Falha ao criar evento');
+    const data = await eventService.getMyEvents();
+    setEventList(data);
+    setLoading(false);
+  };
 
-      // 2. Atualizar as configurações iniciais preenchidas no Wizard
-      await configService.updateConfig(event.id, {
-        noiva_nome: data.noiva_nome,
-        noivo_nome: data.noivo_nome,
-        data_casamento: data.data_casamento,
-        pix_chave: data.pix_chave,
-        mostrar_historia: true,
-        mostrar_noivos: true,
-        mostrar_faq: true,
-        mostrar_presentes: true
-      });
+  const handleEdit = (event: Evento) => {
+    setEditingEvent(event);
+    setFormData({ nome: event.nome, slug: event.slug });
+  };
 
-      await refreshEvents();
-      setCurrentEvent(event);
-      setIsAdding(false);
-      alert('Evento criado com sucesso! ✨');
-    } catch (err: any) {
-      alert('Erro ao criar evento: ' + err.message);
-    } finally {
-      setLoading(false);
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEvent) return;
+
+    const ok = await eventService.updateEvent(editingEvent.id, formData);
+    if (ok) {
+      alert('Evento atualizado!');
+      setEditingEvent(null);
+      fetchEvents();
+      refreshEvents();
     }
   };
 
+  const handleDelete = async (eventId: string) => {
+    if (!confirm('ATENÇÃO: Isso excluirá permanentemente o casamento, convites, presentes e fotos. Deseja continuar?')) return;
+
+    const ok = await eventService.deleteEvent(eventId);
+    if (ok) {
+      alert('Evento removido.');
+      fetchEvents();
+      refreshEvents();
+    }
+  };
+
+  if (!userProfile?.is_master) return <p>Acesso restrito ao Administrador Master.</p>;
+
   return (
     <main className={styles.container}>
-      <header className={styles.header}>
-        <h1>Seus Eventos</h1>
-        <button className={styles.addBtn} onClick={() => setIsAdding(true)}>Novo Evento</button>
-      </header>
+      <h1 className="cursive">Gestão Global de Eventos</h1>
+      
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Nome do Evento</th>
+              <th>Slug (URL)</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {eventList.map(event => (
+              <tr key={event.id}>
+                <td>{event.nome}</td>
+                <td>inv/{event.slug}</td>
+                <td className={styles.actions}>
+                  <button onClick={() => handleEdit(event)} className={styles.editBtn}>Editar</button>
+                  <button onClick={() => handleDelete(event.id)} className={styles.deleteBtn}>Excluir</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      {isAdding && (
-        <OnboardingWizard 
-          onComplete={handleCreate} 
-        />
-      )}
-
-      {loading && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal} style={{ textAlign: 'center' }}>
-            <h2>Criando seu evento...</h2>
-            <p>Estamos preparando tudo com muito carinho. ❤️</p>
+      {editingEvent && (
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
+            <h3>Editar Informações do Evento</h3>
+            <form onSubmit={handleSave}>
+              <label>Nome</label>
+              <input value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})} />
+              <label>URL Slug</label>
+              <input value={formData.slug} onChange={e => setFormData({...formData, slug: e.target.value})} />
+              <div className={styles.modalActions}>
+                <button type="submit">Salvar</button>
+                <button type="button" onClick={() => setEditingEvent(null)}>Cancelar</button>
+              </div>
+            </form>
           </div>
         </div>
       )}
-
-      <div className={styles.grid}>
-        {events.map(event => (
-          <div 
-            key={event.id} 
-            className={`${styles.card} ${currentEvent?.id === event.id ? styles.activeCard : ''}`}
-            onClick={() => setCurrentEvent(event)}
-          >
-            <h3>{event.nome}</h3>
-            <p>slug: {event.slug}</p>
-            <div className={styles.cardFooter}>
-              <span>{new Date(event.created_at).toLocaleDateString()}</span>
-              {currentEvent?.id === event.id && <span className={styles.activeBadge}>Ativo</span>}
-            </div>
-          </div>
-        ))}
-      </div>
     </main>
   );
 }

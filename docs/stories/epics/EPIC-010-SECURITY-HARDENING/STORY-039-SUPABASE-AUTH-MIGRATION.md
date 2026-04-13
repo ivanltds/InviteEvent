@@ -21,7 +21,14 @@ Como administrador da plataforma, desejo substituir o sistema de "senha única" 
 - **Tela de Login:** Nova interface de login profissional com campos de e-mail e senha.
 - **Feedback de Erro:** Mensagens claras para "E-mail não encontrado" ou "Senha incorreta".
 
-## Status: 🚀 Ready (Refinada)
+## Status: ✅ DONE 🏆
+
+## Notas de Implementação
+- `authService.ts`: Login via `signInWithPassword` + session proxy via `/api/auth/session`
+- API Route `/api/auth/session`: Define cookie HTTP-only `sb-access-token`
+- Migration `automatic_claim.sql`: Primeiro login vira Owner do evento sem user_id
+- Migration `finalize_multi_tenant_rls.sql`: RLS multi-tenant por `evento_id` + `owner_id`
+- Login UI funcional em `/admin/login` com suporte a cadastro e login
 
 ## Detalhes Técnicos
 - **Tabelas Afetadas:** `configuracoes` (adicionar `user_id`), `eventos` (vínculo com `evento_organizadores`), `perfis`.

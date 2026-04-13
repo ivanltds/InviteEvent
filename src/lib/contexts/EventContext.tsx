@@ -11,6 +11,7 @@ interface EventContextType {
   setCurrentEvent: (event: Evento | null) => void;
   loading: boolean;
   userProfile: Perfil | null;
+  userRole: 'owner' | 'organizador' | null;
   refreshEvents: () => Promise<void>;
 }
 
@@ -21,43 +22,31 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
   const [events, setEvents] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<Perfil | null>(null);
+  const [userRole, setUserRole] = useState<'owner' | 'organizador' | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
-    const user = (await supabase.auth.getUser()).data.user;
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       setLoading(false);
       return;
     }
 
-    // 1. Perfil
     try {
-      const { data: profile, error: profileError } = await supabase.from('perfis').select('*').eq('id', user.id).maybeSingle();
-      if (profileError) console.error('[EventContext] Erro ao carregar perfil:', profileError);
+      // 1. Perfil
+      const { data: profile } = await supabase.from('perfis').select('*').eq('id', user.id).maybeSingle();
       setUserProfile(profile);
-    } catch (e) {
-      console.error('[EventContext] Falha crítica ao carregar perfil:', e);
-    }
 
-    // 2. Eventos
-    try {
+      // 2. Eventos
       const myEvents = await eventService.getMyEvents();
       setEvents(myEvents);
 
-      // 3. Selecionar evento atual (Persistir no localStorage ou pegar o primeiro)
+      // 3. Selecionar evento atual (Apenas se houver persistência)
       const savedEventId = localStorage.getItem('last_event_id');
-      if (savedEventId) {
-        const found = myEvents.find(e => e.id === savedEventId);
-        if (found) {
-          setCurrentEvent(found);
-        } else {
-          setCurrentEvent(myEvents[0] || null);
-        }
-      } else {
-        setCurrentEvent(myEvents[0] || null);
-      }
+      const initialEvent = savedEventId ? myEvents.find(e => e.id === savedEventId) : null;
+      setCurrentEvent(initialEvent || null);
     } catch (e) {
-      console.error('[EventContext] Erro ao carregar eventos:', e);
+      console.error('[EventContext] Erro ao carregar dados:', e);
     }
     
     setLoading(false);
@@ -65,13 +54,42 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     fetchData();
+
+    // Sincronização automática com estado de login (essencial para cadastro PLG)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+        fetchData();
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
+  // Monitorar o papel do usuário no evento selecionado
   useEffect(() => {
-    if (currentEvent) {
-      localStorage.setItem('last_event_id', currentEvent.id);
+    async function fetchRole() {
+      if (!currentEvent || !userProfile) {
+        setUserRole(null);
+        return;
+      }
+
+      if (userProfile.is_master) {
+        setUserRole('owner');
+        return;
+      }
+
+      const { data } = await supabase
+        .from('evento_organizadores')
+        .select('role')
+        .eq('evento_id', currentEvent.id)
+        .eq('user_id', userProfile.id)
+        .maybeSingle();
+      
+      setUserRole(data?.role || null);
     }
-  }, [currentEvent]);
+    fetchRole();
+    if (currentEvent) localStorage.setItem('last_event_id', currentEvent.id);
+  }, [currentEvent, userProfile]);
 
   return (
     <EventContext.Provider value={{ 
@@ -80,6 +98,7 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
       setCurrentEvent, 
       loading, 
       userProfile,
+      userRole,
       refreshEvents: fetchData
     }}>
       {children}

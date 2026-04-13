@@ -18,6 +18,7 @@ jest.mock('@/lib/services/configService', () => ({
 // Mock do navigation
 jest.mock('next/navigation', () => ({
   usePathname: () => '/admin',
+  useRouter: () => ({ push: jest.fn() })
 }));
 
 describe('Admin Sidebar Component (TDD)', () => {

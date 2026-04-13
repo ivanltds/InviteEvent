@@ -21,7 +21,7 @@ describe('Landing Page (Marketing)', () => {
 
   test('deve conter o CTA para o admin', () => {
     render(<LandingPage />);
-    const ctaButtons = screen.getAllByRole('link', { name: /Começar agora|Criar meu convite/i });
+    const ctaButtons = screen.getAllByRole('link', { name: /Crie seu convite/i });
     expect(ctaButtons.length).toBeGreaterThan(0);
     expect(ctaButtons[0]).toHaveAttribute('href', '/admin');
   });

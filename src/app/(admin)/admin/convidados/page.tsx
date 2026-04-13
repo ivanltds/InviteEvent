@@ -144,6 +144,18 @@ export default function AdminConvidados() {
     setMembers(newMembers);
   };
 
+  const handleManualRSVP = async (invite: InviteWithRSVP, status: 'confirmado' | 'recusado') => {
+    if (confirm(`Deseja forçar o RSVP deste convite para "${status.toUpperCase()}"?`)) {
+      const confirmados = status === 'confirmado' ? invite.limite_pessoas : 0;
+      const { success, error } = await inviteService.updateRSVPManually(invite.id, confirmados, status);
+      if (success) {
+        fetchData();
+      } else {
+        alert('Erro ao forçar RSVP: ' + error?.message);
+      }
+    }
+  };
+
   const copyInviteLink = (slug: string) => {
     const url = `${window.location.origin}/inv/${slug}`;
     navigator.clipboard.writeText(url);
@@ -378,6 +390,16 @@ export default function AdminConvidados() {
                         <button className={styles.deleteBtn} onClick={() => handleDeleteInvite(invite.id)}>
                           Excluir
                         </button>
+                        {!rsvp && (
+                          <>
+                            <button className={styles.copyBtn} style={{backgroundColor: 'var(--admin-success)', borderColor: 'var(--admin-success)', color: 'white'}} onClick={() => handleManualRSVP(invite, 'confirmado')}>
+                              ✓ Confirmar
+                            </button>
+                            <button className={styles.deleteBtn} style={{backgroundColor: 'transparent', color: 'var(--admin-danger)'}} onClick={() => handleManualRSVP(invite, 'recusado')}>
+                              ✕ Recusar
+                            </button>
+                          </>
+                        )}
                         {rsvp && (
                           <button className={styles.detailBtn} onClick={() => alert(`Mensagem: ${rsvp.mensagem || 'Nenhuma'}\nRestrições: ${rsvp.restricoes || 'Nenhuma'}`)}>
                             Info

@@ -12,7 +12,12 @@ Como um novo usuário que deseja organizar seu casamento, quero criar meu primei
    - Criar registro base na tabela `configuracoes` com dados genéricos para preenchimento posterior.
 4. **Onboarding:** Redirecionar para o dashboard do novo evento com uma mensagem de "Bem-vindo ao seu novo site!".
 
-## Status: 🚀 Ready
+## Status: ✅ DONE 🏆
+
+## Notas de Implementação
+- `eventService.ts`: Criação atômica com insert em `eventos`, `evento_organizadores` (owner), e `configuracoes`
+- Validação de slug via `eventService.checkSlugAvailability()`
+- Redirecionamento pós-criação para dashboard do evento
 
 ## Detalhes de UX (Uma)
 - **Escrita:** "Escolha um nome marcante. Sua URL será única."

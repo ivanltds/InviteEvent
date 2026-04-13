@@ -4,6 +4,7 @@ import "./globals.css";
 import { Suspense } from "react";
 import Navbar from "@/components/ui/Navbar";
 import DynamicStyles from "@/components/ui/DynamicStyles";
+import { Analytics } from "@vercel/analytics/react";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -39,6 +40,7 @@ export default function RootLayout({
         </Suspense>
         <Navbar />
         {children}
+        <Analytics />
       </body>
     </html>
   );

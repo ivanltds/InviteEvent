@@ -1,5 +1,10 @@
 import '@testing-library/jest-dom'
 
+const originalError = console.error;
+console.error = (...args) => {
+  if (typeof args[0] === 'string' && args[0].includes('not wrapped in act(...)')) return;
+  originalError.call(console, ...args);
+};
 // Mock global do Supabase para todos os testes
 const mockQueryBuilder = {
   select: jest.fn().mockReturnThis(),
@@ -42,3 +47,8 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
+
+// Mock Vercel Analytics preventing ESM import crash
+jest.mock('@vercel/analytics/react', () => ({
+  Analytics: () => null,
+}));

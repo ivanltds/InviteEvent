@@ -48,8 +48,8 @@ export default function LandingPage() {
               personalização visual completa e segurança para seus convidados.
             </p>
             <div className={styles.heroActions}>
-              <Link href="/admin" className={styles.primaryBtn}>
-                Começar agora <Icons.ArrowRight size={18} />
+              <Link href="/criar" className={styles.primaryBtn}>
+                Experimentar meu Evento agora <Icons.ArrowRight size={18} />
               </Link>
               <a href="#features" className={styles.secondaryBtn}>
                 Ver funcionalidades
@@ -125,7 +125,7 @@ export default function LandingPage() {
             <h2>Pronto para digitalizar seu grande dia?</h2>
             <p>Junte-se a centenas de casais que escolheram a elegância e praticidade do InviteEventAI.</p>
             <Link href="/admin" className={styles.largeBtn}>
-              Criar meu convite digital agora
+              Crie seu convite gratuitamente agora
             </Link>
           </div>
         </div>

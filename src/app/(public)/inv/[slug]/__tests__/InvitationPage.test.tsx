@@ -16,6 +16,16 @@ describe('Invitation Page (/inv/[slug])', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useParams as jest.Mock).mockReturnValue({ slug: 'convidado-teste' });
+
+    // Mock do localStorage para bypassar a animação (US-NOVA-001)
+    const mockGetItem = jest.fn((key) => {
+      if (key.includes('envelope_views_')) return '3'; // Simula que já passou do limite de views
+      return null;
+    });
+    Object.defineProperty(window, 'localStorage', {
+      value: { getItem: mockGetItem, setItem: jest.fn() },
+      writable: true
+    });
   });
 
   test('deve carregar nomes e data do casal do banco de dados', async () => {

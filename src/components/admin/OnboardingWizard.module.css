@@ -1,0 +1,165 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1rem;
+}
+
+.modal {
+  background: white;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #ccc;
+  cursor: pointer;
+  line-height: 1;
+  z-index: 10;
+  transition: color 0.2s;
+}
+
+.closeBtn:hover {
+  color: #888;
+}
+
+.progress {
+  height: 6px;
+  background: #eee;
+  width: 100%;
+}
+
+.bar {
+  height: 100%;
+  background: var(--accent-safe);
+  transition: width 0.3s ease;
+}
+
+.step {
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.step h2 {
+  text-align: center;
+  font-size: 2.2rem;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.inputGroup label {
+  font-weight: 600;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.inputGroup input {
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  font-size: 1.1rem;
+}
+
+.colors {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.colors div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.colors input[type="color"] {
+  width: 60px;
+  height: 60px;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: none;
+}
+
+.uploads {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.dropzone {
+  height: 150px;
+  border: 2px dashed #eee;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dropzone:hover {
+  border-color: var(--accent-safe);
+  background: #fdfcfb;
+}
+
+.dropzoneFull {
+  height: 200px;
+  border: 2px dashed #eee;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.nextBtn, .finishBtn {
+  background: var(--accent-safe);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actions button:not(.nextBtn):not(.finishBtn) {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  text-decoration: underline;
+}

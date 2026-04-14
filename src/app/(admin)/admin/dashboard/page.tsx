@@ -33,8 +33,7 @@ export default function DashboardPage() {
       if (!currentEvent) return;
       setLoading(true);
       const s = await eventService.getEventStats(currentEvent.id);
-      // Aqui simulamos valor de presentes já que ainda não temos a soma real no service
-      setStats({ ...s, valorPresentes: 0 });
+      setStats(s);
       
       const { data: rsvps } = await supabase
         .from('rsvp')

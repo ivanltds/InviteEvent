@@ -2,13 +2,6 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
-// Inicializa Stripe com a versão recomendada
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16' as any,
-});
-
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
 /**
  * WEBHOOK: /api/webhooks/stripe
  * 
@@ -17,6 +10,19 @@ const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
  * 2. Processar contribuições de presentes (futuro)
  */
 export async function POST(req: Request) {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (!secretKey) {
+    console.error('[Stripe Webhook] Erro: STRIPE_SECRET_KEY não configurada.');
+    return NextResponse.json({ error: 'Configuração de pagamento incompleta' }, { status: 500 });
+  }
+
+  // Inicializa Stripe apenas quando necessário para evitar erros no build/static analysis
+  const stripe = new Stripe(secretKey, {
+    apiVersion: '2023-10-16' as any,
+  });
+
   const payload = await req.text();
   const signature = req.headers.get('stripe-signature');
 

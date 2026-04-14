@@ -114,15 +114,23 @@ export const eventService = {
     return { data: event, error: null };
   },
 
-  async getEventStats(eventId: string): Promise<{ totalConvites: number; totalConfirmados: number }> {
-    const [convitesRes, rsvpRes] = await Promise.all([
+  async getEventStats(eventId: string): Promise<{ totalConvites: number; totalConfirmados: number; valorPresentes: number }> {
+    const [convitesRes, rsvpRes, giftsRes] = await Promise.all([
       supabase.from('convites').select('id', { count: 'exact' }).eq('evento_id', eventId),
-      supabase.from('rsvp').select('id', { count: 'exact' }).eq('evento_id', eventId)
+      supabase.from('rsvp').select('id', { count: 'exact' }).eq('evento_id', eventId),
+      supabase.from('comprovantes').select('presentes!inner(preco)').eq('presentes.evento_id', eventId)
     ]);
+
+    const valorPresentes = (giftsRes.data as any[])?.reduce((acc, curr) => {
+      // O inner join traz o objeto presentes. Se for múltiplos itens no presente, 
+      // cada linha de comprovante conta como uma unidade do preço.
+      return acc + (Number(curr.presentes?.preco) || 0);
+    }, 0) || 0;
 
     return {
       totalConvites: convitesRes.count || 0,
-      totalConfirmados: rsvpRes.count || 0
+      totalConfirmados: rsvpRes.count || 0,
+      valorPresentes
     };
   },
 

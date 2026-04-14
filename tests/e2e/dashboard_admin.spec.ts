@@ -4,10 +4,10 @@ test.describe('Dashboard Administrativo', () => {
   // O estado estara compartilhado via storageState configurado no playwright.config.ts
 
   test.beforeEach(async ({ page }) => {
-    // Ocultar dev overlays para evitar intercepção de cliques
+    // Ocultar dev overlays via InitScript (Garante execução ANTES de qualquer render)
     await page.addInitScript(() => {
       const style = document.createElement('style');
-      style.innerHTML = 'nextjs-portal { display: none !important; }';
+      style.innerHTML = 'nextjs-portal, .nextjs-portal { display: none !important; pointer-events: none !important; }';
       document.head.appendChild(style);
     });
 
@@ -23,24 +23,29 @@ test.describe('Dashboard Administrativo', () => {
   test('Deve gerenciar convidados (CRUD completo)', async ({ page }) => {
     await page.goto('/admin/convidados');
     
+    // Esperar o carregamento inicial do contexto de evento
+    await expect(page.getByText('Carregando...')).not.toBeVisible({ timeout: 15000 });
+    
     // 1. Criar novo convite
     await page.getByRole('button', { name: 'Novo Convite' }).click();
     await page.locator('#inviteName').fill(`Convidado ${Date.now()}`);
     await page.selectOption('#type', 'casal');
     await page.getByRole('button', { name: 'Criar Convite' }).click();
-
-    await expect(page.getByText(/Convidado/)).toBeVisible();
+    
+    // Usar seletor específico da classe de nome do convidado para evitar ambiguidades com o sidebar/heading
+    const guestLocator = page.locator('[class*="guestName"]');
+    await expect(guestLocator.first()).toBeVisible();
 
     // 2. Editar convite
     await page.getByRole('button', { name: 'Editar' }).first().click();
     await page.locator('#inviteName').fill(`Convidado Editado ${Date.now()}`);
     await page.click('button:has-text("Salvar Alterações")');
-    await expect(page.getByText(/Editado/)).toBeVisible();
+    await expect(page.locator('[class*="guestName"]').first()).toContainText('Editado');
 
     // 3. Excluir convite
     page.on('dialog', dialog => dialog.accept());
     await page.getByRole('button', { name: 'Excluir' }).first().click();
-    await expect(page.getByText(/Editado/)).not.toBeVisible();
+    await expect(page.locator('[class*="guestName"]').filter({ hasText: 'Editado' })).not.toBeVisible();
   });
 
   test('Deve gerenciar presentes (CRUD completo)', async ({ page }) => {
@@ -80,32 +85,37 @@ test.describe('Dashboard Administrativo', () => {
   });
 
   test('Deve gerenciar equipe (Adicionar organizador)', async ({ page }) => {
-    await page.goto('/admin/configuracoes'); // Equipe esta dentro de configuracoes
+    await page.goto('/admin/configuracoes'); 
     
-    const teamSection = page.getByText('Equipe do Evento');
+    // Esperar carregamento das configurações
+    await expect(page.getByText('Carregando configurações...')).not.toBeVisible({ timeout: 15000 });
+    
+    // TeamManagement agora usa feedback na UI para erros e sucessos (v3)
+    const teamSection = page.locator('section').filter({ hasText: 'Equipe de Organizadores' });
     await teamSection.scrollIntoViewIfNeeded();
 
-    await page.getByPlaceholder('E-mail do usuário').fill('staff@test.com');
-    await page.getByRole('button', { name: 'Adicionar' }).click();
+    await teamSection.getByPlaceholder('E-mail do usuário').fill('staff@test.com');
+    await teamSection.getByRole('button', { name: 'Adicionar' }).click();
 
-    // Como o staff@test.com pode não existir no banco, ele pode retornar erro
-    // Mas o teste deve validar ou o sucesso ou a mensagem correta.
-    // Assumindo que o erro de "Usuario nao encontrado" seja esperado se ele nao existir.
-    await expect(page.getByText(/staff@test.com/i).or(page.getByText(/não encontrado/i))).toBeVisible();
+    await expect(teamSection.getByText(/staff@test.com/i).or(teamSection.getByText(/não encontrado/i))).toBeVisible();
   });
 
   test('Deve gerenciar FAQ do evento', async ({ page }) => {
     await page.goto('/admin/configuracoes');
     
-    await page.getByPlaceholder(/Pergunta/i).fill('Qual o traje?');
-    await page.getByPlaceholder(/Resposta/i).fill('Traje esporte fino.');
-    await page.getByRole('button', { name: 'Adicionar' }).last().click();
+    // Esperar carregamento das configurações
+    await expect(page.getByText('Carregando configurações...')).not.toBeVisible({ timeout: 15000 });
 
-    await expect(page.getByText('Qual o traje?')).toBeVisible();
+    const faqSection = page.locator('section').filter({ hasText: 'Perguntas Frequentes (FAQ)' });
+    await faqSection.getByPlaceholder(/Pergunta/i).fill('Qual o traje?');
+    await faqSection.getByPlaceholder(/Resposta/i).fill('Traje esporte fino.');
+    await faqSection.getByRole('button', { name: 'Adicionar' }).click();
+
+    await expect(faqSection.getByText('Qual o traje?')).toBeVisible();
 
     // Excluir FAQ
-    page.on('dialog', dialog => dialog.accept());
-    await page.getByRole('button', { name: 'Excluir' }).last().click();
-    await expect(page.getByText('Qual o traje?')).not.toBeVisible();
+    page.once('dialog', dialog => dialog.accept());
+    await faqSection.getByRole('button', { name: 'Excluir' }).last().click();
+    await expect(faqSection.getByText('Qual o traje?')).not.toBeVisible();
   });
 });

@@ -3,12 +3,13 @@ import { test as setup, expect } from '@playwright/test';
 const authFile = 'tests/.auth/user.json';
 
 setup('authenticate as master admin', async ({ page }) => {
-  const uniqueEmail = `setup-stable-v8-${Date.now()}@test.com`;
+  // Maior entropia para evitar colisões e rate limit persistente
+  const uniqueEmail = `setup-stable-v10-${Date.now()}-${Math.floor(Math.random() * 10000)}@test.com`;
 
-  // Ocultar dev overlays para evitar intercepção de cliques
+  // Ocultar dev overlays via InitScript (Garante execução ANTES de qualquer render)
   await page.addInitScript(() => {
     const style = document.createElement('style');
-    style.innerHTML = 'nextjs-portal { display: none !important; }';
+    style.innerHTML = 'nextjs-portal, .nextjs-portal { display: none !important; pointer-events: none !important; }';
     document.head.appendChild(style);
   });
 

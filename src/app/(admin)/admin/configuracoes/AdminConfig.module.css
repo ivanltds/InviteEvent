@@ -163,23 +163,47 @@
 .checkboxGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 1.2rem;
+  margin-top: 1rem;
 }
 
-.checkboxLabel {
+.checkboxField {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-size: 0.9rem;
-  color: var(--text-main-safe);
-  opacity: 0.8;
+  gap: 0.8rem;
+  padding: 0.8rem 1rem;
+  background: rgba(0,0,0,0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
   cursor: pointer;
 }
 
-.checkboxLabel input {
-  width: 18px;
-  height: 18px;
+.checkboxField:hover {
+  background: rgba(0,0,0,0.04);
+  border-color: var(--accent-safe);
+}
+
+.checkboxField input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
   cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.checkboxField label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-main-safe);
+  cursor: pointer;
+  user-select: none;
+}
+
+.helpText {
+  font-size: 0.85rem;
+  color: var(--text-main-safe);
+  opacity: 0.6;
+  margin-bottom: 0.5rem;
 }
 
 .previewColumn {

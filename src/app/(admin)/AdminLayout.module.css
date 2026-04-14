@@ -80,12 +80,14 @@
   backdrop-filter: blur(4px);
   opacity: 0;
   visibility: hidden;
+  pointer-events: none;
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .overlayVisible {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 
 .loading {

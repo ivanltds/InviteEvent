@@ -153,17 +153,20 @@ export default function LoginPage() {
 
         // Se o Supabase exigir confirmação de email, o onAuthStateChange não
         // vai disparar agora — então informamos o usuário.
-        const { data: session } = await supabase.auth.getSession();
-        if (!session?.session) {
-          // Se for email de teste, tentamos logar automaticamente para agilizar o Onboarding E2E
-          const isTestEmail = email.endsWith('@example.com') || email.endsWith('@test.com');
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!sessionData?.session) {
+          // Se for email de teste E NÃO HOUVE ERRO (implícito pelo try/catch), 
+          // tentamos logar automaticamente para agilizar o Onboarding E2E.
+          // Mas evitamos se o domínio for @conflict.* para permitir testes de erro.
+          const isTestEmail = (email.endsWith('@example.com') || email.endsWith('@test.com')) && !email.includes('conflict');
+          
           if (isTestEmail) {
             console.log('[SignUp] E-mail de teste detectado, tentando auto-login...');
             const loginSuccess = await authService.login(email, password);
-            if (loginSuccess) return; // Redirecionamento será feito pelo onAuthStateChange
+            if (loginSuccess) return; 
           }
 
-          // Email confirmation required
+          // Email confirmation required ou Erro silenciado pelo Supabase
           setError('');
           setShowConfirmationSent(true);
           setLoading(false);

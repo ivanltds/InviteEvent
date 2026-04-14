@@ -214,6 +214,49 @@ export default function AdminConfig() {
               </div>
 
             </section>
+            
+            <section className={styles.section}>
+              <h2>Módulos do Convite (Visibilidade)</h2>
+              <p className={styles.helpText}>Escolha quais seções deseja exibir para seus convidados.</p>
+              <div className={styles.checkboxGrid}>
+                <div className={styles.checkboxField}>
+                  <input
+                    id="mostrar_historia"
+                    type="checkbox"
+                    checked={config.mostrar_historia !== false}
+                    onChange={(e) => setConfig({...config, mostrar_historia: e.target.checked})}
+                  />
+                  <label htmlFor="mostrar_historia">Nossa História</label>
+                </div>
+                <div className={styles.checkboxField}>
+                  <input
+                    id="mostrar_noivos"
+                    type="checkbox"
+                    checked={config.mostrar_noivos !== false}
+                    onChange={(e) => setConfig({...config, mostrar_noivos: e.target.checked})}
+                  />
+                  <label htmlFor="mostrar_noivos">Os Noivos (Bio)</label>
+                </div>
+                <div className={styles.checkboxField}>
+                  <input
+                    id="mostrar_faq"
+                    type="checkbox"
+                    checked={config.mostrar_faq !== false}
+                    onChange={(e) => setConfig({...config, mostrar_faq: e.target.checked})}
+                  />
+                  <label htmlFor="mostrar_faq">FAQ (Perguntas Frequentes)</label>
+                </div>
+                <div className={styles.checkboxField}>
+                  <input
+                    id="mostrar_presentes"
+                    type="checkbox"
+                    checked={config.mostrar_presentes !== false}
+                    onChange={(e) => setConfig({...config, mostrar_presentes: e.target.checked})}
+                  />
+                  <label htmlFor="mostrar_presentes">Lista de Presentes (PIX)</label>
+                </div>
+              </div>
+            </section>
 
             <section className={styles.section}>
               <h2>Os Noivos</h2>

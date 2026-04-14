@@ -7,11 +7,13 @@ import { EventoOrganizador } from '@/lib/types/database';
 import styles from './AdminComponents.module.css';
 
 export default function TeamManagement() {
-  const { currentEvent, userProfile } = useEvent();
+  const { currentEvent, userProfile, userRole, loading: contextLoading } = useEvent();
   const [organizers, setOrganizers] = useState<(EventoOrganizador & { email: string })[]>([]);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const fetchOrganizers = async () => {
     if (!currentEvent) return;
@@ -28,14 +30,16 @@ export default function TeamManagement() {
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentEvent) return;
-    setAdding(true);
+    setError(null);
+    setSuccess(null);
     try {
       await eventService.addOrganizer(currentEvent.id, email);
       setEmail('');
       await fetchOrganizers();
-      alert('Organizador adicionado!');
+      setSuccess('Organizador adicionado com sucesso!');
+      setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
-      alert(err.message);
+      setError(err.message);
     }
     setAdding(false);
   };
@@ -61,8 +65,13 @@ export default function TeamManagement() {
 
   if (!currentEvent) return null;
 
-  const myRole = organizers.find(o => o.user_id === userProfile?.id)?.role;
-  const isOwnerOrMaster = myRole === 'owner' || userProfile?.is_master;
+  // STORY-049: Uso de userRole do contexto evita race conditions entre fetch de lista local 
+  // e cálculo de permissão. Se o contexto ainda estiver carregando, esperamos.
+  const isOwnerOrMaster = userRole === 'owner' || userProfile?.is_master;
+
+  if (contextLoading) {
+    return <p>Verificando permissões...</p>;
+  }
 
   if (!isOwnerOrMaster) {
     return <p>Apenas o Owner pode gerenciar a equipe.</p>;
@@ -85,6 +94,8 @@ export default function TeamManagement() {
             {adding ? '...' : 'Adicionar'}
           </button>
         </div>
+        {error && <p className={styles.errorText} style={{ color: 'var(--admin-danger)', fontSize: '0.85rem', marginTop: '0.5rem' }}>{error}</p>}
+        {success && <p className={styles.successText} style={{ color: 'var(--admin-success)', fontSize: '0.85rem', marginTop: '0.5rem' }}>{success}</p>}
         <p className={styles.helpText}>O usuário deve ter uma conta criada no sistema.</p>
       </form>
 

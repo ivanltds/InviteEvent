@@ -43,10 +43,33 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
       const myEvents = await eventService.getMyEvents();
       setEvents(myEvents);
 
-      // 3. Selecionar evento atual (Apenas se houver persistência)
+      // 3. Selecionar evento atual (Prioridade: salvo > primeiro disponível)
       const savedEventId = localStorage.getItem('last_event_id');
-      const initialEvent = savedEventId ? myEvents.find(e => e.id === savedEventId) : null;
-      setCurrentEvent(initialEvent || null);
+      const foundEvent = savedEventId ? myEvents.find(e => e.id === savedEventId) : null;
+      const finalEvent = foundEvent || (myEvents.length > 0 ? myEvents[0] : null);
+      
+      setCurrentEvent(finalEvent);
+      
+      if (finalEvent && !savedEventId) {
+        localStorage.setItem('last_event_id', finalEvent.id);
+      }
+
+      // 4. Papel do Usuário (Busca imediata para evitar race conditions)
+      if (finalEvent && profile) {
+        if (profile.is_master) {
+          setUserRole('owner');
+        } else {
+          const { data } = await supabase
+            .from('evento_organizadores')
+            .select('role')
+            .eq('evento_id', finalEvent.id)
+            .eq('user_id', profile.id)
+            .maybeSingle();
+          setUserRole(data?.role || null);
+        }
+      } else {
+        setUserRole(null);
+      }
     } catch (e) {
       console.error('[EventContext] Erro ao carregar dados:', e);
     }
@@ -67,31 +90,10 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Monitorar o papel do usuário no evento selecionado
+  // Persistência do evento selecionado
   useEffect(() => {
-    async function fetchRole() {
-      if (!currentEvent || !userProfile) {
-        setUserRole(null);
-        return;
-      }
-
-      if (userProfile.is_master) {
-        setUserRole('owner');
-        return;
-      }
-
-      const { data } = await supabase
-        .from('evento_organizadores')
-        .select('role')
-        .eq('evento_id', currentEvent.id)
-        .eq('user_id', userProfile.id)
-        .maybeSingle();
-      
-      setUserRole(data?.role || null);
-    }
-    fetchRole();
     if (currentEvent) localStorage.setItem('last_event_id', currentEvent.id);
-  }, [currentEvent, userProfile]);
+  }, [currentEvent]);
 
   return (
     <EventContext.Provider value={{ 

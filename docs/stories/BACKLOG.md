@@ -17,13 +17,13 @@
 
 | Pos. | Story | Motivo da Priorização | Esforço | Dependência |
 |------|-------|----------------------|---------|------------|
-| **1** | ⚡ **STORY-049** — Middleware + Fix Build | **Bloqueador absoluto.** Sem build funcional nada vai ao ar. Rotas admin abertas = risco de segurança real. | XS | — |
-| **2** | 🐞 **STORY-058** — [BUG] Contraste Admin | **Bug visual crítico.** Organizador usa o admin intensamente; ilegibilidade compromete a experiência de configuração. Mais simples de resolver. | S | Paralela com 049 |
+| **1** | ✅ **STORY-055** — Proxy + Fix Build | **Bloqueador absoluto.** Sem build funcional nada vai ao ar. Rotas admin abertas = risco de segurança real. | XS | — |
+| **2** | 🐞 **STORY-058** — [BUG] Contraste Admin | **Bug visual crítico.** Organizador usa o admin intensamente; ilegibilidade compromete a experiência de configuração. Mais simples de resolver. | S | Paralela com 055 |
 | **3** | 🔤 **STORY-057** — Font Picker Premium | **Personalização típica = orgulho do noivo.** Fontes cursivas exageradas são o item mais pedido. Depende do admin legível (058). | M | Após 058 |
-| **4** | 🌟 **STORY-056** — Envelope Gateway (Animação) | **WOW factor do convite.** A abertura do envelope é o momento que o convidado vai lembrar e compartilhar. | L | Após 049 |
+| **4** | 🌟 **STORY-056** — Envelope Gateway (Animação) | **WOW factor do convite.** A abertura do envelope é o momento que o convidado vai lembrar e compartilhar. | L | Após 055 |
 | **5** | 🎨 **STORY-052** — Visual Premium do Convite | **Acabamento do produto.** Tipografia, paleta, monograma — tudo que faz o convite parecer profissional. | L | Paralela com 056 |
 | **6** | 🖼️ **STORY-050** — Galeria Pública de Fotos | **Val. direto ao convidado.** Admin já tem galeria pronta; falta apenas exposição pública. Recurso emocional importante. | M | Paralela com 052 |
-| **7** | 🚀 **STORY-051** — Deploy & CI/CD (Vercel) | **Pré-requisito do Go-Live.** Sem isso o site não é acessível. CI/CD evita regressões futuras. | S | Após 049 |
+| **7** | 🚀 **STORY-051** — Deploy & CI/CD (Vercel) | **Pré-requisito do Go-Live.** Sem isso o site não é acessível. CI/CD evita regressões futuras. | S | Após 055 |
 
 ---
 
@@ -45,7 +45,7 @@
 
 | Pos. | Story | Motivo da Priorização | Dependência |
 |------|-------|----------------------|------------|
-| **8** | 📊 **STORY-055** — Observabilidade (Vercel Analytics) | Visibilidade do comportamento real em produção. Importante para decisões de produto, mas não urgente. | Após 051 |
+| **8** | 📊 **STORY-059** — Observabilidade (Vercel Analytics) | Visibilidade do comportamento real em produção. Importante para decisões de produto, mas não urgente. | Após 051 |
 | **9** | 🧩 **STORY-033** — Abstração JSONB de Entidades | Evolução da plataforma para suportar além de casamentos (aniversários, chás de bebê). Pós-MVP. | — |
 | **10** | 🚩 **STORY-034** — Feature Flags por Evento | Controle granular de recursos por tenant. Alta complexidade, baixa urgência no estágio atual. | Após 033 |
 
@@ -58,7 +58,7 @@
 | Story | Descrição | Épico |
 |-------|-----------|-------|
 | STORY-039 | Migração Supabase Auth | EPIC-010 |
-| STORY-027 | Auth Server-Side *(ressalva: middleware renomear → resolvida por 049)* | EPIC-010 |
+| STORY-027 | Auth Server-Side *(ressalva: proxy renomear → resolvida por 055)* | EPIC-010 |
 | STORY-028 | Ofuscação de Slugs | EPIC-010 |
 | STORY-029 | Auditoria RLS | EPIC-010 |
 | STORY-030 | Signed Uploads *(substituída por 044)* | EPIC-010 |
@@ -71,6 +71,7 @@
 | STORY-046 | Onboarding Wizard Multi-Step | EPIC-011 |
 | STORY-047 | Navegação em Camadas | EPIC-011 |
 | STORY-048 | Dashboard de Métricas do Evento | EPIC-011 |
+| STORY-055 | Proxy + Fix Build (Antigo 049) | EPIC-010 |
 
 ---
 
@@ -78,16 +79,16 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Stories DONE | **19** |
-| Sprint 1 — Go-Live | **7** stories (049, 058, 057, 056, 052, 050, 051) |
+| Stories DONE | **20** |
+| Sprint 1 — Go-Live | **7** stories (055, 058, 057, 056, 052, 050, 051) |
 | Sprint 2 — Qualidade | **3** stories (054, 053, 031) |
-| Sprint 3 — Plataforma | **3** stories (055, 033, 034) |
+| Sprint 3 — Plataforma | **3** stories (059, 033, 034) |
 | Total stories ativas | **13** |
-| Build status | ❌ BROKEN → **Fix: STORY-049** |
+| Build status | ✅ FIXED via STORY-055 |
 | Deploy status | ❌ NOT DEPLOYED → **Fix: STORY-051** |
 | Prazo crítico | ⏰ **13/06/2026** |
 
-> **Nota @ux (Uma):** Sprint 1 agora inclui a experiência completa do convidado — envelope, fontes, visual e galeria. A ordem de implementação dentro do sprint deve seguir: `049 → 058 → 057 → [056 + 052 + 050 paralelas] → 051`
+> **Nota @ux (Uma):** Sprint 1 agora inclui a experiência completa do convidado — envelope, fontes, visual e galeria. A ordem de implementação dentro do sprint deve seguir: `055 → 058 → 057 → [056 + 052 + 050 paralelas] → 051`
 
 ---
 
@@ -102,9 +103,9 @@
 - **STORY-053** (E2E Tests): movida para **Sprint 2**. Justificativa: testes E2E dependem de CI/CD estar on. Não faz sentido antes do deploy.
 
 ### = Mantida
-- **STORY-049**: permanece #1 absoluta — bloqueador de tudo.
-- **STORY-051**: permanece após 049 — pré-requisito de acesso público.
-- **STORY-031, 033, 034, 055**: permanecem em backlog futuro — baixo impacto no prazo.
+- **STORY-055**: permanece #1 absoluta — bloqueador de tudo.
+- **STORY-051**: permanece após 055 — pré-requisito de acesso público.
+- **STORY-031, 033, 034, 059**: permanecem em backlog futuro — baixo impacto no prazo.
 
 ---
 

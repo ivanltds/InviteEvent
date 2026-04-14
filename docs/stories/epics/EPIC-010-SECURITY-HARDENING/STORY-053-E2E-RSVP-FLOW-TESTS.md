@@ -43,7 +43,7 @@ Como membro do time de qualidade, desejo ter cobertura de testes ponta-a-ponta d
 ## Epic: EPIC-010 (Security & Quality Hardening)
 
 ## Dependências
-- ⚠️ STORY-049 (Middleware + Build fix) — deve estar resolvida para testes não falharem por rota exposta
+- ⚠️ STORY-055 (Proxy + Build fix) — deve estar resolvida para testes não falharem por rota exposta
 - ⚠️ STORY-051 (CI/CD) — os E2E devem rodar no pipeline
 
 ## Notas Técnicas

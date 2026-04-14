@@ -308,15 +308,19 @@ export default function PresentesPage() {
                 </div>
               </>
             ) : (
-              <div className={styles.successMessage}>
-                <div style={{marginBottom: '1rem'}}>
-                  <svg viewBox="0 0 24 24" width="64" height="64" stroke="currentColor" strokeWidth="1" fill="none" style={{color: 'var(--accent)'}}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+              <div className={`${styles.successMessage} ${styles.fadeIn}`}>
+                <div className={styles.heartIcon}>
+                  <svg viewBox="0 0 24 24" width="80" height="80" stroke="currentColor" strokeWidth="1" fill="currentColor" style={{color: 'var(--accent)', filter: 'drop-shadow(0 0 10px rgba(143, 168, 155, 0.3))'}}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                 </div>
-                <h3>Muito Obrigado!</h3>
-                <p>Recebemos sua intenção de presente. Seu carinho torna nosso dia ainda mais especial!</p>
-                <button className={styles.giftBtn} style={{marginTop: '2rem'}} onClick={() => setShowModal(false)}>
-                  Voltar à Lista
-                </button>
+                <h3 className="cursive" style={{ fontSize: '2.5rem', marginTop: '1rem' }}>Muito Obrigado!</h3>
+                <p style={{ maxWidth: '400px', margin: '0 auto', opacity: 0.8 }}>
+                  Recebemos sua intenção de presente. Seu carinho torna nosso dia ainda mais especial e nos ajuda a construir nossa nova história!
+                </p>
+                <div className={styles.modalActions}>
+                  <button className={styles.giftBtn} style={{marginTop: '2rem', padding: '1rem 3rem'}} onClick={() => setShowModal(false)}>
+                    Voltar à Lista
+                  </button>
+                </div>
               </div>
             )}
           </div>

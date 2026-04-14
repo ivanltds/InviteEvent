@@ -40,7 +40,7 @@ export default function RootLayout({
         </Suspense>
         <Navbar />
         {children}
-        <Analytics />
+        {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
   );

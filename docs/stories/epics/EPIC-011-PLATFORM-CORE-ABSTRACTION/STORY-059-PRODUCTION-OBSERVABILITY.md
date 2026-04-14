@@ -1,4 +1,4 @@
-# STORY-055: Observabilidade em Produção (Vercel Analytics + DB Monitoring)
+# STORY-059: Observabilidade em Produção (Vercel Analytics + DB Monitoring)
 
 ## Descrição
 Como proprietário da plataforma, desejo visibilidade sobre o comportamento real dos usuários e do banco de dados em produção, para identificar problemas proativamente e entender o uso real do produto.

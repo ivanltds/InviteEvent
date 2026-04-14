@@ -152,6 +152,7 @@ export default function RSVP({ inviteSlug: propSlug }: RSVPProps) {
     return (
       <section className={styles.section} id="rsvp">
         <div className={styles.successContainer}>
+          <div className={styles.successIcon}>❤️</div>
           <h2 className="cursive">
             {isRecusado ? 'Olá novamente!' : 'Que bom te ver por aqui!'}
           </h2>
@@ -215,6 +216,7 @@ export default function RSVP({ inviteSlug: propSlug }: RSVPProps) {
     return (
       <section className={styles.section} id="rsvp">
         <div className={styles.successContainer}>
+          <div className={styles.successIcon}>❤️</div>
           <h2 className="cursive">{currentMsg.title}</h2>
           <p>{currentMsg.text}</p>
           {!isRecusado && (

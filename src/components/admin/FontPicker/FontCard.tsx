@@ -17,6 +17,8 @@ interface FontCardProps {
 export default function FontCard({ font, isSelected, previewText, onSelect }: FontCardProps) {
   // Lazy load da fonte apenas para o preview deste card (texto otimizado)
   useEffect(() => {
+    if ((window as any).isPlaywright) return;
+
     const url = getFontUrl(font.googleFamily, previewText);
     const existing = document.querySelector(`link[data-font="${font.googleFamily}"]`);
     if (!existing) {
@@ -24,7 +26,10 @@ export default function FontCard({ font, isSelected, previewText, onSelect }: Fo
       link.rel = 'stylesheet';
       link.href = url;
       link.setAttribute('data-font', font.googleFamily);
-      document.head.appendChild(link);
+      const target = document.head || document.documentElement;
+      if (target) {
+        target.appendChild(link);
+      }
     }
   }, [font.googleFamily, previewText]);
 

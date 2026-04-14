@@ -98,4 +98,4 @@ export const SERIF_FONTS = [
 ## Dependências
 - ✅ `configuracoes` com campos `font_cursive` e `font_serif`
 - ✅ `configService.update()` já implementado
-- ⚠️ STORY-049 (build fix) — pré-requisito
+- ⚠️ STORY-055 (build fix) — pré-requisito

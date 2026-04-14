@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import styles from '../admin.module.css';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { authService } from '@/lib/services/authService';
 import { supabase } from '@/lib/supabase';
 import { AuthChangeEvent, Session } from '@supabase/supabase-js';
@@ -24,9 +24,10 @@ function formatPhone(value: string): string {
 }
 
 // Transfere o pending_invite_state do localStorage para o Supabase.
-async function claimPendingInvite(onError?: (msg: string) => void) {
+// STORY-SYNC: Agora retorna o ID do evento criado para guiar o redirect.
+async function claimPendingInvite(onError?: (msg: string) => void): Promise<string | undefined> {
   const rawPayload = localStorage.getItem('pending_invite_state');
-  if (!rawPayload) return;
+  if (!rawPayload) return undefined;
 
   try {
     const payload = JSON.parse(rawPayload);
@@ -57,23 +58,27 @@ async function claimPendingInvite(onError?: (msg: string) => void) {
       await supabase.from('eventos').update({ onboarding_completed: true }).eq('id', res.data.id);
 
       localStorage.removeItem('pending_invite_state');
-      alert(`🎉 Eba! Seu convite foi salvo com sucesso em: inv/${res.data.slug}`);
-      console.log('[claimPendingInvite] Convite offline transferido com sucesso:', res.data.id);
+      console.log(`🎉 Sucesso! Convite transferido: inv/${res.data.slug}`);
+      return res.data.id;
     } else {
       const errorMsg = res.error?.message || 'Erro desconhecido';
       if (onError) {
         onError(`⚠️ Não conseguimos salvar seu convite automaticamente: ${errorMsg}. Você pode criá-lo manualmente no Painel.`);
-      } else {
-        alert(`⚠️ Não conseguimos salvar seu convite automaticamente: ${errorMsg}. Você pode criá-lo manualmente no Painel.`);
       }
       console.warn('[claimPendingInvite] Falha ao criar evento:', errorMsg);
     }
   } catch (e) {
     console.error('[claimPendingInvite] Erro inesperado:', e);
   }
+  return undefined;
 }
 
-export default function LoginPage() {
+function LoginFormContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialIsSignUp = searchParams.get('mode') === 'signup';
+  const isFromOnboarding = searchParams.get('claim_invite') === 'true';
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nome, setNome] = useState('');
@@ -81,9 +86,8 @@ export default function LoginPage() {
   const [telefone, setTelefone] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(initialIsSignUp);
   const [showConfirmationSent, setShowConfirmationSent] = useState(false);
-  const router = useRouter();
 
   /**
    * Ouvir o evento de autenticação do Supabase.
@@ -108,28 +112,39 @@ export default function LoginPage() {
           } catch { /* ignore */ }
         }
 
-        //story-049: Sincronizar token com cookie para o Middleware não barrar o redirect
+        // STORY-055: Sincronizar token com cookie para o Proxy (ex-Middleware) não barrar o redirect
         try {
+          console.log('[AuthListener] Sincronizando sessão com cookies...');
           await fetch('/api/auth/session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ access_token: session.access_token })
+            body: JSON.stringify({ access_token: session.access_token }),
           });
-        } catch (syncErr) {
-          console.error('[AuthSync] Falha ao sincronizar cookie:', syncErr);
+        } catch (e) {
+          console.error('[AuthListener] Falha ao sincronizar cookies:', e);
         }
 
-        // Transferir convite offline → online
-        await claimPendingInvite((msg) => setError(msg));
+        console.log('[AuthListener] Redirecionando para Dashboard/Configurações...');
+        const newEventId = await claimPendingInvite((msg) => setError(msg));
+        
+        // STORY-SYNC: Se vindo do onboarding, ir para Configurações (mais visual)
+        // Usar window.location.href para garantir que o EventContext recarregue totalmente
+        if (isFromOnboarding) {
+          if (newEventId) {
+            localStorage.setItem('last_event_id', newEventId);
+          }
+          console.log('[AuthListener] Hard redirect para Configurações (Onboarding conversion)');
+          window.location.href = '/admin/configuracoes';
+          return;
+        }
 
-        // story-049: Refresh forçado ou push após sync
         router.push('/admin/dashboard');
         router.refresh();
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [router]);
+  }, [router, isFromOnboarding]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -219,6 +234,23 @@ export default function LoginPage() {
     <main className={styles.loginContainer}>
       <form onSubmit={handleSubmit} className={styles.loginForm}>
         <h2 className="cursive">{isSignUp ? 'Criar Conta' : 'Acesso Organizador'}</h2>
+        
+        {isSignUp && isFromOnboarding && (
+          <div style={{ 
+            background: 'rgba(245,158,11,0.1)', 
+            color: 'var(--admin-accent)', 
+            padding: '12px', 
+            borderRadius: '8px', 
+            marginBottom: '1.5rem',
+            fontSize: '0.9rem',
+            textAlign: 'center',
+            border: '1px dashed var(--admin-accent)'
+          }}>
+            ✨ <strong>Você está quase lá!</strong><br/>
+            Crie sua conta para salvar suas personalizações.
+          </div>
+        )}
+
         <p>
           {isSignUp
             ? 'Crie sua conta para gerenciar seu evento.'
@@ -299,5 +331,13 @@ export default function LoginPage() {
         </button>
       </form>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className={styles.loginContainer}><p>Carregando...</p></div>}>
+      <LoginFormContent />
+    </Suspense>
   );
 }

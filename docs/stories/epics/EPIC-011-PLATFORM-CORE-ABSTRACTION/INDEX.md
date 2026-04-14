@@ -16,7 +16,7 @@ Este épico foca em "des-casamentizar" o motor do sistema, permitindo que o Invi
 - [ ] **STORY-033:** Abstração de Entidades Principais via Metadados JSONB. -> **📋 BACKLOG**
 - [ ] **STORY-034:** Feature Flags por Evento (Ativação Modular de Recursos). -> **📋 BACKLOG**
 - [ ] **STORY-051:** Deploy & CI/CD Pipeline (Vercel). -> **📋 TODO**
-- [ ] **STORY-055:** Observabilidade em Produção (Vercel Analytics + DB Monitoring). -> **📋 BACKLOG**
+- [ ] **STORY-059:** Observabilidade em Produção (Vercel Analytics + DB Monitoring). -> **📋 BACKLOG**
 
 ## Notas de Arquitetura
 

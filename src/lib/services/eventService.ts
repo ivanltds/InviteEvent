@@ -62,17 +62,18 @@ export const eventService = {
     // 1. Validar e Resolver Slug (Diferenciação automática para nomes iguais)
     let finalSlug = slug;
     let isAvailable = await this.checkSlugAvailability(finalSlug);
+    let attempts = 0;
     
-    // Se o slug já existe (ex: 'thiago-e-andreia'), tentamos gerar um variante única
-    if (!isAvailable) {
+    while (!isAvailable && attempts < 5) {
       const suffix = Math.random().toString(36).substring(2, 6);
       finalSlug = `${slug}-${suffix}`;
       isAvailable = await this.checkSlugAvailability(finalSlug);
-      
-      // Fallback extremo se o randômico também colidir (improvável)
-      if (!isAvailable) {
-        finalSlug = `${slug}-${Date.now().toString().slice(-4)}`;
-      }
+      attempts++;
+    }
+
+    // Fallback absoluto: timestamp se tudo mais falhar
+    if (!isAvailable) {
+      finalSlug = `${slug}-${Date.now()}`;
     }
 
     // 2. Criar o evento

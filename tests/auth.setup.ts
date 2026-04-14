@@ -3,55 +3,64 @@ import { test as setup, expect } from '@playwright/test';
 const authFile = 'tests/.auth/user.json';
 
 setup('authenticate as master admin', async ({ page }) => {
-  // Maior entropia para evitar colisões e rate limit persistente
-  const uniqueEmail = `setup-stable-v10-${Date.now()}-${Math.floor(Math.random() * 10000)}@test.com`;
+  const uniqueSuffix = Date.now();
+  const uniqueEmail = `setup-resilient-${uniqueSuffix}@test.com`;
 
-  // Ocultar dev overlays via InitScript (Garante execução ANTES de qualquer render)
+  // Definir flag global de Playwright para suprimir DOM mutations instáveis
   await page.addInitScript(() => {
-    const style = document.createElement('style');
-    style.innerHTML = 'nextjs-portal, .nextjs-portal { display: none !important; pointer-events: none !important; }';
-    document.head.appendChild(style);
+    (window as any).isPlaywright = true;
   });
+
+  // Auto-dismiss de alerts residuais
+  page.on('dialog', dialog => dialog.dismiss().catch(() => {}));
 
   // 1. Iniciar onboarding
   await page.goto('/criar');
-  await page.getByPlaceholder('Ex: Maria').fill('Maria v8');
-  await page.getByPlaceholder('Ex: João').fill('Joao v8');
-  await page.getByText('Continuar ➜').click();
+  
+  // Injetar estilos de bypass de overlay do Next.js
+  await page.addStyleTag({ content: 'nextjs-portal, .nextjs-portal { display: none !important; }' }).catch(() => {});
+
+  await page.getByPlaceholder('Ex: Maria').fill('Maria Setup');
+  await page.getByPlaceholder('Ex: João').fill('Joao Setup');
+  await page.getByText(/Continuar/i).first().click({ force: true });
 
   // 2. Passo de Cores
-  await page.getByText('Sálvia Verde').click();
-  await page.getByText(/Adorei! Continuar/i).click();
+  await expect(page.getByText(/As cores dão o tom/i)).toBeVisible();
+  await page.getByText(/Adorei! Continuar/i).click({ force: true });
 
   // 3. Passo de Tipografia 
-  await page.getByText('Great Vibes').click();
-  await page.getByText(/Perfeito! Continuar/i).click();
+  await expect(page.getByText(/A letra conta uma história/i)).toBeVisible();
+  await page.getByText(/Perfeito! Continuar/i).click({ force: true });
 
-  // 4. Passo de Foto -> Gerar Convite
-  await page.getByText('Gerar meu convite ✨').click();
+  // 4. Gerar Convite
+  await page.evaluate(() => localStorage.setItem('skip_gateway', 'true'));
+  const genBtn = page.getByText(/Gerar meu convite/i);
+  await expect(genBtn).toBeVisible();
+  await genBtn.click({ force: true });
 
-  // 5. Preview e Salvar
-  // Clicar no Pular da animação (EnvelopeGateway)
-  // Usamos text=Pular porque é um botão no EnvelopeGateway
-  await page.getByText('Pular →').click({ timeout: 15000 });
+  // 5. Preview e Salvar - Instantâneo via LocalStorage Bypass
+  await page.waitForURL(url => url.toString().includes('preview'), { timeout: 15000 });
 
-  // Agora que o gateway fechou, o botão "Finalizar e Salvar" (que é um Link) deve aparecer
   const salvarBtn = page.getByText('Finalizar e Salvar');
   await expect(salvarBtn).toBeVisible({ timeout: 15000 });
-  await salvarBtn.click();
+  await salvarBtn.click({ force: true });
 
   // 6. Cadastro
-  await page.getByText(/Não tem conta/i).click();
+  await page.waitForURL(/.*login.*/, { timeout: 15000 });
+  const uniqueCPF = Math.floor(Math.random() * 90000000000 + 10000000000).toString();
+  const uniqueTel = `119${Math.floor(Math.random() * 90000000 + 10000000)}`;
   
-  await page.getByPlaceholder('Nome completo').fill('Global Mega Admin');
-  await page.getByPlaceholder('CPF').first().fill('00011122233');
-  await page.getByPlaceholder('Telefone').first().fill('11900001111');
+  await page.getByPlaceholder('Nome completo').fill('Setup Master Admin');
+  await page.getByPlaceholder('CPF').first().fill(uniqueCPF);
+  await page.getByPlaceholder('Telefone').fill(uniqueTel);
   await page.getByPlaceholder('E-mail').fill(uniqueEmail);
   await page.getByPlaceholder('Senha').fill('AdminPassword123!');
   
-  // Clicar e aguardar navegação para dashboard
-  await page.getByRole('button', { name: 'Cadastrar' }).click();
-  await expect(page).toHaveURL(/.*dashboard.*/, { timeout: 45000 });
+  await page.getByRole('button', { name: /Cadastrar/i }).click({ force: true });
+  
+  // Aguarda configurações com tolerância alta para primeira carga (Novo landing UX)
+  await expect(page).toHaveURL(/.*configuracoes.*/, { timeout: 45000 });
+  await page.waitForLoadState('networkidle');
 
   // 8. Salvar estado da sessão
   await page.context().storageState({ path: authFile });

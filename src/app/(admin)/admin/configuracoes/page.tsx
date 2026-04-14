@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * STORY-049: force-dynamic previne prerendering estático em build.
+ * STORY-055: force-dynamic previne prerendering estático em build.
  * Esta página usa hooks (useState/useEffect) e contexto Supabase que
  * não funcionam durante SSG — exige renderização dinâmica no servidor.
  */

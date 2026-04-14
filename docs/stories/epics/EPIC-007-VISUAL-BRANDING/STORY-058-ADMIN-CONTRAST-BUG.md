@@ -115,5 +115,5 @@ As cores do evento devem ser **scoped** apenas ao convite público. O admin chro
 ## Epic: EPIC-010 (Security & Quality) + EPIC-007 (Visual)
 
 ## Dependências
-- ⚠️ STORY-049 (build fix) — pré-requisito
+- ⚠️ STORY-055 (build fix) — pré-requisito
 - Independente de outras stories de visual

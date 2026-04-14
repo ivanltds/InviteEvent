@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './onboarding.module.css';
 
@@ -97,6 +97,43 @@ export default function PublicOnboarding() {
   const [selectedFont, setSelectedFont] = useState(FONTS[0]);
   const [coverBase64, setCoverBase64] = useState<string | null>(null);
 
+  // STORY-PERSISTENCE: Auto-save e restauração de rascunho
+  useEffect(() => {
+    const saved = localStorage.getItem('pending_invite_state');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.noiva_nome) setNoivaNome(parsed.noiva_nome);
+        if (parsed.noivo_nome) setNoivoNome(parsed.noivo_nome);
+        if (parsed.accent_color) {
+          const palette = PALETTES.find(p => p.primary === parsed.accent_color);
+          if (palette) setSelectedPalette(palette);
+        }
+        if (parsed.font_cursive) {
+          const font = FONTS.find(f => f.cursiveValue === parsed.font_cursive);
+          if (font) setSelectedFont(font);
+        }
+      } catch (e) {
+        console.warn('Falha ao restaurar rascunho:', e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const payload = {
+      noiva_nome: noivaNome,
+      noivo_nome: noivoNome,
+      bg_primary: selectedPalette.secondary,
+      bg_secondary: selectedPalette.secondary,
+      accent_color: selectedPalette.primary,
+      font_cursive: selectedFont.cursiveValue,
+      font_serif: selectedFont.serifValue,
+      cover_image_url: coverBase64,
+      data_evento: '2027-10-10'
+    };
+    localStorage.setItem('pending_invite_state', JSON.stringify(payload));
+  }, [noivaNome, noivoNome, selectedPalette, selectedFont, coverBase64]);
+
   const goToStep = (next: number) => {
     setAnimating(true);
     setTimeout(() => {
@@ -134,17 +171,23 @@ export default function PublicOnboarding() {
   };
 
   const handleFinish = () => {
+    if (!selectedPalette || !selectedFont) {
+      console.warn('Finish sem estilo/fonte selecionados');
+      return;
+    }
+
     const payload = {
       noiva_nome: noivaNome.trim() || 'Julieta',
       noivo_nome: noivoNome.trim() || 'Romeu',
-      bg_primary: selectedPalette.secondary, // Agora fundo é o claro
+      bg_primary: selectedPalette.secondary, 
       bg_secondary: selectedPalette.secondary, 
-      accent_color: selectedPalette.primary, // Agora destaque é o forte
+      accent_color: selectedPalette.primary, 
       font_cursive: selectedFont.cursiveValue,
       font_serif: selectedFont.serifValue,
       cover_image_url: coverBase64,
       data_evento: '2027-10-10'
     };
+    
     localStorage.setItem('pending_invite_state', JSON.stringify(payload));
     router.push('/inv/preview');
   };

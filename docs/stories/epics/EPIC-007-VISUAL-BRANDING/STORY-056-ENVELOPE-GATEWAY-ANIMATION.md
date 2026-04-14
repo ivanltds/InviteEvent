@@ -142,4 +142,4 @@ src/components/public/EnvelopeGateway/
 ## Dependências
 - ✅ `configuracoes` com `font_cursive`, `font_serif`, `accent_color`, `nome_noiva`, `nome_noivo`, `data_casamento`
 - ✅ Rota `/inv/[slug]` existente
-- ⚠️ STORY-049 (build funcional) — deve estar resolvida
+- ⚠️ STORY-055 (build funcional) — deve estar resolvida

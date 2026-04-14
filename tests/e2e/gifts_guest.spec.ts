@@ -4,23 +4,42 @@ test.describe('Experiência do Convidado - Presentes', () => {
   let inviteSlug: string;
 
   test.beforeEach(async ({ page }) => {
-    // 1. Pegar slug via admin (já logado via setup)
-    await page.goto('/admin/convidados');
-    
-    // Garantir que temos um presente cadastrado
+    // 1. Garantir que estamos no Admin e temos um Presente
     await page.goto('/admin/presentes');
-    const hasGifts = await page.getByText(/pausar/i).count();
+    await page.waitForLoadState('networkidle');
+    const giftCount = await page.locator('button:has-text("Pausar")').count();
     
-    if (hasGifts === 0) {
-        await page.getByRole('button', { name: 'Novo Item' }).click();
-        await page.locator('#itemName').fill('Presente E2E');
-        await page.locator('#itemPrice').fill('100');
-        await page.locator('#itemQty').fill('1');
-        await page.getByRole('button', { name: 'Criar Presente' }).click();
+    if (giftCount === 0) {
+      console.log('[Setup:Gifts] Criando presente de teste...');
+      await page.getByRole('button', { name: /Novo Item/i }).click();
+      await page.waitForSelector('#itemName');
+      await page.locator('#itemName').fill('Presente Automático E2E');
+      await page.locator('#itemPrice').fill('150');
+      await page.locator('#itemQty').fill('1');
+      await page.getByRole('button', { name: /Criar Presente/i }).click();
+      await expect(page.getByText(/Presente Automático E2E/i)).toBeVisible({ timeout: 15000 });
     }
 
+    // 2. Garantir que temos um Convidado para pegar o Slug
     await page.goto('/admin/convidados');
-    inviteSlug = await page.locator('button[data-invite-slug]').first().getAttribute('data-invite-slug') || '';
+    await page.waitForLoadState('networkidle');
+    
+    let inviteBtn = page.locator('button[data-invite-slug]').first();
+    const guestExists = await inviteBtn.isVisible();
+    
+    if (!guestExists) {
+      console.log('[Setup:Gifts] Criando convidado de teste...');
+      await page.getByRole('button', { name: /Novo Convite/i }).click();
+      await page.waitForSelector('#inviteName');
+      await page.locator('#inviteName').fill('Convidado E2E Gifts');
+      await page.locator('#telefone').fill('11999999999');
+      await page.getByRole('button', { name: /Criar Convite/i }).click();
+      await expect(page.getByText(/Convidado E2E Gifts/i)).toBeVisible({ timeout: 15000 });
+      inviteBtn = page.locator('button[data-invite-slug]').first();
+    }
+
+    inviteSlug = await inviteBtn.getAttribute('data-invite-slug') || '';
+    console.log(`[Setup:Gifts] Slug capturado: ${inviteSlug}`);
   });
 
   test('Deve reservar um presente e verificar concorrência', async ({ page, browser }) => {

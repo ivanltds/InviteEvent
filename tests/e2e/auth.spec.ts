@@ -9,12 +9,15 @@ test.describe('Autenticação e Segurança - Regras de Negócio', () => {
 
   // Este teste é instável devido às políticas de proteção contra enumeração do Supabase
   // que podem retornar 'sucesso' mesmo em conflito para evitar vazamento de e-mails.
+  // STORY-LOG-062: Este teste é marcado como SKIP devido à instabilidade inerente
+  // de testar conflitos de e-mail sequencialmente com Supabase (Rate Limits e Proteção de Enumeração).
+  // A validação de negócio é garantida pelo banco de dados.
   test.skip('Deve bloquear cadastro com e-mail já existente', async ({ page }) => {
     test.slow(); // Regras de Auth envolvem redirects duplos e rate limits
 
     // IMPORTANTE: Máxima entropia para evitar colisões persistentes
     // Usamos @conflict.com para que o LoginPage NÃO tente auto-login (STORY-LOG-049)
-    const uniqueEmail = `conflict-v10-${Date.now()}-${Math.floor(Math.random() * 100000)}@conflict.com`;
+    const uniqueEmail = `conflict-v11-${Date.now()}-${Math.floor(Math.random() * 100000)}@conflict.com`;
     
     // Pequeno delay para acalmar o Rate Limit do Supabase
     await page.waitForTimeout(2000);
@@ -29,14 +32,15 @@ test.describe('Autenticação e Segurança - Regras de Negócio', () => {
     await page.getByPlaceholder('Senha').fill(password);
     
     await Promise.all([
-      page.waitForURL(/.*dashboard.*/, { timeout: 60000 }),
+      page.waitForURL(/.*configuracoes.*/, { timeout: 60000 }),
       page.getByRole('button', { name: 'Cadastrar' }).click()
     ]);
 
     // 2. Logout completo
-    page.on('dialog', d => d.accept());
-    await page.getByText('Sair da Conta').click();
-    await expect(page).toHaveURL(/.*login.*/);
+    page.once('dialog', d => d.accept());
+    await page.getByRole('button', { name: /Sair da Conta/i }).click();
+    await page.waitForURL(/.*login.*/, { timeout: 30000 });
+    await page.waitForLoadState('networkidle');
 
     // 3. Tentar cadastrar o MESMO e-mail
     await page.getByText('Não tem conta? Criar agora').click();
@@ -54,7 +58,7 @@ test.describe('Autenticação e Segurança - Regras de Negócio', () => {
   });
 
   test('Deve redirecionar para login ao acessar dashboard sem sessão', async ({ page }) => {
-    await page.goto('/admin/dashboard');
+    await page.goto('/admin/configuracoes');
     await expect(page).toHaveURL(/.*login.*/);
   });
 });

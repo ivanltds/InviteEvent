@@ -2,13 +2,19 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
+/**
+ * STORY-049/STORY-055: Proxy de Proteção de Rotas
+ * 
+ * Protege todas as rotas /admin/* e implementa a Barreira de Ativação para /inv/[slug].
+ * Next.js 16 (2026) depreciou 'middleware.ts' em favor de 'proxy.ts' e função 'proxy()'.
+ */
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 1. Evitar processamento para arquivos estáticos, api e favicon
+  // 1. Passthrough para assets estáticos, api e favicon
   if (
-    pathname.startsWith('/_next') || 
-    pathname.startsWith('/api') || 
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
     pathname.includes('.') ||
     pathname === '/favicon.ico'
   ) {
@@ -20,7 +26,7 @@ export async function proxy(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
   );
 
-  // 2. Proteção das rotas ADMIN
+  // 2. Proteção das rotas ADMIN — exige sessão ativa
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
     const accessToken = request.cookies.get('sb-access-token')?.value;
 
@@ -38,24 +44,20 @@ export async function proxy(request: NextRequest) {
   }
 
   // 3. BARREIRA DE ATIVAÇÃO (STORY-043)
-  // Se for uma rota de convite /inv/[slug], verificamos se o evento correspondente está ativo
+  // Verifica se o evento do convite está ativo antes de servir /inv/[slug]
   if (pathname.startsWith('/inv/')) {
     const slug = pathname.split('/')[2];
-    
+
     if (slug) {
-      // Buscamos o convite pelo slug e fazemos join com o evento
       const { data: invite } = await supabase
         .from('convites')
         .select('evento_id, eventos(is_active)')
         .eq('slug', slug)
         .single();
 
-      // Se o convite existir e o evento não estiver ativo (is_active = false)
       if (invite && invite.eventos) {
-        // Se is_active for null ou undefined, consideramos inativo também, mas vamos usar um default seguro
         const isActive = (invite.eventos as any).is_active === true;
         if (!isActive) {
-          // Bloqueamos geral para convidados se o site não foi ativado
           return NextResponse.rewrite(new URL('/manutencao', request.url));
         }
       }

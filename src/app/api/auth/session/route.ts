@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 /**
  * API Route para sincronizar a sessão do Supabase com cookies HTTP-only.
- * Isso permite que o Middleware valide a sessão de forma segura.
+ * Isso permite que o Proxy (antigo Middleware) valide a sessão de forma segura.
  */
 export async function POST(request: Request) {
   try {

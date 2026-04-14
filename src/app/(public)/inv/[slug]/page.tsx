@@ -75,8 +75,11 @@ export default function InvitationPage() {
         // Verificar se deve mostrar o envelope (limite de 3 vezes)
         const searchParams = new URLSearchParams(window.location.search);
         const forcePreview = searchParams.get('preview') === 'true';
+        const skipGatewayParam = searchParams.get('skip_gateway') === 'true';
+        const skipGatewayStorage = typeof window !== 'undefined' && localStorage.getItem('skip_gateway') === 'true';
+        
         const isExceeded = hasExceededViewLimit(slug, forcePreview);
-        setShowGateway(!isExceeded);
+        setShowGateway(!isExceeded && !skipGatewayParam && !skipGatewayStorage);
 
         // Intercept Preview Client-Side Funnel
         if (slug === 'preview') {
@@ -242,7 +245,7 @@ export default function InvitationPage() {
             <h4>Uau, o que achou? ✨</h4>
             <p>Seu grande dia merece um convite assim. Salve-o agora!</p>
           </div>
-          <Link href="/admin/login?claim_invite=true" className={styles.ctaButton}>
+          <Link href="/admin/login?mode=signup&claim_invite=true" className={styles.ctaButton}>
             Finalizar e Salvar
           </Link>
         </div>

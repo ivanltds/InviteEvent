@@ -29,7 +29,7 @@ This project follows the **AIOX (AI-Optimized eXperience)** framework, prioritiz
 │   ├── app/          # Next.js App Router (Public & Admin routes)
 │   ├── components/   # Atomic design components (UI, Sections, Admin)
 │   ├── lib/          # Services, Supabase client, and shared utilities
-│   └── middleware.ts # Authentication and routing protection
+│   └── proxy.ts      # Authentication and routing protection (Next.js 16)
 ├── supabase/         # Migrations and database configuration
 └── scripts/          # Automation and migration utilities
 ```

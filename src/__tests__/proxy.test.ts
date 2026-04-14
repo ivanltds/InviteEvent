@@ -1,8 +1,8 @@
 /**
- * STORY-049 TDD: Testes do middleware.ts
- * Atualizado de proxy.ts para middleware.ts — STORY-049
+ * STORY-055 TDD: Testes do proxy.ts (Antigo middleware.ts)
+ * Migrado para proxy.ts — Next.js 16 deprecation.
  */
-import { middleware } from '../middleware';
+import { proxy } from '../proxy';
 import { createClient } from '@supabase/supabase-js';
 
 const mockNext = jest.fn(() => ({ status: 200, type: 'next' }));
@@ -52,7 +52,7 @@ const createMockRequest = (path: string, cookieValue?: string) => ({
   },
 });
 
-describe('STORY-049: middleware de autenticação e ativação', () => {
+describe('STORY-055: proxy de autenticação e ativação (ex-middleware)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (createClient as jest.Mock).mockReturnValue({
@@ -69,20 +69,20 @@ describe('STORY-049: middleware de autenticação e ativação', () => {
   describe('Assets estáticos — passthrough sem autenticação', () => {
     test('deve passar _next/static sem verificar auth', async () => {
       const req = createMockRequest('/_next/static/chunk.js') as any;
-      await middleware(req);
+      await proxy(req);
       expect(mockNext).toHaveBeenCalled();
       expect(mockGetUser).not.toHaveBeenCalled();
     });
 
     test('deve passar /api sem verificar auth', async () => {
       const req = createMockRequest('/api/auth/login') as any;
-      await middleware(req);
+      await proxy(req);
       expect(mockNext).toHaveBeenCalled();
     });
 
     test('deve passar favicon.ico sem verificar auth', async () => {
       const req = createMockRequest('/favicon.ico') as any;
-      await middleware(req);
+      await proxy(req);
       expect(mockNext).toHaveBeenCalled();
     });
   });
@@ -93,14 +93,14 @@ describe('STORY-049: middleware de autenticação e ativação', () => {
   describe('Proteção de rotas admin', () => {
     test('deve permitir /admin/login sem token', async () => {
       const req = createMockRequest('/admin/login') as any;
-      const res = await middleware(req);
+      const res = await proxy(req);
       expect(mockNext).toHaveBeenCalled();
       expect(res?.status).toBe(200);
     });
 
     test('deve redirecionar /admin/dashboard para login sem token', async () => {
       const req = createMockRequest('/admin/dashboard') as any;
-      const res = await middleware(req);
+      const res = await proxy(req);
       expect(mockRedirect).toHaveBeenCalled();
       const redirectUrl = mockRedirect.mock.calls[0][0] as URL;
       expect(redirectUrl.pathname).toBe('/admin/login');
@@ -108,14 +108,14 @@ describe('STORY-049: middleware de autenticação e ativação', () => {
 
     test('deve redirecionar /admin/configuracoes para login sem token', async () => {
       const req = createMockRequest('/admin/configuracoes') as any;
-      await middleware(req);
+      await proxy(req);
       expect(mockRedirect).toHaveBeenCalled();
     });
 
     test('deve permitir acesso com token válido', async () => {
       mockGetUser.mockResolvedValue({ data: { user: { id: 'u-123' } }, error: null });
       const req = createMockRequest('/admin/convidados', 'valid-jwt') as any;
-      const res = await middleware(req);
+      const res = await proxy(req);
       expect(mockNext).toHaveBeenCalled();
       expect(res?.status).toBe(200);
     });
@@ -123,7 +123,7 @@ describe('STORY-049: middleware de autenticação e ativação', () => {
     test('deve redirecionar com token inválido no Supabase', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null }, error: { message: 'Invalid' } });
       const req = createMockRequest('/admin/dashboard', 'bad-jwt') as any;
-      await middleware(req);
+      await proxy(req);
       expect(mockRedirect).toHaveBeenCalled();
     });
   });
@@ -138,7 +138,7 @@ describe('STORY-049: middleware de autenticação e ativação', () => {
         error: null,
       });
       const req = createMockRequest('/inv/familia-silva-a8f2') as any;
-      await middleware(req);
+      await proxy(req);
       expect(mockRewrite).toHaveBeenCalled();
       const rewriteUrl = mockRewrite.mock.calls[0][0] as URL;
       expect(rewriteUrl.pathname).toBe('/manutencao');
@@ -150,7 +150,7 @@ describe('STORY-049: middleware de autenticação e ativação', () => {
         error: null,
       });
       const req = createMockRequest('/inv/familia-silva-a8f2') as any;
-      await middleware(req);
+      await proxy(req);
       expect(mockNext).toHaveBeenCalled();
       expect(mockRewrite).not.toHaveBeenCalled();
     });
@@ -158,7 +158,7 @@ describe('STORY-049: middleware de autenticação e ativação', () => {
     test('deve permitir acesso quando convite não encontrado (página trata o erro)', async () => {
       mockSingle.mockResolvedValue({ data: null, error: null });
       const req = createMockRequest('/inv/slug-inexistente') as any;
-      await middleware(req);
+      await proxy(req);
       expect(mockNext).toHaveBeenCalled();
     });
   });
@@ -168,9 +168,10 @@ describe('STORY-049: middleware de autenticação e ativação', () => {
   // =============================================
   describe('Exportação de config do matcher', () => {
     test('config.matcher deve incluir rotas admin e inv', async () => {
-      const { config } = await import('../middleware');
+      const { config } = await import('../proxy');
       expect(config.matcher).toContain('/admin/:path*');
       expect(config.matcher).toContain('/inv/:path*');
     });
   });
 });
+

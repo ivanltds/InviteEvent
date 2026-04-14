@@ -16,7 +16,7 @@ Como proprietário da plataforma, desejo que o site esteja deployado na Vercel c
 ## Status: 📋 TODO
 
 ## Dependências
-- ⚠️ STORY-049 (Middleware + Build fix) — **BLOQUEADOR**
+- ⚠️ STORY-055 (Proxy + Build fix) — **BLOQUEADOR**
 
 ## Notas Técnicas
 - Verificar se `next.config.ts` precisa de `output: 'standalone'` para Vercel

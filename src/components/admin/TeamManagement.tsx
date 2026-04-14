@@ -65,7 +65,7 @@ export default function TeamManagement() {
 
   if (!currentEvent) return null;
 
-  // STORY-049: Uso de userRole do contexto evita race conditions entre fetch de lista local 
+  // STORY-055: Uso de userRole do contexto evita race conditions entre fetch de lista local 
   // e cálculo de permissão. Se o contexto ainda estiver carregando, esperamos.
   const isOwnerOrMaster = userRole === 'owner' || userProfile?.is_master;
 

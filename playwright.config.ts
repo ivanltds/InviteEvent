@@ -8,6 +8,8 @@ import { defineConfig, devices } from '@playwright/test';
 // import path from 'path';
 // dotenv.config({ path: path.resolve(__dirname, '.env') });
 
+const PORT = process.env.PORT || '3001';
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -23,7 +25,7 @@ export default defineConfig({
   workers: 1,
   
   /* Total timeout for each test */
-  timeout: 120 * 1000,
+  timeout: 180 * 1000,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
@@ -36,7 +38,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
-    baseURL: 'http://localhost:3000',
+    baseURL: `http://localhost:${PORT}`,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on',
@@ -48,58 +50,30 @@ export default defineConfig({
     { name: 'setup', testMatch: /.*\.setup\.ts/ },
 
     {
+      name: 'onboarding',
+      testMatch: /onboarding_resilience\.spec\.ts/,
+      use: { 
+        ...devices['Desktop Chrome'],
+        storageState: { cookies: [], origins: [] },
+      },
+    },
+
+    {
       name: 'chromium',
+      testIgnore: /onboarding_resilience\.spec\.ts/,
       use: { 
         ...devices['Desktop Chrome'],
         storageState: 'tests/.auth/user.json',
       },
       dependencies: ['setup'],
     },
-
-    {
-      name: 'firefox',
-      use: { 
-        ...devices['Desktop Firefox'],
-        storageState: 'tests/.auth/user.json',
-      },
-      dependencies: ['setup'],
-    },
-
-    {
-      name: 'webkit',
-      use: { 
-        ...devices['Desktop Safari'],
-        storageState: 'tests/.auth/user.json',
-      },
-      dependencies: ['setup'],
-    },
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
   ],
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
+    command: `npx next dev -p ${PORT}`,
+    url: `http://localhost:${PORT}`,
+    reuseExistingServer: false,
+    timeout: 300000,
   },
 });

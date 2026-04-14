@@ -236,7 +236,7 @@ export default function InvitationPage() {
       {visibility.historia && <Historia config={config} />}
       {visibility.noivos && <OsNoivos config={config} />}
       <Detalhes config={config} />
-      {slug !== 'preview' && <RSVP inviteSlug={slug} />}
+      {slug !== 'preview' && <RSVP inviteSlug={slug} config={config} />}
       {visibility.faq && <FAQ eventoId={config.evento_id} />}
 
       {slug === 'preview' && (

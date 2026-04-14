@@ -82,6 +82,7 @@ export interface Comprovante {
   convite_id?: string;
   convidado_nome: string;
   url_comprovante: string;
+  mensagem?: string;
   created_at?: string;
 }
 

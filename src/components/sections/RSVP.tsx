@@ -4,13 +4,15 @@ import { useState, useEffect } from 'react';
 import styles from './RSVP.module.css';
 import Link from 'next/link';
 import { rsvpService } from '@/lib/services/rsvpService';
-import { Convite, ConviteMembro, RSVP as RSVPType } from '@/lib/types/database';
+import { Convite, ConviteMembro, RSVP as RSVPType, Configuracao } from '@/lib/types/database';
+import { celebrateGiftSuccess, shootHearts } from '@/lib/utils/confetti';
 
 interface RSVPProps {
   inviteSlug?: string;
+  config?: Configuracao;
 }
 
-export default function RSVP({ inviteSlug: propSlug }: RSVPProps) {
+export default function RSVP({ inviteSlug: propSlug, config: propConfig }: RSVPProps) {
   const [conviteEncontrado, setConviteEncontrado] = useState<Convite | null>(null);
   const [membros, setMembros] = useState<ConviteMembro[]>([]);
   const [formData, setFormData] = useState({
@@ -133,6 +135,13 @@ export default function RSVP({ inviteSlug: propSlug }: RSVPProps) {
       }
       setAlertaExcedente(!!isExcedente);
       setEnviado(true);
+
+      // CELEBRAÇÃO WOW!
+      if (!isRecusado) {
+        const themeColor = propConfig?.accent_color || '#B2AC88';
+        celebrateGiftSuccess({ colors: [themeColor, '#ffffff', '#8FA89B'] });
+        setTimeout(() => shootHearts([themeColor, '#ff69b4']), 500);
+      }
     } else {
       const msg = error?.message || '';
       if (msg.includes('violates row-level security') || msg.toLowerCase().includes('unauthorized') || msg.toLowerCase().includes('forbidden')) {

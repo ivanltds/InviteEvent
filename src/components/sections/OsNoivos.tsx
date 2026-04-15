@@ -28,14 +28,14 @@ export default function OsNoivos({ config }: { config: Configuracao }) {
         <div className={styles.grid}>
           <div className={styles.card}>
             <div className={styles.photoContainer}>
-              <img src={config.noiva_foto_url || '/placeholder-bride.jpg'} alt={config.noiva_nome} />
+              <img src={config.noiva_foto_url || 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=2070&auto=format&fit=crop'} alt={config.noiva_nome} />
             </div>
             <h3 className="cursive">{config.noiva_nome}</h3>
             <p className={styles.desc}>{bios.noiva}</p>
           </div>
           <div className={styles.card}>
             <div className={styles.photoContainer}>
-              <img src={config.noivo_foto_url || '/placeholder-groom.jpg'} alt={config.noivo_nome} />
+              <img src={config.noivo_foto_url || 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=2069&auto=format&fit=crop'} alt={config.noivo_nome} />
             </div>
             <h3 className="cursive">{config.noivo_nome}</h3>
             <p className={styles.desc}>{bios.noivo}</p>

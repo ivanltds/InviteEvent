@@ -43,8 +43,10 @@ export interface Convite {
 export interface ConviteMembro {
   id: string;
   convite_id: string;
+  evento_id?: string;
   nome: string;
   confirmado: boolean | null;
+  restricoes?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -52,6 +54,7 @@ export interface ConviteMembro {
 export interface RSVP {
   id: string;
   convite_id: string;
+  evento_id?: string;
   confirmados: number;
   restricoes?: string;
   mensagem?: string;
@@ -68,7 +71,7 @@ export interface Presente {
   preco: number;
   descricao?: string;
   imagem_url?: string;
-  status: 'disponivel' | 'reservado' | 'esgotado';
+  status: 'disponivel' | 'reservado' | 'esgotado' | 'pausado';
   quantidade_total: number;
   quantidade_reservada: number;
   created_at?: string;
@@ -113,6 +116,7 @@ export interface Configuracao {
   noivo_bio?: string;
   noiva_foto_url?: string;
   noivo_foto_url?: string;
+  hero_images?: string[];
   historia_conclusao?: string;
   noivos_conclusao?: string;
   bg_primary?: string;
@@ -123,5 +127,43 @@ export interface Configuracao {
   created_at?: string;
   updated_at?: string;
   user_id?: string;
+}
+
+export interface AgendaEvent {
+  id: string;
+  evento_id: string;
+  titulo: string;
+  horario: string;
+  local_nome: string;
+  endereco: string;
+  link_google_maps?: string;
+  link_waze?: string;
+  icone?: string;
+  ordem?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface DatabaseRPCs {
+  reservar_presente_v1: {
+    Args: {
+      p_presente_id: string;
+      p_url_comprovante: string;
+      p_convite_id?: string;
+      p_convidado_nome?: string;
+    };
+    Returns: { success: boolean; message: string };
+  };
+  reservar_multiplos_presentes_v1: {
+    Args: {
+      p_presentes_ids: string[];
+      p_url_comprovante: string;
+      p_convite_id?: string;
+      p_evento_id?: string;
+      p_convidado_nome?: string;
+      p_mensagem?: string;
+    };
+    Returns: { success: boolean; message: string };
+  };
 }
 

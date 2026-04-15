@@ -1,0 +1,160 @@
+.section {
+  padding: 8rem 2rem;
+  background-color: white;
+  text-align: center;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.section h2 {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  color: #666;
+  margin-bottom: 5rem;
+  font-size: 1.1rem;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  position: relative;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(0,0,0,0.1);
+  transform: translateX(-50%);
+}
+
+.eventCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.timeBadge {
+  min-width: 80px;
+  height: 40px;
+  background: var(--accent-gold);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.content {
+  flex: 1;
+  background: #fdfdfd;
+  padding: 2rem;
+  border-radius: 15px;
+  border: 1px solid rgba(0,0,0,0.05);
+  text-align: left;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+  transition: transform 0.3s ease;
+}
+
+.content:hover {
+  transform: translateY(-5px);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.icon {
+  font-size: 1.5rem;
+}
+
+.header h3 {
+  font-size: 1.5rem;
+  color: var(--text-main-safe);
+  margin: 0;
+}
+
+.locationInfo {
+  margin-bottom: 1.5rem;
+}
+
+.localName {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.3rem;
+}
+
+.address {
+  font-size: 0.95rem;
+  color: #777;
+  line-height: 1.4;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.gpsBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  text-decoration: none;
+  transition: all 0.2s;
+  background: white;
+  border: 1.5px solid var(--btn-color);
+  color: var(--btn-color);
+}
+
+.gpsBtn:hover {
+  background: var(--btn-color);
+  color: white;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .timeline::before {
+    left: 40px;
+  }
+  
+  .eventCard {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .timeBadge {
+    margin-left: 0;
+  }
+
+  .content {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .section h2 {
+    font-size: 3rem;
+  }
+}

@@ -116,3 +116,59 @@
 
 .card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
 .slug { font-size: 0.8rem; color: #aaa; }
+
+.activationBanner {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  border: 1px solid #ffcc80;
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+.activationText h3 {
+  margin: 0 0 0.5rem 0;
+  color: #e65100;
+  font-size: 1.1rem;
+}
+
+.activationText p {
+  margin: 0;
+  color: #5d4037;
+  font-size: 0.95rem;
+}
+
+.activateBtn {
+  background: #e65100;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.activateBtn:hover {
+  background: #bf360c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(230, 81, 0, 0.2);
+}
+
+.activateBtn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 768px) {
+  .activationBanner {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+  }
+}

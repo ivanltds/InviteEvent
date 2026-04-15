@@ -21,7 +21,7 @@ async function testRSVP() {
   // 2. Tentar ler membros
   if (invite && invite[0]) {
     const { data: members, error: err2 } = await supabase
-      .from('convidados_membros')
+      .from('convite_membros')
       .select('*')
       .eq('convite_id', invite[0].id);
     
@@ -32,7 +32,7 @@ async function testRSVP() {
       // 3. Tentar ATUALIZAR um membro (Simulando RSVP nominal)
       if (members && members[0]) {
         const { error: err3 } = await supabase
-          .from('convidados_membros')
+          .from('convite_membros')
           .update({ confirmado: true })
           .eq('id', members[0].id);
         

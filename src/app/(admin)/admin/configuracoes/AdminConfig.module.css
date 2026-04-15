@@ -137,6 +137,70 @@
   opacity: 0.6;
 }
 
+.couplePhotosGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.photoUploadField {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.photoUploadField label {
+  font-weight: bold;
+  color: #555;
+}
+
+.photoPreviewWrapper {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  border: 3px solid white;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  background: #f0f0f0;
+}
+
+.couplePreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photoPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  background: #eee;
+}
+
+.miniUploadBtn {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  padding: 5px 0;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.miniUploadBtn:hover {
+  background: rgba(0,0,0,0.8);
+}
+
 .saveBtn {
   background-color: var(--accent);
   color: var(--text-on-accent);

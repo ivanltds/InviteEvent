@@ -114,22 +114,37 @@ export const eventService = {
     return { data: event, error: null };
   },
 
-  async getEventStats(eventId: string): Promise<{ totalConvites: number; totalConfirmados: number; valorPresentes: number }> {
-    const [convitesRes, rsvpRes, giftsRes] = await Promise.all([
-      supabase.from('convites').select('id', { count: 'exact' }).eq('evento_id', eventId),
-      supabase.from('rsvp').select('id', { count: 'exact' }).eq('evento_id', eventId),
-      supabase.from('comprovantes').select('presentes!inner(preco)').eq('presentes.evento_id', eventId)
-    ]);
+  async getEventStats(eventId: string): Promise<{ totalConvites: number; totalConfirmados: number; totalPessoasPossiveis: number; valorPresentes: number }> {
+    const { data: invites, error } = await supabase
+      .from('convites')
+      .select('limite_pessoas, rsvp:rsvp(confirmados, status)')
+      .eq('evento_id', eventId);
+
+    if (error) throw error;
+
+    const giftsRes = await supabase.from('comprovantes').select('presentes!inner(preco)').eq('presentes.evento_id', eventId);
+
+    let totalPessoasPossiveis = 0;
+    let totalConfirmados = 0;
+
+    (invites as any[])?.forEach((invite: any) => {
+      totalPessoasPossiveis += (invite.limite_pessoas || 0);
+      const rsvpArray = (invite as any).rsvp;
+      const rsvp = Array.isArray(rsvpArray) ? rsvpArray[0] : rsvpArray;
+      
+      if (rsvp && rsvp.status !== 'recusado') {
+        totalConfirmados += (Number(rsvp.confirmados) || 0);
+      }
+    });
 
     const valorPresentes = (giftsRes.data as any[])?.reduce((acc, curr) => {
-      // O inner join traz o objeto presentes. Se for múltiplos itens no presente, 
-      // cada linha de comprovante conta como uma unidade do preço.
       return acc + (Number(curr.presentes?.preco) || 0);
     }, 0) || 0;
 
     return {
-      totalConvites: convitesRes.count || 0,
-      totalConfirmados: rsvpRes.count || 0,
+      totalConvites: invites?.length || 0,
+      totalConfirmados,
+      totalPessoasPossiveis,
       valorPresentes
     };
   },

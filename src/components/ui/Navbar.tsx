@@ -7,11 +7,13 @@ import styles from './Navbar.module.css';
 import { configService } from '@/lib/services/configService';
 
 export default function Navbar() {
+  const [mounted, setMounted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [initials, setInitials] = useState('L & M');
   const pathname = usePathname();
 
   useEffect(() => {
+    setMounted(true);
     async function loadConfig() {
       const config = await configService.getConfig();
       if (config) {
@@ -22,6 +24,8 @@ export default function Navbar() {
     }
     loadConfig();
   }, []);
+
+  if (!mounted) return null;
 
   // 1. Ocultar totalmente no Admin
   if (pathname?.startsWith('/admin')) {

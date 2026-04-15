@@ -51,7 +51,7 @@ describe('RSVP Component with Members', () => {
           single: jest.fn().mockResolvedValue({ data: { id: 'c1', evento_id: 'e1' }, error: null })
         };
       }
-      if (table === 'convidados_membros') {
+      if (table === 'convite_membros') {
         return {
           select: jest.fn().mockReturnThis(),
           eq: jest.fn().mockReturnThis(),

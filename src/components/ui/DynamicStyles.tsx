@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 export default function DynamicStyles() {
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [styles, setStyles] = useState({
@@ -16,6 +17,7 @@ export default function DynamicStyles() {
   });
 
   useEffect(() => {
+    setMounted(true);
     async function fetchConfig() {
       try {
         // 1. Identificar Slug (Path: /inv/[slug] ou Query: ?invite=slug)
@@ -57,6 +59,8 @@ export default function DynamicStyles() {
     }
     fetchConfig();
   }, []);
+
+  if (!mounted) return null;
 
   // Extrair nomes das fontes para carregar do Google Fonts
   // Exemplo: "'Playfair Display', serif" -> "Playfair+Display"
@@ -111,9 +115,9 @@ export default function DynamicStyles() {
   return (
     <>
       {googleFontsUrl && (
-        <style dangerouslySetInnerHTML={{ __html: `@import url('${googleFontsUrl}');` }} />
+        <style key="google-fonts" dangerouslySetInnerHTML={{ __html: `@import url('${googleFontsUrl}');` }} />
       )}
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style key="dynamic-vars" dangerouslySetInnerHTML={{ __html: `
         :root {
           --bg-primary: ${styles.bg};
           --text-main: ${styles.text};

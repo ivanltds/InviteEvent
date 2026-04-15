@@ -255,19 +255,101 @@
 
 .memberItem {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1.2rem;
   background: white;
   border: 1px solid rgba(0,0,0,0.1);
   border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.memberHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+.memberRestriction {
+  margin-top: 0.5rem;
+  padding-left: 2.5rem;
+  width: 100%;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.memberInput {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background: var(--bg-primary);
+  color: var(--text-main-safe);
+}
+
+.memberInput:focus {
+  outline: none;
+  border-color: var(--accent-safe);
+}
+
+.extraGuestsControl {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: rgba(0,0,0,0.03);
+  padding: 1rem;
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.qtyBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.1);
+  background: white;
+  color: var(--text-main-safe);
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.memberItem:hover {
+.qtyBtn:hover {
+  background: var(--accent-safe);
+  color: white;
   border-color: var(--accent-safe);
-  background-color: rgba(0,0,0,0.01);
+}
+
+.extraQty {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--accent-safe);
+  min-width: 20px;
+  text-align: center;
+}
+
+.extraLabel {
+  color: var(--text-main-safe);
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.extraHint {
+  font-size: 0.85rem;
+  color: var(--text-main-safe);
+  opacity: 0.6;
+  margin-top: 0.8rem;
+  font-style: italic;
 }
 
 .checkbox {

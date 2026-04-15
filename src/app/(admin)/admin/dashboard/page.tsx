@@ -10,15 +10,15 @@ import { useRouter } from 'next/navigation';
 import OnboardingWizard from '@/components/admin/OnboardingWizard';
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { currentEvent, events, setCurrentEvent, refreshEvents, loading: contextLoading } = useEvent();
 
   const [isCreating, setIsCreating] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
   const [eventName, setEventName] = useState('');
-  const [stats, setStats] = useState({ totalConvites: 0, totalConfirmados: 0, valorPresentes: 0 });
+  const [stats, setStats] = useState({ totalConvites: 0, totalConfirmados: 0, totalPessoasPossiveis: 0, valorPresentes: 0 });
   const [recentRSVPs, setRecentRSVPs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [activating, setActivating] = useState(false);
 
   useEffect(() => {
     if (currentEvent && !currentEvent.onboarding_completed) {
@@ -31,7 +31,6 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchData() {
       if (!currentEvent) return;
-      setLoading(true);
       const s = await eventService.getEventStats(currentEvent.id);
       setStats(s);
       
@@ -43,21 +42,18 @@ export default function DashboardPage() {
         .limit(5);
       
       setRecentRSVPs(rsvps || []);
-      setLoading(false);
     }
     fetchData();
   }, [currentEvent]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    const { data, error } = await eventService.createEvent(eventName);
+    const { data } = await eventService.createEvent(eventName);
     if (data) {
       await refreshEvents();
       setIsCreating(false);
       setEventName('');
     }
-    setLoading(false);
   };
 
   const calculateDaysLeft = (date: string) => {
@@ -65,6 +61,29 @@ export default function DashboardPage() {
     const diff = new Date(date).getTime() - new Date().getTime();
     const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
     return days > 0 ? days : 0;
+  };
+
+  const handleActivate = async () => {
+    if (!currentEvent) return;
+    setActivating(true);
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventoId: currentEvent.id })
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert('Erro ao iniciar pagamento: ' + (data.error || 'Erro desconhecido'));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Falha na comunicação com o servidor de pagamentos.');
+    } finally {
+      setActivating(false);
+    }
   };
 
   if (contextLoading) return <div className={styles.loading}>Carregando...</div>;
@@ -116,7 +135,23 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {(!currentEvent.onboarding_completed || !currentEvent.is_active) && (
+      {!currentEvent.is_active && (
+        <div className={styles.activationBanner}>
+          <div className={styles.activationText}>
+            <h3>🚀 Seu site está quase pronto para os convidados!</h3>
+            <p>Ative agora para liberar o RSVP online, lista de presentes e o acesso público ao seu convite digital.</p>
+          </div>
+          <button 
+            onClick={handleActivate} 
+            disabled={activating}
+            className={styles.activateBtn}
+          >
+            {activating ? 'Processando...' : 'Ativar Site Agora'}
+          </button>
+        </div>
+      )}
+
+      {!currentEvent.onboarding_completed && (
         <div style={{ background: 'rgba(245,158,11,0.1)', color: 'var(--admin-warning)', padding: '15px 20px', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h4 style={{ margin: 0, fontSize: '1rem' }}>🎉 Bem-vindo ao painel do seu evento!</h4>
@@ -124,7 +159,10 @@ export default function DashboardPage() {
               Seu convite inicial já está de pé! Vá na aba <strong>Configurações</strong> para adicionar as suas fotos de capa e biografia.
             </p>
           </div>
-          <button onClick={() => router.push('/admin/configuracoes')} style={{ padding: '8px 16px', background: 'var(--admin-warning)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+          <button 
+            onClick={() => router.push('/admin/configuracoes')} 
+            style={{ padding: '8px 16px', background: 'var(--admin-warning)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
             Personalizar
           </button>
         </div>
@@ -132,9 +170,11 @@ export default function DashboardPage() {
 
       <section className={styles.statsGrid}>
         <div className={styles.statCard}>
-          <span>Convidados</span>
-          <strong>{stats.totalConfirmados} / {stats.totalConvites}</strong>
-          <div className={styles.progressBar}><div style={{ width: `${(stats.totalConfirmados/stats.totalConvites)*100 || 0}%` }}></div></div>
+          <span>Pessoas Confirmadas</span>
+          <strong>{stats.totalConfirmados} / {stats.totalPessoasPossiveis}</strong>
+          <div className={styles.progressBar}>
+            <div style={{ width: `${Math.min(100, (stats.totalConfirmados / (stats.totalPessoasPossiveis || 1)) * 100)}%` }}></div>
+          </div>
         </div>
         <div className={styles.statCard}>
           <span>Presentes Recebidos</span>

@@ -1,59 +1,76 @@
-import confetti from 'canvas-confetti';
-
-interface ConfettiOptions {
-  colors?: string[];
-  duration?: number;
-}
+import canvasConfetti from 'canvas-confetti';
 
 /**
- * Dispara uma celebração de confetes e corações com as cores do tema.
- * @param options Cores e duração da animação
+ * Dispara uma explosão de confete celebratória.
+ * @param colors Array de cores hexadecimais (opcional)
  */
-export const celebrateGiftSuccess = (options: ConfettiOptions = {}) => {
-  const duration = options.duration || 5 * 1000;
-  const animationEnd = Date.now() + duration;
-  const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+export const triggerCelebration = (colors?: string[]) => {
+  const defaultColors = ['#D4AF37', '#F5E6CC', '#AA8844', '#FFFFFF'];
+  const confettiColors = colors || defaultColors;
 
-  const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+  const count = 200;
+  const defaults = {
+    origin: { y: 0.7 },
+    colors: confettiColors,
+  };
 
-  const interval: any = setInterval(function() {
-    const timeLeft = animationEnd - Date.now();
-
-    if (timeLeft <= 0) {
-      return clearInterval(interval);
-    }
-
-    const particleCount = 50 * (timeLeft / duration);
-    
-    // Confetes Normais
-    confetti({
+  function fire(particleRatio: number, opts: canvasConfetti.Options) {
+    canvasConfetti({
       ...defaults,
-      particleCount,
-      origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
-      colors: options.colors || ['#B2AC88', '#FAF9F6', '#8FA89B'],
+      ...opts,
+      particleCount: Math.floor(count * particleRatio),
     });
-    confetti({
-      ...defaults,
-      particleCount,
-      origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-      colors: options.colors || ['#B2AC88', '#FAF9F6', '#8FA89B'],
-    });
+  }
 
-    // Efeito de Corações (Simulado com formas ou cores específicas)
-    // Nota: canvas-confetti suporta formas customizadas via `shapes: ['circle', 'square']`.
-    // Para corações reais, precisaríamos de uma imagem ou SVG path, mas usaremos tons de vermelho/rosa misturados ao tema.
-  }, 250);
+  fire(0.25, {
+    spread: 26,
+    startVelocity: 55,
+  });
+  fire(0.2, {
+    spread: 60,
+  });
+  fire(0.35, {
+    spread: 100,
+    decay: 0.91,
+    scalar: 0.8
+  });
+  fire(0.1, {
+    spread: 120,
+    startVelocity: 25,
+    decay: 0.92,
+    scalar: 1.2
+  });
+  fire(0.1, {
+    spread: 120,
+    startVelocity: 45,
+  });
 };
 
-export const shootHearts = (colors: string[] = ['#ff0000', '#ff69b4']) => {
-  const scalar = 2;
-  const heart = confetti.shapeFromText({ text: '❤️', scalar });
+/**
+ * Dispara confetes contínuos pelas laterais (efeito canhão).
+ */
+export const triggerSideCannons = (durationSeconds = 3, colors?: string[]) => {
+  const end = Date.now() + (durationSeconds * 1000);
+  const confettiColors = colors || ['#D4AF37', '#AA8844'];
 
-  confetti({
-    shapes: [heart],
-    particleCount: 40,
-    spread: 70,
-    origin: { y: 0.6 },
-    colors: colors,
-  });
+  (function frame() {
+    canvasConfetti({
+      particleCount: 2,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0 },
+      colors: confettiColors
+    });
+    canvasConfetti({
+      particleCount: 2,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1 },
+      colors: confettiColors
+    });
+
+    if (Date.now() < end) {
+      requestAnimationFrame(frame);
+    }
+  }());
 };

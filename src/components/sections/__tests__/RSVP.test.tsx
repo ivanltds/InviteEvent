@@ -24,7 +24,7 @@ jest.mock('@/lib/supabase', () => ({
           single: mockSingle
         };
       }
-      if (table === 'convidados_membros') {
+      if (table === 'convite_membros') {
         return {
           select: jest.fn().mockReturnThis(),
           eq: jest.fn().mockReturnThis(),

@@ -7,6 +7,7 @@ export interface Album {
   descricao?: string;
   capa_url?: string;
   ordem: number;
+  created_at?: string;
 }
 
 export interface Foto {
@@ -18,6 +19,7 @@ export interface Foto {
   legenda?: string;
   largura?: number;
   altura?: number;
+  created_at?: string;
 }
 
 export const galleryService = {

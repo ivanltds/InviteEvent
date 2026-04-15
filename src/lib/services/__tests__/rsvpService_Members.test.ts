@@ -19,7 +19,7 @@ describe('rsvpService Members', () => {
 
     const result = await rsvpService.getInviteMembers('convite-123');
     
-    expect(supabase.from).toHaveBeenCalledWith('convidados_membros');
+    expect(supabase.from).toHaveBeenCalledWith('convite_membros');
     expect(mockEq).toHaveBeenCalledWith('convite_id', 'convite-123');
     expect(mockOrder).toHaveBeenCalledWith('nome', { ascending: true });
     expect(result).toEqual(mockMembers);

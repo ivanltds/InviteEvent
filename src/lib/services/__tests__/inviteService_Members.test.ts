@@ -17,7 +17,7 @@ describe('inviteService - Member Management', () => {
 
     const result = await inviteService.saveMembers('c1', mockMembers);
     
-    expect(supabase.from).toHaveBeenCalledWith('convidados_membros');
+    expect(supabase.from).toHaveBeenCalledWith('convite_membros');
     expect(mockUpsert).toHaveBeenCalled();
     expect(result.success).toBe(true);
   });

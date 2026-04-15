@@ -279,6 +279,19 @@ export default function AdminConvidados() {
             </div>
 
             <div className={styles.fieldGroup}>
+              <label htmlFor="limit">Limite de Pessoas (Capacidade do Convite)</label>
+              <input 
+                id="limit"
+                type="number" 
+                min="1"
+                required 
+                value={formData.limite_pessoas}
+                onChange={(e) => setFormData({...formData, limite_pessoas: parseInt(e.target.value) || 1})}
+              />
+              <p className={styles.extraHint}>Define quantas pessoas este convite cobre originalmente.</p>
+            </div>
+
+            <div className={styles.fieldGroup}>
               <label>Membros Nominais (Opcional - Para confirmação individual)</label>
               <div className={styles.membersManager}>
                 {members.map((member, index) => (
@@ -293,7 +306,13 @@ export default function AdminConvidados() {
                     <button type="button" className={styles.removeMemberBtn} onClick={() => removeMemberField(index)}>&times;</button>
                   </div>
                 ))}
-                <button type="button" className={styles.addMemberBtn} onClick={addMemberField}>
+                <button type="button" className={styles.addMemberBtn} onClick={() => {
+                  addMemberField();
+                  // Sincroniza o limite se houver mais membros que o limite atual
+                  if (members.length + 1 > formData.limite_pessoas) {
+                    setFormData(prev => ({ ...prev, limite_pessoas: members.length + 1 }));
+                  }
+                }}>
                   + Adicionar Membro
                 </button>
               </div>
@@ -351,7 +370,10 @@ export default function AdminConvidados() {
             </thead>
             <tbody>
               {invites.map((invite) => {
-                const rsvp = invite.rsvp && invite.rsvp[0];
+                // Tenta pegar o RSVP do array 'rsvp' (alias ou join padrão)
+                const rsvpArray = (invite as any).rsvp;
+                const rsvp = Array.isArray(rsvpArray) ? rsvpArray[0] : rsvpArray;
+                
                 return (
                   <tr key={invite.id}>
                     <td>
@@ -365,8 +387,9 @@ export default function AdminConvidados() {
                     <td>{invite.tipo}</td>
                     <td>
                       {rsvp ? (
-                        <span className={`${styles.statusBadge} ${styles[rsvp.status]}`}>
+                        <span className={`${styles.statusBadge} ${styles[rsvp.status] || styles.confirmado}`}>
                           {rsvp.confirmados} confirmados
+                          {rsvp.status === 'excedente_solicitado' && ' (Solicitado)'}
                         </span>
                       ) : (
                         <span className={styles.pendingBadge}>Pendente</span>

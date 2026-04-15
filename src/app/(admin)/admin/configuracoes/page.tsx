@@ -8,6 +8,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
+import { CldUploadWidget } from 'next-cloudinary';
 
 import styles from './AdminConfig.module.css';
 import { configService } from '@/lib/services/configService';
@@ -16,6 +17,7 @@ import FAQManager from '@/components/admin/FAQManager';
 import ConfigPreview from '@/components/admin/ConfigPreview';
 import TeamManagement from '@/components/admin/TeamManagement';
 import FontPicker from '@/components/admin/FontPicker/FontPicker';
+import HeroImagesManager from '@/components/admin/HeroImagesManager';
 import { useEvent } from '@/lib/contexts/EventContext';
 
 const DEFAULT_CONFIG: Omit<Configuracao, 'id' | 'evento_id'> = {
@@ -163,6 +165,13 @@ export default function AdminConfig() {
           <form onSubmit={handleSave} className={styles.form}>
             <section className={styles.section}>
               <h2>Identidade Visual & Cores</h2>
+              
+              <HeroImagesManager 
+                images={config.hero_images || []}
+                onImagesChange={(newImages) => setConfig({ ...config, hero_images: newImages })}
+                accentColor={config.accent_color}
+              />
+
               <div className={styles.grid}>
                 <div className={styles.field}>
                   <label htmlFor="bg_primary">Cor de Fundo (Páginas)</label>
@@ -261,6 +270,42 @@ export default function AdminConfig() {
             <section className={styles.section}>
               <h2>Os Noivos</h2>
               <div className={styles.grid}>
+                <div className={styles.fieldFull}>
+                  <div className={styles.couplePhotosGrid}>
+                    <div className={styles.photoUploadField}>
+                      <label>Foto da Noiva</label>
+                      <div className={styles.photoPreviewWrapper}>
+                        {config.noiva_foto_url ? (
+                          <img src={config.noiva_foto_url} alt="Noiva" className={styles.couplePreview} />
+                        ) : (
+                          <div className={styles.photoPlaceholder}>👰</div>
+                        )}
+                        <CldUploadWidget uploadPreset="invite_preset" onSuccess={(res: any) => setConfig({...config, noiva_foto_url: res.info.secure_url})}>
+                          {({ open }) => (
+                            <button type="button" onClick={() => open()} className={styles.miniUploadBtn}>Trocar Foto</button>
+                          )}
+                        </CldUploadWidget>
+                      </div>
+                    </div>
+
+                    <div className={styles.photoUploadField}>
+                      <label>Foto do Noivo</label>
+                      <div className={styles.photoPreviewWrapper}>
+                        {config.noivo_foto_url ? (
+                          <img src={config.noivo_foto_url} alt="Noivo" className={styles.couplePreview} />
+                        ) : (
+                          <div className={styles.photoPlaceholder}>🤵</div>
+                        )}
+                        <CldUploadWidget uploadPreset="invite_preset" onSuccess={(res: any) => setConfig({...config, noivo_foto_url: res.info.secure_url})}>
+                          {({ open }) => (
+                            <button type="button" onClick={() => open()} className={styles.miniUploadBtn}>Trocar Foto</button>
+                          )}
+                        </CldUploadWidget>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className={styles.field}>
                   <label htmlFor="noiva_nome">Nome da Noiva</label>
                   <input

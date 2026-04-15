@@ -8,6 +8,9 @@ import OsNoivos from "@/components/sections/OsNoivos";
 import Detalhes from "@/components/sections/Detalhes";
 import FAQ from "@/components/sections/FAQ";
 import RSVP from "@/components/sections/RSVP";
+import AgendaSection from "@/components/sections/AgendaSection";
+import MuralSection from "@/components/sections/MuralSection";
+import GallerySection from "@/components/sections/GallerySection";
 import Countdown from "@/components/sections/Countdown";
 import { supabase } from '@/lib/supabase';
 import { rsvpService } from '@/lib/services/rsvpService';
@@ -66,6 +69,8 @@ export default function InvitationPage() {
     faq: true,
     presentes: true
   });
+
+  const [agenda, setAgenda] = useState<any[]>([]);
 
   useEffect(() => {
     async function init() {
@@ -128,11 +133,21 @@ export default function InvitationPage() {
         }
 
         // 2. Buscar config baseada no evento_id do convite
-        const { data: configData } = await supabase
-          .from('configuracoes')
-          .select('*')
-          .eq('evento_id', invite.evento_id)
-          .maybeSingle();
+        const [configRes, agendaRes] = await Promise.all([
+          supabase
+            .from('configuracoes')
+            .select('*')
+            .eq('evento_id', invite.evento_id)
+            .maybeSingle(),
+          supabase
+            .from('eventos_agenda')
+            .select('*')
+            .eq('evento_id', invite.evento_id)
+            .order('ordem', { ascending: true })
+        ]);
+
+        const configData = configRes.data;
+        if (agendaRes.data) setAgenda(agendaRes.data);
 
         if (configData) {
           setConfig(configData);
@@ -217,7 +232,7 @@ export default function InvitationPage() {
     <div style={eventThemeStyle}>
       <main className={styles.main}>
         <section className={styles.hero}>
-          <HeroCarousel imagesOverride={previewBase64 ? [previewBase64] : undefined} />
+          <HeroCarousel imagesOverride={config.hero_images && config.hero_images.length > 0 ? config.hero_images : (previewBase64 ? [previewBase64] : undefined)} />
           <h1 className="cursive">{couple.noiva} & {couple.noivo}</h1>
           <p className={styles.date}>{couple.data}</p>
 
@@ -235,7 +250,9 @@ export default function InvitationPage() {
 
       {visibility.historia && <Historia config={config} />}
       {visibility.noivos && <OsNoivos config={config} />}
-      <Detalhes config={config} />
+      <AgendaSection events={agenda} config={config} />
+      <GallerySection eventoId={config.evento_id} config={config} />
+      <MuralSection eventoId={config.evento_id} config={config} />
       {slug !== 'preview' && <RSVP inviteSlug={slug} config={config} />}
       {visibility.faq && <FAQ eventoId={config.evento_id} />}
 

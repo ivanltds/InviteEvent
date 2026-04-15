@@ -18,7 +18,7 @@ export const rsvpService = {
 
   async getInviteMembers(inviteId: string): Promise<ConviteMembro[]> {
     const { data, error } = await supabase
-      .from('convidados_membros')
+      .from('convite_membros')
       .select('*')
       .eq('convite_id', inviteId)
       .order('nome', { ascending: true });
@@ -32,7 +32,7 @@ export const rsvpService = {
 
   async updateMemberStatus(memberId: string, confirmado: boolean): Promise<boolean> {
     const { error } = await supabase
-      .from('convidados_membros')
+      .from('convite_membros')
       .update({ confirmado })
       .eq('id', memberId);
 
@@ -78,11 +78,56 @@ export const rsvpService = {
     return { success: !error, error: error ? new Error(error.message) : null };
   },
 
+  async submitFullRSVP(
+    rsvpData: Partial<RSVP>, 
+    members: Partial<ConviteMembro>[]
+  ): Promise<{ success: boolean; error?: Error | null }> {
+    try {
+      console.log('Submitting Full RSVP:', { rsvpData, membersCount: members.length });
+
+      const { error: rsvpError } = await supabase
+        .from('rsvp')
+        .upsert([{
+          ...rsvpData,
+          updated_at: new Date().toISOString()
+        }], { onConflict: 'convite_id' });
+
+      if (rsvpError) {
+        console.error('RSVP Upsert Error Details:', JSON.stringify(rsvpError, null, 2));
+        throw rsvpError;
+      }
+
+      if (members.length > 0) {
+        const membersToUpdate = members.map(m => ({
+          ...m,
+          convite_id: rsvpData.convite_id,
+          evento_id: rsvpData.evento_id,
+          updated_at: new Date().toISOString()
+        })).filter(m => m.id !== undefined && m.id !== 'virtual');
+
+        if (membersToUpdate.length > 0) {
+          const { error: membersError } = await supabase
+            .from('convite_membros')
+            .upsert(membersToUpdate);
+
+          if (membersError) {
+            console.error('Members Upsert Error Details:', JSON.stringify(membersError, null, 2));
+            throw membersError;
+          }
+        }
+      }
+
+      return { success: true, error: null };
+    } catch (err: any) {
+      console.error('Full RSVP Final Catch:', err);
+      return { success: false, error: err };
+    }
+  },
+
   async getRSVPConfig(inviteId?: string): Promise<Configuracao | null> {
     let query = supabase.from('configuracoes').select('*');
     
     if (inviteId) {
-      // Buscar o evento_id do convite primeiro
       const { data: invite } = await supabase.from('convites').select('evento_id').eq('id', inviteId).single();
       if (invite?.evento_id) {
         query = query.eq('evento_id', invite.evento_id);

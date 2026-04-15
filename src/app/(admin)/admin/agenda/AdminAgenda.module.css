@@ -1,0 +1,192 @@
+.container {
+  padding: 2rem;
+  background-color: var(--bg-primary);
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+
+.header h1 {
+  font-size: 2rem;
+  color: var(--accent-safe);
+}
+
+.addBtn {
+  background-color: var(--accent);
+  color: var(--text-on-accent);
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  padding: 3rem;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+}
+
+.modal h2 {
+  margin-bottom: 2rem;
+  color: var(--accent-safe);
+}
+
+.fieldGroup {
+  margin-bottom: 1.2rem;
+}
+
+.fieldGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.fieldGroup input, .fieldGroup select {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 6px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.saveBtn {
+  flex: 1;
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  padding: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.cancelBtn {
+  flex: 1;
+  background-color: #f5f5f5;
+  color: #666;
+  border: none;
+  padding: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 0.8rem;
+}
+
+.time {
+  background: var(--bg-primary);
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-weight: bold;
+  color: var(--accent-safe);
+  font-size: 0.9rem;
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.address {
+  font-size: 0.85rem;
+  color: #888;
+  margin-top: 0.5rem;
+}
+
+.cardActions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.editBtn, .deleteBtn {
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.editBtn {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.deleteBtn {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem;
+  color: #999;
+}
+
+@media (max-width: 600px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}

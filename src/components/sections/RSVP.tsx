@@ -5,7 +5,7 @@ import styles from './RSVP.module.css';
 import Link from 'next/link';
 import { rsvpService } from '@/lib/services/rsvpService';
 import { Convite, ConviteMembro, RSVP as RSVPType, Configuracao } from '@/lib/types/database';
-import { celebrateGiftSuccess, shootHearts } from '@/lib/utils/confetti';
+import { triggerCelebration, triggerSideCannons } from '@/lib/utils/confetti';
 
 interface RSVPProps {
   inviteSlug?: string;
@@ -19,6 +19,7 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig }: RSVPP
     nome: '',
     confirmacao: 'sim',
     quantidade: 1,
+    extraGuests: 0,
     restricoes: '',
     mensagem: '',
     telefone: ''
@@ -32,20 +33,17 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig }: RSVPP
   const [existingRSVP, setExistingRSVP] = useState<RSVPType | null>(null);
   const [showForm, setShowForm] = useState(false);
 
-  // Busca convite por slug vindo da URL e configurações
   useEffect(() => {
     async function init() {
       if (typeof window !== 'undefined') {
         setLoading(true);
         
-        // 1. Fetch Deadline
         const config = await rsvpService.getRSVPConfig();
         if (config?.prazo_rsvp) {
           const date = new Date(config.prazo_rsvp);
           setDeadline(date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }));
         }
 
-        // 2. Identificar Slug (Prop ou URL)
         const params = new URLSearchParams(window.location.search);
         const urlSlug = params.get('invite');
         const activeSlug = propSlug || urlSlug;
@@ -56,20 +54,24 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig }: RSVPP
             setConviteEncontrado(data);
             setFormData(prev => ({ ...prev, nome: data.nome_principal }));
             
-            // 3. Fetch Config baseada no convite
             const config = await rsvpService.getRSVPConfig(data.id);
             if (config?.prazo_rsvp) {
               const date = new Date(config.prazo_rsvp);
               setDeadline(date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }));
             }
 
-            // 4. Buscar membros e RSVP existente
             const [members, rsvp] = await Promise.all([
               rsvpService.getInviteMembers(data.id),
               rsvpService.getExistingRSVP(data.id)
             ]);
 
-            setMembros(members);
+            // Se for um convite individual e não houver membros na tabela, criamos um membro virtual para UX consistente
+            if (members.length === 0 && data.tipo === 'individual') {
+               setMembros([{ id: 'virtual', nome: data.nome_principal, confirmado: true, convite_id: data.id } as any]);
+            } else {
+               setMembros(members);
+            }
+
             if (rsvp) {
               setExistingRSVP(rsvp);
               setShowForm(false);
@@ -95,16 +97,28 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig }: RSVPP
     ));
   };
 
+  const handleMemberRestriction = (id: string, value: string) => {
+    setMembros(prev => prev.map(m => 
+      m.id === id ? { ...m, restricoes: value } : m
+    ));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
     const isRecusado = formData.confirmacao === 'nao';
     
-    // Contagem de confirmados
-    const countConfirmados = membros.length > 0 
-      ? membros.filter(m => m.confirmado).length 
-      : formData.quantidade;
+    // Contagem de confirmados nominais (STORY-053 FIX)
+    let countConfirmados = 0;
+    if (isRecusado) {
+      countConfirmados = 0;
+    } else if (membros.length > 0) {
+      // Soma membros marcados + convidados extras informados
+      countConfirmados = membros.filter(m => m.confirmado).length + formData.extraGuests;
+    } else {
+      countConfirmados = formData.quantidade;
+    }
 
     const isExcedente = !isRecusado && conviteEncontrado && countConfirmados > conviteEncontrado.limite_pessoas;
     
@@ -112,43 +126,37 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig }: RSVPP
     if (isRecusado) status = 'recusado';
     else if (isExcedente) status = 'excedente_solicitado';
 
-    // 1. Salvar RSVP consolidado
-    const { success, error } = await rsvpService.submitRSVP({ 
+    // STORY-053: RSVP Individual e Atômico
+    const rsvpPayload = { 
       convite_id: conviteEncontrado?.id,
-      confirmados: isRecusado ? 0 : countConfirmados,
-      restricoes: isRecusado ? '' : formData.restricoes,
+      evento_id: conviteEncontrado?.evento_id,
+      confirmados: countConfirmados,
+      restricoes: formData.restricoes, // Mantemos o global para compatibilidade
       mensagem: formData.mensagem,
       telefone: formData.telefone,
       status: status
-    });
+    };
+
+    const membersPayload = membros.map(m => ({
+      id: m.id === 'virtual' ? undefined : m.id,
+      nome: m.nome,
+      confirmado: isRecusado ? false : !!m.confirmado,
+      restricoes: m.restricoes || ''
+    }));
+
+    const { success, error } = await rsvpService.submitFullRSVP(rsvpPayload, membersPayload);
 
     if (success) {
-      // 2. Salvar status individual dos membros se houver
-      if (membros.length > 0) {
-        try {
-          await Promise.all(
-            membros.map(m => rsvpService.updateMemberStatus(m.id, isRecusado ? false : !!m.confirmado))
-          );
-        } catch (err) {
-          console.warn('Erro ao atualizar membros nominais, mas RSVP geral foi salvo.', err);
-        }
-      }
       setAlertaExcedente(!!isExcedente);
       setEnviado(true);
 
-      // CELEBRAÇÃO WOW!
       if (!isRecusado) {
-        const themeColor = propConfig?.accent_color || '#B2AC88';
-        celebrateGiftSuccess({ colors: [themeColor, '#ffffff', '#8FA89B'] });
-        setTimeout(() => shootHearts([themeColor, '#ff69b4']), 500);
+        const themeColor = propConfig?.accent_color || '#D4AF37';
+        triggerCelebration([themeColor, '#ffffff', '#F5E6CC']);
+        setTimeout(() => triggerSideCannons(3, [themeColor, '#ffffff']), 800);
       }
     } else {
-      const msg = error?.message || '';
-      if (msg.includes('violates row-level security') || msg.toLowerCase().includes('unauthorized') || msg.toLowerCase().includes('forbidden')) {
-        setErrorMessage('Acesso não autorizado pelo banco de dados. Por favor, verifique as permissões de RLS.');
-      } else {
-        setErrorMessage('Houve um erro ao enviar sua confirmação. Tente novamente mais tarde.');
-      }
+      setErrorMessage('Houve um erro ao enviar sua confirmação. Tente novamente mais tarde.');
       console.error(error);
     }
     setLoading(false);
@@ -162,7 +170,7 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig }: RSVPP
       <section className={styles.section} id="rsvp">
         <div className={styles.successContainer}>
           <div className={styles.successIcon}>❤️</div>
-          <h2 className="cursive">
+          <h2 className="cursive" style={{ color: propConfig?.accent_color }}>
             {isRecusado ? 'Olá novamente!' : 'Que bom te ver por aqui!'}
           </h2>
           <p>
@@ -179,14 +187,13 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig }: RSVPP
           
           <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
             {!isRecusado && (
-              <Link href={`/presentes?invite=${conviteEncontrado.slug}`} className={styles.primaryBtn}>
+              <Link href={`/presentes?invite=${conviteEncontrado.slug}`} className={styles.primaryBtn} style={{ backgroundColor: propConfig?.accent_color }}>
                 Ver Lista de Presentes
               </Link>
             )}
             <button 
               onClick={() => setShowForm(true)} 
-              className={styles.secondaryBtn}
-              style={{ background: 'none', border: 'none', color: 'inherit', opacity: 0.6, textDecoration: 'underline', cursor: 'pointer', fontSize: '0.9rem' }}
+              className={styles.resetBtn}
             >
               Mudei de ideia / Editar resposta
             </button>
@@ -226,10 +233,10 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig }: RSVPP
       <section className={styles.section} id="rsvp">
         <div className={styles.successContainer}>
           <div className={styles.successIcon}>❤️</div>
-          <h2 className="cursive">{currentMsg.title}</h2>
+          <h2 className="cursive" style={{ color: propConfig?.accent_color }}>{currentMsg.title}</h2>
           <p>{currentMsg.text}</p>
           {!isRecusado && (
-            <Link href={`/presentes?invite=${conviteEncontrado?.slug}`} className={styles.primaryBtn} style={{ marginTop: '2rem', display: 'inline-block' }}>
+            <Link href={`/presentes?invite=${conviteEncontrado?.slug}`} className={styles.primaryBtn} style={{ marginTop: '2rem', display: 'inline-block', backgroundColor: propConfig?.accent_color }}>
               Ver Lista de Presentes
             </Link>
           )}
@@ -246,7 +253,7 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig }: RSVPP
   return (
     <section className={styles.section} id="rsvp">
       <div className={styles.container}>
-        <h2 className="cursive">Vamos celebrar juntos?</h2>
+        <h2 className="cursive" style={{ color: propConfig?.accent_color }}>Vamos celebrar juntos?</h2>
         <p className={styles.deadline}>Por favor, nos conte se você vem até {deadline}</p>
 
         {loading ? (
@@ -262,7 +269,7 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig }: RSVPP
           </div>
         ) : conviteEncontrado && (
           <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={styles.conviteInfo}>
+            <div className={styles.conviteInfo} style={{ borderLeftColor: propConfig?.accent_color }}>
               {conviteEncontrado.tipo === 'individual' ? (
                 <p>Olá, <strong>{conviteEncontrado.nome_principal}</strong>! Preparamos um lugar com muito carinho para você.</p>
               ) : conviteEncontrado.tipo === 'casal' ? (
@@ -293,52 +300,68 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig }: RSVPP
               </select>
             </div>
 
-            {formData.confirmacao === 'sim' && conviteEncontrado.tipo !== 'individual' && (
+            {formData.confirmacao === 'sim' && (
               <>
-                {membros && membros.length > 0 ? (
-                  <div className={styles.fieldGroup}>
-                    <label>
-                      {conviteEncontrado.tipo === 'casal' ? 'Confirmem a presença de vocês:' : 'Quem da família virá celebrar conosco?'}
-                    </label>
-                    <div className={styles.membersList}>
-                      {membros.map(membro => (
-                        <div key={membro.id} className={styles.memberItem} onClick={() => toggleMembro(membro.id)}>
-                          <div className={`${styles.checkbox} ${membro.confirmado ? styles.checked : ''}`}>
+                <div className={styles.fieldGroup}>
+                  <label>
+                    {conviteEncontrado.tipo === 'individual' ? 'Confirme seus dados:' : 
+                     conviteEncontrado.tipo === 'casal' ? 'Quem de vocês poderá ir?' : 
+                     'Quem da família virá celebrar conosco?'}
+                  </label>
+                  <div className={styles.membersList}>
+                    {membros.map(membro => (
+                      <div key={membro.id} className={styles.memberItem}>
+                        <div className={styles.memberHeader} onClick={() => toggleMembro(membro.id)}>
+                          <div 
+                            className={`${styles.checkbox} ${membro.confirmado ? styles.checked : ''}`}
+                            style={membro.confirmado ? { backgroundColor: propConfig?.accent_color, borderColor: propConfig?.accent_color } : {}}
+                          >
                             {membro.confirmado && <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="3" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                           </div>
                           <span>{membro.nome}</span>
                         </div>
-                      ))}
-                    </div>
+                        
+                        {membro.confirmado && (
+                          <div className={styles.memberRestriction}>
+                            <input 
+                              type="text"
+                              className={styles.memberInput}
+                              placeholder="Restrição alimentar? (Ex: Vegano, s/ glúten)"
+                              value={membro.restricoes || ''}
+                              onChange={(e) => handleMemberRestriction(membro.id, e.target.value)}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                ) : (
-                  <div className={styles.fieldGroup}>
-                    <label htmlFor="quantidade">Quantas pessoas do seu grupo virão?</label>
-                    <input 
-                      id="quantidade"
-                      type="number" 
-                      min="1" 
-                      max="10"
-                      value={formData.quantidade}
-                      onChange={(e) => setFormData({...formData, quantidade: parseInt(e.target.value)})}
-                      className={styles.input}
-                    />
-                  </div>
-                )}
-              </>
-            )}
+                </div>
 
-            {formData.confirmacao === 'sim' && (
-              <div className={styles.fieldGroup}>
-                <label htmlFor="restricoes">Alguma restrição alimentar que devemos saber?</label>
-                <textarea 
-                  id="restricoes"
-                  placeholder="Ex: Alergias, intolerâncias, opção vegetariana..."
-                  value={formData.restricoes}
-                  onChange={(e) => setFormData({...formData, restricoes: e.target.value})}
-                  className={styles.input}
-                />
-              </div>
+                <div className={styles.fieldGroup}>
+                  <label htmlFor="extraGuests">Gostaria de levar mais alguém não listado acima?</label>
+                  <div className={styles.extraGuestsControl}>
+                    <button 
+                      type="button" 
+                      className={styles.qtyBtn} 
+                      onClick={() => setFormData(prev => ({ ...prev, extraGuests: Math.max(0, prev.extraGuests - 1) }))}
+                    >
+                      -
+                    </button>
+                    <span className={styles.extraQty}>{formData.extraGuests}</span>
+                    <button 
+                      type="button" 
+                      className={styles.qtyBtn} 
+                      onClick={() => setFormData(prev => ({ ...prev, extraGuests: prev.extraGuests + 1 }))}
+                    >
+                      +
+                    </button>
+                    <span className={styles.extraLabel}>pessoa(s) extra(s)</span>
+                  </div>
+                  <p className={styles.extraHint}>
+                    Sinalize aqui se precisar adicionar acompanhantes. O organizador será avisado para conferir a disponibilidade.
+                  </p>
+                </div>
+              </>
             )}
 
             <div className={styles.fieldGroup}>
@@ -358,7 +381,12 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig }: RSVPP
               </div>
             )}
 
-            <button type="submit" className={styles.primaryBtn} disabled={loading}>
+            <button 
+              type="submit" 
+              className={styles.primaryBtn} 
+              disabled={loading}
+              style={{ backgroundColor: propConfig?.accent_color }}
+            >
               {loading ? 'Enviando carinho...' : 'Confirmar Presença'}
             </button>
           </form>

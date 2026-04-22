@@ -29,6 +29,9 @@ export const configService = {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, ...dataWithoutId } = config;
     
+    // Console log para debug de emojis e caracteres especiais
+    console.log('[configService] Persistindo dados:', dataWithoutId);
+    
     const { error } = await supabase
       .from('configuracoes')
       .upsert({ ...dataWithoutId, evento_id: eventoId }, { onConflict: 'evento_id' });

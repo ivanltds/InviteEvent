@@ -506,17 +506,25 @@ export default function AdminConfig() {
                 <div className={styles.grid}>
                 <div className={styles.field} style={{ gridColumn: '1 / -1' }}>
                   <label htmlFor="whatsapp_template">Template da Mensagem</label>
-                  <textarea
+                   <textarea
                     id="whatsapp_template"
                     rows={4}
-                    value={config.whatsapp_template}
+                    value={config.whatsapp_template || ''}
                     onChange={(e) => setConfig({...config, whatsapp_template: e.target.value})}
                     placeholder="Use {nome} e {link} para personalizar automaticamente."
                     className={styles.textarea}
                   />
-                  <p className={styles.helpText}>
-                    Variáveis disponíveis: <strong>{'{nome}'}</strong> (Nome do convite) e <strong>{'{link}'}</strong> (Link individual).
-                  </p>
+                  <div className={styles.helpText}>
+                    <p>Variáveis disponíveis: <strong>{'{nome}'}</strong> e <strong>{'{link}'}</strong>.</p>
+                  </div>
+                  {config.whatsapp_template && (
+                    <div style={{ marginTop: '1rem', padding: '1rem', background: '#e7f3ef', borderRadius: '8px', borderLeft: '4px solid var(--accent)' }}>
+                      <p style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--accent)', marginBottom: '0.5rem' }}>Prévia no WhatsApp:</p>
+                      <p style={{ fontSize: '0.9rem', color: '#333', whiteSpace: 'pre-wrap' }}>
+                        {config.whatsapp_template.replace(/{nome}/g, 'Convidado').replace(/{link}/g, 'invite.com/exemplo')}
+                      </p>
+                    </div>
+                  )}
                 </div>
                 </div>
                 </section>

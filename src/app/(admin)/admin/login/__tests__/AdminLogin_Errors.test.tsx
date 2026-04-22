@@ -8,6 +8,19 @@ jest.mock('next/navigation', () => ({
     push: jest.fn(),
     refresh: jest.fn(),
   }),
+  useSearchParams: () => ({ get: jest.fn() }),
+}));
+
+// Mock Supabase
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: {
+      onAuthStateChange: jest.fn(() => ({
+        data: { subscription: { unsubscribe: jest.fn() } },
+      })),
+      getSession: jest.fn().mockResolvedValue({ data: { session: null } }),
+    },
+  },
 }));
 
 // Mock authService

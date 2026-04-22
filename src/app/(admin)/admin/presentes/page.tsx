@@ -15,6 +15,7 @@ interface Presente {
   status: 'disponivel' | 'reservado' | 'pausado';
   quantidade_total: number;
   quantidade_reservada: number;
+  link_externo?: string;
 }
 
 interface ComprovanteJoin {
@@ -42,7 +43,8 @@ export default function AdminPresentes() {
     descricao: '', 
     imagem_url: '', 
     status: 'disponivel' as Presente['status'],
-    quantidade_total: 1 
+    quantidade_total: 1,
+    link_externo: '' 
   });
 
   const fetchPresentes = async () => {
@@ -84,7 +86,7 @@ export default function AdminPresentes() {
   }, [activeTab, currentEvent]);
 
   const resetForm = () => {
-    setFormData({ nome: '', preco: 0, descricao: '', imagem_url: '', status: 'disponivel', quantidade_total: 1 });
+    setFormData({ nome: '', preco: 0, descricao: '', imagem_url: '', status: 'disponivel', quantidade_total: 1, link_externo: '' });
     setIsAdding(false);
     setEditingItem(null);
   };
@@ -97,7 +99,8 @@ export default function AdminPresentes() {
       descricao: item.descricao || '',
       imagem_url: item.imagem_url || '',
       status: item.status,
-      quantidade_total: item.quantidade_total
+      quantidade_total: item.quantidade_total,
+      link_externo: item.link_externo || ''
     });
     setIsAdding(true);
   };
@@ -123,6 +126,7 @@ export default function AdminPresentes() {
       imagem_url: formData.imagem_url,
       status: newStatus,
       quantidade_total: qtyTotal,
+      link_externo: formData.link_externo.trim() || null,
       evento_id: currentEvent.id
     };
 
@@ -278,6 +282,18 @@ export default function AdminPresentes() {
                 value={formData.descricao}
                 onChange={(e) => setFormData({...formData, descricao: e.target.value})}
               />
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label htmlFor="itemLink">Link da Loja (Opcional):</label>
+              <input 
+                id="itemLink"
+                type="url" 
+                placeholder="https://loja.com/produto"
+                value={formData.link_externo}
+                onChange={(e) => setFormData({...formData, link_externo: e.target.value})}
+              />
+              <p className={styles.helpText}>Se preenchido, o convidado poderá ver o produto original e decidir comprar por lá.</p>
             </div>
             
             <div className={styles.fieldGroup}>

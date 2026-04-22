@@ -6,6 +6,7 @@ import { eventService } from '@/lib/services/eventService'; // Import eventServi
 
 jest.mock('next/navigation', () => ({
   usePathname: jest.fn(),
+  useSearchParams: jest.fn(() => ({ get: jest.fn() })),
 }));
 
 jest.mock('@/lib/supabase', () => ({
@@ -13,6 +14,9 @@ jest.mock('@/lib/supabase', () => ({
     auth: {
       getSession: jest.fn().mockResolvedValue({ data: { session: null }, error: null }),
       getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'u1', email: 'test@test.com' } }, error: null }),
+      onAuthStateChange: jest.fn(() => ({
+        data: { subscription: { unsubscribe: jest.fn() } },
+      })),
     },
     from: jest.fn().mockImplementation((table) => {
       const mockSelect = {

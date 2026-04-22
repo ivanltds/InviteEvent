@@ -36,12 +36,12 @@ describe('Admin Sidebar Component (TDD)', () => {
     });
   });
 
-  it('should display the couple initials or names from database instead of hardcoded L & M', async () => {
+  it('should display the application logo and current event name', async () => {
     render(<Sidebar />);
     
     await waitFor(() => {
-      const initials = screen.getByText(/N & N/i);
-      expect(initials).toBeInTheDocument();
+      expect(screen.getByText('InviteEventAI')).toBeInTheDocument();
+      expect(screen.getByText('Evento Teste')).toBeInTheDocument();
     });
   });
 });

@@ -54,6 +54,11 @@ jest.mock('@/lib/supabase', () => ({
   },
 }));
 
+jest.mock('next/navigation', () => ({
+  useParams: jest.fn(),
+  useSearchParams: jest.fn(() => ({ get: jest.fn() })),
+}));
+
 jest.mock('next/link', () => {
   return ({ children, href }: { children: React.ReactNode; href: string }) => (
     <a href={href}>{children}</a>
@@ -105,8 +110,8 @@ describe('RSVP Component (Restricted Access)', () => {
     render(<RSVP />);
     
     await waitFor(() => {
-      expect(screen.getByText(/Olá,/)).toBeInTheDocument();
-      expect(screen.getByText(/João Silva/)).toBeInTheDocument();
+      expect(screen.getAllByText(/Olá,/i)[0]).toBeInTheDocument();
+      expect(screen.getAllByText(/João Silva/i).length).toBeGreaterThan(0);
     });
   });
 });

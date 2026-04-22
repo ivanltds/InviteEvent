@@ -166,20 +166,27 @@ export default function GaleriaAdminPage() {
           </form>
         </div>
 
-        <div className={styles.albumGrid}>
-          {albums.map(album => (
-            <button 
-              key={album.id} 
-              className={`${styles.albumCard} ${selectedAlbum?.id === album.id ? styles.active : ''}`}
-              onClick={() => setSelectedAlbum(album)}
-            >
-              {album.nome}
-            </button>
-          ))}
-        </div>
+        {albums.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p>Você ainda não tem nenhum álbum.</p>
+            <p><strong>Crie um álbum acima para começar a subir suas fotos!</strong></p>
+          </div>
+        ) : (
+          <div className={styles.albumGrid}>
+            {albums.map(album => (
+              <button 
+                key={album.id} 
+                className={`${styles.albumCard} ${selectedAlbum?.id === album.id ? styles.active : ''}`}
+                onClick={() => setSelectedAlbum(album)}
+              >
+                {album.nome}
+              </button>
+            ))}
+          </div>
+        )}
       </section>
 
-      {selectedAlbum && (
+      {selectedAlbum ? (
         <section className={styles.photoSection}>
           <div className={styles.sectionHeader}>
             <h2>Fotos em: {selectedAlbum.nome}</h2>
@@ -211,7 +218,14 @@ export default function GaleriaAdminPage() {
                 </button>
               </div>
             ))}
+            {photos.length === 0 && !uploading && (
+              <p className={styles.empty}>Este álbum está vazio. Adicione algumas fotos!</p>
+            )}
           </div>
+        </section>
+      ) : albums.length > 0 && (
+        <section className={styles.photoSection}>
+          <p className={styles.selectAlbumPrompt}>Selecione um álbum acima para gerenciar as fotos.</p>
         </section>
       )}
     </main>

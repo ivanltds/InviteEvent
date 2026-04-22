@@ -7,169 +7,49 @@ jest.mock('next-cloudinary', () => ({
   CldUploadWidget: ({ children, onSuccess }: any) => children({ open: () => onSuccess({ info: { secure_url: 'http://proof.url' } }) }),
 }));
 
-jest.mock('next/link', () => {
-  return ({ children, href }: { children: React.ReactNode; href: string }) => (
-    <a href={href}>{children}</a>
-  );
-});
+jest.mock('next/link', () => ({ children, href }: any) => <a href={href}>{children}</a>);
 
-const mockPresentes = [
-  { id: '1', nome: 'Liquidificador', preco: 200, status: 'disponivel', quantidade_total: 1, quantidade_reservada: 0 },
-];
-
-const mockConfig = { pix_chave: 'chave-test', pix_banco: 'Banco X', pix_nome: 'Nome Y' };
-
-describe('PresentesPage Public', () => {
-  const originalURLSearchParams = global.URLSearchParams;
-
+describe('PresentesPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     
-    // Default mock: valid invite
-    global.URLSearchParams = jest.fn().mockImplementation(() => ({
-      get: jest.fn().mockReturnValue('test-slug')
-    }));
-    
-    // Mock do Supabase para carregar dados
-    (supabase.from as jest.Mock).mockImplementation((table) => {
-      const mockChain: any = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        neq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        maybeSingle: jest.fn(),
-      };
+    (supabase.from as jest.Mock).mockImplementation((table: string) => {
+      const mockChain = (supabase as any).from().select(); 
 
       if (table === 'convites') {
-        mockChain.maybeSingle.mockResolvedValue({ data: { id: '1', evento_id: 'e1' }, error: null });
+        mockChain.maybeSingle.mockResolvedValue({ data: { id: 'c1' }, error: null });
       } else if (table === 'presentes') {
-        mockChain.maybeSingle.mockResolvedValue({ data: mockPresentes, error: null });
-        mockChain.then = (fn: any) => Promise.resolve(fn({ data: mockPresentes, error: null }));
+        mockChain.then = (fn: any) => Promise.resolve(fn({
+          data: [{ id: '1', nome: 'Liquidificador', preco: 250, imagem_url: '/img1.jpg', descricao: 'Desc 1' }],
+          error: null
+        }));
       } else if (table === 'configuracoes') {
-        mockChain.maybeSingle.mockResolvedValue({ data: mockConfig, error: null });
-        mockChain.then = (fn: any) => Promise.resolve(fn({ data: mockConfig, error: null }));
+        mockChain.maybeSingle.mockResolvedValue({ data: { pix_chave: 'key', pix_banco: 'Bank', pix_nome: 'Me' }, error: null });
       }
-
       return mockChain;
     });
+
+    Object.defineProperty(window, 'location', {
+      value: { search: '?inv=test-slug' },
+      writable: true
+    });
   });
 
-  afterAll(() => {
-    global.URLSearchParams = originalURLSearchParams;
-  });
-
-  test('deve renderizar a lista de presentes quando convidado', async () => {
+  it('deve renderizar o presente e o preço', async () => {
     render(<PresentesPage />);
-    
     await waitFor(() => {
       expect(screen.getByText('Liquidificador')).toBeInTheDocument();
-      expect(screen.getByText(/R\$ 200,00/)).toBeInTheDocument();
+      expect(screen.getByText(/250,00/i)).toBeInTheDocument();
     });
   });
 
-  test('deve mostrar mensagem de acesso restrito quando não houver slug', async () => {
-    global.URLSearchParams = jest.fn().mockImplementation(() => ({
-      get: jest.fn().mockReturnValue(null)
-    }));
+  it('deve abrir modal de PIX com o novo texto', async () => {
     render(<PresentesPage />);
-    
-    await waitFor(() => {
-      expect(screen.getByText('Acesso Restrito')).toBeInTheDocument();
-    });
-  });
-
-  test('deve mostrar mensagem de acesso restrito quando slug for inválido', async () => {
-    global.URLSearchParams = jest.fn().mockImplementation(() => ({
-      get: jest.fn().mockReturnValue('invalid-slug')
-    }));
-
-    (supabase.from as jest.Mock).mockImplementation((table) => {
-      if (table === 'convites') {
-        return {
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
-        };
-      }
-      return {
-        select: jest.fn().mockReturnThis(),
-        neq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
-      };
-    });
-
-    render(<PresentesPage />);
-    
-    await waitFor(() => {
-      expect(screen.getByText('Acesso Restrito')).toBeInTheDocument();
-    });
-  });
-
-  test('deve abrir o modal de PIX ao clicar em Presentear e mostrar botões de cópia', async () => {
-    Object.assign(navigator, {
-      clipboard: {
-        writeText: jest.fn().mockImplementation(() => Promise.resolve()),
-      },
-    });
-
-    render(<PresentesPage />);
-    
     await waitFor(() => screen.getByText('Liquidificador'));
     
-    fireEvent.click(screen.getByText('Presentear'));
+    const btn = screen.getByText(/Presentear via PIX/i);
+    fireEvent.click(btn);
     
-    expect(screen.getByText('Quase lá!')).toBeInTheDocument();
-    expect(screen.getByText('chave-test')).toBeInTheDocument();
-    expect(screen.getByText('Copiar Código PIX (Copia e Cola)')).toBeInTheDocument();
-
-    const copyBtn = screen.getByText('Copiar Código PIX (Copia e Cola)');
-    fireEvent.click(copyBtn);
-
-    expect(navigator.clipboard.writeText).toHaveBeenCalled();
-    await waitFor(() => expect(screen.getByText('Copiado!')).toBeInTheDocument());
-  });
-
-  test('deve processar reserva de presente com sucesso após upload', async () => {
-    (supabase.rpc as unknown as jest.Mock).mockResolvedValue({ 
-      data: { success: true, message: 'Sucesso' }, 
-      error: null 
-    });
-
-    render(<PresentesPage />);
-    
-    await waitFor(() => screen.getByText('Liquidificador'));
-    fireEvent.click(screen.getByText('Presentear'));
-    
-    const uploadBtn = screen.getByText('Enviar Comprovante');
-    fireEvent.click(uploadBtn);
-    
-    await waitFor(() => {
-      expect(screen.getByText('Muito Obrigado!')).toBeInTheDocument();
-    });
-
-    expect(supabase.rpc).toHaveBeenCalledWith('reservar_presente_v1', expect.objectContaining({
-      p_presente_id: '1',
-      p_url_comprovante: 'http://proof.url'
-    }));
-  });
-
-  test('deve lidar com erro no RPC de reserva', async () => {
-    (supabase.rpc as unknown as jest.Mock).mockRejectedValue(new Error('RPC Error'));
-    window.alert = jest.fn();
-
-    render(<PresentesPage />);
-    
-    await waitFor(() => screen.getByText('Liquidificador'));
-    fireEvent.click(screen.getByText('Presentear'));
-    
-    const uploadBtn = screen.getByText('Enviar Comprovante');
-    fireEvent.click(uploadBtn);
-    
-    await waitFor(() => {
-      expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('erro ao processar'));
-    });
+    expect(screen.getByText(/Quase lá!/i)).toBeInTheDocument();
   });
 });

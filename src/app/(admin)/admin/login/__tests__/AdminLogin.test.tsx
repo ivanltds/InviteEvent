@@ -6,6 +6,7 @@ import { authService } from '@/lib/services/authService';
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
+  useSearchParams: jest.fn(() => ({ get: jest.fn() })),
   refresh: jest.fn(),
 }));
 
@@ -21,6 +22,12 @@ jest.mock('@/lib/supabase', () => ({
   supabase: {
     auth: {
       signUp: jest.fn(),
+      getSession: jest.fn().mockResolvedValue({ data: { session: null }, error: null }),
+      onAuthStateChange: jest.fn((cb) => {
+        // Guardar o callback para podermos disparar manualmente nos testes se necessário
+        (LoginPage as any).onAuthCallback = cb;
+        return { data: { subscription: { unsubscribe: jest.fn() } } };
+      }),
     },
   },
 }));
@@ -71,8 +78,14 @@ describe('Admin Login Page', () => {
     const button = screen.getByRole('button', { name: /Entrar/i });
 
     fireEvent.change(emailInput, { target: { value: 'admin@test.com' } });
-    fireEvent.change(passInput, { target: { value: 'testpassword' } });
+    fireEvent.change(passInput, { target: { value: 'password123' } });
     fireEvent.click(button);
+
+    // Disparar o onAuthStateChange manualmente para simular o comportamento do Supabase
+    const cb = (LoginPage as any).onAuthCallback;
+    if (cb) {
+      cb('SIGNED_IN', { user: { id: 'u1' }, access_token: 't1' });
+    }
 
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith('/admin/dashboard');

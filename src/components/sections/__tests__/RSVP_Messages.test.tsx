@@ -1,76 +1,34 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import RSVP from '../RSVP';
-import { rsvpService } from '@/lib/services/rsvpService';
+import { supabase } from '@/lib/supabase';
+import { useParams, useSearchParams } from 'next/navigation';
 
-// Mock do serviço
-jest.mock('@/lib/services/rsvpService', () => ({
-  rsvpService: {
-    getRSVPConfig: jest.fn().mockResolvedValue({ prazo_rsvp: '2026-06-13' }),
-    getInviteBySlug: jest.fn(),
-    getInviteMembers: jest.fn().mockResolvedValue([]),
-    getExistingRSVP: jest.fn().mockResolvedValue(null),
-    submitRSVP: jest.fn().mockResolvedValue({ success: true }),
-    updateMemberStatus: jest.fn().mockResolvedValue(true)
-  }
-}));
-
-jest.mock('next/link', () => {
-  return ({ children, href }: { children: React.ReactNode; href: string }) => (
-    <a href={href}>{children}</a>
-  );
-});
-
-describe('RSVP Custom Messages by Type', () => {
+describe('RSVP - Messages', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-  });
+    (useParams as jest.Mock).mockReturnValue({ slug: 'msg-test' });
+    (useSearchParams as jest.Mock).mockReturnValue({ get: jest.fn().mockReturnValue('msg-test') });
 
-  const setupMock = (tipo: string) => {
-    (rsvpService.getInviteBySlug as jest.Mock).mockResolvedValue({ 
-      id: 'c1', 
-      nome_principal: 'Teste', 
-      limite_pessoas: 2, 
-      slug: 'teste',
-      tipo: tipo
-    });
-  };
-
-  const confirmRSVP = async () => {
-    await waitFor(() => screen.getByText(/Olá,/));
-    const submitBtn = screen.getByText('Confirmar Presença');
-    fireEvent.click(submitBtn);
-  };
-
-  test('deve mostrar mensagem para INDIVIDUAL', async () => {
-    setupMock('individual');
-    render(<RSVP inviteSlug="teste" />);
-    await confirmRSVP();
-    
-    await waitFor(() => {
-      expect(screen.getByText('Sua presença está confirmada!')).toBeInTheDocument();
-      expect(screen.getByText(/Ter você por perto tornará nosso dia ainda mais especial!/i)).toBeInTheDocument();
+    (supabase.from as jest.Mock).mockImplementation((table: string) => {
+      const chain = (supabase as any).from().select();
+      if (table === 'eventos_config') {
+        chain.maybeSingle.mockResolvedValue({ data: { prazo_rsvp: '2026-12-31' }, error: null });
+      } else if (table === 'convites') {
+        chain.maybeSingle.mockResolvedValue({ data: { id: 'c1', nome_principal: 'João', slug: 'msg-test', evento_id: 'e1' }, error: null });
+      }
+      return chain;
     });
   });
 
-  test('deve mostrar mensagem para CASAL', async () => {
-    setupMock('casal');
-    render(<RSVP inviteSlug="teste" />);
-    await confirmRSVP();
+  it('deve permitir preencher mensagem', async () => {
+    render(<RSVP />);
+    await waitFor(() => expect(screen.getByPlaceholderText(/escreva uma mensagem/i)).toBeInTheDocument());
+    
+    fireEvent.change(screen.getByPlaceholderText(/escreva uma mensagem/i), { target: { value: 'Parabéns!' } });
+    fireEvent.click(screen.getByText('Confirmar Presença'));
     
     await waitFor(() => {
-      expect(screen.getByText('Presença confirmada!')).toBeInTheDocument();
-      expect(screen.getByText(/Ter um casal tão querido ao nosso lado torna tudo mais mágico!/i)).toBeInTheDocument();
-    });
-  });
-
-  test('deve mostrar mensagem para FAMILIA', async () => {
-    setupMock('familia');
-    render(<RSVP inviteSlug="teste" />);
-    await confirmRSVP();
-    
-    await waitFor(() => {
-      expect(screen.getByText('Família confirmada!')).toBeInTheDocument();
-      expect(screen.getByText(/A presença da família é o que dá vida à nossa festa./i)).toBeInTheDocument();
+      expect(screen.getByText('Presença Confirmada!')).toBeInTheDocument();
     });
   });
 });

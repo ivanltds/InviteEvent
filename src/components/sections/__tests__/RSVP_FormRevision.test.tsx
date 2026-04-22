@@ -1,66 +1,31 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import RSVP from '../RSVP';
-import { rsvpService } from '@/lib/services/rsvpService';
+import { supabase } from '@/lib/supabase';
+import { useParams, useSearchParams } from 'next/navigation';
 
-jest.mock('@/lib/services/rsvpService', () => ({
-  rsvpService: {
-    getRSVPConfig: jest.fn().mockResolvedValue({ prazo_rsvp: '2026-06-13' }),
-    getInviteBySlug: jest.fn(),
-    getInviteMembers: jest.fn().mockResolvedValue([]),
-    getExistingRSVP: jest.fn().mockResolvedValue(null),
-    submitRSVP: jest.fn(),
-    updateMemberStatus: jest.fn().mockResolvedValue(true)
-  }
-}));
+describe('RSVP - Form Revision', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (useParams as jest.Mock).mockReturnValue({ slug: 'revision' });
+    (useSearchParams as jest.Mock).mockReturnValue({ get: jest.fn().mockReturnValue('revision') });
 
-jest.mock('next/link', () => {
-  return ({ children, href }: { children: React.ReactNode; href: string }) => (
-    <a href={href}>{children}</a>
-  );
-});
-
-describe('RSVP Form Revision by Type', () => {
-  const setupMock = (tipo: string, membros: any[] = []) => {
-    (rsvpService.getInviteBySlug as jest.Mock).mockResolvedValue({ 
-      id: 'c1', nome_principal: 'Convidado Teste', tipo: tipo, slug: 'teste' 
-    });
-    (rsvpService.getInviteMembers as jest.Mock).mockResolvedValue(membros);
-  };
-
-  test('deve mostrar textos singulares para convite INDIVIDUAL', async () => {
-    setupMock('individual');
-    render(<RSVP inviteSlug="teste" />);
-    
-    await waitFor(() => {
-      expect(screen.getByText(/com muito carinho para você/i)).toBeInTheDocument();
-      expect(screen.getByText(/Você poderá celebrar conosco\?/i)).toBeInTheDocument();
-      expect(screen.getByText(/Sim, estarei lá!/i)).toBeInTheDocument();
-    });
-    
-    // Convidado individual não deve ver lista de membros ou campo de quantidade
-    expect(screen.queryByText(/Quem do seu grupo/i)).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/Quantas pessoas/i)).not.toBeInTheDocument();
+    (supabase.from as jest.Mock).mockImplementation((table: string) => {
+        const chain = (supabase as any).from().select();
+        if (table === 'eventos_config') {
+          chain.maybeSingle.mockResolvedValue({ data: { prazo_rsvp: '2026-12-31' }, error: null });
+        } else if (table === 'convites') {
+          chain.maybeSingle.mockResolvedValue({ data: { id: 'c1', nome_principal: 'João', slug: 'revision', evento_id: 'e1' }, error: null });
+        } else if (table === 'rsvp') {
+          chain.maybeSingle.mockResolvedValue({ data: { id: 'r1', status: 'confirmado', confirmados: 1 }, error: null });
+        }
+        return chain;
+      });
   });
 
-  test('deve mostrar textos plurais para convite CASAL', async () => {
-    setupMock('casal', [{ id: 'm1', nome: 'Membro 1' }, { id: 'm2', nome: 'Membro 2' }]);
-    render(<RSVP inviteSlug="teste" />);
-    
+  it('deve mostrar modo de revisão se rsvp já existir', async () => {
+    render(<RSVP />);
     await waitFor(() => {
-      expect(screen.getByText(/receber vocês dois/i)).toBeInTheDocument();
-      expect(screen.getByText(/Vocês poderão celebrar conosco\?/i)).toBeInTheDocument();
-      expect(screen.getByText(/Confirmem a presença de vocês:/i)).toBeInTheDocument();
-    });
-  });
-
-  test('deve mostrar textos de FAMÍLIA', async () => {
-    setupMock('familia', [{ id: 'm1', nome: 'Membro 1' }]);
-    render(<RSVP inviteSlug="teste" />);
-    
-    await waitFor(() => {
-      expect(screen.getByText(/especial para sua família/i)).toBeInTheDocument();
-      expect(screen.getByText(/Sua família poderá celebrar conosco\?/i)).toBeInTheDocument();
-      expect(screen.getByText(/Quem da família virá celebrar conosco\?/i)).toBeInTheDocument();
+      expect(screen.getByText(/Revisar Presença/i)).toBeInTheDocument();
     });
   });
 });

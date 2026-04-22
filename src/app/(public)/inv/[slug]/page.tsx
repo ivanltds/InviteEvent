@@ -84,7 +84,20 @@ export default function InvitationPage() {
         const skipGatewayStorage = typeof window !== 'undefined' && localStorage.getItem('skip_gateway') === 'true';
         
         const isExceeded = hasExceededViewLimit(slug, forcePreview);
-        setShowGateway(!isExceeded && !skipGatewayParam && !skipGatewayStorage);
+        
+        // 1. Buscar o convite pelo slug (movido para cima para checar RSVP status)
+        const invite = await rsvpService.getInviteBySlug(slug);
+        
+        // Se já confirmou, pular gateway (STORY-060)
+        let hasConfirmed = false;
+        if (invite) {
+          const rsvp = await rsvpService.getExistingRSVP(invite.id);
+          if (rsvp && rsvp.status === 'confirmado') {
+            hasConfirmed = true;
+          }
+        }
+
+        setShowGateway(!isExceeded && !skipGatewayParam && !skipGatewayStorage && !hasConfirmed);
 
         // Intercept Preview Client-Side Funnel
         if (slug === 'preview') {
@@ -126,7 +139,6 @@ export default function InvitationPage() {
         }
 
         // 1. Buscar o convite pelo slug
-        const invite = await rsvpService.getInviteBySlug(slug);
         if (!invite) {
           setLoading(false);
           return;
@@ -154,7 +166,14 @@ export default function InvitationPage() {
 
           // Injetar CSS tokens do evento no convite público APENAS (scoped)
           // STORY-058: event theme tokens ficam em .eventTheme, não no :root global
-          const date = new Date(configData.data_casamento);
+          // Injetar CSS tokens do evento no convite público APENAS (scoped)
+          // STORY-058: event theme tokens ficam em .eventTheme, não no :root global
+          
+          // FIX STORY-060: Evitar offset de 1 dia por conta de Timezone
+          // Ao parsear "YYYY-MM-DD", o navegador assume UTC. Adicionamos T00:00 para forçar local ou parseamos manual.
+          const [year, month, day] = configData.data_casamento.split('-').map(Number);
+          const date = new Date(year, month - 1, day);
+          
           const formattedDate = date.toLocaleDateString('pt-BR', {
             day: '2-digit',
             month: 'long',

@@ -135,6 +135,33 @@
   opacity: 1;
 }
 
+.emptyState, .empty {
+  text-align: center;
+  padding: 3rem;
+  background: #fdfbf7;
+  border: 2px dashed #ddd;
+  border-radius: 12px;
+  color: #888;
+  margin: 1rem 0;
+}
+
+.emptyState p {
+  margin: 0.5rem 0;
+}
+
+.emptyState strong {
+  color: var(--accent-safe);
+}
+
+.selectAlbumPrompt {
+  text-align: center;
+  padding: 4rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  color: #666;
+  font-style: italic;
+}
+
 @media (max-width: 768px) {
   .sectionHeader {
     flex-direction: column;

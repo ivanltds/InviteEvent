@@ -6,19 +6,33 @@ describe('inviteService - Member Management', () => {
     jest.clearAllMocks();
   });
 
+  const mockQueryBuilder = {
+    select: jest.fn().mockReturnThis(),
+    eq: jest.fn().mockReturnThis(),
+    order: jest.fn().mockReturnThis(),
+    not: jest.fn().mockReturnThis(),
+    delete: jest.fn().mockReturnThis(),
+    upsert: jest.fn().mockReturnThis(),
+    insert: jest.fn().mockReturnThis(),
+    single: jest.fn().mockResolvedValue({ data: { id: 'c1', evento_id: 'e1' }, error: null }),
+    then: jest.fn().mockImplementation((fn) => Promise.resolve(fn({ data: [], error: null }))),
+  };
+
   test('saveMembers deve inserir ou atualizar membros corretamente', async () => {
+    (supabase.from as jest.Mock).mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.delete.mockReturnThis();
+    mockQueryBuilder.upsert.mockResolvedValue({ error: null });
+    mockQueryBuilder.insert.mockResolvedValue({ error: null });
+
     const mockMembers = [
-      { nome: 'Membro A', convite_id: 'c1' },
-      { nome: 'Membro B', convite_id: 'c1' }
+      { id: 'm1', nome: 'Existente', confirmado: true },
+      { id: 'virtual', nome: 'Novo', confirmado: null }
     ];
-    
-    const mockUpsert = jest.fn().mockResolvedValue({ error: null });
-    (supabase.from as jest.Mock).mockReturnValue({ upsert: mockUpsert });
 
     const result = await inviteService.saveMembers('c1', mockMembers);
     
-    expect(supabase.from).toHaveBeenCalledWith('convite_membros');
-    expect(mockUpsert).toHaveBeenCalled();
     expect(result.success).toBe(true);
+    expect(mockQueryBuilder.upsert).toHaveBeenCalled();
+    expect(mockQueryBuilder.insert).toHaveBeenCalled();
   });
 });

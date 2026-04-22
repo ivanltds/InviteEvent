@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import styles from "./Presentes.module.css";
 import { supabase } from '@/lib/supabase';
 import { CldUploadWidget } from 'next-cloudinary';
@@ -10,6 +11,7 @@ import { generatePixPayload } from '@/lib/utils/pix';
 import { triggerCelebration, triggerSideCannons } from '@/lib/utils/confetti';
 import EmotionalIntro from '@/components/gifts/EmotionalIntro';
 import FloatingBasket from '@/components/gifts/FloatingBasket';
+import MuralSection from '@/components/sections/MuralSection';
 
 interface Config {
   pix_chave: string;
@@ -187,6 +189,11 @@ export default function PresentesPage() {
       )}
 
       <header className={styles.header}>
+        <div className={styles.topNav}>
+          <Link href={`/inv/${invite?.slug || ''}`} className={styles.backLink}>
+            ← Voltar ao Convite
+          </Link>
+        </div>
         <h1 className="cursive" style={{ color: config?.accent_color }}>Nossa Lista de Presentes</h1>
         <p>Cada item aqui foi escolhido com carinho para nossa nova vida juntos.</p>
       </header>
@@ -231,14 +238,30 @@ export default function PresentesPage() {
                     <p className={styles.price} style={{ color: config?.accent_color }}>
                       {Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </p>
-                    <button 
-                      className={styles.giftBtn}
-                      style={isSelected ? { backgroundColor: '#333', color: 'white' } : { backgroundColor: config?.accent_color }}
-                      disabled={isDisabled}
-                      onClick={() => toggleToCart(item)}
-                    >
-                      {isDisabled ? 'Esgotado' : isSelected ? 'Remover do Carrinho' : 'Presentear'}
-                    </button>
+                    {item.descricao && (
+                      <p className={styles.description}>{item.descricao}</p>
+                    )}
+                    <div className={styles.itemActions}>
+                      <button 
+                        className={styles.giftBtn}
+                        style={isSelected ? { backgroundColor: '#333', color: 'white' } : { backgroundColor: config?.accent_color }}
+                        disabled={isDisabled}
+                        onClick={() => toggleToCart(item)}
+                      >
+                        {isDisabled ? 'Esgotado' : isSelected ? 'Remover do Carrinho' : 'Presentear via PIX'}
+                      </button>
+
+                      {item.link_externo && !isDisabled && (
+                        <a 
+                          href={item.link_externo} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className={styles.externalLinkBtn}
+                        >
+                          Comprar em outra loja
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </motion.div>
               );
@@ -251,6 +274,10 @@ export default function PresentesPage() {
             onClick={handleOpenCheckout}
             accentColor={config?.accent_color}
           />
+
+          <div style={{ marginTop: '4rem' }}>
+            <MuralSection eventoId={invite?.evento_id || ''} />
+          </div>
         </>
       )}
 

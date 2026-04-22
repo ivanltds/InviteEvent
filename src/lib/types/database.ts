@@ -71,6 +71,7 @@ export interface Presente {
   preco: number;
   descricao?: string;
   imagem_url?: string;
+  link_externo?: string;
   status: 'disponivel' | 'reservado' | 'esgotado' | 'pausado';
   quantidade_total: number;
   quantidade_reservada: number;

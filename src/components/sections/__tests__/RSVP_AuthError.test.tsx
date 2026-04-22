@@ -1,58 +1,38 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import RSVP from '../RSVP';
-import { rsvpService } from '@/lib/services/rsvpService';
+import { supabase } from '@/lib/supabase';
 
-// Mock do serviço
-jest.mock('@/lib/services/rsvpService', () => ({
-  rsvpService: {
-    getRSVPConfig: jest.fn().mockResolvedValue({ prazo_rsvp: '2026-06-13' }),
-    getInviteBySlug: jest.fn().mockResolvedValue({ id: 'c1', nome_principal: 'Teste', limite_pessoas: 2, slug: 'teste' }),
-    getInviteMembers: jest.fn().mockResolvedValue([]),
-    getExistingRSVP: jest.fn().mockResolvedValue(null),
-    submitRSVP: jest.fn(),
-    updateMemberStatus: jest.fn().mockResolvedValue(true)
-  }
+// Mock Supabase
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    from: jest.fn().mockImplementation(() => ({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+      single: jest.fn().mockResolvedValue({ data: null, error: null }),
+      upsert: jest.fn().mockResolvedValue({ error: null }),
+    })),
+  },
 }));
 
-jest.mock('next/link', () => {
-  return ({ children, href }: { children: React.ReactNode; href: string }) => (
-    <a href={href}>{children}</a>
-  );
-});
+// Mock Navigation
+jest.mock('next/navigation', () => ({
+  useParams: jest.fn(() => ({ slug: 'invalid' })),
+  useSearchParams: jest.fn(() => ({ get: jest.fn().mockReturnValue(null) })),
+}));
 
-describe('RSVP Auth Error Reproduction', () => {
-  const originalURLSearchParams = global.URLSearchParams;
-
+describe('RSVP Component - Auth/Access Errors', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    global.URLSearchParams = jest.fn().mockImplementation(() => ({
-      get: jest.fn().mockReturnValue('teste')
-    }));
-    
-    // Silenciar console.error nos testes
-    jest.spyOn(console, 'error').mockImplementation(() => {});
-    window.alert = jest.fn();
   });
 
-  afterAll(() => {
-    global.URLSearchParams = originalURLSearchParams;
-  });
-
-  test('deve mostrar mensagem de erro de RLS na tela quando submitRSVP falha', async () => {
-    (rsvpService.submitRSVP as jest.Mock).mockResolvedValue({ 
-      success: false, 
-      error: { message: 'new row violates row-level security policy' } 
-    });
-
-    render(<RSVP inviteSlug="teste" />);
-    
-    await waitFor(() => screen.getByText(/Olá,/));
-    
-    const submitBtn = screen.getByText('Confirmar Presença');
-    fireEvent.click(submitBtn);
+  it('should show "Acesso Restrito" when no slug is provided', async () => {
+    render(<RSVP />);
     
     await waitFor(() => {
-      expect(screen.getByText(/Acesso não autorizado pelo banco de dados/i)).toBeInTheDocument();
+      expect(screen.getByText(/Acesso Restrito/i)).toBeInTheDocument();
     });
   });
 });

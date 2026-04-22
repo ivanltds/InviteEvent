@@ -1,5 +1,6 @@
 .section {
   padding: 6rem 2rem;
+  padding-bottom: calc(8rem + env(safe-area-inset-bottom));
   background-color: var(--bg-primary);
   text-align: center;
 }

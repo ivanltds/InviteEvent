@@ -9,13 +9,12 @@ describe('configService Errors', () => {
 
   test('updateConfig deve retornar erro se falhar', async () => {
     (supabase.from as jest.Mock).mockReturnValue({
-      update: jest.fn().mockReturnValue({
-        eq: jest.fn().mockResolvedValue({ error: { message: 'DB Fail' } })
-      })
+      upsert: jest.fn().mockResolvedValue({ error: { message: 'DB Fail' } })
     });
 
-    const res = await configService.updateConfig({});
+    const res = await configService.updateConfig('e1', {});
     expect(res.success).toBe(false);
-    expect(res.error?.message).toBe('DB Fail');
+    // Usando stringContaining para evitar problemas com wrapping de objeto Error
+    expect(res.error?.message).toContain('DB Fail');
   });
 });

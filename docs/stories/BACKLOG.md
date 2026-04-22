@@ -24,6 +24,7 @@
 | **5** | 🎨 **STORY-052** — Visual Premium do Convite | **Acabamento do produto.** Tipografia, paleta, monograma — tudo que faz o convite parecer profissional. | L | Paralela com 056 |
 | **6** | 🖼️ **STORY-050** — Galeria Pública de Fotos | **Val. direto ao convidado.** Admin já tem galeria pronta; falta apenas exposição pública. Recurso emocional importante. | M | Paralela com 052 |
 | **7** | 🚀 **STORY-051** — Deploy & CI/CD (Vercel) | **Pré-requisito do Go-Live.** Sem isso o site não é acessível. CI/CD evita regressões futuras. | S | Após 055 |
+| **8** | 🐞 **STORY-060** — Bugfix Marathon & External Links | **Qualidade & Features.** Correção de bugs críticos de visualização, data e esquema + funcionalidade de link externo. | L | STORY-055 |
 
 ---
 

@@ -124,6 +124,25 @@ export const rsvpService = {
     }
   },
 
+  async confirmRSVP(
+    inviteId: string,
+    members: Array<{ id: string; confirmado: boolean; restricoes?: string }>,
+    rsvpData: { confirmados?: number; mensagem?: string; telefone?: string; evento_id?: string }
+  ): Promise<{ success: boolean; data?: any; error?: Error | null }> {
+    const { data, error } = await supabase.rpc('confirm_rsvp_v1', {
+      p_convite_id: inviteId,
+      p_membros: members,
+      p_rsvp_data: rsvpData
+    });
+
+    if (error) {
+      console.error('Error calling confirm_rsvp_v1:', error);
+      return { success: false, error: new Error(error.message) };
+    }
+
+    return { success: true, data };
+  },
+
   async getRSVPConfig(inviteId?: string): Promise<Configuracao | null> {
     let query = supabase.from('configuracoes').select('*');
     

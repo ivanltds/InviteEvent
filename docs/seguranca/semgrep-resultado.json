@@ -1,0 +1,17 @@
+# Nota: Este arquivo contém um extrato do scan realizado anteriormente. 
+# O scan original completo está em semgrep-report-clean.json (1.7MB).
+{
+  "version": "1.162.0",
+  "results": [
+    {
+      "check_id": "javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal",
+      "path": ".aiox-core\\cli\\commands\\config\\index.js",
+      "start": { "line": 435, "col": 35 },
+      "extra": {
+        "message": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability...",
+        "severity": "WARNING",
+        "metadata": { "owasp": ["A01:2021 - Broken Access Control"], "cwe": ["CWE-22"] }
+      }
+    }
+  ]
+}

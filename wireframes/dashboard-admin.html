@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wireframe - Dashboard Admin - InviteEventAI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #FAFAFA; }
+        .sidebar { width: 240px; height: 100vh; position: fixed; background: #FFF; border-right: 1px solid #E2E8F0; }
+        .main-content { margin-left: 240px; padding: 40px; }
+        .card { background: #FFF; border-radius: 12px; padding: 24px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .gold-button { background: #D4AF37; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="sidebar p-6 flex flex-col gap-8">
+        <h1 class="text-2xl font-bold text-gray-800">InviteEventAI</h1>
+        <nav class="flex flex-col gap-4">
+            <a href="#" class="text-gold-600 font-semibold">Dashboard</a>
+            <a href="#" class="text-gray-500 hover:text-gray-800">Convidados</a>
+            <a href="#" class="text-gray-500 hover:text-gray-800">Presentes</a>
+            <a href="#" class="text-gray-500 hover:text-gray-800">Mural</a>
+            <a href="#" class="text-gray-500 hover:text-gray-800">Configurações</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-800">Olá, Maria e João!</h2>
+                <p class="text-gray-500">Seu casamento é em 120 dias.</p>
+            </div>
+            <button class="gold-button">Ver Site</button>
+        </header>
+
+        <section class="grid grid-cols-3 gap-6 mb-10">
+            <div class="card">
+                <p class="text-sm text-gray-500 uppercase tracking-wider">Convidados Confirmados</p>
+                <h3 class="text-4xl font-bold mt-2">142 / 200</h3>
+                <div class="w-full bg-gray-200 h-2 mt-4 rounded-full">
+                    <div class="bg-green-500 h-2 rounded-full" style="width: 71%"></div>
+                </div>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-500 uppercase tracking-wider">Presentes Recebidos</p>
+                <h3 class="text-4xl font-bold mt-2">R$ 12.450</h3>
+                <p class="text-xs text-green-500 mt-2">↑ 15% esta semana</p>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-500 uppercase tracking-wider">Novas Fotos no Mural</p>
+                <h3 class="text-4xl font-bold mt-2">28</h3>
+                <p class="text-xs text-orange-500 mt-2">5 pendentes de aprovação</p>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold">Últimos Convidados</h3>
+                <button class="text-blue-600 font-semibold">Ver Todos</button>
+            </div>
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="border-b text-gray-400 text-sm">
+                        <th class="pb-3 font-medium">Nome</th>
+                        <th class="pb-3 font-medium">Status</th>
+                        <th class="pb-3 font-medium">Data RSVP</th>
+                        <th class="pb-3 font-medium">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-700">
+                    <tr class="border-b">
+                        <td class="py-4">Família Souza (4 pessoas)</td>
+                        <td class="py-4"><span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Confirmado</span></td>
+                        <td class="py-4">22/05/2024</td>
+                        <td class="py-4"><button class="text-gray-400 hover:text-gray-600">Editar</button></td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-4">Carlos Alberto</td>
+                        <td class="py-4"><span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-bold">Pendente</span></td>
+                        <td class="py-4">-</td>
+                        <td class="py-4"><button class="text-gray-400 hover:text-gray-600">Editar</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+</body>
+</html>

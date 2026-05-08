@@ -12,6 +12,8 @@ import { triggerCelebration, triggerSideCannons } from '@/lib/utils/confetti';
 import EmotionalIntro from '@/components/gifts/EmotionalIntro';
 import FloatingBasket from '@/components/gifts/FloatingBasket';
 import MuralSection from '@/components/sections/MuralSection';
+import PaymentSelector from '@/components/gifts/PaymentSelector';
+import { giftService } from '@/services/giftService';
 
 interface Config {
   pix_chave: string;
@@ -19,6 +21,7 @@ interface Config {
   pix_nome: string;
   pix_tipo: 'cpf' | 'cnpj' | 'email' | 'telefone' | 'aleatoria';
   accent_color?: string;
+  allow_stripe?: boolean;
 }
 
 export default function PresentesPage() {
@@ -65,7 +68,7 @@ export default function PresentesPage() {
       const [configRes, presentesRes] = await Promise.all([
         supabase
           .from('configuracoes')
-          .select('pix_chave, pix_banco, pix_nome, pix_tipo, accent_color')
+          .select('pix_chave, pix_banco, pix_nome, pix_tipo, accent_color, allow_stripe')
           .eq('evento_id', inviteData.evento_id)
           .maybeSingle(),
         supabase
@@ -128,18 +131,15 @@ export default function PresentesPage() {
     if (!proofUrl) return;
 
     try {
-      const { data, error } = await supabase.rpc('reservar_multiplos_presentes_v1', {
-        p_presentes_ids: cart.map(p => p.id),
-        p_url_comprovante: proofUrl,
-        p_mensagem: specialMessage,
-        p_convite_id: invite?.id || null,
-        p_evento_id: invite?.evento_id || null,
-        p_convidado_nome: invite?.nome_principal || 'Convidado via Site'
-      });
+      const response = await giftService.reserveGifts({
+        presentesIds: cart.map(p => p.id),
+        urlComprovante: proofUrl,
+        mensagem: specialMessage,
+        conviteId: invite?.id,
+        eventoId: invite?.evento_id,
+        convidadoNome: invite?.nome_principal || 'Convidado via Site'
+      }) as { success: boolean; message: string };
 
-      if (error) throw error;
-
-      const response = data as { success: boolean; message: string };
       if (!response.success) {
         alert(response.message);
         return;
@@ -320,27 +320,14 @@ export default function PresentesPage() {
                     />
                   </div>
 
-                  <div className={styles.pixContainer}>
-                    <div className={styles.qrCodeContainer}>
-                      <p style={{ fontSize: '0.9rem', marginBottom: '0.5rem', color: '#666' }}>
-                        Escaneie o QR Code abaixo para realizar o pagamento via PIX:
-                      </p>
-                      {pixPayload && (
-                        <img 
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(pixPayload)}`} 
-                          alt="QR Code" 
-                          className={styles.qrCode}
-                        />
-                      )}
-                      <button 
-                        className={styles.copyCodeBtn} 
-                        onClick={() => copyToClipboard(pixPayload)}
-                        style={{ backgroundColor: config?.accent_color }}
-                      >
-                        {pixCopyStatus === 'copied' ? '✓ Código Copiado' : 'Copiar Código PIX'}
-                      </button>
-                    </div>
-                  </div>
+                  <PaymentSelector 
+                    total={totalCartValue}
+                    pixPayload={pixPayload}
+                    onPixCopy={() => copyToClipboard(pixPayload)}
+                    pixCopyStatus={pixCopyStatus}
+                    accentColor={config?.accent_color}
+                    allowStripe={config?.allow_stripe}
+                  />
 
                   <div className={styles.uploadSection}>
                     <CldUploadWidget uploadPreset="invite_preset" onSuccess={handleUploadSuccess}>
@@ -350,12 +337,12 @@ export default function PresentesPage() {
                           onClick={() => open()}
                           style={{ backgroundColor: config?.accent_color }}
                         >
-                          Enviar Comprovante Único
+                          Enviar Comprovante de Pagamento
                         </button>
                       )}
                     </CldUploadWidget>
-                    <p style={{ fontSize: '0.8rem', marginTop: '1rem', color: '#888' }}>
-                      Após o pagamento, anexe o comprovante para confirmarmos sua reserva.
+                    <p style={{ fontSize: '0.8rem', marginTop: '1rem', color: '#888', textAlign: 'center' }}>
+                      Após realizar o pagamento, anexe o comprovante para confirmarmos sua reserva.
                     </p>
                   </div>
                 </>

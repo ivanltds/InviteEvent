@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wireframe Inicial</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f0f0f0; color: #222; padding: 24px; }
+    h1 { font-size: 18px; margin-bottom: 8px; }
+    h2 { font-size: 14px; margin-bottom: 8px; color: #444; }
+    p  { font-size: 13px; color: #666; line-height: 1.5; }
+    .page { max-width: 900px; margin: 0 auto; }
+    .box { background: #fff; border: 1px dashed #aaa; padding: 16px; margin-bottom: 16px; }
+    .row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+    .col { flex: 1 1 240px; background: #fff; border: 1px dashed #aaa; padding: 16px; }
+    .btn { display: inline-block; padding: 8px 16px; border: 1px solid #333; background: #fff; cursor: pointer; font-size: 13px; margin-top: 8px; }
+    .btn:hover { background: #eee; }
+    .badge { display: inline-block; padding: 2px 8px; border: 1px solid #333; font-size: 11px; }
+    nav { display: flex; gap: 12px; padding: 12px; background: #fff; border: 1px dashed #aaa; margin-bottom: 16px; }
+    nav a { font-size: 13px; color: #333; text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    footer { text-align: center; font-size: 11px; color: #999; padding-top: 16px; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="box">
+    <h1>Wireframe Inicial — Validação de Fluxo</h1>
+    <p>Arquivo de estrutura para revisão com o Operador. Sem design final.</p>
+  </div>
+
+  <nav>
+    <a href="#">Início</a>
+    <a href="#">Seção A</a>
+    <a href="#">Seção B</a>
+    <a href="#" style="margin-left:auto;">Ação</a>
+  </nav>
+
+  <div class="row">
+    <div class="col">
+      <h2>Entrada</h2>
+      <p>Área de entrada do usuário ou ponto de partida do fluxo.</p>
+      <button class="btn">Ação principal</button>
+    </div>
+    <div class="col">
+      <h2>Conteúdo principal</h2>
+      <p>Área central da experiência. Conteúdo principal da tela.</p>
+    </div>
+    <div class="col">
+      <h2>Lateral / Resumo</h2>
+      <p>Informações complementares ou contexto de apoio.</p>
+    </div>
+  </div>
+
+  <div class="box">
+    <h2>Estados da tela</h2>
+    <p>
+      <span class="badge">Vazio</span>&nbsp;
+      <span class="badge">Carregando</span>&nbsp;
+      <span class="badge">Erro</span>&nbsp;
+      <span class="badge">Sucesso</span>
+    </p>
+  </div>
+
+  <div class="box">
+    <h2>Ações disponíveis</h2>
+    <button class="btn">Confirmar</button>&nbsp;
+    <button class="btn">Cancelar</button>&nbsp;
+    <button class="btn">Ver mais</button>
+  </div>
+
+  <footer>Wireframe — para validação de fluxo — não representa design final</footer>
+</div>
+</body>
+</html>

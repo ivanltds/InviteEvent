@@ -1,0 +1,175 @@
+.container {
+  padding: 1rem 0;
+}
+
+.title {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #E2E8F0;
+  transition: transform 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.card.pending {
+  border-top: 4px solid #D4AF37; /* Gold Champagne */
+}
+
+.card.approved {
+  border-top: 4px solid #48BB78;
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 100%; /* Square */
+  background: #f7f7f7;
+}
+
+.image {
+  object-fit: cover;
+}
+
+.content {
+  padding: 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.guestName {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #2D3748;
+  margin-bottom: 0.25rem;
+}
+
+.caption {
+  font-size: 0.9rem;
+  color: #4A5568;
+  margin-bottom: 0.5rem;
+  font-style: italic;
+  min-height: 1.2rem;
+}
+
+.noCaption {
+  color: #CBD5E0;
+}
+
+.editBtn {
+  background: none;
+  border: none;
+  color: #D4AF37;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  margin-bottom: 1rem;
+}
+
+.editArea {
+  margin-bottom: 1rem;
+}
+
+.editTextarea {
+  width: 100%;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  min-height: 60px;
+  margin-bottom: 0.5rem;
+  font-family: inherit;
+}
+
+.editActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.saveBtn {
+  background: #D4AF37;
+  color: white;
+  border: none;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.cancelBtn {
+  background: #EDF2F7;
+  color: #4A5568;
+  border: none;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.approveBtn, .rejectBtn, .deleteBtn {
+  flex: 1;
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s;
+}
+
+.approveBtn {
+  background-color: #D4AF37; /* Gold Champagne */
+  color: white;
+}
+
+.approveBtn:hover {
+  background-color: #B5942E;
+}
+
+.rejectBtn {
+  background-color: #EDF2F7;
+  color: #4A5568;
+}
+
+.deleteBtn {
+  background-color: #FFF5F5;
+  color: #C53030;
+}
+
+.empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  color: #A0AEC0;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+}

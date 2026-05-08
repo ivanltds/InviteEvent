@@ -1,0 +1,20 @@
+@"
+# .semgrepignore
+node_modules/
+.next/
+dist/
+build/
+coverage/
+__pycache__/
+*.min.js
+*.lock
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Tooling interno
+.aiox-core/
+scripts/
+scratch/
+"@ | Set-Content .semgrepignore

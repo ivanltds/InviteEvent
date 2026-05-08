@@ -115,24 +115,38 @@ function LoginFormContent() {
         // STORY-055: Sincronizar token com cookie para o Proxy (ex-Middleware) não barrar o redirect
         try {
           console.log('[AuthListener] Sincronizando sessão com cookies...');
-          await fetch('/api/auth/session', {
+          const sessionRes = await fetch('/api/auth/session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ access_token: session.access_token }),
           });
+          if (!sessionRes.ok) {
+            console.error('[AuthListener] Erro ao sincronizar cookies:', sessionRes.statusText);
+            setError('Erro ao sincronizar sessão. Por favor, tente novamente.');
+            return;
+          }
         } catch (e) {
-          console.error('[AuthListener] Falha ao sincronizar cookies:', e);
+          console.error('[AuthListener] Falha crítica ao sincronizar cookies:', e);
+          setError('Falha na comunicação com o servidor de sessão.');
+          return;
         }
 
         console.log('[AuthListener] Redirecionando para Dashboard/Configurações...');
         const newEventId = await claimPendingInvite((msg) => setError(msg));
         
-        // STORY-SYNC: Se vindo do onboarding, ir para Configurações (mais visual)
-        // Usar window.location.href para garantir que o EventContext recarregue totalmente
-        if (isFromOnboarding) {
-          if (newEventId) {
-            localStorage.setItem('last_event_id', newEventId);
-          }
+        // Se houve erro no claim (ex: RLS), o setError já foi chamado. 
+        // Em um fluxo ideal, poderíamos parar aqui, mas para não prender o usuário, 
+        // continuamos se for um login normal. Mas se for Onboarding e falhou, melhor avisar.
+        
+        if (isFromOnboarding && !newEventId) {
+          console.warn('[AuthListener] Falha ao criar evento no onboarding. Usuário permanecerá na página de login para ver o erro.');
+          setLoading(false);
+          return;
+        }
+
+        // STORY-SYNC: Se vindo do onboarding e teve sucesso, ir para Configurações (mais visual)
+        if (isFromOnboarding && newEventId) {
+          localStorage.setItem('last_event_id', newEventId);
           console.log('[AuthListener] Hard redirect para Configurações (Onboarding conversion)');
           window.location.href = '/admin/configuracoes';
           return;
@@ -177,8 +191,8 @@ function LoginFormContent() {
           
           if (isTestEmail) {
             console.log('[SignUp] E-mail de teste detectado, tentando auto-login...');
-            const loginSuccess = await authService.login(email, password);
-            if (loginSuccess) return; 
+            await authService.login(email, password);
+            return; 
           }
 
           // Email confirmation required ou Erro silenciado pelo Supabase
@@ -190,14 +204,17 @@ function LoginFormContent() {
         // Se já tem sessão (confirmação desabilida), o onAuthStateChange vai redirecionar.
 
       } else {
-        const success = await authService.login(email, password);
-        if (!success) {
-          setError('E-mail ou senha incorretos.');
-        }
+        await authService.login(email, password);
         // Se login OK, o onAuthStateChange vai cuidar do redirect e claim.
       }
     } catch (err: any) {
-      setError(err.message || 'Ocorreu um erro.');
+      if (err.message === 'Invalid login credentials') {
+        setError('E-mail ou senha incorretos.');
+      } else if (err.message === 'Email not confirmed') {
+        setError('Por favor, confirme seu e-mail antes de logar.');
+      } else {
+        setError(err.message || 'Ocorreu um erro ao tentar entrar.');
+      }
     } finally {
       setLoading(false);
     }

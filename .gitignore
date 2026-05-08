@@ -41,3 +41,9 @@ Thumbs.db
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Temp test and backup files
+test_results*.txt
+*.sql
+!supabase/migrations/*.sql
+build-log.txt

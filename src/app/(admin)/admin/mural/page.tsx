@@ -4,9 +4,13 @@ import { useState, useEffect } from 'react';
 import { useEvent } from '@/lib/contexts/EventContext';
 import { supabase } from '@/lib/supabase';
 import styles from './AdminMural.module.css';
+import MuralModeration from '@/components/admin/MuralModeration';
+
+type Tab = 'mensagens' | 'fotos';
 
 export default function AdminMural() {
   const { currentEvent } = useEvent();
+  const [activeTab, setActiveTab] = useState<Tab>('mensagens');
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,8 +28,10 @@ export default function AdminMural() {
   };
 
   useEffect(() => {
-    fetchMessages();
-  }, [currentEvent]);
+    if (activeTab === 'mensagens') {
+      fetchMessages();
+    }
+  }, [currentEvent, activeTab]);
 
   const updateStatus = async (id: string, status: string) => {
     const { error } = await supabase
@@ -49,33 +55,52 @@ export default function AdminMural() {
     <main className={styles.container}>
       <header className={styles.header}>
         <h1 className="cursive">Moderação do Mural</h1>
-        <p>Aprove ou oculte os recados deixados pelos seus convidados.</p>
+        <p>Gerencie o que seus convidados estão compartilhando.</p>
       </header>
 
-      <div className={styles.list}>
-        {loading ? <p>Carregando...</p> : messages.map(msg => (
-          <div key={msg.id} className={`${styles.card} ${styles[msg.status]}`}>
-            <div className={styles.cardContent}>
-              <div className={styles.cardHeader}>
-                <strong>{msg.nome_convidado}</strong>
-                <span className={styles.statusBadge}>{msg.status}</span>
-              </div>
-              <p className={styles.text}>"{msg.mensagem}"</p>
-              <span className={styles.date}>{new Date(msg.created_at).toLocaleString()}</span>
-            </div>
-            <div className={styles.actions}>
-              {msg.status !== 'aprovado' && (
-                <button onClick={() => updateStatus(msg.id, 'aprovado')} className={styles.approveBtn}>Aprovar</button>
-              )}
-              {msg.status !== 'oculto' && (
-                <button onClick={() => updateStatus(msg.id, 'oculto')} className={styles.hideBtn}>Ocultar</button>
-              )}
-              <button onClick={() => deleteMessage(msg.id)} className={styles.deleteBtn}>Excluir</button>
-            </div>
-          </div>
-        ))}
-        {messages.length === 0 && <p className={styles.empty}>Nenhum recado recebido ainda.</p>}
+      <div className={styles.tabs}>
+        <button 
+          className={`${styles.tabBtn} ${activeTab === 'mensagens' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('mensagens')}
+        >
+          Recados
+        </button>
+        <button 
+          className={`${styles.tabBtn} ${activeTab === 'fotos' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('fotos')}
+        >
+          Fotos
+        </button>
       </div>
+
+      {activeTab === 'mensagens' ? (
+        <div className={styles.list}>
+          {loading ? <p>Carregando...</p> : messages.map(msg => (
+            <div key={msg.id} className={`${styles.card} ${styles[msg.status]}`}>
+              <div className={styles.cardContent}>
+                <div className={styles.cardHeader}>
+                  <strong>{msg.nome_convidado}</strong>
+                  <span className={styles.statusBadge}>{msg.status}</span>
+                </div>
+                <p className={styles.text}>"{msg.mensagem}"</p>
+                <span className={styles.date}>{new Date(msg.created_at).toLocaleString()}</span>
+              </div>
+              <div className={styles.actions}>
+                {msg.status !== 'aprovado' && (
+                  <button onClick={() => updateStatus(msg.id, 'aprovado')} className={styles.approveBtn}>Aprovar</button>
+                )}
+                {msg.status !== 'oculto' && (
+                  <button onClick={() => updateStatus(msg.id, 'oculto')} className={styles.hideBtn}>Ocultar</button>
+                )}
+                <button onClick={() => deleteMessage(msg.id)} className={styles.deleteBtn}>Excluir</button>
+              </div>
+            </div>
+          ))}
+          {messages.length === 0 && <p className={styles.empty}>Nenhum recado recebido ainda.</p>}
+        </div>
+      ) : (
+        <MuralModeration eventId={currentEvent.id} />
+      )}
     </main>
   );
 }

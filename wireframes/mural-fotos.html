@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wireframe - Mural de Fotos - InviteEventAI</title>
+    <style>
+        :root {
+            --primary: #D4AF37;
+            --secondary: #4A5568;
+            --bg: #FAFAFA;
+            --card-bg: #FFFFFF;
+            --text: #2D3748;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            width: 100%;
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-around;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        header a {
+            text-decoration: none;
+            color: var(--secondary);
+            font-weight: 500;
+        }
+        header a.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+        .container {
+            max-width: 800px;
+            width: 90%;
+            margin-top: 2rem;
+            text-align: center;
+        }
+        h1 {
+            font-family: 'Playfair Display', serif;
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        p.subtitle {
+            color: var(--secondary);
+            margin-bottom: 2rem;
+        }
+        .upload-section {
+            background: var(--card-bg);
+            border: 2px dashed #E2E8F0;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .upload-section:hover {
+            border-color: var(--primary);
+        }
+        .upload-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+            margin-bottom: 5rem;
+        }
+        .photo-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            position: relative;
+        }
+        .photo-placeholder {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background-color: #EDF2F7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #A0AEC0;
+            font-weight: bold;
+        }
+        .photo-info {
+            padding: 1rem;
+        }
+        .photo-caption {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        .photo-meta {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .reactions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .reaction-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+            color: var(--secondary);
+        }
+        .reaction-btn:hover {
+            color: var(--primary);
+        }
+        .badge-pending {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #718096;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            border: 1px solid #E2E8F0;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+            .photo-info {
+                padding: 0.5rem;
+            }
+            h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="#">Início</a>
+        <a href="#">RSVP</a>
+        <a href="#">Presentes</a>
+        <a href="#" class="active">Mural</a>
+    </header>
+
+    <div class="container">
+        <h1>Mural de Momentos</h1>
+        <p class="subtitle">Compartilhe sua alegria e fotos deste dia especial conosco!</p>
+
+        <section class="upload-section">
+            <div class="upload-icon">📸</div>
+            <p><strong>Clique para enviar</strong> ou arraste suas fotos aqui</p>
+            <p style="font-size: 0.8rem; color: #718096;">PNG, JPG até 10MB</p>
+            <button class="btn-primary">Selecionar Fotos</button>
+        </section>
+
+        <div class="grid">
+            <!-- Card de Exemplo 1 -->
+            <div class="photo-card">
+                <div class="photo-placeholder">FOTO 1</div>
+                <div class="photo-info">
+                    <p class="photo-caption">Que casal lindo! Muita felicidade.</p>
+                    <div class="photo-meta">
+                        <span>Por: Maria Silva</span>
+                        <div class="reactions">
+                            <button class="reaction-btn">❤️ 12</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card de Exemplo 2 (Em moderação) -->
+            <div class="photo-card">
+                <div class="badge-pending">Aguardando Aprovação</div>
+                <div class="photo-placeholder">FOTO 2</div>
+                <div class="photo-info">
+                    <p class="photo-caption">Noiva maravilhosa! ✨</p>
+                    <div class="photo-meta">
+                        <span>Por: João Paulo</span>
+                        <div class="reactions">
+                            <button class="reaction-btn">❤️ 0</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card de Exemplo 3 -->
+            <div class="photo-card">
+                <div class="photo-placeholder">FOTO 3</div>
+                <div class="photo-info">
+                    <p class="photo-caption">A festa está incrível!</p>
+                    <div class="photo-meta">
+                        <span>Por: Ricardo A.</span>
+                        <div class="reactions">
+                            <button class="reaction-btn">❤️ 8</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card de Exemplo 4 -->
+            <div class="photo-card">
+                <div class="photo-placeholder">FOTO 4</div>
+                <div class="photo-info">
+                    <p class="photo-caption">Saúde aos noivos!</p>
+                    <div class="photo-meta">
+                        <span>Por: Ana Costa</span>
+                        <div class="reactions">
+                            <button class="reaction-btn">❤️ 15</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Simulado para o Modal de Upload -->
+    <script>
+        document.querySelector('.upload-section').addEventListener('click', () => {
+            alert('Aqui abriria o seletor de arquivos do sistema.');
+        });
+    </script>
+</body>
+</html>

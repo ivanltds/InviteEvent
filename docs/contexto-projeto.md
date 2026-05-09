@@ -78,6 +78,8 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/wireframes/landing-page.html          | UX/UI       | Wireframe da Landing Page Cinematográfica |
 | docs/wireframes/lista-presentes.html       | UX/UI       | Wireframe da Lista de Presentes Premium|
 | docs/wireframes/configuracoes-evento.html  | UX/UI       | Wireframe das Configurações do Evento e Mídias |
+| docs/wireframes/suporte-chat.html          | UX/UI       | Wireframe do botão flutuante e gaveta de chat (usuário)|
+| docs/wireframes/master-suporte.html        | UX/UI       | Wireframe da central de tickets e dashboard do Master Admin|
 | docs/prd/prd-003/prd-inicial.md            | BA          | PRD inicial de Gestão do Master e Atendimento por Chat|
 | docs/prd/prd-003/fluxo-ux.md               | UX/UI       | Mapeamento de fluxos e telas de Atendimento Chat|
 | docs/arquitetura/plano-implementacao-prd-003.md | Arquiteto | Plano de arquitetura técnica de suporte por Chat (SLA 2h)|

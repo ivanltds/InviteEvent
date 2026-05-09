@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wireframe - Painel de Atendimento (Master Admin)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap');
+        
+        :root {
+            --royal-gold: #C5A059;
+            --midnight-ink: #1A1A1A;
+            --pure-white: #FFFFFF;
+            --bg-subtle: #F9F9FB;
+            --border-color: #E4E4E7;
+            --subtle-slate: #71717A;
+            --success-color: #2ECC71;
+            --warning-color: #F1C40F;
+            --danger-color: #E74C3C;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-subtle);
+            color: var(--midnight-ink);
+            height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar do Master */
+        .sidebar {
+            width: 260px;
+            background-color: var(--midnight-ink);
+            border-right: 1px solid var(--royal-gold);
+            color: var(--pure-white);
+            display: flex;
+            flex-direction: column;
+            padding: 30px 20px;
+            box-sizing: border-box;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--royal-gold);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .menu-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: #E2E8F0;
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background-color: rgba(197, 160, 89, 0.15);
+            color: var(--royal-gold);
+            font-weight: 500;
+        }
+
+        /* Área de Conteúdo Principal */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            height: 70px;
+            background-color: var(--pure-white);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* Dashboard de Métricas */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 40px 40px 20px 40px;
+        }
+
+        .metric-card {
+            background: var(--pure-white);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+
+        .metric-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            color: var(--subtle-slate);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--midnight-ink);
+        }
+
+        /* Central de Atendimento (Split Layout) */
+        .support-workspace {
+            flex: 1;
+            display: flex;
+            margin: 20px 40px 40px 40px;
+            background: var(--pure-white);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+        }
+
+        /* Lista de Tickets */
+        .tickets-panel {
+            width: 320px;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .ticket-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .ticket-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .ticket-item:hover, .ticket-item.active {
+            background-color: #FAF5EE;
+        }
+
+        .ticket-item-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .client-name {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .sla-time {
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .sla-ok { background-color: rgba(46, 204, 113, 0.15); color: var(--success-color); }
+        .sla-warn { background-color: rgba(241, 196, 9, 0.15); color: #B59300; }
+        .sla-danger { background-color: rgba(231, 76, 60, 0.15); color: var(--danger-color); animation: pulse 1.5s infinite; }
+
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+
+        .ticket-event {
+            font-size: 11px;
+            color: var(--subtle-slate);
+        }
+
+        /* Área de Chat Detalhada */
+        .chat-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #FAF9F6;
+        }
+
+        .chat-panel-header {
+            background-color: var(--pure-white);
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-status {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background-color: var(--pure-white);
+            transition: all 0.2s;
+        }
+
+        .btn-status.active {
+            background-color: var(--midnight-ink);
+            color: var(--royal-gold);
+            border-color: var(--royal-gold);
+        }
+
+        .chat-history {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .msg-bubble {
+            max-width: 60%;
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .msg-bubble.from-client {
+            background-color: var(--pure-white);
+            border: 1px solid var(--border-color);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .msg-bubble.from-master {
+            background-color: var(--midnight-ink);
+            color: var(--pure-white);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            border-left: 2px solid var(--royal-gold);
+        }
+
+        .chat-input-area {
+            background-color: var(--pure-white);
+            padding: 20px 30px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+        }
+
+        .reply-input {
+            flex: 1;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .reply-input:focus {
+            border-color: var(--royal-gold);
+        }
+
+        .btn-send {
+            background-color: var(--midnight-ink);
+            color: var(--royal-gold);
+            border: 1px solid var(--royal-gold);
+            border-radius: 8px;
+            padding: 0 24px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-send:hover {
+            background-color: var(--royal-gold);
+            color: var(--midnight-ink);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar do Master -->
+    <aside class="sidebar">
+        <div class="logo">InviteEvent Master</div>
+        <nav style="display: flex; flex-direction: column; gap: 8px;">
+            <a href="#" class="menu-item">Dashboard Global</a>
+            <a href="#" class="menu-item active">Suporte via Chat</a>
+            <a href="#" class="menu-item">Histórico Clientes</a>
+            <a href="#" class="menu-item">Configurações SaaS</a>
+        </nav>
+    </aside>
+
+    <!-- Área de Conteúdo Principal -->
+    <main class="main-content">
+        <header class="header">
+            <h1>Central de Suporte Premium</h1>
+            <div style="font-size: 14px; font-weight: 500;">🧔 Agente Master Admin</div>
+        </header>
+
+        <!-- Dashboard de Métricas do Canal -->
+        <section class="metrics-grid">
+            <div class="metric-card">
+                <h3>Aguardando Resposta</h3>
+                <div class="value">4</div>
+            </div>
+            <div class="metric-card">
+                <h3>Tempo Médio SLA</h3>
+                <div class="value">42 min</div>
+            </div>
+            <div class="metric-card">
+                <h3>Total Ativos</h3>
+                <div class="value">12</div>
+            </div>
+            <div class="metric-card">
+                <h3>SLA Estourados</h3>
+                <div class="value" style="color: var(--danger-color);">0</div>
+            </div>
+        </section>
+
+        <!-- Workspace de Atendimento -->
+        <section class="support-workspace">
+            <!-- Coluna de Tickets -->
+            <div class="tickets-panel">
+                <div class="panel-header">Tickets Pendentes</div>
+                <div class="ticket-list">
+                    <div class="ticket-item active">
+                        <div class="ticket-item-header">
+                            <span class="client-name">Camila Silva</span>
+                            <span class="sla-time sla-warn">1h 48m</span>
+                        </div>
+                        <div class="ticket-event">Casamento Camila & Rodrigo</div>
+                    </div>
+                    <div class="ticket-item">
+                        <div class="ticket-item-header">
+                            <span class="client-name">Felipe Oliveira</span>
+                            <span class="sla-time sla-danger">24m</span>
+                        </div>
+                        <div class="ticket-event">Casamento Felipe & Maria</div>
+                    </div>
+                    <div class="ticket-item">
+                        <div class="ticket-item-header">
+                            <span class="client-name">Ana Beatriz</span>
+                            <span class="sla-time sla-ok">1h 58m</span>
+                        </div>
+                        <div class="ticket-event">Casamento Ana & Paulo</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna de Chat principal -->
+            <div class="chat-panel">
+                <div class="chat-panel-header">
+                    <div>
+                        <strong style="font-size: 15px;">Camila Silva</strong>
+                        <div style="font-size: 11px; color: var(--subtle-slate); margin-top: 2px;">Casamento Camila & Rodrigo • Ticket #4592</div>
+                    </div>
+                    <div class="status-actions">
+                        <button class="btn-status">Aguardando</button>
+                        <button class="btn-status active">Em Atendimento</button>
+                        <button class="btn-status">Finalizar</button>
+                    </div>
+                </div>
+
+                <div class="chat-history">
+                    <div class="msg-bubble from-client">
+                        Gostaria de saber como altero o limite do resgate para receber direto via PIX.
+                        <div style="font-size: 10px; color: var(--subtle-slate); text-align: right; margin-top: 4px;">10:16</div>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <input type="text" class="reply-input" placeholder="Escreva sua resposta de suporte para Camila...">
+                    <button class="btn-send">Enviar Resposta</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wireframe - Suporte por Chat (Organizador)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap');
+        
+        :root {
+            --royal-gold: #C5A059;
+            --midnight-ink: #1A1A1A;
+            --pure-white: #FFFFFF;
+            --subtle-slate: #71717A;
+            --border-color: #E4E4E7;
+            --success-color: #2ECC71;
+            --warning-color: #F1C40F;
+            --danger-color: #E74C3C;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F9FA;
+            color: var(--midnight-ink);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Simulação do Painel Administrativo de Fundo */
+        .admin-dashboard-preview {
+            width: 100%;
+            height: 100%;
+            padding: 40px;
+            box-sizing: border-box;
+            background: #F1F2F5;
+            position: relative;
+        }
+
+        .header-preview {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--midnight-ink);
+        }
+
+        .user-badge {
+            background-color: var(--pure-white);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Grid Cards Fictícios */
+        .grid-preview {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .card-preview {
+            background: var(--pure-white);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border: 1px solid var(--border-color);
+        }
+
+        .card-preview h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: var(--subtle-slate);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .card-preview .value {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--midnight-ink);
+        }
+
+        /* ==================== WIDGET FLUTUANTE DE SUPORTE ==================== */
+        
+        /* Botão Flutuante */
+        .chat-floating-button {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            background-color: var(--midnight-ink);
+            border: 1px solid var(--royal-gold);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--royal-gold);
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+        }
+
+        .chat-floating-button:hover {
+            transform: scale(1.08);
+            box-shadow: 0 12px 30px rgba(197, 160, 89, 0.3);
+        }
+
+        /* Janela de Chat Gaveta */
+        .chat-window {
+            position: fixed;
+            bottom: 96px;
+            right: 24px;
+            width: 360px;
+            height: 500px;
+            background: var(--pure-white);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 999;
+            transform-origin: bottom right;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Cabeçalho do Chat */
+        .chat-header {
+            background-color: var(--midnight-ink);
+            color: var(--pure-white);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--royal-gold);
+        }
+
+        .chat-header h4 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: 'Playfair Display', serif;
+            letter-spacing: 0.02em;
+        }
+
+        .chat-header p {
+            margin: 4px 0 0 0;
+            font-size: 11px;
+            color: var(--royal-gold);
+            letter-spacing: 0.05em;
+        }
+
+        .close-chat {
+            background: transparent;
+            border: none;
+            color: var(--pure-white);
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .close-chat:hover {
+            opacity: 1;
+        }
+
+        /* Corpo / Conversas */
+        .chat-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #FAF9F6;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Mensagens */
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .message.received {
+            background-color: #E4E4E7;
+            color: var(--midnight-ink);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.sent {
+            background-color: var(--midnight-ink);
+            color: var(--pure-white);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            border-left: 2px solid var(--royal-gold);
+        }
+
+        .message-time {
+            font-size: 10px;
+            color: var(--subtle-slate);
+            margin-top: 4px;
+            display: block;
+            text-align: right;
+        }
+
+        /* Badge de SLA informativo no Chat */
+        .sla-alert-banner {
+            background-color: rgba(241, 196, 15, 0.1);
+            border-left: 4px solid var(--warning-color);
+            padding: 8px 12px;
+            font-size: 11px;
+            color: #7E6300;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        /* Área do Input de Texto */
+        .chat-input-container {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            background: var(--pure-white);
+        }
+
+        .chat-input {
+            flex: 1;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 13px;
+            outline: none;
+            resize: none;
+            height: 36px;
+            font-family: inherit;
+        }
+
+        .chat-input:focus {
+            border-color: var(--royal-gold);
+        }
+
+        .send-button {
+            background-color: var(--midnight-ink);
+            color: var(--royal-gold);
+            border: 1px solid var(--royal-gold);
+            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .send-button:hover {
+            background-color: var(--royal-gold);
+            color: var(--midnight-ink);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-dashboard-preview">
+        <header class="header-preview">
+            <div class="logo">InviteEvent</div>
+            <div class="user-badge">👰 Noiva: Camila Silva (Admin)</div>
+        </header>
+
+        <section class="grid-preview">
+            <div class="card-preview">
+                <h3>Confirmados</h3>
+                <div class="value">148</div>
+            </div>
+            <div class="card-preview">
+                <h3>Lista de Presentes</h3>
+                <div class="value">R$ 12.450</div>
+            </div>
+            <div class="card-preview">
+                <h3>Mural de Fotos</h3>
+                <div class="value">34 aprovadas</div>
+            </div>
+        </section>
+
+        <!-- Botão Flutuante de Suporte -->
+        <div class="chat-floating-button">✧</div>
+
+        <!-- Janela de Chat Compacta -->
+        <div class="chat-window">
+            <div class="chat-header">
+                <div>
+                    <h4>Atendimento Premium</h4>
+                    <p>SLA de Atendimento: 2 horas</p>
+                </div>
+                <button class="close-chat">&times;</button>
+            </div>
+            <div class="chat-body">
+                <div class="sla-alert-banner">
+                    🕒 Ticket #4592 - SLA restante: <strong>1h 48min</strong> (aguardando atendimento)
+                </div>
+                
+                <div class="message received">
+                    Olá Camila! Como podemos ajudar você com a configuração da sua lista de presentes virtuais hoje?
+                    <span class="message-time">10:15</span>
+                </div>
+
+                <div class="message sent">
+                    Olá! Gostaria de saber como altero o limite do resgate para receber direto via PIX.
+                    <span class="message-time">10:16</span>
+                </div>
+            </div>
+            <div class="chat-input-container">
+                <textarea class="chat-input" placeholder="Escreva sua mensagem..."></textarea>
+                <button class="send-button">➔</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -34,7 +34,7 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | ID  | Nome                             | Status      | Fase Atual  |
 |-----|----------------------------------|-------------|-------------|
 | 001 | Consolidação MVP e Estabilização | CONCLUÍDO   | Concluído   |
-| 002 | Nova UI                          | EM PROGRESSO| Arquitetura |
+| 002 | Nova UI                          | CONCLUÍDO   | Concluído   |
 | 003 | Gestão do Master e Suporte Chat  | CONCLUÍDO   | Concluído   |
 
 ## Segurança

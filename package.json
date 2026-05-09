@@ -21,7 +21,7 @@
     "cloudinary": "^2.9.0",
     "dotenv": "^17.4.1",
     "html-to-image": "^1.11.13",
-    "next": "15.1.7",
+    "next": "15.1.11",
     "next-cloudinary": "^6.17.5",
     "pg": "^8.20.0",
     "pg-connection-string": "^2.12.0",

@@ -40,12 +40,12 @@ ALTER TABLE public.suporte_mensagens ENABLE ROW LEVEL SECURITY;
 -- 6. Políticas de RLS para suporte_tickets
 DROP POLICY IF EXISTS "Tickets SELECT" ON public.suporte_tickets;
 CREATE POLICY "Tickets SELECT" ON public.suporte_tickets
-    FOR SELECT TO authenticated
-    USING (auth.uid() = usuario_id OR (auth.jwt() ->> 'role' = 'master'));
+    FOR SELECT TO public
+    USING (true);
 
 DROP POLICY IF EXISTS "Tickets INSERT" ON public.suporte_tickets;
 CREATE POLICY "Tickets INSERT" ON public.suporte_tickets
-    FOR INSERT TO authenticated
+    FOR INSERT TO public
     WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Tickets UPDATE" ON public.suporte_tickets;
@@ -57,21 +57,13 @@ CREATE POLICY "Tickets UPDATE" ON public.suporte_tickets
 -- 7. Políticas de RLS para suporte_mensagens
 DROP POLICY IF EXISTS "Mensagens SELECT" ON public.suporte_mensagens;
 CREATE POLICY "Mensagens SELECT" ON public.suporte_mensagens
-    FOR SELECT TO authenticated
-    USING (
-        remetente_id = auth.uid() OR 
-        (auth.jwt() ->> 'role' = 'master') OR 
-        EXISTS (
-            SELECT 1 FROM public.suporte_tickets 
-            WHERE id = ticket_id AND usuario_id = auth.uid()
-        )
-    );
+    FOR SELECT TO public
+    USING (true);
 
 DROP POLICY IF EXISTS "Mensagens INSERT" ON public.suporte_mensagens;
 CREATE POLICY "Mensagens INSERT" ON public.suporte_mensagens
-    FOR INSERT TO authenticated
+    FOR INSERT TO public
     WITH CHECK (true);
 
--- 8. Conceder Permissões
-GRANT ALL ON TABLE public.suporte_tickets TO authenticated;
-GRANT ALL ON TABLE public.suporte_mensagens TO authenticated;
+GRANT ALL ON TABLE public.suporte_tickets TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.suporte_mensagens TO anon, authenticated, service_role;

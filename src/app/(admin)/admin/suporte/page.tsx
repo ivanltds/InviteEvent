@@ -147,7 +147,7 @@ export default function MasterSupportPanel() {
     if (!selectedTicket) return;
 
     try {
-      const res = await fetch(`/api/support/tickets/${selectedTicket.id}/status`, {
+      const res = await fetch(`/api/support/tickets/${selectedTicket.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),

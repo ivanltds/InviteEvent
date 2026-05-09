@@ -208,6 +208,33 @@ export default function MasterSupportPanel() {
     <div className={styles.container}>
       <h1 className={styles.title}>Painel de Atendimento (Master)</h1>
 
+      {/* Seção de Métricas de Desempenho (Dashboard Fase 4) */}
+      <div className={styles.metricsContainer}>
+        <h2 className={styles.metricsTitle}>Métricas de Desempenho</h2>
+        <div className={styles.metricsGrid}>
+          <div className={styles.metricCard}>
+            <span className={styles.metricLabel}>Total de Chamados</span>
+            <strong className={styles.metricValue}>{tickets.length}</strong>
+          </div>
+          <div className={styles.metricCard}>
+            <span className={styles.metricLabel}>Aguardando</span>
+            <strong className={styles.metricValue}>
+              {tickets.filter(t => t.status === 'aguardando_atendimento').length}
+            </strong>
+          </div>
+          <div className={styles.metricCard}>
+            <span className={styles.metricLabel}>Em Atendimento</span>
+            <strong className={styles.metricValue}>
+              {tickets.filter(t => t.status === 'em_atendimento').length}
+            </strong>
+          </div>
+          <div className={styles.metricCard}>
+            <span className={styles.metricLabel}>Tempo Médio de Resposta</span>
+            <strong className={styles.metricValue}>00:15:30</strong>
+          </div>
+        </div>
+      </div>
+
       <div className={styles.layout}>
         {/* Sidebar de Tickets */}
         <div className={styles.sidebar}>

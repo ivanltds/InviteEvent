@@ -83,6 +83,7 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/prd/prd-003/prd-inicial.md            | BA          | PRD inicial de Gestão do Master e Atendimento por Chat|
 | docs/prd/prd-003/fluxo-ux.md               | UX/UI       | Mapeamento de fluxos e telas de Atendimento Chat|
 | docs/prd/prd-003/fase-1-red.md             | DEV / QA    | Relatório do TDD de Suporte em fase RED (Falha Controlada)|
+| docs/prd/prd-003/fase-1-green.md           | DEV / QA    | Relatório do TDD de Suporte em fase GREEN (Sucesso de Validação)|
 | docs/arquitetura/plano-implementacao-prd-003.md | Arquiteto | Plano de arquitetura técnica de suporte por Chat (SLA 2h)|
 | docs/arquitetura/plano-implementacao-prd-003-fase-1.md | Arquiteto | Plano de implementação técnica detalhado da Fase 1 (Banco & APIs)|
 

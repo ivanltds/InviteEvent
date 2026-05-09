@@ -79,6 +79,8 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/wireframes/lista-presentes.html       | UX/UI       | Wireframe da Lista de Presentes Premium|
 | docs/wireframes/configuracoes-evento.html  | UX/UI       | Wireframe das Configurações do Evento e Mídias |
 | docs/prd/prd-003/prd-inicial.md            | BA          | PRD inicial de Gestão do Master e Atendimento por Chat|
+| docs/prd/prd-003/fluxo-ux.md               | UX/UI       | Mapeamento de fluxos e telas de Atendimento Chat|
+| docs/arquitetura/plano-implementacao-prd-003.md | Arquiteto | Plano de arquitetura técnica de suporte por Chat (SLA 2h)|
 
 ## Última Atualização
 - Data    : 2026-05-09

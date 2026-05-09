@@ -35,6 +35,7 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 |-----|----------------------------------|-------------|-------------|
 | 001 | Consolidação MVP e Estabilização | CONCLUÍDO   | Concluído   |
 | 002 | Nova UI                          | EM PROGRESSO| Arquitetura |
+| 003 | Gestão do Master e Suporte Chat  | EM PROGRESSO| Descoberta  |
 
 ## Segurança
 - **Última Auditoria:** 2024-05-24
@@ -77,8 +78,9 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/wireframes/landing-page.html          | UX/UI       | Wireframe da Landing Page Cinematográfica |
 | docs/wireframes/lista-presentes.html       | UX/UI       | Wireframe da Lista de Presentes Premium|
 | docs/wireframes/configuracoes-evento.html  | UX/UI       | Wireframe das Configurações do Evento e Mídias |
+| docs/prd/prd-003/prd-inicial.md            | BA          | PRD inicial de Gestão do Master e Atendimento por Chat|
 
 ## Última Atualização
-- Data    : 2026-05-08
-- Por     : Arquiteto
-- Motivo  : Conclusão do plano de arquitetura e estratégia legada não destrutiva para mídias multimídia (Fotos & Vídeos) da Hero no PRD-002.
+- Data    : 2026-05-09
+- Por     : Maestro / BA
+- Motivo  : Início da fase de Descoberta e criação do PRD-003 para suporte via Chat por Tickets (SLA 2h) do Master.

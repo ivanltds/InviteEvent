@@ -80,7 +80,7 @@ describe('AdminLayout', () => {
     document.cookie = 'admin-auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
 
     // Explicitly mock getMyEvents
-    eventService.getMyEvents.mockResolvedValue([
+    (eventService.getMyEvents as jest.Mock).mockResolvedValue([
       { id: 'e1', nome: 'Evento Teste', slug: 'evento-teste' }
     ]);
   });

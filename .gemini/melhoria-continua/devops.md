@@ -25,3 +25,10 @@
 **Impacto:** Erros de permissão em tempo de execução para novos usuários cadastrados.
 **Ação corretiva:** O DevOps deve assumir o protagonismo em qualquer alteração de infraestrutura, Supabase ou variáveis de ambiente, identificando e sinalizando os riscos de implementação de forma proativa antes de qualquer deploy.
 **Status:** APLICADO
+
+## [2026-05-09] — Tipo: PROCESSO
+**Contexto:** DevOps e Controle de Versionamento (Git Pushes)
+**Problema:** Realização de Git Pushes intermediários para o repositório remoto durante as fases de um PRD.
+**Impacto:** Risco de quebrar compilações ou builds no Vercel de produção antes do PRD estar completamente finalizado e validado.
+**Ação corretiva:** O DevOps deve apenas realizar Git Commits locais durante o desenvolvimento do PRD. O Git Push remoto só deve ser disparado após a conclusão e validação definitiva de todo o PRD.
+**Status:** APLICADO

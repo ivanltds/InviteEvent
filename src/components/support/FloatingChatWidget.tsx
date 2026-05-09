@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-
 import { supabase } from '@/lib/supabase';
 
 interface Ticket {
@@ -24,7 +23,7 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [slaText, setSlaText] = useState('02:00:00');
-  const [slaColor, setSlaColor] = useState('text-emerald-500');
+  const [slaColor, setSlaColor] = useState('#10b981'); // Verde
   const [activeUserId, setActiveUserId] = useState(usuarioId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -140,7 +139,7 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
 
       if (remaining <= 0) {
         setSlaText('SLA Excedido');
-        setSlaColor('text-rose-500 font-bold animate-pulse');
+        setSlaColor('#ef4444');
         clearInterval(interval);
         return;
       }
@@ -155,11 +154,11 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
       setSlaText(formatted);
 
       if (remaining > 1 * 60 * 60 * 1000) {
-        setSlaColor('text-emerald-500'); // Verde (> 1h)
+        setSlaColor('#10b981'); // Verde (> 1h)
       } else if (remaining > 30 * 60 * 1000) {
-        setSlaColor('text-amber-500'); // Amarelo (30m - 1h)
+        setSlaColor('#f59e0b'); // Amarelo (30m - 1h)
       } else {
-        setSlaColor('text-rose-500 animate-pulse'); // Vermelho (< 30m)
+        setSlaColor('#ef4444'); // Vermelho (< 30m)
       }
     }, 1000);
 
@@ -167,39 +166,91 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
   }, [ticket]);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 font-sans">
+    <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 10000, fontFamily: 'sans-serif' }}>
       {/* Botão Flutuante */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 bg-slate-950 text-amber-500 rounded-full flex items-center justify-center shadow-xl hover:bg-slate-900 border border-amber-500/30 transition-all duration-300 hover:scale-105 active:scale-95 relative"
+        style={{
+          width: '56px',
+          height: '56px',
+          backgroundColor: '#1a1a1a',
+          color: '#C5A059',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+          border: '1px solid rgba(197, 160, 89, 0.3)',
+          cursor: 'pointer',
+          transition: 'all 0.3s ease',
+          fontSize: '24px',
+          fontWeight: 'bold',
+          outline: 'none',
+        }}
         aria-label="Abrir suporte por chat"
       >
-        <span className="text-2xl">✧</span>
+        ✧
       </button>
 
       {/* Caixa de Chat */}
       {isOpen && (
-        <div className="absolute bottom-16 right-0 w-80 h-96 bg-slate-950/95 backdrop-blur-md rounded-2xl shadow-2xl border border-amber-500/20 flex flex-col overflow-hidden animate-fade-in transition-all">
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '72px',
+            right: '0',
+            width: '320px',
+            height: '380px',
+            backgroundColor: '#0d0d0d',
+            borderRadius: '16px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+            border: '1px solid rgba(197, 160, 89, 0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+          }}
+        >
           {/* Cabeçalho */}
-          <div className="p-4 bg-gradient-to-r from-slate-950 to-slate-900 border-b border-amber-500/10 flex justify-between items-center">
+          <div
+            style={{
+              padding: '16px',
+              background: 'linear-gradient(135deg, #161616, #0d0d0d)',
+              borderBottom: '1px solid rgba(197, 160, 89, 0.1)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
             <div>
-              <h3 className="text-sm font-semibold text-amber-500">Suporte ao Cliente</h3>
-              <p className="text-xs text-slate-400">Atendimento Exclusivo</p>
+              <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: '#C5A059' }}>Suporte ao Cliente</h3>
+              <p style={{ margin: 0, fontSize: '10px', color: '#888' }}>Atendimento Exclusivo</p>
             </div>
             {ticket && (
-              <div className="text-right">
-                <span className="text-[10px] uppercase text-slate-500 block">SLA Restante</span>
-                <span className={`text-xs font-semibold ${slaColor}`}>{slaText}</span>
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ fontSize: '9px', textTransform: 'uppercase', color: '#555', display: 'block' }}>SLA Restante</span>
+                <span style={{ fontSize: '11px', fontWeight: 'bold', color: slaColor }}>{slaText}</span>
               </div>
             )}
           </div>
 
           {/* Área de Mensagens */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-950/40">
+          <div
+            style={{
+              flex: 1,
+              padding: '16px',
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              backgroundColor: 'rgba(0,0,0,0.2)',
+            }}
+          >
             {messages.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-4">
-                <span className="text-amber-500/30 text-3xl mb-2">✧</span>
-                <p className="text-xs text-slate-500">Olá! Envie uma mensagem abaixo para abrir um ticket de atendimento imediato.</p>
+              <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '16px' }}>
+                <span style={{ color: 'rgba(197, 160, 89, 0.3)', fontSize: '32px', marginBottom: '8px' }}>✧</span>
+                <p style={{ margin: 0, fontSize: '11px', color: '#666', lineHeight: '1.4' }}>
+                  Olá! Envie uma mensagem abaixo para abrir um ticket de atendimento imediato.
+                </p>
               </div>
             ) : (
               messages.map((msg) => {
@@ -207,14 +258,23 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
                 return (
                   <div
                     key={msg.id}
-                    className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
+                    style={{
+                      display: 'flex',
+                      justifyContent: isUser ? 'flex-end' : 'flex-start',
+                      width: '100%',
+                    }}
                   >
                     <div
-                      className={`max-w-[75%] p-2.5 rounded-2xl text-xs ${
-                        isUser
-                          ? 'bg-amber-500/10 text-amber-100 border border-amber-500/20 rounded-tr-none'
-                          : 'bg-slate-800 text-slate-200 rounded-tl-none'
-                      }`}
+                      style={{
+                        maxWidth: '75%',
+                        padding: '10px 12px',
+                        borderRadius: isUser ? '12px 12px 0 12px' : '12px 12px 12px 0',
+                        fontSize: '12px',
+                        lineHeight: '1.4',
+                        backgroundColor: isUser ? 'rgba(197, 160, 89, 0.1)' : '#1f1f1f',
+                        color: isUser ? '#f5e6cc' : '#e5e5e5',
+                        border: isUser ? '1px solid rgba(197, 160, 89, 0.2)' : 'none',
+                      }}
                     >
                       {msg.conteudo}
                     </div>
@@ -226,17 +286,44 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
           </div>
 
           {/* Formulário de Input */}
-          <form onSubmit={handleSendMessage} className="p-3 bg-slate-950 border-t border-amber-500/10 flex gap-2">
+          <form
+            onSubmit={handleSendMessage}
+            style={{
+              padding: '12px',
+              backgroundColor: '#0d0d0d',
+              borderTop: '1px solid rgba(197, 160, 89, 0.1)',
+              display: 'flex',
+              gap: '8px',
+            }}
+          >
             <input
               type="text"
               value={newMessage || ''}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Digite sua mensagem..."
-              className="flex-1 bg-slate-900 text-slate-200 text-xs px-3 py-2 rounded-xl border border-amber-500/10 focus:outline-none focus:border-amber-500/40"
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '1px solid rgba(197, 160, 89, 0.2)',
+                backgroundColor: '#141414',
+                color: '#fff',
+                fontSize: '12px',
+                outline: 'none',
+              }}
             />
             <button
               type="submit"
-              className="px-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl text-xs transition-colors"
+              style={{
+                padding: '8px 16px',
+                borderRadius: '8px',
+                border: 'none',
+                background: 'linear-gradient(135deg, #C5A059, #B38F48)',
+                color: '#000',
+                fontWeight: 'bold',
+                fontSize: '12px',
+                cursor: 'pointer',
+              }}
             >
               Enviar
             </button>

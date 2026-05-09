@@ -27,9 +27,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'usuario_id é obrigatório' }, { status: 400 });
     }
 
+    const insertData: any = { usuario_id, status: 'aguardando_atendimento' };
+    if (evento_id && typeof evento_id === 'string' && evento_id.trim() !== '') {
+      insertData.evento_id = evento_id;
+    }
+
     const { data: ticket, error } = await supabase
       .from('suporte_tickets')
-      .insert([{ usuario_id, evento_id, status: 'aguardando_atendimento' }])
+      .insert([insertData])
       .select()
       .single();
 

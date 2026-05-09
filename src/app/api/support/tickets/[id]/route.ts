@@ -3,10 +3,11 @@ import { supabase } from '../../../../../lib/supabase';
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: any }
 ) {
   try {
-    const { id } = params;
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
     const { status } = await request.json();
 
     if (!status) {

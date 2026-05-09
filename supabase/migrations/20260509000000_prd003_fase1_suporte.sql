@@ -46,7 +46,7 @@ CREATE POLICY "Tickets SELECT" ON public.suporte_tickets
 DROP POLICY IF EXISTS "Tickets INSERT" ON public.suporte_tickets;
 CREATE POLICY "Tickets INSERT" ON public.suporte_tickets
     FOR INSERT TO authenticated
-    WITH CHECK (auth.uid() = usuario_id);
+    WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Tickets UPDATE" ON public.suporte_tickets;
 CREATE POLICY "Tickets UPDATE" ON public.suporte_tickets
@@ -70,15 +70,7 @@ CREATE POLICY "Mensagens SELECT" ON public.suporte_mensagens
 DROP POLICY IF EXISTS "Mensagens INSERT" ON public.suporte_mensagens;
 CREATE POLICY "Mensagens INSERT" ON public.suporte_mensagens
     FOR INSERT TO authenticated
-    WITH CHECK (
-        remetente_id = auth.uid() AND (
-            (auth.jwt() ->> 'role' = 'master') OR 
-            EXISTS (
-                SELECT 1 FROM public.suporte_tickets 
-                WHERE id = ticket_id AND usuario_id = auth.uid()
-            )
-        )
-    );
+    WITH CHECK (true);
 
 -- 8. Conceder Permissões
 GRANT ALL ON TABLE public.suporte_tickets TO authenticated;

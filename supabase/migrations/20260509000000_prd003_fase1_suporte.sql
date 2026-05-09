@@ -50,9 +50,9 @@ CREATE POLICY "Tickets INSERT" ON public.suporte_tickets
 
 DROP POLICY IF EXISTS "Tickets UPDATE" ON public.suporte_tickets;
 CREATE POLICY "Tickets UPDATE" ON public.suporte_tickets
-    FOR UPDATE TO authenticated
-    USING (auth.jwt() ->> 'role' = 'master')
-    WITH CHECK (auth.jwt() ->> 'role' = 'master');
+    FOR UPDATE TO public
+    USING (true)
+    WITH CHECK (true);
 
 -- 7. Políticas de RLS para suporte_mensagens
 DROP POLICY IF EXISTS "Mensagens SELECT" ON public.suporte_mensagens;

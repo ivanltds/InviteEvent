@@ -7,6 +7,7 @@ import styles from './AdminLayout.module.css';
 import { supabase } from '@/lib/supabase';
 
 import { EventProvider } from '@/lib/contexts/EventContext';
+import FloatingChatWidget from '@/components/support/FloatingChatWidget';
 
 export default function AdminLayoutClient({
   children,
@@ -70,6 +71,7 @@ export default function AdminLayoutClient({
         <div className={`${styles.mainContent} ${!isLoginPage ? styles.withSidebar : ''}`}>
           {children}
         </div>
+        {!isLoginPage && <FloatingChatWidget />}
       </div>
     </EventProvider>
   );

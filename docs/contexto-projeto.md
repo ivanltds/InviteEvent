@@ -86,6 +86,7 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/prd/prd-003/fase-1-green.md           | DEV / QA    | Relatório do TDD de Suporte em fase GREEN (Sucesso de Validação)|
 | docs/arquitetura/plano-implementacao-prd-003.md | Arquiteto | Plano de arquitetura técnica de suporte por Chat (SLA 2h)|
 | docs/arquitetura/plano-implementacao-prd-003-fase-1.md | Arquiteto | Plano de implementação técnica detalhado da Fase 1 (Banco & APIs)|
+| docs/arquitetura/plano-implementacao-prd-003-fase-2.md | Arquiteto | Plano de implementação técnica detalhado da Fase 2 (Widget & SLA)|
 
 ## Última Atualização
 - Data    : 2026-05-09

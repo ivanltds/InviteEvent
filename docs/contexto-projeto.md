@@ -31,14 +31,14 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | supabase/migrations/        | Evolução do esquema do banco de dados      |
 
 ## PRDs
-| ID  | Nome          | Status     | Fase Atual |
-|-----|---------------|------------|------------|
-| 001 | Consolidação MVP e Estabilização | Em Progresso | Arquitetura |
-| 002 | SaaS/Pagamento| Em Progresso| Validação  |
+| ID  | Nome                             | Status      | Fase Atual  |
+|-----|----------------------------------|-------------|-------------|
+| 001 | Consolidação MVP e Estabilização | CONCLUÍDO   | Concluído   |
+| 002 | Nova UI                          | EM PROGRESSO| Arquitetura |
 
 ## Segurança
-- **Última Auditoria:** 2024-05-23
-- **Status:** Vulnerabilidades Críticas Encontradas (1 item)
+- **Última Auditoria:** 2024-05-24
+- **Status:** Vulnerabilidades Críticas Corrigidas (v7/v8 RLS Fix)
 - **Documentos:**
   - [Relatório de Segurança](docs/seguranca/relatorio-seguranca.md)
   - [Backlog de Segurança](docs/seguranca/backlog-seguranca.md)
@@ -52,7 +52,9 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/contexto-projeto.md                   | Sistema     | Índice central                     |
 | docs/arquitetura/arquitetura-atual.md      | Arquiteto   | Visão técnica e decisões           |
 | docs/arquitetura/plano-implementacao-prd-001.md | Arquiteto | Plano técnico para Mural, Presentes e RSVP |
+| docs/arquitetura/plano-implementacao-prd-002.md | Arquiteto | Plano de arquitetura técnica da Nova UI|
 | docs/arquitetura/plano-implementacao-fase-estabilizacao.md | Arquiteto | Plano de correções e segurança |
+| docs/arquitetura/analise-riscos-banco-compartilhado.md | Arquiteto | Gestão de riscos para ambiente com banco único (Dev/Prod)|
 | scratch/architect-report.md                | Arquiteto   | Relatório detalhado de análise     |
 | docs/prd/prd-001/prd-inicial.md            | BA          | PRD de consolidação e backlog prioritário |
 | docs/prd/prd-001/prd-refinado.md           | BA          | PRD refinado com User Stories e critérios de aceite |
@@ -67,8 +69,16 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/seguranca/backlog-seguranca.md        | Arquiteto   | Tabela de acompanhamento de riscos |
 | docs/seguranca/checklist-seguranca.md      | Arquiteto   | Plano de ação corretiva            |
 | docs/deploys/automacao-supabase.md         | DevOps      | Guia para automação total de DB    |
+| docs/prd/prd-002/prd-inicial.md            | BA          | PRD inicial da Nova UI             |
+| docs/prd/prd-002/fluxo-ux.md               | UX/UI       | Mapeamento de fluxos e telas (Nova UI)|
+| docs/arquitetura/plano-implementacao-prd-002.md | Arquiteto | Plano de arquitetura técnica da Nova UI|
+| docs/wireframes/envelope-digital.html      | UX/UI       | Wireframe do Envelope Digital Animado |
+| docs/wireframes/galeria-fotos.html         | UX/UI       | Wireframe do Mural Vivo de Lembranças |
+| docs/wireframes/landing-page.html          | UX/UI       | Wireframe da Landing Page Cinematográfica |
+| docs/wireframes/lista-presentes.html       | UX/UI       | Wireframe da Lista de Presentes Premium|
+| docs/wireframes/configuracoes-evento.html  | UX/UI       | Wireframe das Configurações do Evento e Mídias |
 
 ## Última Atualização
-- Data    : 2024-05-24
-- Por     : Architect Agent
-- Motivo  : Finalização do Plano de Implementação da Fase de Arquitetura para PRD-001.
+- Data    : 2026-05-08
+- Por     : Arquiteto
+- Motivo  : Conclusão do plano de arquitetura e estratégia legada não destrutiva para mídias multimídia (Fotos & Vídeos) da Hero no PRD-002.

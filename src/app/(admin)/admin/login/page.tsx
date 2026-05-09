@@ -46,7 +46,7 @@ async function claimPendingInvite(onError?: (msg: string) => void): Promise<stri
         accent_color: payload.accent_color || null,
         font_cursive: payload.font_cursive || null,
         font_serif: payload.font_serif || null,
-        ...(payload.cover_image_url ? { fotos: [payload.cover_image_url] } : {})
+        ...(payload.cover_image_url && payload.cover_image_url !== '__GLOBAL_MEDIA__' ? { fotos: [payload.cover_image_url] } : {})
       }).eq('evento_id', res.data.id);
 
       if (cfgErr) {

@@ -1,66 +1,118 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import styles from './HeroCarousel.module.css';
 
 interface HeroCarouselProps {
   imagesOverride?: string[];
+  videosOverride?: string[];
 }
 
-export default function HeroCarousel({ imagesOverride }: HeroCarouselProps = {}) {
-  const [images, setImages] = useState<string[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+type MediaType = 'image' | 'video';
+
+interface MediaItem {
+  type: MediaType;
+  url: string;
+}
+
+export default function HeroCarousel({ imagesOverride = [], videosOverride = [] }: HeroCarouselProps) {
   const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  useEffect(() => {
-    async function fetchImages() {
-      if (imagesOverride && imagesOverride.length > 0) {
-        setImages(imagesOverride);
-        setLoading(false);
-        return;
-      }
-      try {
-        const response = await fetch('/api/hero-images');
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setImages(data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar imagens do carrossel:', error);
-      } finally {
-        setLoading(false);
-      }
+  // Unifica e randomiza/ordena as mídias (Vídeos primeiro ou intercalados)
+  const mediaQueue = useMemo<MediaItem[]>(() => {
+    const queue: MediaItem[] = [];
+    
+    // Adicionar imagens
+    if (imagesOverride && imagesOverride.length > 0) {
+      imagesOverride.forEach(url => queue.push({ type: 'image', url }));
     }
-    fetchImages();
-  }, [imagesOverride]);
+    
+    // Adicionar vídeos
+    if (videosOverride && videosOverride.length > 0) {
+      videosOverride.forEach(url => queue.push({ type: 'video', url }));
+    }
+
+    return queue;
+  }, [imagesOverride, videosOverride]);
 
   useEffect(() => {
-    if (images.length <= 1) return;
+    // Quando temos media, removemos o loader
+    if (mediaQueue.length > 0) {
+      setLoading(false);
+    }
+  }, [mediaQueue]);
 
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 5000); // Troca a cada 5 segundos
+  useEffect(() => {
+    if (mediaQueue.length <= 1) return;
 
-    return () => clearInterval(interval);
-  }, [images]);
+    // Se a mídia atual for vídeo, deixamos o vídeo tocar. Caso contrário, ou quando terminar, pulamos.
+    // O tempo base de imagem será 6s
+    const currentMedia = mediaQueue[currentIndex];
+    let timeout: NodeJS.Timeout;
 
-  if (loading) {
-    return <div className={styles.loader}>Carregando momentos...</div>;
+    if (currentMedia.type === 'image') {
+      timeout = setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % mediaQueue.length);
+      }, 6000);
+    }
+
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [currentIndex, mediaQueue]);
+
+  const handleVideoEnded = () => {
+    if (mediaQueue.length > 1) {
+      setCurrentIndex((prev) => (prev + 1) % mediaQueue.length);
+    }
+  };
+
+  if (loading && mediaQueue.length === 0) {
+    // Se estiver vazio depois de montar, mostramos fallback. 
+    // Em caso real, setLoading fica false se estiver vazio tb.
+    // Mas por via de regra, mantemos assim.
   }
 
-  if (images.length === 0) {
+  if (mediaQueue.length === 0) {
     return <div className={styles.fallback}></div>;
   }
 
   return (
     <div className={styles.carouselContainer}>
-      {images.map((url, index) => (
-        <div
-          key={url}
-          className={`${styles.slide} ${index === currentIndex ? styles.active : ''}`}
-          style={{ backgroundImage: `url(${url})` }}
-        />
-      ))}
+      {mediaQueue.map((item, index) => {
+        const isActive = index === currentIndex;
+        
+        if (item.type === 'video') {
+          return (
+            <video
+              key={item.url}
+              className={`${styles.slide} ${styles.videoSlide} ${isActive ? styles.active : ''}`}
+              src={item.url}
+              muted
+              playsInline
+              // Só dá autoplay se estiver ativo ou for o único. 
+              // Melhor deixar o React controlar via ref, mas o autoPlay na tag é útil p mobile
+              autoPlay={isActive}
+              onEnded={handleVideoEnded}
+              // Forçamos o vídeo a reiniciar quando ficar ativo novamente
+              ref={(el) => {
+                if (el && isActive && el.paused) {
+                  el.play().catch(() => {}); // catch para navegadores restritivos
+                }
+              }}
+            />
+          );
+        }
+
+        return (
+          <div
+            key={item.url}
+            className={`${styles.slide} ${isActive ? styles.active : ''}`}
+            style={{ backgroundImage: `url(${item.url})` }}
+          />
+        );
+      })}
       <div className={styles.overlay}></div>
     </div>
   );

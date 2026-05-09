@@ -36,14 +36,14 @@
 
 .progressTrack {
   height: 3px;
-  background: var(--admin-sidebar-border);
+  background: rgba(197, 160, 89, 0.15);
   border-radius: 2px;
   overflow: hidden;
 }
 
 .progressFill {
   height: 100%;
-  background: var(--admin-accent);
+  background: #C5A059; /* Royal Gold do Design System */
   border-radius: 2px;
   transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -59,17 +59,17 @@
   align-items: center;
   gap: 0.2rem;
   font-size: 0.7rem;
-  color: var(--admin-text-muted);
+  color: #71717A; /* Subtle Slate do Design System */
   transition: color 0.3s;
 }
 
 .progressStep.current {
-  color: var(--admin-accent);
+  color: #C5A059; /* Royal Gold */
   font-weight: 600;
 }
 
 .progressStep.done {
-  color: var(--admin-success);
+  color: #C5A059; /* Royal Gold para concluídos */
 }
 
 .progressDot {
@@ -87,14 +87,14 @@
 }
 
 .progressStep.current .progressDot {
-  background: var(--admin-accent);
-  border-color: var(--admin-accent);
+  background: #C5A059;
+  border-color: #C5A059;
   color: white;
 }
 
 .progressStep.done .progressDot {
-  background: var(--admin-success);
-  border-color: var(--admin-success);
+  background: #C5A059;
+  border-color: #C5A059;
   color: white;
 }
 

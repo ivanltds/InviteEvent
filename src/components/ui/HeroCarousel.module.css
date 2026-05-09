@@ -20,7 +20,11 @@
   transition: opacity 1.5s ease-in-out;
 }
 
-.slide.active {
+.videoSlide {
+  object-fit: cover;
+}
+
+.active {
   opacity: 1;
 }
 

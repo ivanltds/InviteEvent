@@ -6,7 +6,7 @@ require('dotenv').config({ override: true });
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 async function applyFixViaPooler() {
-  const sqlPath = path.join(__dirname, '../supabase/migrations/20260508500000_fix_rls_recursion_v6.sql');
+  const sqlPath = path.join(__dirname, '../supabase/migrations/20260508700000_refine_security_v8.sql');
   const sql = fs.readFileSync(sqlPath, 'utf8');
 
   // Supabase Pooler: O host do pooler requer o formato 'postgres.ref' no USERNAME para roteamento correto.

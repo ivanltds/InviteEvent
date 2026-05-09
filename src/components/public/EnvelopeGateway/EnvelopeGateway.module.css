@@ -1,126 +1,14 @@
 /* STORY-056: EnvelopeGateway — All keyframe animations */
 
-/* =============================================
-   FASE 1: Envelope fechado — pulsação do selo
-   ============================================= */
-@keyframes sealPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 148, 58, 0.5); }
-  50%       { box-shadow: 0 0 0 16px rgba(200, 148, 58, 0); }
-}
-
-@keyframes envelopeFloat {
-  0%, 100% { transform: translateY(0px) rotate(-1deg); }
-  50%       { transform: translateY(-8px) rotate(1deg); }
-}
-
-@keyframes envelopeFadeIn {
-  from { opacity: 0; transform: scale(0.92) translateY(20px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-/* =============================================
-   FASE 2: Abertura do envelope
-   ============================================= */
-@keyframes flapOpen {
-  0%   { transform: rotateX(0deg) scaleY(1); }
-  100% { transform: rotateX(-180deg) scaleY(1); }
-}
-
-@keyframes envelopeExpand {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(1.05); }
-  100% { transform: scale(0) translateY(-50px); opacity: 0; }
-}
-
-@keyframes brightFlash {
-  0%   { opacity: 0; }
-  50%  { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-/* =============================================
-   FASE 3: Sequência de texto revelado
-   ============================================= */
-@keyframes frameSlideIn {
-  from { opacity: 0; transform: translateY(30px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes frameSlideOut {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(-20px); }
-}
-
-@keyframes charReveal {
-  from { opacity: 0; transform: translateY(8px); filter: blur(4px); }
-  to   { opacity: 1; transform: translateY(0); filter: blur(0); }
-}
-
-@keyframes botanicalFadeIn {
-  from { opacity: 0; transform: scale(0.8) rotate(-10deg); }
-  to   { opacity: 0.4; transform: scale(1) rotate(0deg); }
-}
-
-@keyframes nameGlow {
-  0%, 100% { text-shadow: 0 0 20px rgba(200, 148, 58, 0.3); }
-  50%       { text-shadow: 0 0 40px rgba(200, 148, 58, 0.7), 0 0 80px rgba(200, 148, 58, 0.2); }
-}
-
-/* =============================================
-   FASE 4: Transição para o convite
-   ============================================= */
-@keyframes gatewayFadeOut {
-  from { opacity: 1; }
-  to   { opacity: 0; pointer-events: none; }
-}
-
-@keyframes inviteReveal {
-  from { opacity: 0; transform: scale(0.98); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
-/* =============================================
-   Partículas decorativas
-   ============================================= */
-@keyframes petalFloat {
-  0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(-120px) translateX(var(--petal-x, 20px)) rotate(180deg); opacity: 0; }
-}
-
-/* =============================================
-   Background transition (escuro → claro)
-   ============================================= */
-@keyframes bgTransition {
-  from { background-color: #0f0c1a; }
-  to   { background-color: var(--bg-primary, #fdfbf7); }
-}
-
-/* =============================================
-   Accessibility: Respeitar prefers-reduced-motion
-   ============================================= */
-@media (prefers-reduced-motion: reduce) {
-  .envelopeWrapper,
-  .flap,
-  .seal,
-  .frame,
-  .nameText,
-  .petal {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
-/* =============================================
-   Layout principal do gateway
-   ============================================= */
-.gateway {
+.scene {
   position: fixed;
   inset: 0;
-  z-index: 9999;
   display: flex;
-  align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse at center, #1a1424 0%, #0f0c1a 100%);
+  align-items: center;
+  background: radial-gradient(circle, #FAF9F6 0%, #E5E2D9 100%);
+  perspective: 2000px;
+  z-index: 999999;
   overflow: hidden;
 }
 
@@ -129,148 +17,467 @@
   position: absolute;
   top: 1.5rem;
   right: 1.5rem;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.6);
-  padding: 0.4rem 1rem;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #555;
+  padding: 0.5rem 1.5rem;
   border-radius: 20px;
   font-size: 0.8rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  opacity: 0;
-  animation: frameSlideIn 0.4s ease 1s forwards;
+  z-index: 1000001;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
 }
 
 .skipBtn:hover {
-  background: rgba(255,255,255,0.15);
-  color: white;
+  background: #ffffff;
+  color: #111;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-/* FASE 1: Envelope */
 .envelopeWrapper {
   position: relative;
-  cursor: pointer;
-  animation: envelopeFadeIn 1.4s ease forwards, envelopeFloat 5s ease-in-out 1.6s infinite;
+  width: 360px;
+  height: 240px;
+  transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease;
+  will-change: transform, opacity;
+  transform-style: preserve-3d;
 }
 
-.envelopeSvg {
-  width: min(340px, 80vw);
-  filter: drop-shadow(0 20px 60px rgba(0,0,0,0.6));
-  transition: filter 0.3s;
+.envelopeBack {
+  position: absolute;
+  inset: 0;
+  background: #E5E2D9;
+  border-radius: 12px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.12);
+  z-index: 0;
 }
 
-.envelopeWrapper:hover .envelopeSvg {
-  filter: drop-shadow(0 25px 80px rgba(200,148,58,0.3));
+.envelopeFront {
+  position: absolute;
+  inset: 0;
+  background: #F4F2EB;
+  z-index: 3;
+  border-radius: 12px;
+  clip-path: polygon(0 100%, 100% 100%, 100% 0, 50% 60%, 0 0);
+  box-shadow: inset 0 0 15px rgba(0,0,0,0.03);
+}
+
+.envelopeTopFlap {
+  position: absolute;
+  inset: -1px;
+  background: #FAF9F6;
+  z-index: 4;
+  border-radius: 12px;
+  clip-path: polygon(0 0, 100% 0, 50% 60%);
+  transform-origin: top;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), z-index 0s 0.2s;
+  filter: drop-shadow(0 12px 12px rgba(0,0,0,0.06));
+  will-change: transform;
 }
 
 .seal {
   position: absolute;
-  top: 50%;
   left: 50%;
-  transform: translate(-50%, -30%);
-  width: 70px;
-  height: 70px;
+  top: 60%;
+  transform: translate(-50%, -50%);
+  width: 76px;
+  height: 76px;
+  background: var(--accent-color, #C5A059);
   border-radius: 50%;
   display: flex;
-  align-items: center;
   justify-content: center;
-  font-family: var(--font-cursive);
-  font-size: 1.4rem;
-  color: white;
-  animation: sealPulse 2s ease-in-out infinite;
+  align-items: center;
+  color: #FFF;
+  font-size: 26px;
   cursor: pointer;
-  box-shadow: inset 0 2px 4px rgba(255,255,255,0.2), 0 4px 15px rgba(0,0,0,0.4);
+  box-shadow: 0 6px 20px rgba(197, 160, 89, 0.4);
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s;
+  z-index: 5;
+  border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-.sealText {
-  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-  pointer-events: none;
-  user-select: none;
+.seal:hover {
+  transform: translate(-50%, -50%) scale(1.08);
 }
 
 .ctaText {
   position: absolute;
-  bottom: -2.5rem;
+  bottom: -3rem;
   width: 100%;
   text-align: center;
-  font-family: var(--font-serif, 'Playfair Display', serif);
-  font-size: 0.85rem;
-  color: rgba(200, 190, 160, 0.8);
-  letter-spacing: 0.15em;
+  font-size: 0.8rem;
+  color: #8E8A80;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  animation: frameSlideIn 0.6s ease 0.8s both;
+  font-weight: 600;
+  animation: pulse 2s infinite ease-in-out;
 }
 
-/* FASE 3: Frames de revelação */
-.revealFrame {
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Steps Sequence Flaps */
+.step1 .envelopeTopFlap,
+.step2 .envelopeTopFlap,
+.step3 .envelopeTopFlap,
+.step4 .envelopeTopFlap {
+  transform: rotateX(180deg);
+  z-index: 1;
+}
+
+.step1 .seal,
+.step2 .seal,
+.step3 .seal,
+.step4 .seal {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 3D FLIPPING CARD STRUCTURAL HOLDER (PERFECT CENTER ALIGNED) */
+.flippingCardWrapper {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 380px;
+  height: 250px;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.9);
+  transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1), z-index 0s 0.6s, opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform, z-index, opacity;
+}
+
+/* Slides up and overlays the envelope front beautifully (retaining absolute center anchor) */
+.pulledOut {
+  opacity: 1;
+  transform: translate(-50%, calc(-50% - 170px)) scale(1);
+  z-index: 10;
+  pointer-events: auto;
+}
+
+/* 3D Inner Core */
+.flippingCardInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
+}
+
+/* Flip trigger */
+.flipped .flippingCardInner {
+  transform: rotateY(180deg);
+}
+
+/* Sides basic setup */
+.flippingCardFront,
+.flippingCardBack {
   position: absolute;
   inset: 0;
+  backface-visibility: hidden;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+}
+
+/* FRONT: ARISTOCRATIC TEXTURED ROYAL PAPER */
+.flippingCardFront {
+  background: #FAF8F5;
+  border: 1px solid rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotateY(0deg);
+}
+
+.letterSheet {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, rgba(255,255,255,0.92) 0%, rgba(250,248,245,0.96) 100%);
+  box-shadow: inset 0 0 40px rgba(197, 160, 89, 0.04);
+}
+
+/* Double gold border & ornaments */
+.goldCornerTL, .goldCornerTR, .goldCornerBL, .goldCornerBR {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--accent-color, #C5A059);
+}
+.goldCornerTL { top: 12px; left: 12px; border-right: none; border-bottom: none; }
+.goldCornerTR { top: 12px; right: 12px; border-left: none; border-bottom: none; }
+.goldCornerBL { bottom: 12px; left: 12px; border-right: none; border-top: none; }
+.goldCornerBR { bottom: 12px; right: 12px; border-left: none; border-top: none; }
+
+.letterCore {
+  text-align: center;
+}
+
+.letterLine1 {
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: #8E8A80;
+  margin-bottom: 12px;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: fadeInText 0.8s ease forwards 0.4s;
+}
+
+@keyframes fadeInText {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Handwriting & Magic Sparkles Track */
+.writingContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.letterLine2 {
+  font-size: 1.7rem;
+  font-weight: 500;
+  margin: 0;
+  white-space: nowrap;
+  display: inline-block;
+  width: 0%;
+  overflow: hidden;
+  vertical-align: bottom;
+  animation: writeTextAnimation 3.5s cubic-bezier(0.25, 1, 0.5, 1) forwards 1.2s;
+}
+
+.floatingPen {
+  position: absolute;
+  top: -14px;
+  left: 0%;
+  font-size: 1.7rem;
+  pointer-events: none;
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: writeTextAnimation 3.5s cubic-bezier(0.25, 1, 0.5, 1) forwards 1.2s, 
+             movePenAnimation 3.5s cubic-bezier(0.25, 1, 0.5, 1) forwards 1.2s,
+             penWiggleAnimation 0.2s infinite ease-in-out 1.2s;
+}
+
+/* Sparkle elements and glowing magic halo */
+.magicGlow {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: radial-gradient(circle, rgba(197, 160, 89, 0.9) 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(2px);
+}
+
+.sparkle1, .sparkle2, .sparkle3 {
+  position: absolute;
+  font-size: 0.75rem;
+  color: #C5A059;
+  text-shadow: 0 0 6px rgba(197,160,89,0.9);
+}
+.sparkle1 { top: -6px; left: -6px; animation: sparkleBurst 0.6s infinite alternate; }
+.sparkle2 { bottom: -6px; right: -6px; animation: sparkleBurst 0.8s infinite alternate-reverse; }
+.sparkle3 { top: 6px; right: -8px; animation: sparkleBurst 0.5s infinite alternate; }
+
+@keyframes sparkleBurst {
+  0% { transform: scale(0.3) rotate(0deg); opacity: 0.4; }
+  100% { transform: scale(1.1) rotate(180deg); opacity: 1; }
+}
+
+@keyframes writeTextAnimation {
+  to { width: 100%; }
+}
+
+@keyframes movePenAnimation {
+  0% { left: 0%; opacity: 1; }
+  96% { left: 96%; opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+
+/* Vertical tracing wiggle */
+@keyframes penWiggleAnimation {
+  0%, 100% { transform: rotate(-25deg) translateY(0); }
+  25% { transform: rotate(-22deg) translateY(-3px); }
+  50% { transform: rotate(-28deg) translateY(2px); }
+  75% { transform: rotate(-20deg) translateY(-2px); }
+}
+
+
+/* BACK: LIVE PAGE MINIATURA DELUXE (COVER LANDSCAPE PROPORTIONAL) */
+.flippingCardBack {
+  background: #0D0C0A;
+  transform: rotateY(180deg);
+}
+
+.miniatureContainer {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  border-radius: 12px;
+  overflow: hidden;
+  filter: brightness(0.92) contrast(1.05);
+}
+
+/* Elegant sleek gold frame around container edges */
+.goldFrame {
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(197, 160, 89, 0.45);
+  pointer-events: none;
+  z-index: 2;
+  border-radius: 8px;
+}
+
+/* Proportional, landscape glassmorphic jewel card */
+.miniatureGlassOverlay {
+  width: calc(100% - 32px);
+  margin: 0 16px 16px 16px;
+  padding: 1.2rem 1rem;
+  box-sizing: border-box;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(13, 12, 10, 0.74);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+  z-index: 3;
+}
+
+.msg {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: opacity, transform;
+}
+
+.step4 .msg {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.miniatureTitle {
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: #FFFFFF;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  line-height: 1;
+}
+
+/* Elegant gold divider line */
+.goldDivider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 4px 0 6px 0;
+  width: 60%;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--accent-color, #C5A059), transparent);
+}
+
+.diamond {
+  color: var(--accent-color, #C5A059);
+  font-size: 0.65rem;
+}
+
+.miniatureDate {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--accent-color, #C5A059);
+  font-weight: 600;
+  text-shadow: 0 2px 5px rgba(0,0,0,0.4);
+  margin: 0;
+}
+
+/* Landscape compact jewelry gold bubbles for Countdown */
+.miniatureCountdown {
+  display: flex;
+  gap: 0.6rem;
+  margin: 0.8rem 0;
+}
+
+.timeBox {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
-  text-align: center;
-  animation: frameSlideIn 1s ease forwards;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(197, 160, 89, 0.35);
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  backdrop-filter: blur(6px);
 }
 
-.frameTitle {
-  font-size: clamp(2.5rem, 8vw, 5rem);
-  color: inherit; /* Usa textMain do container */
-  line-height: 1.1;
-  margin-bottom: 1rem;
+.timeBox span {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #FFFFFF;
 }
 
-.frameTitleSerif {
-  font-family: var(--font-serif, 'Playfair Display', serif);
-  font-size: clamp(1rem, 2.5vw, 1.4rem);
-  color: inherit;
-  opacity: 0.7;
-  letter-spacing: 0.1em;
-  font-style: italic;
-  margin-bottom: 0.5rem;
-}
-
-.namePrimary {
-  font-size: clamp(3rem, 10vw, 6.5rem);
-  color: inherit;
-  line-height: 1;
-  animation: nameGlow 3s ease-in-out infinite;
-}
-
-.nameAnd {
-  color: #c8943a;
-  animation: nameGlow 1.5s ease-in-out infinite;
-}
-
-.nameDate {
-  font-family: var(--font-serif, 'Playfair Display', serif);
-  font-size: clamp(0.8rem, 2vw, 1rem);
-  letter-spacing: 0.35em;
+.timeBox label {
+  font-size: 0.45rem;
   text-transform: uppercase;
-  color: inherit;
-  opacity: 0.7;
-  margin-top: 1.5rem;
+  color: #E2DDD5;
+  letter-spacing: 0.05em;
+  font-weight: 600;
 }
 
-/* Decorações botânicas SVG (background) */
-.botanical {
-  position: absolute;
+.miniatureTagline {
+  font-size: 0.72rem;
+  font-style: italic;
+  color: #E2DDD5;
+  margin: 0;
+  text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+/* STEP 3+ STYLING & FADE OF ORIGINAL ENVELOPE */
+.step3 .envelopeWrapper,
+.step4 .envelopeWrapper {
   opacity: 0;
+  transform: scale(0.8) translateY(40px);
   pointer-events: none;
-  animation: botanicalFadeIn 1s ease 0.5s forwards;
 }
 
-.botanicalLeft  { left: -2rem; top: 50%; transform: translateY(-50%) rotate(90deg); }
-.botanicalRight { right: -2rem; top: 50%; transform: translateY(-50%) rotate(-90deg); }
-
-/* Gate: overlay para transição final */
-.fadeOverlay {
-  position: fixed;
-  inset: 0;
-  background: var(--bg-primary, #fdfbf7);
-  opacity: 0;
-  pointer-events: none;
-  z-index: 10000;
-  animation: inviteReveal 0.6s ease forwards;
+/* Perfectly Centered and Proportional Miniature card dimensions */
+.step3 .flippingCardWrapper,
+.step4 .flippingCardWrapper {
+  width: 380px;
+  height: 250px;
+  transform: translate(-50%, -50%) scale(1.15); /* Center anchored and slightly scaled for perfect legibility */
 }
+
+.delay1 { transition-delay: 0.1s; }
+.delay2 { transition-delay: 0.2s; }
+.delay3 { transition-delay: 0.3s; }
+.delay4 { transition-delay: 0.4s; }

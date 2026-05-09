@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Playfair_Display, Pinyon_Script, Inter } from "next/font/google";
 import "./globals.css";
 import { Suspense } from "react";
-import Navbar from "@/components/ui/Navbar";
 import DynamicStyles from "@/components/ui/DynamicStyles";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -38,7 +37,6 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <DynamicStyles />
         </Suspense>
-        <Navbar />
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

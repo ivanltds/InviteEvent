@@ -168,7 +168,9 @@ export default function AdminConfig() {
               
               <HeroImagesManager 
                 images={config.hero_images || []}
+                videos={config.hero_videos || []}
                 onImagesChange={(newImages) => setConfig({ ...config, hero_images: newImages })}
+                onVideosChange={(newVideos) => setConfig({ ...config, hero_videos: newVideos })}
                 accentColor={config.accent_color}
               />
 

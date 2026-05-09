@@ -1,55 +1,91 @@
+import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import MuralModeration from '@/components/admin/MuralModeration';
 import { muralService } from '@/lib/services/muralService';
+import MuralModeration from '@/components/admin/MuralModeration';
+import { supabase } from '@/lib/supabase';
 
 jest.mock('@/lib/services/muralService');
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    from: jest.fn().mockReturnThis(),
+    update: jest.fn().mockReturnThis(),
+    eq: jest.fn().mockResolvedValue({ error: null })
+  }
+}));
 
-const mockPhotos = [
+const mockItems = [
   {
     id: '1',
-    event_id: 'event-1',
-    url_foto: 'https://example.com/photo1.jpg',
-    legenda: 'Legenda 1',
-    guest_name: 'Convidado 1',
-    is_approved: false,
-    created_at: new Date().toISOString()
+    evento_id: 'event-1',
+    tipo: 'FOTO',
+    url_midia: 'http://example.com/photo.jpg',
+    mensagem: 'Great photo!',
+    autor: 'John Doe',
+    aprovado: false,
+    criado_em: '2023-01-01'
   },
   {
     id: '2',
-    event_id: 'event-1',
-    url_foto: 'https://example.com/photo2.jpg',
-    legenda: 'Legenda 2',
-    guest_name: 'Convidado 2',
-    is_approved: true,
-    created_at: new Date().toISOString()
+    evento_id: 'event-1',
+    tipo: 'VIDEO',
+    url_midia: 'http://example.com/video.mp4',
+    mensagem: 'Awesome video!',
+    autor: 'Jane Smith',
+    aprovado: true,
+    criado_em: '2023-01-02'
   }
 ];
 
 describe('MuralModeration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (muralService.getPhotosForModeration as jest.Mock).mockResolvedValue(mockPhotos);
+    (muralService.getItemsForModeration as jest.Mock).mockResolvedValue(mockItems);
   });
 
-  it('renders pending photos', async () => {
+  it('renders loading state initially', () => {
+    render(<MuralModeration eventId="event-1" />);
+    expect(screen.getByText('Carregando itens do mural...')).toBeInTheDocument();
+  });
+
+  it('renders photos and videos after loading', async () => {
     render(<MuralModeration eventId="event-1" />);
     
     await waitFor(() => {
-      expect(screen.getByText('Convidado 1')).toBeInTheDocument();
-      expect(screen.getByText('Legenda 1')).toBeInTheDocument();
+      expect(screen.getByText('Great photo!')).toBeInTheDocument();
+      expect(screen.getByText('Awesome video!')).toBeInTheDocument();
     });
   });
 
-  it('allows approving a photo', async () => {
-    (muralService.updatePhotoStatus as jest.Mock).mockResolvedValue(true);
+  it('calls updateItemStatus when approve button is clicked', async () => {
+    (muralService.updateItemStatus as jest.Mock).mockResolvedValue(true);
     
     render(<MuralModeration eventId="event-1" />);
     
     await waitFor(() => {
-      const approveButtons = screen.getAllByText('Aprovar');
-      fireEvent.click(approveButtons[0]);
+      expect(screen.getByText('Aprovar')).toBeInTheDocument();
     });
 
-    expect(muralService.updatePhotoStatus).toHaveBeenCalledWith('1', true);
+    fireEvent.click(screen.getByText('Aprovar'));
+    
+    await waitFor(() => {
+      expect(muralService.updateItemStatus).toHaveBeenCalledWith('1', true);
+    });
+  });
+
+  it('calls deleteItem when delete button is clicked and confirmed', async () => {
+    window.confirm = jest.fn().mockReturnValue(true);
+    (muralService.deleteItem as jest.Mock).mockResolvedValue(true);
+    
+    render(<MuralModeration eventId="event-1" />);
+    
+    await waitFor(() => {
+      expect(screen.getAllByText('Excluir')[0]).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getAllByText('Excluir')[0]);
+    
+    await waitFor(() => {
+      expect(muralService.deleteItem).toHaveBeenCalledWith('1');
+    });
   });
 });

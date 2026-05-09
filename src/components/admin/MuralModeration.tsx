@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { muralService, MuralPhoto } from '@/lib/services/muralService';
+import { muralService } from '@/lib/services/muralService';
+import { MuralItem } from '@/lib/types/database';
 import styles from './MuralModeration.module.css';
-import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 
 interface MuralModerationProps {
@@ -11,77 +11,95 @@ interface MuralModerationProps {
 }
 
 export default function MuralModeration({ eventId }: MuralModerationProps) {
-  const [photos, setPhotos] = useState<MuralPhoto[]>([]);
+  const [items, setItems] = useState<MuralItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editCaption, setEditCaption] = useState('');
 
-  const fetchPhotos = async () => {
+  const fetchItems = async () => {
     setLoading(true);
-    const data = await muralService.getPhotosForModeration(eventId);
-    setPhotos(data);
+    const data = await muralService.getItemsForModeration(eventId);
+    setItems(data);
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchPhotos();
+    fetchItems();
   }, [eventId]);
 
   const handleStatusUpdate = async (id: string, isApproved: boolean) => {
-    const success = await muralService.updatePhotoStatus(id, isApproved);
+    const success = await muralService.updateItemStatus(id, isApproved);
     if (success) {
-      setPhotos(photos.map(p => p.id === id ? { ...p, is_approved: isApproved } : p));
+      setItems(items.map(p => p.id === id ? { ...p, aprovado: isApproved } : p));
     }
   };
 
-  const handleEdit = (photo: MuralPhoto) => {
-    setEditingId(photo.id!);
-    setEditCaption(photo.legenda || '');
+  const handleEdit = (item: MuralItem) => {
+    setEditingId(item.id!);
+    setEditCaption(item.mensagem || '');
   };
 
   const handleSaveCaption = async (id: string) => {
     const { error } = await supabase
-      .from('mural_fotos')
-      .update({ legenda: editCaption })
+      .from('mural_itens')
+      .update({ mensagem: editCaption })
       .eq('id', id);
     
     if (!error) {
-      setPhotos(photos.map(p => p.id === id ? { ...p, legenda: editCaption } : p));
+      setItems(items.map(p => p.id === id ? { ...p, mensagem: editCaption } : p));
       setEditingId(null);
     } else {
-      alert('Erro ao salvar legenda.');
+      alert('Erro ao salvar mensagem.');
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Deseja realmente excluir esta foto?')) {
-      const success = await muralService.deletePhoto(id);
+    if (confirm('Deseja realmente excluir este item?')) {
+      const success = await muralService.deleteItem(id);
       if (success) {
-        setPhotos(photos.filter(p => p.id !== id));
+        setItems(items.filter(p => p.id !== id));
       }
     }
   };
 
-  if (loading) return <div className={styles.loading}>Carregando fotos...</div>;
+  if (loading) return <div className={styles.loading}>Carregando itens do mural...</div>;
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Moderação de Fotos</h2>
+      <h2 className={styles.title}>Moderação do Mural Vivo</h2>
       <div className={styles.grid}>
-        {photos.map(photo => (
-          <div key={photo.id} className={`${styles.card} ${photo.is_approved ? styles.approved : styles.pending}`}>
-            <div className={styles.imageWrapper}>
-              <Image 
-                src={photo.url_foto} 
-                alt={photo.legenda || 'Foto do mural'} 
-                fill 
-                className={styles.image}
-              />
-            </div>
+        {items.map(item => (
+          <div key={item.id} className={`${styles.card} ${item.aprovado ? styles.approved : styles.pending}`}>
+            {item.tipo === 'FOTO' || item.tipo === 'HIBRIDO' ? (
+              <div className={styles.imageWrapper}>
+                <img 
+                  src={item.url_midia} 
+                  alt={item.mensagem || 'Foto do mural'} 
+                  className={styles.image}
+                  style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+                />
+              </div>
+            ) : item.tipo === 'VIDEO' ? (
+               <div className={styles.imageWrapper}>
+                <video 
+                  src={item.url_midia} 
+                  className={styles.image}
+                  style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+                  muted
+                  loop
+                  autoPlay
+                  playsInline
+                />
+              </div>
+            ) : null}
+
             <div className={styles.content}>
-              <p className={styles.guestName}>{photo.guest_name || 'Anônimo'}</p>
+              <div className={styles.badgeTipo}>
+                {item.tipo === 'FOTO' ? '📷 Foto' : item.tipo === 'VIDEO' ? '🎥 Vídeo' : item.tipo === 'MENSAGEM' ? '📝 Mensagem' : '📷+📝 Híbrido'}
+              </div>
+              <p className={styles.guestName}>{item.autor || 'Anônimo'}</p>
               
-              {editingId === photo.id ? (
+              {editingId === item.id ? (
                 <div className={styles.editArea}>
                   <textarea 
                     value={editCaption} 
@@ -89,35 +107,35 @@ export default function MuralModeration({ eventId }: MuralModerationProps) {
                     className={styles.editTextarea}
                   />
                   <div className={styles.editActions}>
-                    <button onClick={() => handleSaveCaption(photo.id!)} className={styles.saveBtn}>Salvar</button>
+                    <button onClick={() => handleSaveCaption(item.id!)} className={styles.saveBtn}>Salvar</button>
                     <button onClick={() => setEditingId(null)} className={styles.cancelBtn}>Cancelar</button>
                   </div>
                 </div>
               ) : (
                 <>
-                  <p className={styles.caption}>{photo.legenda || <span className={styles.noCaption}>Sem legenda</span>}</p>
-                  <button onClick={() => handleEdit(photo)} className={styles.editBtn}>Editar Legenda</button>
+                  <p className={styles.caption}>{item.mensagem || <span className={styles.noCaption}>Sem mensagem</span>}</p>
+                  <button onClick={() => handleEdit(item)} className={styles.editBtn}>Editar Mensagem</button>
                 </>
               )}
 
               <div className={styles.actions}>
-                {!photo.is_approved ? (
+                {!item.aprovado ? (
                   <button 
-                    onClick={() => handleStatusUpdate(photo.id!, true)}
+                    onClick={() => handleStatusUpdate(item.id!, true)}
                     className={styles.approveBtn}
                   >
-                    Aprovar Foto
+                    Aprovar
                   </button>
                 ) : (
                   <button 
-                    onClick={() => handleStatusUpdate(photo.id!, false)}
+                    onClick={() => handleStatusUpdate(item.id!, false)}
                     className={styles.rejectBtn}
                   >
-                    Ocultar Foto
+                    Ocultar
                   </button>
                 )}
                 <button 
-                  onClick={() => handleDelete(photo.id!)}
+                  onClick={() => handleDelete(item.id!)}
                   className={styles.deleteBtn}
                 >
                   Excluir
@@ -126,7 +144,7 @@ export default function MuralModeration({ eventId }: MuralModerationProps) {
             </div>
           </div>
         ))}
-        {photos.length === 0 && <p className={styles.empty}>Nenhuma foto enviada para o mural.</p>}
+        {items.length === 0 && <p className={styles.empty}>Nenhum item enviado para o mural.</p>}
       </div>
     </div>
   );

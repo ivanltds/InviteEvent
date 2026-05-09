@@ -56,7 +56,7 @@ test.describe('Onboarding e Resiliência', () => {
     await genBtn.click({ force: true });
     
     // Preview - Agora deve ser instantâneo sem o EnvelopeGateway
-    await page.waitForURL(url => url.toString().includes('preview'), { timeout: 20000 });
+    await page.waitForURL((url: URL) => url.toString().includes('preview'), { timeout: 20000 });
 
     await expect(page.getByText(/Uau, o que achou/i)).toBeVisible({ timeout: 20000 });
     await page.getByText(/Finalizar e Salvar/i).click({ force: true });

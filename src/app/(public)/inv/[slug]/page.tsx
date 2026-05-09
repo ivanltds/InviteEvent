@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useParams } from 'next/navigation';
 import styles from "../../page.module.css";
 import Historia from "@/components/sections/Historia";
@@ -9,8 +10,6 @@ import Detalhes from "@/components/sections/Detalhes";
 import FAQ from "@/components/sections/FAQ";
 import RSVP from "@/components/sections/RSVP";
 import AgendaSection from "@/components/sections/AgendaSection";
-import MuralSection from "@/components/sections/MuralSection";
-import GallerySection from "@/components/sections/GallerySection";
 import Countdown from "@/components/sections/Countdown";
 import { supabase } from '@/lib/supabase';
 import { rsvpService } from '@/lib/services/rsvpService';
@@ -101,7 +100,10 @@ export default function InvitationPage() {
 
         // Intercept Preview Client-Side Funnel
         if (slug === 'preview') {
-          const rawPayload = localStorage.getItem('pending_invite_state');
+          let rawPayload = localStorage.getItem('pending_invite_state');
+          if (!rawPayload) {
+            rawPayload = sessionStorage.getItem('pending_invite_state');
+          }
           if (rawPayload) {
             const payload = JSON.parse(rawPayload);
             const mockConfig = {
@@ -215,26 +217,7 @@ export default function InvitationPage() {
     );
   }
 
-  // STORY-056: Mostrar gateway antes do convite
-  if (showGateway) {
-    return (
-      <EnvelopeGateway
-        slug={slug}
-        bgPrimary={config.bg_primary || '#FAF9F6'}
-        textMain={config.text_main || '#333333'}
-        accentColor={config.accent_color || '#c8943a'}
-        coupleNoiva={couple.noiva}
-        coupleNoivo={couple.noivo}
-        date={couple.data}
-        fontCursive={config.font_cursive}
-        fontSerif={config.font_serif}
-        onComplete={() => {
-          incrementViewCount(slug);
-          setShowGateway(false);
-        }}
-      />
-    );
-  }
+
 
   // STORY-058: event theme scoped — aplicado APENAS ao convite, não ao admin
   const eventThemeStyle = {
@@ -249,9 +232,41 @@ export default function InvitationPage() {
     // STORY-058: .eventTheme wrapper — cores do evento ficam scoped aqui,
     // nunca vazam para o admin chrome ou para o :root global
     <div style={eventThemeStyle}>
+      <AnimatePresence>
+        {showGateway && (
+          <motion.div
+            key="gateway"
+            initial={{ opacity: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, filter: 'blur(10px)', transition: { duration: 1.2, ease: 'easeInOut' } }}
+            style={{ position: 'fixed', inset: 0, zIndex: 999999 }}
+          >
+            <EnvelopeGateway
+              slug={slug}
+              bgPrimary={config.bg_primary || '#FAF9F6'}
+              textMain={config.text_main || '#333333'}
+              accentColor={config.accent_color || '#c8943a'}
+              coupleNoiva={couple.noiva}
+              coupleNoivo={couple.noivo}
+              date={couple.data}
+              rawDate={couple.rawDate}
+              fontCursive={config.font_cursive}
+              fontSerif={config.font_serif}
+              heroImages={config.hero_images && config.hero_images.length > 0 ? config.hero_images : (previewBase64 ? [previewBase64] : undefined)}
+              onComplete={() => {
+                incrementViewCount(slug);
+                setShowGateway(false);
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <main className={styles.main}>
         <section className={styles.hero}>
-          <HeroCarousel imagesOverride={config.hero_images && config.hero_images.length > 0 ? config.hero_images : (previewBase64 ? [previewBase64] : undefined)} />
+          <HeroCarousel 
+            imagesOverride={config.hero_images && config.hero_images.length > 0 ? config.hero_images : (previewBase64 ? [previewBase64] : undefined)} 
+            videosOverride={config.hero_videos}
+          />
           <h1 className="cursive">{couple.noiva} & {couple.noivo}</h1>
           <p className={styles.date}>{couple.data}</p>
 
@@ -263,6 +278,7 @@ export default function InvitationPage() {
             {visibility.presentes && (
               <Link href={`/presentes?invite=${slug}`} className={styles.secondaryBtn}>Lista de Presentes</Link>
             )}
+            <Link href={`/mural?invite=${slug}`} className={styles.secondaryBtn}>Mural Vivo</Link>
           </div>
         </section>
       </main>
@@ -270,8 +286,6 @@ export default function InvitationPage() {
       {visibility.historia && <Historia config={config} />}
       {visibility.noivos && <OsNoivos config={config} />}
       <AgendaSection events={agenda} config={config} />
-      <GallerySection eventoId={config.evento_id} config={config} />
-      <MuralSection eventoId={config.evento_id} config={config} />
       {slug !== 'preview' && <RSVP inviteSlug={slug} config={config} />}
       {visibility.faq && <FAQ eventoId={config.evento_id} />}
 

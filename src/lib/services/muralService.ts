@@ -1,137 +1,82 @@
 import { supabase } from '@/lib/supabase';
-
-export interface MuralMensagem {
-  id: string;
-  evento_id: string;
-  nome_convidado: string;
-  mensagem: string;
-  status: 'pendente' | 'aprovado' | 'oculto';
-  created_at: string;
-}
-
-export interface MuralPhoto {
-  id: string;
-  evento_id: string;
-  url_foto: string;
-  legenda?: string;
-  guest_name?: string;
-  is_approved: boolean;
-  created_at: string;
-}
+import { MuralItem } from '@/lib/types/database';
 
 export const muralService = {
-  // --- MENSAGENS ---
-  async getMessages(eventoId: string): Promise<MuralMensagem[]> {
-    const { data, error } = await supabase
+  // --- MURAL ITENS UNIFICADOS ---
+  async getApprovedItems(eventoId: string): Promise<MuralItem[]> {
+    const { data: items, error: errorItems } = await supabase
+      .from('mural_itens')
+      .select('*')
+      .eq('evento_id', eventoId)
+      .eq('aprovado', true);
+
+    const { data: msgs, error: errorMsgs } = await supabase
       .from('mural_mensagens')
       .select('*')
       .eq('evento_id', eventoId)
-      .eq('status', 'aprovado')
-      .order('created_at', { ascending: false });
+      .eq('status', 'aprovado');
 
-    if (error) {
-      console.error('Error fetching approved messages:', error);
-      return [];
-    }
-    return data || [];
+    if (errorItems) console.error('Error fetching approved mural items:', errorItems);
+    if (errorMsgs) console.error('Error fetching approved mural messages:', errorMsgs);
+
+    const mappedMsgs: MuralItem[] = (msgs || []).map((m: any) => ({
+      id: m.id,
+      evento_id: m.evento_id,
+      autor: m.nome_convidado,
+      mensagem: m.mensagem,
+      tipo: 'MENSAGEM',
+      aprovado: true,
+      criado_em: m.created_at,
+      url_midia: undefined
+    }));
+
+    const combined = [...(items || []), ...mappedMsgs];
+    // Sort by creation date descending
+    return combined.sort((a, b) => {
+      const dateA = new Date(a.criado_em || 0).getTime();
+      const dateB = new Date(b.criado_em || 0).getTime();
+      return dateB - dateA;
+    });
   },
 
-  async submitMessage(eventoId: string, nome: string, mensagem: string): Promise<boolean> {
+  async submitItem(item: Partial<MuralItem>): Promise<{ success: boolean; error?: any }> {
     const { error } = await supabase
-      .from('mural_mensagens')
+      .from('mural_itens')
       .insert([{
-        evento_id: eventoId,
-        nome_convidado: nome,
-        mensagem: mensagem,
-        status: 'pendente'
+        ...item,
+        aprovado: false // Sempre pendente inicialmente
       }]);
     
-    return !error;
-  },
-
-  async getMessagesForModeration(eventoId: string): Promise<MuralMensagem[]> {
-    const { data, error } = await supabase
-      .from('mural_mensagens')
-      .select('*')
-      .eq('evento_id', eventoId)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching messages for moderation:', error);
-      return [];
-    }
-    return data || [];
-  },
-
-  async updateMessageStatus(id: string, status: 'aprovado' | 'oculto' | 'pendente'): Promise<boolean> {
-    const { error } = await supabase
-      .from('mural_mensagens')
-      .update({ status })
-      .eq('id', id);
-    return !error;
-  },
-
-  async deleteMessage(id: string): Promise<boolean> {
-    const { error } = await supabase
-      .from('mural_mensagens')
-      .delete()
-      .eq('id', id);
-    return !error;
-  },
-
-  // --- FOTOS ---
-  async uploadPhoto(photo: Partial<MuralPhoto>): Promise<{ success: boolean; error?: any }> {
-    const { error } = await supabase
-      .from('mural_fotos')
-      .insert([photo]);
-
     return { success: !error, error };
   },
 
-  async getApprovedPhotos(eventId: string): Promise<MuralPhoto[]> {
+  async getItemsForModeration(eventoId: string): Promise<MuralItem[]> {
     const { data, error } = await supabase
-      .from('mural_fotos')
+      .from('mural_itens')
       .select('*')
-      .eq('evento_id', eventId)
-      .eq('is_approved', true)
-      .order('created_at', { ascending: false });
+      .eq('evento_id', eventoId)
+      .order('criado_em', { ascending: false });
 
     if (error) {
-      console.error('Error fetching mural photos:', error);
+      console.error('Error fetching mural items for moderation:', error);
       return [];
     }
     return data || [];
   },
 
-  async getPhotosForModeration(eventId: string): Promise<MuralPhoto[]> {
-    const { data, error } = await supabase
-      .from('mural_fotos')
-      .select('*')
-      .eq('evento_id', eventId)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching photos for moderation:', error);
-      return [];
-    }
-    return data || [];
-  },
-
-  async updatePhotoStatus(photoId: string, isApproved: boolean): Promise<boolean> {
+  async updateItemStatus(id: string, aprovado: boolean): Promise<boolean> {
     const { error } = await supabase
-      .from('mural_fotos')
-      .update({ is_approved: isApproved })
-      .eq('id', photoId);
-
+      .from('mural_itens')
+      .update({ aprovado })
+      .eq('id', id);
     return !error;
   },
 
-  async deletePhoto(photoId: string): Promise<boolean> {
+  async deleteItem(id: string): Promise<boolean> {
     const { error } = await supabase
-      .from('mural_fotos')
+      .from('mural_itens')
       .delete()
-      .eq('id', photoId);
-
+      .eq('id', id);
     return !error;
   }
 };

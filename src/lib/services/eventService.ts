@@ -85,6 +85,9 @@ export const eventService = {
 
     if (eventError) return { data: null, error: new Error(eventError.message) };
 
+    // Garantir que o perfil existe em perfis para evitar violação de FK devido a delays no trigger
+    await supabase.from('perfis').upsert({ id: user.id, email: user.email });
+
     // 3. Adicionar como owner (Atômico manual)
     const { error: roleError } = await supabase
       .from('evento_organizadores')

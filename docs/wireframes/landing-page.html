@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InviteEvent - O Convite Majestoso</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@500;700&display=swap');
+        
+        body, html { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: #F9F9FB; color: #1A1A1A; overflow-x: hidden; scroll-behavior: smooth; }
+        
+        /* Typography */
+        h1, h2, h3 { font-family: 'Playfair Display', serif; margin: 0; letter-spacing: -0.02em; }
+        p { line-height: 1.6; color: #71717A; }
+        .gold { color: #C5A059; }
+
+        /* Navbar */
+        .glass-nav {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 1000px; height: 64px; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-radius: 32px; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; z-index: 50; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: all 0.3s;
+        }
+        .logo { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 22px; color: #1A1A1A; }
+        .nav-links { display: flex; gap: 30px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+        .nav-links a { text-decoration: none; color: #1A1A1A; transition: color 0.2s; }
+        .nav-links a:hover { color: #C5A059; }
+
+        /* Hero */
+        .hero {
+            height: 100vh; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; overflow: hidden;
+        }
+        .video-container {
+            position: absolute; inset: 0; z-index: 0; background: #000;
+        }
+        .video-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; filter: brightness(0.55);
+            transition: opacity 2.5s ease-in-out; opacity: 0;
+        }
+        .video-bg.active { opacity: 1; }
+        .hero-content {
+            position: relative; z-index: 1; max-width: 900px; padding: 0 20px; color: #FFFFFF;
+        }
+        .hero-title { font-size: 72px; font-weight: 700; margin-bottom: 24px; line-height: 1.1; text-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .hero-subtitle { font-size: 20px; font-weight: 300; margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; text-shadow: 0 2px 10px rgba(0,0,0,0.2); color: rgba(255,255,255,0.9); }
+        
+        .btn-primary {
+            background-color: #C5A059; color: #FFFFFF; border: none; padding: 18px 48px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-block; text-decoration: none;
+        }
+        .btn-primary:hover { background-color: #B38F48; transform: translateY(-3px); box-shadow: 0 15px 30px rgba(197, 160, 89, 0.3); }
+
+        /* General Sections */
+        .section { padding: 120px 5%; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 1200px; width: 100%; }
+
+        /* Split Layout (Text/Photo) */
+        .split-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+        .split-text h2 { font-size: 48px; margin-bottom: 24px; line-height: 1.2; }
+        .split-text p { font-size: 18px; margin-bottom: 30px; }
+        .image-wrapper { position: relative; border-radius: 24px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.1); }
+        .image-wrapper img { width: 100%; display: block; transition: transform 0.8s; }
+        .image-wrapper:hover img { transform: scale(1.05); }
+
+        /* Bento Grid */
+        .features-section { background: #FFFFFF; }
+        .section-header { text-align: center; margin-bottom: 80px; max-width: 700px; margin-left: auto; margin-right: auto; }
+        .section-header h2 { font-size: 48px; margin-bottom: 20px; line-height: 1.2; }
+        
+        .bento-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .bento-card {
+            background: #F9F9FB; border-radius: 32px; padding: 48px; display: flex; flex-direction: column; justify-content: flex-start; transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .bento-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.05); background: #FFFFFF; border: 1px solid rgba(0,0,0,0.05); }
+        .span-2 { grid-column: span 2; }
+        .bento-icon { width: 48px; height: 48px; background: rgba(197, 160, 89, 0.1); border-radius: 12px; display: flex; justify-content: center; align-items: center; color: #C5A059; font-size: 24px; margin-bottom: 24px; }
+        .bento-card h3 { font-size: 24px; margin-bottom: 16px; }
+
+        /* Wide Photo Band (Parallax) */
+        .photo-band {
+            height: 60vh; background: url('https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&q=80&w=2000') no-repeat center center; background-size: cover; background-attachment: fixed; position: relative; display: flex; justify-content: center; align-items: center; text-align: center; color: #FFF;
+        }
+        .photo-band::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.4); }
+        .photo-band-content { position: relative; z-index: 1; }
+        .photo-band h2 { font-size: 48px; font-style: italic; }
+
+        /* Footer CTA */
+        .cta-section { background: #F9F9FB; text-align: center; padding: 150px 5%; }
+        .cta-section h2 { font-size: 56px; margin-bottom: 24px; }
+
+        @media (max-width: 900px) {
+            .split-layout { grid-template-columns: 1fr; gap: 40px; }
+            .bento-grid { grid-template-columns: 1fr; }
+            .span-2 { grid-column: span 1; }
+            .hero-title { font-size: 48px; }
+            .nav-links { display: none; }
+            .glass-nav { padding: 0 20px; }
+        }
+
+        /* Preview Card transitions */
+        .preview-card {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s, filter 0.6s;
+            will-change: transform, opacity, filter;
+        }
+        .preview-card:hover { transform: translateY(-5px) scale(1.01); box-shadow: 0 20px 40px rgba(0,0,0,0.06) !important; }
+        .preview-card.magic-transition { opacity: 0; transform: scale(0.95); filter: blur(15px); }
+    </style>
+</head>
+<body>
+    <nav class="glass-nav">
+        <div class="logo">InviteEvent</div>
+        <div class="nav-links">
+            <a href="#experiencia">Experiência</a>
+            <a href="#funcionalidades">Inteligência</a>
+            <a href="#galeria">Design</a>
+        </div>
+        <a href="#criar" class="btn-primary" style="padding: 12px 24px; font-size: 12px;">Criar Convite</a>
+    </nav>
+
+    <!-- Hero Section with Video Cross-Fade -->
+    <header class="hero">
+        <div class="video-container">
+            <video id="bgVideo1" class="video-bg active" autoplay muted playsinline></video>
+            <video id="bgVideo2" class="video-bg" autoplay muted playsinline></video>
+        </div>
+        <div class="hero-content">
+            <h1 class="hero-title">A Celebração do Seu Amor,<br>Transformada em <span class="gold">Arte Digital</span>.</h1>
+            <p class="hero-subtitle">Surpreenda seus convidados com uma experiência majestosa. Design de alta-costura, animações imersivas e gestão inteligente para o seu grande dia.</p>
+            <a href="#criar" class="btn-primary">Começar Jornada Mágica</a>
+        </div>
+    </header>
+
+    <!-- Section 1: Split Layout -->
+    <section id="experiencia" class="section">
+        <div class="container split-layout">
+            <div class="split-text">
+                <h2 class="gold">O Efeito WOW</h2>
+                <h2>Mais que um convite,<br>uma declaração.</h2>
+                <p>Esqueça PDFs estáticos e links sem graça. O InviteEvent entrega um envelope digital animado que se desdobra em uma experiência cinematográfica.</p>
+                <p>Desde a abertura selada até o carregamento suave das fotos de vocês, cada milissegundo foi coreografado para arrancar suspiros dos seus convidados.</p>
+                <a href="#" style="color: #1A1A1A; font-weight: 600; text-decoration: none; border-bottom: 2px solid #C5A059; padding-bottom: 4px;">Ver Demonstração do Envelope</a>
+            </div>
+            <div class="image-wrapper">
+                <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800" alt="Casal elegante">
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Bento Grid (Intelligent Info Distribution) -->
+    <section id="funcionalidades" class="section features-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="gold">Tecnologia Invisível</h2>
+                <h2>Inteligência e Elegância</h2>
+                <p>Por trás do design luxuoso, um sistema poderoso trabalha silenciosamente para que você foque apenas em aproveitar o momento.</p>
+            </div>
+            
+            <div class="bento-grid">
+                <div class="bento-card span-2">
+                    <div class="bento-icon">✧</div>
+                    <h3>Lista de Presentes Premium</h3>
+                    <p>Converta presentes virtuais em dinheiro direto na sua conta bancária. Uma experiência fluida para os convidados, transparente e segura para vocês, com as menores taxas do mercado.</p>
+                </div>
+                <div class="bento-card">
+                    <div class="bento-icon">♡</div>
+                    <h3>RSVP com 1 Clique</h3>
+                    <p>Confirmações de presença rápidas, bonitas e precisas. Acompanhe os números em tempo real no seu painel.</p>
+                </div>
+                <div class="bento-card">
+                    <div class="bento-icon">📷</div>
+                    <h3>Mural Infinito</h3>
+                    <p>Seus convidados capturam ângulos únicos. Receba e exiba as fotos em um grid majestoso ao vivo.</p>
+                </div>
+                <!-- Card com Foto de fundo dentro do Grid -->
+                <div class="bento-card span-2" style="background: url('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800') center/cover; color: white; position: relative;">
+                    <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.2)); border-radius: 32px;"></div>
+                    <div style="position: relative; z-index: 1; margin-top: auto;">
+                        <h3 style="color: #FFF;">Templates de Alta-Costura</h3>
+                        <p style="color: #EAEAEA;">Design systems inspirados em revistas de moda. Escolha a paleta, a tipografia e veja a mágica acontecer instantaneamente.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section: Mural Vivo Preview -->
+    <section id="mural-preview" class="section" style="background-color: #F9F9FB;">
+        <div class="container">
+            <div class="section-header" style="text-align: center; margin-bottom: 60px;">
+                <h2 class="gold">Mural Vivo de Memórias</h2>
+                <h2>O afeto compartilhado em tempo real</h2>
+                <p>Seus convidados podem enviar fotos e mensagens carinhosas que aparecem magicamente no mural do evento. Experimente a dinâmica em tempo real abaixo:</p>
+            </div>
+            
+            <div class="mural-preview-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; max-width: 1000px; margin: 0 auto;">
+                <!-- Card 1: Photo Only -->
+                <div class="preview-card" style="background: #FFF; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.02); cursor: pointer; position: relative;" id="pcard-1">
+                    <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600" style="width: 100%; display: block; height: 300px; object-fit: cover;" alt="Alianças">
+                </div>
+                <!-- Card 2: Quote -->
+                <div class="preview-card" style="background: linear-gradient(135deg, #FFFFFF 0%, #F5EFEB 100%); padding: 30px; border-radius: 20px; border-left: 4px solid #C5A059; display: flex; flex-direction: column; justify-content: center; min-height: 200px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); cursor: pointer; position: relative;" id="pcard-2">
+                    <p class="p-quote" style="font-family: 'Playfair Display', serif; font-size: 18px; font-style: italic; margin: 0 0 12px 0; color: #1A1A1A;">"Ver o brilho no olhar de vocês hoje é ter a certeza de que o amor verdadeiro é real e inabalável!"</p>
+                    <span class="p-author" style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #C5A059;">— Tio Roberto</span>
+                </div>
+                <!-- Card 3: Photo with Overlay -->
+                <div class="preview-card" style="background: #FFF; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.02); cursor: pointer; position: relative;" id="pcard-3">
+                    <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=600" style="width: 100%; display: block; height: 300px; object-fit: cover;" alt="Noivos">
+                    <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent 60%); display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; color: #FFF;">
+                        <p style="font-size: 13px; font-weight: 500; margin: 0 0 4px 0;">"Os mais lindos! Que alegria imensa viver esse dia com vocês!"</p>
+                        <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.8);">— Camila & Bruno</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Parallax Photo Band -->
+    <section id="galeria" class="photo-band">
+        <div class="photo-band-content">
+            <h2>"O detalhe não é apenas um detalhe.<br>Ele faz o design."</h2>
+            <p style="color: #EAEAEA; margin-top: 15px; font-weight: 300; letter-spacing: 0.1em; text-transform: uppercase;">— Experiência Majestic</p>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="section cta-section">
+        <div class="container">
+            <h2 class="gold">Pronto para inspirar?</h2>
+            <h2>O seu grande dia merece<br>um começo inesquecível.</h2>
+            <div style="margin-top: 50px;">
+                <a href="#criar" class="btn-primary" style="padding: 20px 60px; font-size: 16px;">Criar Convite Agora</a>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Dynamismo Mágico na Landing Page
+        const lpQuotesPool = [
+            { text: '"Que honra testemunhar essa união tão perfeita! Todo o amor do mundo para vocês."', author: '— Mariana Reis' },
+            { text: '"Que Deus abençoe infinitamente esse novo e maravilhoso ciclo!"', author: '— Vovó Lourdes' },
+            { text: '"O amor flutua no ar desse salão. Festa maravilhosa!"', author: '— Felipe & Ana' }
+        ];
+
+        function triggerLPMagicSwap() {
+            const cards = document.querySelectorAll('.preview-card');
+            if (cards.length < 2) return;
+
+            const idx1 = Math.floor(Math.random() * cards.length);
+            let idx2 = Math.floor(Math.random() * cards.length);
+            while (idx2 === idx1) {
+                idx2 = Math.floor(Math.random() * cards.length);
+            }
+
+            const card1 = cards[idx1];
+            const card2 = cards[idx2];
+
+            card1.classList.add('magic-transition');
+            card2.classList.add('magic-transition');
+
+            setTimeout(() => {
+                if (card1.id === 'pcard-2') {
+                    const randomQuote = lpQuotesPool[Math.floor(Math.random() * lpQuotesPool.length)];
+                    card1.querySelector('.p-quote').textContent = randomQuote.text;
+                    card1.querySelector('.p-author').textContent = randomQuote.author;
+                }
+                if (card2.id === 'pcard-2') {
+                    const randomQuote = lpQuotesPool[Math.floor(Math.random() * lpQuotesPool.length)];
+                    card2.querySelector('.p-quote').textContent = randomQuote.text;
+                    card2.querySelector('.p-author').textContent = randomQuote.author;
+                }
+
+                // Swap HTML structure, styles and IDs
+                const tempHTML = card1.innerHTML;
+                const tempStyle = card1.getAttribute('style');
+                const tempId = card1.id;
+                
+                card1.innerHTML = card2.innerHTML;
+                card1.setAttribute('style', card2.getAttribute('style'));
+                card1.id = card2.id;
+                
+                card2.innerHTML = tempHTML;
+                card2.setAttribute('style', tempStyle);
+                card2.id = tempId;
+
+                card1.classList.remove('magic-transition');
+                card2.classList.remove('magic-transition');
+            }, 600);
+        }
+
+        setInterval(triggerLPMagicSwap, 6000);
+
+        // Galeria de Vídeos na Hero com Cross-fade (Esmaecer)
+        const heroVideos = [
+            '../../public/videos/13347145_2160_3840_30fps.mp4',
+            '../../public/videos/14569147_2160_3840_30fps.mp4',
+            '../../public/videos/14569159_2160_3840_30fps.mp4',
+            '../../public/videos/14752780_2160_3840_30fps.mp4',
+            '../../public/videos/8502799-uhd_2160_3840_24fps.mp4'
+        ];
+
+        let currentVideoIndex = 0;
+        const videoEl1 = document.getElementById('bgVideo1');
+        const videoEl2 = document.getElementById('bgVideo2');
+        
+        // Inicializa o primeiro vídeo
+        videoEl1.src = heroVideos[0];
+        videoEl1.load();
+        videoEl1.play();
+
+        function startVideoCrossFade() {
+            let activeEl = videoEl1;
+            let nextEl = videoEl2;
+
+            setInterval(() => {
+                // Calcula o próximo índice do vídeo
+                currentVideoIndex = (currentVideoIndex + 1) % heroVideos.length;
+                
+                // Carrega no elemento oculto
+                nextEl.src = heroVideos[currentVideoIndex];
+                nextEl.load();
+                
+                nextEl.oncanplay = () => {
+                    nextEl.play();
+                    
+                    // Transição suave de Opacidade (fade in / fade out)
+                    nextEl.classList.add('active');
+                    activeEl.classList.remove('active');
+                    
+                    // Alterna referências para o próximo loop
+                    const temp = activeEl;
+                    activeEl = nextEl;
+                    nextEl = temp;
+                };
+            }, 8000); // transição contínua a cada 8 segundos
+        }
+
+        // Inicia após o primeiro vídeo tocar
+        videoEl1.onplay = () => {
+            startVideoCrossFade();
+            videoEl1.onplay = null;
+        };
+    </script>
+</body>
+</html>

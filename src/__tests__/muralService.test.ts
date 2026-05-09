@@ -1,7 +1,7 @@
 import { muralService } from '@/lib/services/muralService';
 import { supabase } from '@/lib/supabase';
 
-describe('muralService', () => {
+describe('muralService (Unified)', () => {
   const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
   beforeEach(() => {
@@ -9,151 +9,81 @@ describe('muralService', () => {
     consoleSpy.mockClear();
   });
 
-  const createMockQueryBuilder = () => ({
+  const createMockQueryBuilder = (mockData: any = [], mockError: any = null) => ({
     select: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
     order: jest.fn().mockReturnThis(),
     insert: jest.fn().mockResolvedValue({ data: null, error: null }),
     update: jest.fn().mockReturnThis(),
     delete: jest.fn().mockReturnThis(),
+    then: jest.fn().mockImplementation((fn) => {
+      return Promise.resolve(fn({ data: mockData, error: mockError }));
+    }),
   });
 
-  describe('MESSAGES', () => {
-    test('getMessages deve retornar mensagens aprovadas', async () => {
-      const mockData = [{ id: '1', mensagem: 'Olá' }];
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.order.mockResolvedValue({ data: mockData, error: null });
-      (supabase.from as jest.Mock).mockReturnValue(mockQueryBuilder);
+  describe('Unified Items', () => {
+    test('getApprovedItems deve retornar itens aprovados', async () => {
+      const mockData = [{ id: '1', tipo: 'FOTO', criado_em: '2027-10-10' }];
+      const mockQueryBuilder = createMockQueryBuilder(mockData, null);
+      const mockEmptyBuilder = createMockQueryBuilder([], null);
+      
+      (supabase.from as jest.Mock).mockImplementation((table) => {
+        return table === 'mural_itens' ? mockQueryBuilder : mockEmptyBuilder;
+      });
 
-      const result = await muralService.getMessages('e1');
+      const result = await muralService.getApprovedItems('e1');
       expect(result).toEqual(mockData);
-      expect(mockQueryBuilder.eq).toHaveBeenCalledWith('status', 'aprovado');
+      expect(mockQueryBuilder.eq).toHaveBeenCalledWith('aprovado', true);
     });
 
-    test('getMessages deve retornar array vazio e logar erro em caso de falha', async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.order.mockResolvedValue({ data: null, error: { message: 'Erro' } });
+    test('getApprovedItems deve retornar array vazio e logar erro em falha', async () => {
+      const mockQueryBuilder = createMockQueryBuilder([], { message: 'Erro' });
       (supabase.from as jest.Mock).mockReturnValue(mockQueryBuilder);
 
-      const result = await muralService.getMessages('e1');
+      const result = await muralService.getApprovedItems('e1');
       expect(result).toEqual([]);
       expect(consoleSpy).toHaveBeenCalled();
     });
 
-    test('submitMessage deve inserir mensagem com status pendente', async () => {
+    test('submitItem deve inserir item com aprovado = false', async () => {
       const mockQueryBuilder = createMockQueryBuilder();
       (supabase.from as jest.Mock).mockReturnValue(mockQueryBuilder);
 
-      const result = await muralService.submitMessage('e1', 'Convidado', 'Mensagem');
-      expect(result).toBe(true);
+      const result = await muralService.submitItem({ evento_id: 'e1', tipo: 'MENSAGEM', mensagem: 'Test' });
+      expect(result.success).toBe(true);
       expect(mockQueryBuilder.insert).toHaveBeenCalledWith([expect.objectContaining({
-        status: 'pendente'
+        aprovado: false
       })]);
     });
 
-    test('getMessagesForModeration deve retornar todas as mensagens', async () => {
+    test('getItemsForModeration deve retornar todos os itens', async () => {
       const mockQueryBuilder = createMockQueryBuilder();
       mockQueryBuilder.order.mockResolvedValue({ data: [], error: null });
       (supabase.from as jest.Mock).mockReturnValue(mockQueryBuilder);
 
-      await muralService.getMessagesForModeration('e1');
+      await muralService.getItemsForModeration('e1');
       expect(mockQueryBuilder.eq).toHaveBeenCalledWith('evento_id', 'e1');
       expect(mockQueryBuilder.order).toHaveBeenCalled();
     });
 
-    test('getMessagesForModeration deve logar erro em caso de falha', async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.order.mockResolvedValue({ data: null, error: { message: 'Erro' } });
-      (supabase.from as jest.Mock).mockReturnValue(mockQueryBuilder);
-
-      await muralService.getMessagesForModeration('e1');
-      expect(consoleSpy).toHaveBeenCalled();
-    });
-
-    test('updateMessageStatus deve atualizar status', async () => {
+    test('updateItemStatus deve atualizar status', async () => {
       const mockQueryBuilder = createMockQueryBuilder();
       mockQueryBuilder.eq.mockResolvedValue({ error: null });
       (supabase.from as jest.Mock).mockReturnValue(mockQueryBuilder);
 
-      const result = await muralService.updateMessageStatus('m1', 'aprovado');
+      const result = await muralService.updateItemStatus('m1', true);
       expect(result).toBe(true);
-      expect(mockQueryBuilder.update).toHaveBeenCalledWith({ status: 'aprovado' });
+      expect(mockQueryBuilder.update).toHaveBeenCalledWith({ aprovado: true });
     });
 
-    test('deleteMessage deve remover mensagem', async () => {
+    test('deleteItem deve remover item', async () => {
       const mockQueryBuilder = createMockQueryBuilder();
       mockQueryBuilder.eq.mockResolvedValue({ error: null });
       (supabase.from as jest.Mock).mockReturnValue(mockQueryBuilder);
 
-      const result = await muralService.deleteMessage('m1');
+      const result = await muralService.deleteItem('m1');
       expect(result).toBe(true);
       expect(mockQueryBuilder.delete).toHaveBeenCalled();
-    });
-  });
-
-  describe('PHOTOS', () => {
-    test('uploadPhoto deve inserir foto', async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      (supabase.from as jest.Mock).mockReturnValue(mockQueryBuilder);
-
-      const result = await muralService.uploadPhoto({ url_foto: 'url' });
-      expect(result.success).toBe(true);
-    });
-
-    test('getApprovedPhotos deve retornar fotos aprovadas', async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.order.mockResolvedValue({ data: [], error: null });
-      (supabase.from as jest.Mock).mockReturnValue(mockQueryBuilder);
-
-      await muralService.getApprovedPhotos('e1');
-      expect(mockQueryBuilder.eq).toHaveBeenCalledWith('is_approved', true);
-    });
-
-    test('getApprovedPhotos deve logar erro em caso de falha', async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.order.mockResolvedValue({ data: null, error: { message: 'Erro' } });
-      (supabase.from as jest.Mock).mockReturnValue(mockQueryBuilder);
-
-      const result = await muralService.getApprovedPhotos('e1');
-      expect(result).toEqual([]);
-      expect(consoleSpy).toHaveBeenCalled();
-    });
-
-    test('getPhotosForModeration deve retornar fotos', async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.order.mockResolvedValue({ data: [], error: null });
-      (supabase.from as jest.Mock).mockReturnValue(mockQueryBuilder);
-
-      await muralService.getPhotosForModeration('e1');
-      expect(mockQueryBuilder.eq).toHaveBeenCalledWith('evento_id', 'e1');
-    });
-
-    test('getPhotosForModeration deve logar erro em caso de falha', async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.order.mockResolvedValue({ data: null, error: { message: 'Erro' } });
-      (supabase.from as jest.Mock).mockReturnValue(mockQueryBuilder);
-
-      await muralService.getPhotosForModeration('e1');
-      expect(consoleSpy).toHaveBeenCalled();
-    });
-
-    test('updatePhotoStatus deve atualizar status', async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.eq.mockResolvedValue({ error: null });
-      (supabase.from as jest.Mock).mockReturnValue(mockQueryBuilder);
-
-      const result = await muralService.updatePhotoStatus('p1', true);
-      expect(result).toBe(true);
-      expect(mockQueryBuilder.update).toHaveBeenCalledWith({ is_approved: true });
-    });
-
-    test('deletePhoto deve remover foto', async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.eq.mockResolvedValue({ error: null });
-      (supabase.from as jest.Mock).mockReturnValue(mockQueryBuilder);
-
-      const result = await muralService.deletePhoto('p1');
-      expect(result).toBe(true);
     });
   });
 });

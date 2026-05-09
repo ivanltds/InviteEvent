@@ -49,10 +49,14 @@ export default function PublicOnboarding() {
       accent_color: selectedPalette.primary,
       font_cursive: selectedFont.cursiveValue,
       font_serif: selectedFont.serifValue,
-      cover_image_url: coverBase64,
+      cover_image_url: coverBase64 && coverBase64.startsWith('blob:') ? '__GLOBAL_MEDIA__' : coverBase64,
       data_evento: '2027-10-10'
     };
-    localStorage.setItem('pending_invite_state', JSON.stringify(payload));
+    try {
+      localStorage.setItem('pending_invite_state', JSON.stringify(payload));
+    } catch (e) {
+      console.warn('Quota de armazenamento estendida, rascunho mantido apenas em memória:', e);
+    }
   }, [noivaNome, noivoNome, selectedPalette, selectedFont, coverBase64]);
 
   const goToStep = (next: number) => {
@@ -86,8 +90,16 @@ export default function PublicOnboarding() {
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setCoverBase64(await resizeImageAndSave(e.target.files[0]));
+    const file = e.target.files?.[0];
+    if (file) {
+      // Usar Blob URL na memória do navegador: suporta QUALQUER tamanho de mídia (20MB+) instantaneamente e com zero latência!
+      const objectUrl = URL.createObjectURL(file);
+      setCoverBase64(objectUrl);
+
+      if (typeof window !== 'undefined') {
+        (window as any).pendingCoverMedia = objectUrl;
+        (window as any).pendingCoverMediaType = file.type.startsWith('video/') ? 'video' : 'image';
+      }
     }
   };
 
@@ -105,20 +117,29 @@ export default function PublicOnboarding() {
       accent_color: selectedPalette.primary, 
       font_cursive: selectedFont.cursiveValue,
       font_serif: selectedFont.serifValue,
-      cover_image_url: coverBase64,
+      cover_image_url: coverBase64 && coverBase64.startsWith('blob:') ? '__GLOBAL_MEDIA__' : coverBase64,
       data_evento: '2027-10-10'
     };
     
-    localStorage.setItem('pending_invite_state', JSON.stringify(payload));
+    try {
+      localStorage.setItem('pending_invite_state', JSON.stringify(payload));
+    } catch (e) {
+      console.warn('Storage do localStorage cheio, tentando sessionStorage:', e);
+      try {
+        sessionStorage.setItem('pending_invite_state', JSON.stringify(payload));
+      } catch (err) {
+        console.warn('Todos os storages locais excedidos, prosseguindo com rascunho em memória:', err);
+      }
+    }
     router.push('/inv/preview');
   };
 
   return (
     <>
-      {/* Pré-carregar fontes selecionadas */}
+      {/* Pré-carregar todas as fontes do catálogo para renderização correta dos cards */}
       <link
         rel="stylesheet"
-        href={`https://fonts.googleapis.com/css2?family=${selectedFont.googleFamily.replace('|', '&family=')}&display=swap`}
+        href={`https://fonts.googleapis.com/css2?${Array.from(new Set(FONTS.flatMap(f => f.googleFamily.split('|')))).map(family => `family=${family}`).join('&')}&display=swap`}
       />
 
       <div className={styles.page}>
@@ -280,28 +301,32 @@ export default function PublicOnboarding() {
             </div>
           )}
 
-          {/* STEP 4: Foto de Capa */}
+          {/* STEP 4: Foto ou Vídeo de Capa */}
           {step === 4 && (
             <div className={styles.stepContent}>
               <h1 className="cursive" style={{ fontSize: '2.8rem', marginBottom: '0.5rem' }}>
                 Para fechar: o rosto do evento.
               </h1>
-              <p className={styles.subtitle}>Uma foto de vocês. Ela será o destaque do convite.</p>
+              <p className={styles.subtitle}>Uma foto ou um vídeo de vocês. Ele será o destaque do convite.</p>
 
               <label className={styles.uploadZone} style={{ borderColor: selectedPalette.primary }}>
                 {coverBase64 ? (
                   <div className={styles.uploadPreview}>
-                    <img src={coverBase64} alt="Capa" />
-                    <span style={{ color: selectedPalette.primary }}>✓ Foto carregada</span>
+                    {coverBase64.startsWith('data:video/') ? (
+                      <video src={coverBase64} autoPlay muted loop playsInline style={{ width: '100%', maxHeight: '180px', objectFit: 'cover', borderRadius: '10px' }} />
+                    ) : (
+                      <img src={coverBase64} alt="Capa" />
+                    )}
+                    <span style={{ color: selectedPalette.primary }}>✓ Mídia carregada</span>
                   </div>
                 ) : (
                   <div className={styles.uploadPrompt} style={{ color: selectedPalette.primary }}>
-                    <div className={styles.uploadIcon}>📸</div>
+                    <div className={styles.uploadIcon}>📸 / 🎥</div>
                     <strong>Arraste ou clique para escolher</strong>
-                    <span>JPG, PNG ou WEBP • Até 10mb</span>
+                    <span>JPG, PNG, WEBP ou MP4 • Até 10mb</span>
                   </div>
                 )}
-                <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: 'none' }} />
+                <input type="file" accept="image/*,video/*" onChange={handleFileUpload} style={{ display: 'none' }} />
               </label>
 
               <div className={styles.actions}>

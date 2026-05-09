@@ -118,6 +118,7 @@ export interface Configuracao {
   noiva_foto_url?: string;
   noivo_foto_url?: string;
   hero_images?: string[];
+  hero_videos?: string[];
   historia_conclusao?: string;
   noivos_conclusao?: string;
   bg_primary?: string;
@@ -168,3 +169,13 @@ export interface DatabaseRPCs {
   };
 }
 
+export interface MuralItem {
+  id: string;
+  evento_id: string;
+  tipo: 'FOTO' | 'MENSAGEM' | 'HIBRIDO' | 'VIDEO';
+  url_midia?: string;
+  mensagem?: string;
+  autor?: string;
+  aprovado: boolean;
+  criado_em?: string;
+}

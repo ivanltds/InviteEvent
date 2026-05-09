@@ -1,145 +1,168 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import styles from "./Landing.module.css";
 import Link from 'next/link';
-
-// Inline SVG Icons to avoid external dependencies
-const Icons = {
-  Heart: () => (
-    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-  ),
-  CheckCircle: () => (
-    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-  ),
-  Palette: () => (
-    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
-  ),
-  ShieldCheck: () => (
-    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
-  ),
-  Share2: () => (
-    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-  ),
-  Gift: () => (
-    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
-  ),
-  ArrowRight: ({ size = 18 }) => (
-    <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-  ),
-  Sparkles: ({ size = 16 }) => (
-    <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3Z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg>
-  )
-};
+import { motion } from 'framer-motion';
 
 export default function LandingPage() {
+  const [videoIndex, setVideoIndex] = useState(0);
+
+  const videos = [
+    "/videos/13347145_2160_3840_30fps.mp4",
+    "/videos/14752780_2160_3840_30fps.mp4",
+    "/videos/8502799-uhd_2160_3840_24fps.mp4",
+  ];
+
+  useEffect(() => {
+    // Efeito de cross-fade de vídeo real
+    const interval = setInterval(() => {
+      setVideoIndex(prev => (prev + 1) % videos.length);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [videos.length]);
+
   return (
     <div className={styles.landingWrapper}>
-      {/* Hero Section */}
-      <section className={styles.hero}>
-        <div className={styles.container}>
-          <div className={styles.heroContent}>
-            <div className={styles.badge}>
-              <Icons.Sparkles size={16} />
-              <span>InviteEventAI - Edição Casamentos</span>
-            </div>
-            <h1>Crie uma experiência digital inesquecível para o seu casamento</h1>
-            <p>
-              Transforme seu convite em um portal interativo. Gestão de presenças, lista de presentes, 
-              personalização visual completa e segurança para seus convidados.
-            </p>
-            <div className={styles.heroActions}>
-              <Link href="/criar" className={styles.primaryBtn}>
-                Experimentar meu Evento agora <Icons.ArrowRight size={18} />
-              </Link>
-              <a href="#features" className={styles.secondaryBtn}>
-                Ver funcionalidades
-              </a>
-            </div>
+      <nav className={styles.glassNav}>
+        <div className={styles.logo}>InviteEvent</div>
+        <div className={styles.navLinks}>
+          <a href="#experiencia">Experiência</a>
+          <a href="#funcionalidades">Inteligência</a>
+          <a href="#galeria">Design</a>
+        </div>
+        <Link href="/criar" className={styles.btnPrimary} style={{ padding: '12px 24px', fontSize: '12px' }}>
+          Criar Convite
+        </Link>
+      </nav>
+
+      {/* Hero Section with Video Cross-Fade */}
+      <header className={styles.hero}>
+        <div className={styles.videoContainer}>
+          {videos.map((src, index) => (
+            <video
+              key={src}
+              src={src}
+              autoPlay
+              muted
+              loop
+              playsInline
+              className={`${styles.videoBg} ${videoIndex === index ? styles.videoBgActive : ''}`}
+            />
+          ))}
+        </div>
+        <div className={styles.heroContent}>
+          <h1 className={styles.heroTitle}>A Celebração do Seu Amor,<br/>Transformada em <span className={styles.gold}>Arte Digital</span>.</h1>
+          <p className={styles.heroSubtitle}>Surpreenda seus convidados com uma experiência majestosa. Design de alta-costura, animações imersivas e gestão inteligente para o seu grande dia.</p>
+          <Link href="/criar" className={styles.btnPrimary}>Começar Jornada Mágica</Link>
+        </div>
+      </header>
+
+      {/* Section 1: Split Layout */}
+      <section id="experiencia" className={styles.section}>
+        <div className={`${styles.container} ${styles.splitLayout}`}>
+          <div className={styles.splitText}>
+            <h2 className={styles.gold}>O Efeito WOW</h2>
+            <h2>Mais que um convite,<br/>uma declaração.</h2>
+            <p>Esqueça PDFs estáticos e links sem graça. O InviteEvent entrega um envelope digital animado que se desdobra em uma experiência cinematográfica.</p>
+            <p>Desde a abertura selada até o carregamento suave das fotos de vocês, cada milissegundo foi coreografado para arrancar suspiros dos seus convidados.</p>
+            <Link href="/inv/preview">Ver Demonstração do Envelope</Link>
           </div>
-          <div className={styles.heroImage}>
-            {/* Mockup simplificado ou ilustração via CSS */}
-            <div className={styles.mockup}>
-              <div className={styles.mockupHeader}></div>
-              <div className={styles.mockupBody}>
-                <div className={styles.mockupLineLarge}></div>
-                <div className={styles.mockupLineMedium}></div>
-                <div className={styles.mockupCircle}></div>
+          <div className={styles.imageWrapper}>
+            <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800" alt="Casal elegante" />
+          </div>
+        </div>
+      </section>
+
+      {/* Section 2: Bento Grid */}
+      <section id="funcionalidades" className={`${styles.section} ${styles.featuresSection}`}>
+        <div className={styles.container}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.gold}>Tecnologia Invisível</h2>
+            <h2>Inteligência e Elegância</h2>
+            <p>Por trás do design luxuoso, um sistema poderoso trabalha silenciosamente para que você foque apenas em aproveitar o momento.</p>
+          </div>
+          
+          <div className={styles.bentoGrid}>
+            <div className={`${styles.bentoCard} ${styles.span2}`}>
+              <div className={styles.bentoIcon}>✧</div>
+              <h3>Lista de Presentes Premium</h3>
+              <p>Converta presentes virtuais em dinheiro direto na sua conta bancária. Uma experiência fluida para os convidados, transparente e segura para vocês, com as menores taxas do mercado.</p>
+            </div>
+            <div className={styles.bentoCard}>
+              <div className={styles.bentoIcon}>♡</div>
+              <h3>RSVP com 1 Clique</h3>
+              <p>Confirmações de presença rápidas, bonitas e precisas. Acompanhe os números em tempo real no seu painel.</p>
+            </div>
+            <div className={styles.bentoCard}>
+              <div className={styles.bentoIcon}>📷</div>
+              <h3>Mural Infinito</h3>
+              <p>Seus convidados capturam ângulos únicos. Receba e exiba as fotos em um grid majestoso ao vivo.</p>
+            </div>
+            <div 
+              className={`${styles.bentoCard} ${styles.span2}`} 
+              style={{ background: "url('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800') center/cover", color: "white", position: "relative" }}
+            >
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.2))", borderRadius: "32px" }}></div>
+              <div style={{ position: "relative", zIndex: 1, marginTop: "auto" }}>
+                <h3 style={{ color: "#FFF" }}>Templates de Alta-Costura</h3>
+                <p style={{ color: "#EAEAEA" }}>Design systems inspirados em revistas de moda. Escolha a paleta, a tipografia e veja a mágica acontecer instantaneamente.</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className={styles.features}>
+      {/* Section: Mural Vivo Preview */}
+      <section id="mural-preview" className={`${styles.section} ${styles.muralSection}`}>
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
-            <h2>Tudo o que você precisa em um só lugar</h2>
-            <p>Desenvolvido para simplificar a vida dos noivos e encantar os convidados.</p>
+            <h2 className={styles.gold}>Mural Vivo de Memórias</h2>
+            <h2>O afeto compartilhado em tempo real</h2>
+            <p>Seus convidados podem enviar fotos e mensagens carinhosas que aparecem magicamente no mural do evento. Experimente a dinâmica em tempo real abaixo:</p>
           </div>
-
-          <div className={styles.featureGrid}>
-            <div className={styles.featureCard}>
-              <div className={styles.iconWrapper}><Icons.CheckCircle /></div>
-              <h3>Presença Confirmada</h3>
-              <p>Confirmações de presença integradas com gestão de acompanhantes e restrições alimentares.</p>
+          
+          <div className={styles.muralPreviewGrid}>
+            <div className={styles.previewCard}>
+              <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600" style={{ width: '100%', display: 'block', height: '300px', objectFit: 'cover' }} alt="Alianças" />
             </div>
-
-            <div className={styles.featureCard}>
-              <div className={styles.iconWrapper}><Icons.Palette /></div>
-              <h3>Personalização Total</h3>
-              <p>Altere cores, fontes, fotos e textos em tempo real através de um painel administrativo intuitivo.</p>
+            <div className={styles.previewCard} style={{ background: "linear-gradient(135deg, #FFFFFF 0%, #F5EFEB 100%)", padding: "30px", borderLeft: "4px solid #C5A059", display: "flex", flexDirection: "column", justifyContent: "center", minHeight: "200px" }}>
+              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", fontStyle: "italic", margin: "0 0 12px 0", color: "#1A1A1A" }}>
+                "Ver o brilho no olhar de vocês hoje é ter a certeza de que o amor verdadeiro é real e inabalável!"
+              </p>
+              <span style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "#C5A059" }}>— Tio Roberto</span>
             </div>
-
-            <div className={styles.featureCard}>
-              <div className={styles.iconWrapper}><Icons.Gift /></div>
-              <h3>Lista de Presentes</h3>
-              <p>Receba presentes via PIX diretamente na sua conta, com controle de estoque e mensagens de agradecimento.</p>
-            </div>
-
-            <div className={styles.featureCard}>
-              <div className={styles.iconWrapper}><Icons.ShieldCheck /></div>
-              <h3>Segurança e Privacidade</h3>
-              <p>Links únicos e ofuscados. Apenas quem você convidou tem acesso aos detalhes do seu grande dia.</p>
-            </div>
-
-            <div className={styles.featureCard}>
-              <div className={styles.iconWrapper}><Icons.Share2 /></div>
-              <h3>Compartilhamento Fácil</h3>
-              <p>Gere links personalizados para cada convidado e envie via WhatsApp com um único clique.</p>
-            </div>
-
-            <div className={styles.featureCard}>
-              <div className={styles.iconWrapper}><Icons.Heart /></div>
-              <h3>Nossa História</h3>
-              <p>Conte sua trajetória, apresente os noivos e compartilhe fotos em uma timeline emocionante.</p>
+            <div className={styles.previewCard}>
+              <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=600" style={{ width: '100%', display: 'block', height: '300px', objectFit: 'cover' }} alt="Noivos" />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent 60%)", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "20px", color: "#FFF" }}>
+                <p style={{ fontSize: "13px", fontWeight: 500, margin: "0 0 4px 0" }}>"Os mais lindos! Que alegria imensa viver esse dia com vocês!"</p>
+                <span style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(255,255,255,0.8)" }}>— Camila & Bruno</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className={styles.ctaSection}>
+      {/* Section 3: Parallax Photo Band */}
+      <section id="galeria" className={styles.photoBand}>
+        <div className={styles.photoBandContent}>
+          <h2>"O detalhe não é apenas um detalhe.<br/>Ele faz o design."</h2>
+          <p style={{ color: "#EAEAEA", marginTop: "15px", fontWeight: 300, letterSpacing: "0.1em", textTransform: "uppercase" }}>— Experiência Majestic</p>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className={`${styles.section} ${styles.ctaSection}`}>
         <div className={styles.container}>
-          <div className={styles.ctaContent}>
-            <h2>Pronto para digitalizar seu grande dia?</h2>
-            <p>Junte-se a centenas de casais que escolheram a elegância e praticidade do InviteEventAI.</p>
-            <Link href="/admin" className={styles.largeBtn}>
-              Crie seu convite gratuitamente agora
+          <h2 className={styles.gold}>Pronto para inspirar?</h2>
+          <h2>O seu grande dia merece<br/>um começo inesquecível.</h2>
+          <div style={{ marginTop: "50px" }}>
+            <Link href="/criar" className={styles.btnPrimary} style={{ padding: "20px 60px", fontSize: "16px" }}>
+              Criar Convite Agora
             </Link>
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className={styles.footer}>
-        <div className={styles.container}>
-          <p>&copy; 2026 InviteEventAI. Todos os direitos reservados.</p>
-          <div className={styles.footerLinks}>
-            <Link href="/admin">Painel Administrativo</Link>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

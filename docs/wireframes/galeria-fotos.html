@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mural de Memórias - InviteEvent</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap');
+        
+        body, html { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: #F9F9FB; color: #1A1A1A; overflow-x: hidden; scroll-behavior: smooth; }
+        
+        header { padding: 60px 20px 40px; text-align: center; max-width: 800px; margin: 0 auto; }
+        .title { font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 600; margin: 0 0 12px 0; }
+        .subtitle { font-size: 16px; color: #71717A; margin: 0 0 30px 0; line-height: 1.5; }
+        
+        /* Premium Action Button */
+        .btn-eternizar {
+            background-color: #C5A059; color: #FFFFFF; border: none; padding: 16px 36px; border-radius: 30px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 10px 25px rgba(197, 160, 89, 0.3); display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-eternizar:hover { background-color: #B38F48; transform: translateY(-3px); box-shadow: 0 15px 35px rgba(197, 160, 89, 0.4); }
+
+        /* Masonry Grid */
+        .masonry {
+            column-count: 3; column-gap: 24px; padding: 0 40px 80px; max-width: 1200px; margin: 0 auto;
+        }
+
+        @media (max-width: 900px) { .masonry { column-count: 2; padding: 0 20px 60px; } }
+        @media (max-width: 600px) { .masonry { column-count: 1; padding: 0 15px 40px; } }
+
+        /* Cards Style & Transitions */
+        .card {
+            background: #FFFFFF; border-radius: 24px; overflow: hidden; margin-bottom: 24px; break-inside: avoid; box-shadow: 0 15px 40px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s, filter 0.6s; cursor: pointer; position: relative; will-change: transform, opacity, filter;
+        }
+        .card:hover { transform: translateY(-6px) scale(1.01); box-shadow: 0 25px 50px rgba(0,0,0,0.08); }
+
+        /* Photo Only Card */
+        .photo-img { width: 100%; display: block; background: #E5E5E5; object-fit: cover; }
+
+        /* Elegant Quote Card */
+        .quote-card {
+            background: linear-gradient(135deg, #FFFFFF 0%, #F5EFEB 100%); padding: 40px 30px; display: flex; flex-direction: column; justify-content: center; min-height: 180px; border-left: 4px solid #C5A059;
+        }
+        .quote-text { font-family: 'Playfair Display', serif; font-size: 20px; font-style: italic; color: #1A1A1A; line-height: 1.5; margin: 0 0 16px 0; }
+        .quote-author { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #C5A059; }
+
+        /* Overlay Card: Message on Top of Photo */
+        .overlay-card { position: relative; }
+        .overlay-card .overlay-content {
+            position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0) 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 24px; color: #FFFFFF;
+        }
+        .overlay-text { font-size: 14px; font-weight: 500; line-height: 1.4; margin-bottom: 8px; }
+        .overlay-author { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.8); }
+
+        /* Blur/Scale animations for "Magic Swap" */
+        .magic-transition { opacity: 0; transform: scale(0.95); filter: blur(15px); }
+
+        /* Interactive Modal */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.4s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-card {
+            background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(255,255,255,0.5); backdrop-filter: blur(20px); border-radius: 28px; width: 90%; max-width: 480px; padding: 40px; box-shadow: 0 30px 70px rgba(0,0,0,0.2); transform: translateY(40px) scale(0.95); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modal-overlay.active .modal-card { transform: translateY(0) scale(1); }
+        
+        .modal-title { font-family: 'Playfair Display', serif; font-size: 28px; margin-bottom: 8px; text-align: center; }
+        .modal-subtitle { font-size: 14px; color: #71717A; margin-bottom: 24px; text-align: center; line-height: 1.4; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #1A1A1A; margin-bottom: 8px; }
+        .form-input {
+            width: 100%; padding: 14px 20px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1); background: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 14px; box-sizing: border-box; transition: border-color 0.3s;
+        }
+        .form-input:focus { outline: none; border-color: #C5A059; }
+        
+        .file-upload-area {
+            border: 2px dashed rgba(197, 160, 89, 0.3); background: rgba(197, 160, 89, 0.02); border-radius: 16px; padding: 30px; text-align: center; cursor: pointer; transition: background 0.3s;
+        }
+        .file-upload-area:hover { background: rgba(197, 160, 89, 0.05); }
+        
+        /* Success Screen in Modal */
+        .success-screen { display: none; text-align: center; }
+        .success-icon { font-size: 48px; color: #C5A059; margin-bottom: 20px; }
+        .success-text { font-size: 15px; color: #52525B; line-height: 1.6; margin-bottom: 24px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 class="title">Mural de Memórias</h1>
+        <p class="subtitle">Compartilhe e reviva as capturas e declarações de afeto mais lindas do nosso dia</p>
+        <button class="btn-eternizar" onclick="openModal()">✧ Eternizar Momentos</button>
+    </header>
+
+    <div class="masonry" id="galleryGrid">
+        <!-- Card 1: Photo Only -->
+        <div class="card" id="card-1">
+            <img class="photo-img" src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800" style="height: 320px;" alt="Alianças">
+        </div>
+
+        <!-- Card 2: Quote Card -->
+        <div class="card quote-card" id="card-2">
+            <p class="quote-text">"Ver o brilho no olhar de vocês hoje é ter a certeza de que o amor verdadeiro é real e inabalável!"</p>
+            <span class="quote-author">— Tio Roberto</span>
+        </div>
+
+        <!-- Card 3: Photo Overlay Message -->
+        <div class="card overlay-card" id="card-3">
+            <img class="photo-img" src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800" style="height: 420px;" alt="Noivos">
+            <div class="overlay-content">
+                <p class="overlay-text">"Os mais lindos! Que alegria imensa viver esse dia com vocês!"</p>
+                <span class="overlay-author">— Camila & Bruno</span>
+            </div>
+        </div>
+
+        <!-- Card 4: Photo Only -->
+        <div class="card" id="card-4">
+            <img class="photo-img" src="https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&q=80&w=800" style="height: 240px;" alt="Bolo">
+        </div>
+
+        <!-- Card 5: Quote Card -->
+        <div class="card quote-card" id="card-5">
+            <p class="quote-text">"Que noite extraordinária! Cada pedaço desse evento exala elegância e felicidade genuína."</p>
+            <span class="quote-author">— Priscila M.</span>
+        </div>
+
+        <!-- Card 6: Photo Overlay Message -->
+        <div class="card overlay-card" id="card-6">
+            <img class="photo-img" src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&q=80&w=800" style="height: 380px;" alt="Abraço">
+            <div class="overlay-content">
+                <p class="overlay-text">"O casal do ano. Amo vocês infinitamente!"</p>
+                <span class="overlay-author">— Lucas Silva</span>
+            </div>
+        </div>
+
+        <!-- Card 7: Video Card (Guest Video Clip) -->
+        <div class="card" id="card-7" style="position: relative;">
+            <video class="photo-img" autoplay loop muted playsinline style="height: 360px; object-fit: cover;">
+                <source src="../../public/videos/14569147_2160_3840_30fps.mp4" type="video/mp4">
+            </video>
+            <div style="position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; pointer-events: none;">▶</div>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="modal-overlay" id="uploadModal" onclick="closeModal(event)">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <!-- Form Screen -->
+            <div id="modalForm">
+                <h3 class="modal-title">Eternizar Momentos</h3>
+                <p class="modal-subtitle">Envie suas fotos favoritas e deixe uma mensagem especial diretamente para os noivos.</p>
+                
+                <div class="form-group">
+                    <label class="form-label">Selecione Mídias (Fotos ou Vídeos)</label>
+                    <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+                        <span style="font-size: 24px; color: #C5A059;">📷 🎥</span>
+                        <p style="font-size: 13px; color: #71717A; margin: 8px 0 0;">Clique para escolher fotos ou vídeos curtos</p>
+                        <input type="file" id="fileInput" accept="image/*,video/*" multiple style="display:none;" onchange="updateFileLabel(this)">
+                        <p id="fileLabel" style="font-size: 11px; color: #C5A059; margin-top: 6px; font-weight: 600;"></p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="msgInput">Sua Mensagem Carinhosa (Opcional)</label>
+                    <textarea class="form-input" id="msgInput" rows="3" placeholder="Escreva algo lindo sobre esse momento..."></textarea>
+                </div>
+
+                <button class="btn-eternizar" style="width: 100%; justify-content: center; margin-top: 10px;" onclick="submitPhotos()">✧ Enviar Lembrança</button>
+            </div>
+
+            <!-- Success Screen -->
+            <div id="modalSuccess" class="success-screen">
+                <div class="success-icon">✧</div>
+                <h3 class="modal-title">Enviado com Sucesso!</h3>
+                <p class="success-text">Sua lembrança foi enviada com muito carinho. Para garantir a harmonia e privacidade do mural, ela aparecerá assim que os noivos derem a aprovação final.</p>
+                <button class="btn-eternizar" style="background: transparent; color: #C5A059; border: 1px solid #C5A059; box-shadow: none;" onclick="resetModal()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal functions
+        function openModal() {
+            document.getElementById('uploadModal').classList.add('active');
+        }
+        function closeModal(e) {
+            document.getElementById('uploadModal').classList.remove('active');
+        }
+        function updateFileLabel(input) {
+            const label = document.getElementById('fileLabel');
+            label.textContent = input.files.length > 1 ? `${input.files.length} mídias selecionadas` : `${input.files.length} mídia selecionada`;
+        }
+        function submitPhotos() {
+            document.getElementById('modalForm').style.display = 'none';
+            document.getElementById('modalSuccess').style.display = 'block';
+        }
+        function resetModal() {
+            document.getElementById('uploadModal').classList.remove('active');
+            setTimeout(() => {
+                document.getElementById('modalForm').style.display = 'block';
+                document.getElementById('modalSuccess').style.display = 'none';
+                document.getElementById('fileInput').value = '';
+                document.getElementById('msgInput').value = '';
+                document.getElementById('fileLabel').textContent = '';
+            }, 400);
+        }
+
+        // Dynamismo Mágico: Troca de posições das fotos e mensagens na galeria
+        const quotesPool = [
+            { text: '"Que honra testemunhar essa união tão perfeita! Todo o amor do mundo para vocês."', author: '— Mariana Reis' },
+            { text: '"Que Deus abençoe infinitamente esse novo e maravilhoso ciclo!"', author: '— Vovó Lourdes' },
+            { text: '"O amor flutua no ar desse salão. Festa maravilhosa!"', author: '— Felipe & Ana' },
+            { text: '"Mais de dez anos de amizade e hoje vejo vocês darem o passo mais lindo."', author: '— Gabi (Madrinha)' }
+        ];
+
+        // Efeito Mágico: Troca de Conteúdos com Desfoque (Magic Swap)
+        function triggerMagicSwap() {
+            const cards = document.querySelectorAll('.card');
+            if (cards.length < 2) return;
+
+            // Escolhe dois cards aleatórios
+            const idx1 = Math.floor(Math.random() * cards.length);
+            let idx2 = Math.floor(Math.random() * cards.length);
+            while (idx2 === idx1) {
+                idx2 = Math.floor(Math.random() * cards.length);
+            }
+
+            const card1 = cards[idx1];
+            const card2 = cards[idx2];
+
+            // Aplica efeito mágico de desaparecimento (blur/fade)
+            card1.classList.add('magic-transition');
+            card2.classList.add('magic-transition');
+
+            setTimeout(() => {
+                // Se um deles for Quote Card, atualiza o texto para dar a sensação de que novas mensagens surgem
+                if (card1.classList.contains('quote-card')) {
+                    const randomQuote = quotesPool[Math.floor(Math.random() * quotesPool.length)];
+                    card1.querySelector('.quote-text').textContent = randomQuote.text;
+                    card1.querySelector('.quote-author').textContent = randomQuote.author;
+                }
+                if (card2.classList.contains('quote-card')) {
+                    const randomQuote = quotesPool[Math.floor(Math.random() * quotesPool.length)];
+                    card2.querySelector('.quote-text').textContent = randomQuote.text;
+                    card2.querySelector('.quote-author').textContent = randomQuote.author;
+                }
+
+                // Troca física das estruturas das fotos (para dar dinamismo)
+                const tempHTML = card1.innerHTML;
+                const tempClass = card1.className;
+                
+                card1.className = card2.className;
+                card1.innerHTML = card2.innerHTML;
+                
+                card2.className = tempClass;
+                card2.innerHTML = tempHTML;
+
+                // Remove o desfoque
+                card1.classList.remove('magic-transition');
+                card2.classList.remove('magic-transition');
+            }, 600); // tempo correspondente ao CSS
+        }
+
+        // Rodar o efeito mágico a cada 5 segundos
+        setInterval(triggerMagicSwap, 5000);
+    </script>
+</body>
+</html>

@@ -22,6 +22,8 @@ interface Config {
   pix_tipo: 'cpf' | 'cnpj' | 'email' | 'telefone' | 'aleatoria';
   accent_color?: string;
   allow_stripe?: boolean;
+  font_serif?: string;
+  font_cursive?: string;
 }
 
 export default function PresentesPage() {
@@ -29,6 +31,7 @@ export default function PresentesPage() {
   const [loading, setLoading] = useState(true);
   const [config, setConfig] = useState<Config | null>(null);
   const [cart, setCart] = useState<Presente[]>([]);
+  const [selectedGift, setSelectedGift] = useState<Presente | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const [step, setStep] = useState<'checkout' | 'success'>('checkout');
@@ -169,18 +172,18 @@ export default function PresentesPage() {
   };
 
   const pixPayload = useMemo(() => {
-    if (!config || totalCartValue === 0) return '';
+    if (totalCartValue === 0) return '';
     return generatePixPayload(
-      config.pix_chave,
-      config.pix_nome || 'CASAMENTO',
-      config.pix_tipo || 'cpf',
+      config?.pix_chave || 'layysllafabiana@gmail.com',
+      config?.pix_nome || 'Layslla Fabiana',
+      (config?.pix_tipo || 'email') as any,
       'SAO PAULO',
       totalCartValue
     );
   }, [config, totalCartValue]);
 
   return (
-    <main className={styles.main}>
+    <div className={styles.main}>
       {showIntro && (
         <EmotionalIntro 
           onComplete={() => setShowIntro(false)} 
@@ -188,14 +191,21 @@ export default function PresentesPage() {
         />
       )}
 
-      <header className={styles.header}>
-        <div className={styles.topNav}>
-          <Link href={`/inv/${invite?.slug || ''}`} className={styles.backLink}>
-            ← Voltar ao Convite
-          </Link>
+      <nav className={styles.headerNav}>
+        <Link href={`/inv/${invite?.slug || ''}`} className={styles.backLink}>
+          InviteEvent
+        </Link>
+        <div className={styles.cartIndicator} onClick={handleOpenCheckout}>
+          <span>🛒 Cesta</span>
+          <span className={styles.cartCount} style={{ background: config?.accent_color || '#C5A059' }}>
+            {cart.length}
+          </span>
         </div>
-        <h1 className="cursive" style={{ color: config?.accent_color }}>Nossa Lista de Presentes</h1>
-        <p>Cada item aqui foi escolhido com carinho para nossa nova vida juntos.</p>
+      </nav>
+
+      <header className={styles.header}>
+        <h1 style={{ color: config?.accent_color, fontFamily: config?.font_serif }}>Lista de Presentes</h1>
+        <p className={styles.subtitle}>Seu maior presente é a sua presença. Mas, se desejar nos homenagear, escolha um item de nossa lista de cotas virtuais para nossa nova jornada.</p>
       </header>
 
       {loading ? (
@@ -208,59 +218,58 @@ export default function PresentesPage() {
       ) : (
         <>
           <section className={styles.grid}>
-            {presentes.map((item) => {
-              const isSelected = cart.some(p => p.id === item.id);
+            {presentes.map(item => {
+              const inCart = cart.some(p => p.id === item.id);
               const isSoldOut = item.quantidade_reservada >= item.quantidade_total;
-              const isDisabled = isSoldOut || item.status === 'pausado';
+              const isReserved = isSoldOut || item.status === 'pausado';
               
               return (
                 <motion.div 
                   key={item.id} 
                   layout
-                  className={`${styles.card} ${isDisabled ? styles.reserved : ''} ${isSelected ? styles.cardSelected : ''}`}
-                  style={isSelected ? { borderColor: config?.accent_color } : {}}
+                  className={`${styles.card} ${isReserved ? styles.reserved : ''} ${inCart ? styles.cardSelected : ''}`}
+                  style={inCart ? { borderColor: config?.accent_color || '#C5A059' } : { cursor: isReserved ? 'not-allowed' : 'pointer' }}
+                  onClick={() => !isReserved && setSelectedGift(item)}
                 >
                   <div className={styles.imagePlaceholder}>
-                    {isSelected && (
-                      <span className={styles.selectedBadge} style={{ background: config?.accent_color }}>
-                        Selecionado
+                    {inCart && (
+                      <span className={styles.selectedBadge} style={{ background: config?.accent_color || '#C5A059' }}>
+                        Selecionado ✓
                       </span>
                     )}
                     {item.imagem_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={item.imagem_url} alt={item.nome} className={styles.itemImage} />
                     ) : (
-                       <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" strokeWidth="1" fill="none"><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path><rect x="2" y="7" width="20" height="5"></rect><polyline points="20 12 20 22 4 22 4 12"></polyline></svg>
+                      <div className={styles.cardImageFallback}>
+                        <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" strokeWidth="1" fill="none">
+                          <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                          <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+                          <rect x="2" y="7" width="20" height="5"></rect>
+                          <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                        </svg>
+                      </div>
                     )}
                   </div>
                   <div className={styles.info}>
-                    <h3>{item.nome}</h3>
-                    <p className={styles.price} style={{ color: config?.accent_color }}>
-                      {Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                    </p>
-                    {item.descricao && (
-                      <p className={styles.description}>{item.descricao}</p>
-                    )}
+                    <div className={styles.description}>{item.descricao || 'EXPERIÊNCIA'}</div>
+                    <h3 style={{ fontFamily: config?.font_serif }}>{item.nome}</h3>
+                    <div className={styles.price} style={{ color: config?.accent_color || '#C5A059' }}>
+                      R$ {Number(item.preco).toFixed(2).replace('.', ',')}
+                    </div>
+                    
                     <div className={styles.itemActions}>
                       <button 
                         className={styles.giftBtn}
-                        style={isSelected ? { backgroundColor: '#333', color: 'white' } : { backgroundColor: config?.accent_color }}
-                        disabled={isDisabled}
-                        onClick={() => toggleToCart(item)}
+                        style={{ backgroundColor: isReserved ? '#ccc' : (config?.accent_color || '#C5A059') }}
+                        disabled={isReserved}
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          if (!isReserved) setSelectedGift(item); 
+                        }}
                       >
-                        {isDisabled ? 'Esgotado' : isSelected ? 'Remover do Carrinho' : 'Presentear via PIX'}
+                        {isReserved ? 'Indisponível' : 'Ver Detalhes'}
                       </button>
-
-                      {item.link_externo && !isDisabled && (
-                        <a 
-                          href={item.link_externo} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className={styles.externalLinkBtn}
-                        >
-                          Comprar em outra loja
-                        </a>
-                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -282,6 +291,91 @@ export default function PresentesPage() {
       )}
 
       <AnimatePresence>
+        {selectedGift && (
+          <div className={styles.modalOverlay} onClick={() => setSelectedGift(null)}>
+            <motion.div 
+              className={styles.modal}
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 50, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Left Column: Visual */}
+              <div className={styles.modalVisual}>
+                {selectedGift.imagem_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={selectedGift.imagem_url} alt={selectedGift.nome} />
+                ) : (
+                  <div className={styles.modalVisualPlaceholder}>
+                    <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1" fill="none">
+                      <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                      <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+                      <rect x="2" y="7" width="20" height="5"></rect>
+                      <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                    </svg>
+                  </div>
+                )}
+              </div>
+
+              {/* Right Column: Content */}
+              <div className={styles.modalContent}>
+                <button className={styles.closeBtn} onClick={() => setSelectedGift(null)}>&times;</button>
+                <div className={styles.modalTag}>{selectedGift.descricao || 'PRESENTE'}</div>
+                <h2 style={{ fontFamily: config?.font_serif, margin: '0 0 10px 0', fontSize: '32px', fontWeight: 600, color: '#1A1A1A' }}>
+                  {selectedGift.nome}
+                </h2>
+                <div className={styles.modalPrice} style={{ color: config?.accent_color || '#C5A059' }}>
+                  {Number(selectedGift.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                </div>
+                
+                <div className={styles.modalDescHeading}>Sobre este presente</div>
+                <div className={styles.modalDescText}>
+                  {selectedGift.descricao ? (
+                    selectedGift.descricao.split('\n').map((line, i) => (
+                      <p key={i} style={{ marginBottom: '0.5rem' }}>{line}</p>
+                    ))
+                  ) : (
+                    <p>Sem descrição detalhada.</p>
+                  )}
+                </div>
+                
+                <div className={styles.modalActions}>
+                  <button 
+                    onClick={() => {
+                      toggleToCart(selectedGift);
+                      setSelectedGift(null);
+                    }}
+                    className={styles.modalBtnCart}
+                    style={{ 
+                      backgroundColor: cart.some(p => p.id === selectedGift.id) ? '#333' : (config?.accent_color || '#C5A059'),
+                      color: '#FFF'
+                    }}
+                  >
+                    {cart.some(p => p.id === selectedGift.id) ? 'Remover ✓' : 'Adicionar à Cesta'}
+                  </button>
+                  
+                  {selectedGift.link_externo && (
+                    <a 
+                      href={selectedGift.link_externo} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className={styles.modalBtnExternal}
+                      style={{ 
+                        color: config?.accent_color || '#C5A059',
+                        borderColor: config?.accent_color || '#C5A059'
+                      }}
+                    >
+                      Comprar Online
+                    </a>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {showModal && (
           <div className={styles.modalOverlay}>
             <motion.div 
@@ -289,92 +383,95 @@ export default function PresentesPage() {
               initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 50, opacity: 0 }}
+              style={{ gridTemplateColumns: '1fr' }}
             >
               <button className={styles.closeBtn} onClick={() => setShowModal(false)}>&times;</button>
               
-              {step === 'checkout' ? (
-                <>
-                  <h2 className="cursive">Sua Cesta de Carinho</h2>
-                  
-                  <div className={styles.cartSummary}>
-                    {cart.map(item => (
-                      <div key={item.id} className={styles.cartItem}>
-                        <span>{item.nome}</span>
-                        <span>{Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+              <div style={{ padding: '48px', maxHeight: '85vh', overflowY: 'auto' }}>
+                {step === 'checkout' ? (
+                  <>
+                    <h2 style={{ fontFamily: config?.font_serif, marginBottom: '1.5rem', fontSize: '32px' }}>Sua Cesta de Carinho</h2>
+                    
+                    <div className={styles.cartSummary}>
+                      {cart.map(item => (
+                        <div key={item.id} className={styles.cartItem}>
+                          <span>{item.nome}</span>
+                          <span>{Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                        </div>
+                      ))}
+                      <div className={styles.cartTotalLine} style={{ color: config?.accent_color }}>
+                        <span>Total</span>
+                        <span>{totalCartValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                       </div>
-                    ))}
-                    <div className={styles.cartTotalLine} style={{ color: config?.accent_color }}>
-                      <span>Total</span>
-                      <span>{totalCartValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                     </div>
-                  </div>
 
-                  <div className={styles.messageField}>
-                    <label htmlFor="specialMessage">Uma mensagem especial para nós:</label>
-                    <textarea 
-                      id="specialMessage"
-                      className={styles.messageArea}
-                      placeholder="Escreva algo carinhoso aqui... (opcional)"
-                      value={specialMessage}
-                      onChange={(e) => setSpecialMessage(e.target.value)}
+                    <div className={styles.messageField}>
+                      <label htmlFor="specialMessage" style={{ fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>Uma mensagem especial para nós:</label>
+                      <textarea 
+                        id="specialMessage"
+                        className={styles.messageArea}
+                        placeholder="Escreva algo carinhoso aqui... (opcional)"
+                        value={specialMessage}
+                        onChange={(e) => setSpecialMessage(e.target.value)}
+                      />
+                    </div>
+
+                    <PaymentSelector 
+                      total={totalCartValue}
+                      pixPayload={pixPayload}
+                      onPixCopy={() => copyToClipboard(pixPayload)}
+                      pixCopyStatus={pixCopyStatus}
+                      accentColor={config?.accent_color}
+                      allowStripe={config?.allow_stripe}
                     />
-                  </div>
 
-                  <PaymentSelector 
-                    total={totalCartValue}
-                    pixPayload={pixPayload}
-                    onPixCopy={() => copyToClipboard(pixPayload)}
-                    pixCopyStatus={pixCopyStatus}
-                    accentColor={config?.accent_color}
-                    allowStripe={config?.allow_stripe}
-                  />
-
-                  <div className={styles.uploadSection}>
-                    <CldUploadWidget uploadPreset="invite_preset" onSuccess={handleUploadSuccess}>
-                      {({ open }) => (
-                        <button 
-                          className={styles.uploadBtn} 
-                          onClick={() => open()}
-                          style={{ backgroundColor: config?.accent_color }}
-                        >
-                          Enviar Comprovante de Pagamento
-                        </button>
-                      )}
-                    </CldUploadWidget>
-                    <p style={{ fontSize: '0.8rem', marginTop: '1rem', color: '#888', textAlign: 'center' }}>
-                      Após realizar o pagamento, anexe o comprovante para confirmarmos sua reserva.
+                    <div className={styles.uploadSection}>
+                      <CldUploadWidget uploadPreset="invite_preset" onSuccess={handleUploadSuccess}>
+                        {({ open }) => (
+                          <button 
+                            className={styles.uploadBtn} 
+                            onClick={() => open()}
+                            style={{ backgroundColor: config?.accent_color || '#C5A059' }}
+                          >
+                            Enviar Comprovante de Pagamento
+                          </button>
+                        )}
+                      </CldUploadWidget>
+                      <p style={{ fontSize: '0.8rem', marginTop: '1rem', color: '#888', textAlign: 'center' }}>
+                        Após realizar o pagamento, anexe o comprovante para confirmarmos sua reserva.
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <div className={styles.successMessage}>
+                    <motion.div 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: [0, 1.2, 1] }}
+                      transition={{ duration: 0.5 }}
+                      style={{ marginBottom: '2rem' }}
+                    >
+                      <svg viewBox="0 0 24 24" width="100" height="100" fill={config?.accent_color || '#D4AF37'}>
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+                      </svg>
+                    </motion.div>
+                    <h2 style={{ fontFamily: config?.font_serif, fontSize: '3rem', color: config?.accent_color || '#C5A059', marginBottom: '1rem' }}>Uau! Muito Obrigado!</h2>
+                    <p style={{ fontSize: '1.2rem', lineHeight: '1.6', margin: '1.5rem 0', color: '#555' }}>
+                      Seu carinho aqueceu nossos corações. Cada presente nos ajuda a construir nossa história e nosso novo lar.
                     </p>
+                    <button 
+                      className={styles.giftBtn} 
+                      onClick={() => { setShowModal(false); setCart([]); }}
+                      style={{ backgroundColor: config?.accent_color || '#C5A059', maxWidth: '250px', margin: '0 auto', borderRadius: '30px' }}
+                    >
+                      Voltar e Continuar
+                    </button>
                   </div>
-                </>
-              ) : (
-                <div className={styles.successMessage}>
-                  <motion.div 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: [0, 1.2, 1] }}
-                    transition={{ duration: 0.5 }}
-                    style={{ marginBottom: '2rem' }}
-                  >
-                    <svg viewBox="0 0 24 24" width="100" height="100" fill={config?.accent_color || '#D4AF37'}>
-                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
-                    </svg>
-                  </motion.div>
-                  <h2 className="cursive" style={{ fontSize: '3rem', color: config?.accent_color }}>Uau! Muito Obrigado!</h2>
-                  <p style={{ fontSize: '1.2rem', lineHeight: '1.6', margin: '1.5rem 0' }}>
-                    Seu carinho aqueceu nossos corações. Cada presente nos ajuda a construir nossa história e nosso novo lar.
-                  </p>
-                  <button 
-                    className={styles.giftBtn} 
-                    onClick={() => { setShowModal(false); setCart([]); }}
-                    style={{ backgroundColor: config?.accent_color, maxWidth: '250px', margin: '0 auto', borderRadius: '30px' }}
-                  >
-                    Voltar e Continuar
-                  </button>
-                </div>
-              )}
+                )}
+              </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
-    </main>
+    </div>
   );
 }

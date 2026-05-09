@@ -1,50 +1,70 @@
-# Design System — InviteEventAI
+# Design System — InviteEventAI: Versão Majestosa (Luxo Contemporâneo)
 
-## 1. Identidade Visual
-O InviteEventAI busca uma estética que equilibre o **clássico dos casamentos** com a **modernidade de uma plataforma SaaS**. O design deve ser limpo, sofisticado e, acima de tudo, funcional em dispositivos móveis.
+## 1. Visão de Design (O Mood)
+O InviteEventAI evolui para o conceito de **Luxo Contemporâneo**. A estética é minimalista, limpa e "arejada", priorizando o conteúdo (fotos e informações do evento) através de camadas de profundidade, transparências sofisticadas (Glassmorphism) e movimentos coreografados.
 
-## 2. Paleta de Cores
-- **Primária (Destaque):** `#D4AF37` (Dourado Champagne) - Usada para botões principais, links e ícones de destaque.
-- **Secundária:** `#4A5568` (Cinza Azulado) - Usada para textos de corpo e ícones secundários.
-- **Background Principal:** `#FAFAFA` (Off-white) - Fundo das páginas para reduzir o cansaço visual.
-- **Background Secundário:** `#FFFFFF` (Branco) - Cards, seções e inputs.
-- **Sucesso:** `#48BB78` (Verde suave) - Confirmações de RSVP e pagamentos.
-- **Erro:** `#F56565` (Vermelho suave) - Alertas e validações.
+- **Atributos:** Elegância, Exclusividade, Fluidez, Calma.
+- **Referência:** Design System da Apple (iOS/macOS), sites de alta costura e joalherias de luxo.
 
-## 3. Tipografia
-- **Títulos (Headings):** `Playfair Display`, Serif. Transmite elegância e tradição.
-- **Corpo (Body):** `Inter` ou `Montserrat`, Sans-serif. Garante legibilidade em telas pequenas.
+## 2. Fundações Visuais
 
-| Escala | Tamanho | Peso | Uso |
-|--------|---------|------|-----|
-| H1     | 32px    | 700  | Títulos de página |
-| H2     | 24px    | 600  | Subtítulos de seção |
-| Body   | 16px    | 400  | Texto principal |
-| Small  | 14px    | 400  | Legendas e metadados |
+### 2.1. Paleta de Cores (The Royal Palette)
+| Cor | Hex | Uso |
+|:--- |:--- |:--- |
+| **Pure White** | `#FFFFFF` | Fundos de cards e superfícies principais. |
+| **Soft Alabaster** | `#F9F9FB` | Fundo principal da aplicação (quase branco). |
+| **Royal Gold** | `#C5A059` | Destaques, botões primários e ícones premium. |
+| **Midnight Ink** | `#1A1A1A` | Tipografia principal, títulos e elementos de contraste. |
+| **Ethereal Glass** | `rgba(255, 255, 255, 0.7)` | Superfícies com Glassmorphism (Backdrop Blur). |
+| **Subtle Slate** | `#71717A` | Textos secundários e metadados. |
 
-## 4. Componentes Base
+### 2.2. Tipografia (The Editorial Pair)
+A tipografia deve evocar uma revista de moda ou um convite de papel de alta gramatura.
 
-### Botões
-- **Primary:** Background dourado, texto branco, bordas levemente arredondadas (8px), transição suave de hover.
-- **Secondary:** Borda dourada, fundo transparente, texto dourado.
-- **Ghost:** Sem fundo, texto cinza, sublinhado no hover.
+- **Primary (Serif):** `Playfair Display`. Usada para nomes dos noivos, títulos de seções e citações. Transmite tradição e requinte.
+- **Secondary (Sans-Serif):** `Inter`. Usada para interface, formulários e textos de leitura. Deve ter *letter-spacing* generoso em botões e labels.
 
-### Inputs
-- Bordas finas (`1px solid #E2E8F0`), foco com borda dourada.
-- Espaçamento interno (padding) generoso para facilitar o toque no mobile.
+| Estilo | Fonte | Tamanho | Weight | Case | Letter Spacing |
+|:--- |:--- |:--- |:--- |:--- |:--- |
+| **Hero Title** | Playfair | 48px+ | 700 | Normal | -0.02em |
+| **Section Title** | Playfair | 32px | 600 | Normal | 0 |
+| **UI Label** | Inter | 12px | 600 | Uppercase | 0.1em |
+| **Body Text** | Inter | 16px | 400 | Normal | 0 |
 
-### Cards
-- Sombra leve (`box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1)`).
-- Bordas de 12px.
-- Fundo branco.
+### 2.3. Efeitos e Profundidade
+- **Glassmorphism:** `backdrop-filter: blur(12px)`. Aplicado em modais, barras de navegação e sobreposições.
+- **Shadows (Airy):** Sombras muito suaves e difusas. `box-shadow: 0 20px 50px rgba(0,0,0,0.05)`.
+- **Bordas:** `1px solid rgba(0,0,0,0.05)` para separação sutil sem "pesar" o layout.
+- **Border Radius:** `24px` para cards grandes, `12px` para botões e inputs.
 
-## 5. Ícones
-- Utilizar a biblioteca **Lucide React** (ícones de linha fina e minimalista).
+## 3. Animações e Micro-interações (Nível 5)
+A alma da "Nova UI" está no movimento. Não usamos "transições", usamos "coreografias".
 
-## 6. Layout
-- **Grid:** Sistema de 12 colunas para Desktop, 4 colunas para Mobile.
-- **Espaçamento:** Base 4 (4px, 8px, 16px, 24px, 32px, 64px).
-- **Abordagem:** Mobile-First.
+- **Curvas de Beziér:** `cubic-bezier(0.4, 0, 0.2, 1)` (suave e natural).
+- **Staggering:** Elementos de uma lista ou grid entram um após o outro com um pequeno delay (0.05s).
+- **Parallax Sutil:** Imagens de fundo movem-se 10-15% mais devagar que o scroll.
+- **Haptic-like Feedback:** Botões diminuem levemente de escala (scale(0.97)) ao serem pressionados.
+
+## 4. Componentes Premium
+
+### 4.1. Botão "The Signature"
+- **Estilo:** Fundo Royal Gold, texto Pure White.
+- **Animação:** Ao hover, o brilho aumenta levemente e o botão flutua (translateY(-2px)).
+- **Variante Ghost:** Borda Royal Gold de 1px, texto Royal Gold.
+
+### 4.2. Cards "Floating Canvas"
+- **Estilo:** Fundo Pure White ou Ethereal Glass.
+- **Bordas:** Arredondadas (24px).
+- **Conteúdo:** Muita margem (padding: 40px+).
+
+### 4.3. Inputs "Elegant Line"
+- **Estilo:** Apenas uma linha inferior ou box com borda ultra-fina. Foco transforma a linha em Royal Gold com um pequeno brilho.
+
+## 5. Mobile-First Luxury
+No mobile, a experiência deve ser operável com o polegar.
+- Botões grandes (mínimo 48px de altura).
+- Navegação via gestos (ex: arrastar para fechar modais).
+- Imagens em tela cheia (Edge-to-Edge).
 
 ---
-*Documento criado pelo Designer UX/UI para orientar a implementação.*
+*Atualizado por UX/UI para PRD-002.*

@@ -1,21 +1,28 @@
 .container {
   position: fixed;
   bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
   z-index: 1000;
-  cursor: pointer;
-  filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.2));
+  pointer-events: none;
 }
 
 .basket {
+  pointer-events: auto;
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 2rem;
   border-radius: 9999px;
-  background: var(--accent-gold);
-  color: #fff;
+  background-color: #C5A059;
+  color: #ffffff;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .icon {
@@ -23,6 +30,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #ffffff;
 }
 
 .badge {
@@ -45,6 +53,7 @@
 .text {
   display: flex;
   flex-direction: column;
+  color: #ffffff;
 }
 
 .label {
@@ -53,20 +62,24 @@
   letter-spacing: 0.1em;
   font-weight: 600;
   opacity: 0.9;
+  color: #ffffff;
 }
 
 .amount {
   font-size: 1.1rem;
   font-weight: 700;
+  color: #ffffff;
 }
 
 @media (max-width: 480px) {
   .container {
     bottom: 1.5rem;
-    width: 90%;
-    max-width: 320px;
+    padding: 0 1rem;
   }
+  
   .basket {
+    width: 100%;
+    max-width: 320px;
     justify-content: center;
   }
 }

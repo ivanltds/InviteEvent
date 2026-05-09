@@ -11,3 +11,10 @@
 **Status:** [ABERTO | APLICADO]
 
 ## Histórico
+
+## [2026-05-09] — Tipo: PROCESSO
+**Contexto:** Arquitetura de Software e Planejamento
+**Problema:** PRDs complexos demais e falta de quebra de escopo perdem o foco da implementação prática.
+**Impacto:** Atraso em correções e gargalos técnicos em deploys grandes.
+**Ação corretiva:** Criar planos de arquitetura e histórias de usuário focados em fases modulares e incrementais, garantindo validação total a cada passo.
+**Status:** APLICADO

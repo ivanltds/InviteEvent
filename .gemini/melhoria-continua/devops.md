@@ -18,3 +18,10 @@
 **Impacto:** Necessidade de intervenção manual no painel do Supabase, quebrando o fluxo de entrega segura.
 **Ação corretiva:** Padronização do uso da Porta 5432 (Session Mode) para DDL e exigência do Supabase CLI com Access Token.
 **Status:** APLICADO
+
+## [2026-05-09] — Tipo: PROCESSO
+**Contexto:** Gestão de Ambientes e Supabase
+**Problema:** Risco de inconsistências ou quebra de permissões ao alterar DDL/DML diretamente na base de dados de produção.
+**Impacto:** Erros de permissão em tempo de execução para novos usuários cadastrados.
+**Ação corretiva:** O DevOps deve assumir o protagonismo em qualquer alteração de infraestrutura, Supabase ou variáveis de ambiente, identificando e sinalizando os riscos de implementação de forma proativa antes de qualquer deploy.
+**Status:** APLICADO

@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 
+import { supabase } from '@/lib/supabase';
+
 interface Ticket {
   id: string;
   status: 'aguardando_atendimento' | 'em_atendimento' | 'finalizado' | 'cancelado';
@@ -23,7 +25,23 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
   const [newMessage, setNewMessage] = useState('');
   const [slaText, setSlaText] = useState('02:00:00');
   const [slaColor, setSlaColor] = useState('text-emerald-500');
+  const [activeUserId, setActiveUserId] = useState(usuarioId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Carregar o ID do usuário autenticado real (Owner, Organizer, Staff)
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setActiveUserId(user.id);
+        }
+      } catch (err) {
+        console.error('Erro ao obter usuário autenticado:', err);
+      }
+    }
+    loadUser();
+  }, []);
 
   // Carregar ou criar ticket ativo
   useEffect(() => {
@@ -74,7 +92,7 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
         const ticketRes = await fetch('/api/support/tickets', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ usuario_id: usuarioId, evento_id: eventoId }),
+          body: JSON.stringify({ usuario_id: activeUserId, evento_id: eventoId }),
         });
         const ticketData = await ticketRes.json();
         if (ticketData.success && ticketData.ticket) {
@@ -91,7 +109,7 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ticket_id: currentTicketId,
-          remetente_id: usuarioId,
+          remetente_id: activeUserId,
           conteudo: newMessage,
         }),
       });
@@ -185,7 +203,7 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
               </div>
             ) : (
               messages.map((msg) => {
-                const isUser = msg.remetente_id === usuarioId;
+                const isUser = msg.remetente_id === activeUserId;
                 return (
                   <div
                     key={msg.id}

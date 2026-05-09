@@ -211,7 +211,7 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
           <form onSubmit={handleSendMessage} className="p-3 bg-slate-950 border-t border-amber-500/10 flex gap-2">
             <input
               type="text"
-              value={newMessage}
+              value={newMessage || ''}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Digite sua mensagem..."
               className="flex-1 bg-slate-900 text-slate-200 text-xs px-3 py-2 rounded-xl border border-amber-500/10 focus:outline-none focus:border-amber-500/40"

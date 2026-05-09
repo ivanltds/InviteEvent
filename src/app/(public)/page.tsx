@@ -52,8 +52,8 @@ export default function LandingPage() {
           ))}
         </div>
         <div className={styles.heroContent}>
-          <h1 className={styles.heroTitle}>A Celebração do Seu Amor,<br/>Transformada em <span className={styles.gold}>Arte Digital</span>.</h1>
-          <p className={styles.heroSubtitle}>Surpreenda seus convidados com uma experiência majestosa. Design de alta-costura, animações imersivas e gestão inteligente para o seu grande dia.</p>
+          <h1 className={styles.heroTitle}>O Convite do Seu Casamento,<br/>Elevado ao Nível de <span className={styles.gold}>Obra de Arte</span>.</h1>
+          <p className={styles.heroSubtitle}>Surpreenda seus convidados com uma experiência cinematográfica incomparável. Escolha designs de alta-costura, conte sua história com transições fluidas e gerencie confirmações de presença de forma 100% automatizada e segura.</p>
           <Link href="/criar" className={styles.btnPrimary}>Começar Jornada Mágica</Link>
         </div>
       </header>
@@ -62,10 +62,10 @@ export default function LandingPage() {
       <section id="experiencia" className={styles.section}>
         <div className={`${styles.container} ${styles.splitLayout}`}>
           <div className={styles.splitText}>
-            <h2 className={styles.gold}>O Efeito WOW</h2>
-            <h2>Mais que um convite,<br/>uma declaração.</h2>
-            <p>Esqueça PDFs estáticos e links sem graça. O InviteEvent entrega um envelope digital animado que se desdobra em uma experiência cinematográfica.</p>
-            <p>Desde a abertura selada até o carregamento suave das fotos de vocês, cada milissegundo foi coreografado para arrancar suspiros dos seus convidados.</p>
+            <h2 className={styles.gold}>Incomparável desde o primeiro toque.</h2>
+            <h2>Mais que um convite,<br/>uma declaração de amor.</h2>
+            <p>Diga adeus aos PDFs estáticos e links sem graça. O InviteEvent entrega um envelope digital de luxo animado em 3D, projetado para emular a elegância de um convite impresso com a fluidez do digital.</p>
+            <p>Cada detalhe — do selo dourado de cera às transições em slow-motion das fotos do casal — foi desenvolvido para criar uma contagem regressiva emocionante até o grande dia.</p>
             <Link href="/inv/preview">Ver Demonstração do Envelope</Link>
           </div>
           <div className={styles.imageWrapper}>
@@ -86,18 +86,18 @@ export default function LandingPage() {
           <div className={styles.bentoGrid}>
             <div className={`${styles.bentoCard} ${styles.span2}`}>
               <div className={styles.bentoIcon}>✧</div>
-              <h3>Lista de Presentes Premium</h3>
-              <p>Converta presentes virtuais em dinheiro direto na sua conta bancária. Uma experiência fluida para os convidados, transparente e segura para vocês, com as menores taxas do mercado.</p>
+              <h3>Lista de Presentes com Resgate em Pix</h3>
+              <p>Crie uma lista elegante de presentes virtuais e cotas de lua de mel. Resgate o valor diretamente via PIX para sua conta corrente bancária com taxas extremamente reduzidas e total transparência.</p>
             </div>
             <div className={styles.bentoCard}>
               <div className={styles.bentoIcon}>♡</div>
-              <h3>RSVP com 1 Clique</h3>
-              <p>Confirmações de presença rápidas, bonitas e precisas. Acompanhe os números em tempo real no seu painel.</p>
+              <h3>RSVP Inteligente e Nominal</h3>
+              <p>Permita que seus convidados confirem presença por indivíduo de forma rápida e segura. Acompanhe os números reais e alertas de acompanhantes em tempo real diretamente no seu painel administrativo.</p>
             </div>
             <div className={styles.bentoCard}>
               <div className={styles.bentoIcon}>📷</div>
-              <h3>Mural Infinito</h3>
-              <p>Seus convidados capturam ângulos únicos. Receba e exiba as fotos em um grid majestoso ao vivo.</p>
+              <h3>Mural Interativo de Memórias</h3>
+              <p>Um espaço colaborativo de afeto. Seus convidados sobem fotos tiradas no grande dia e deixam mensagens carinhosas que aparecem em tempo real no painel do casamento, com moderação total de privacidade.</p>
             </div>
             <div 
               className={`${styles.bentoCard} ${styles.span2}`} 
@@ -105,8 +105,8 @@ export default function LandingPage() {
             >
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.2))", borderRadius: "32px" }}></div>
               <div style={{ position: "relative", zIndex: 1, marginTop: "auto" }}>
-                <h3 style={{ color: "#FFF" }}>Templates de Alta-Costura</h3>
-                <p style={{ color: "#EAEAEA" }}>Design systems inspirados em revistas de moda. Escolha a paleta, a tipografia e veja a mágica acontecer instantaneamente.</p>
+                <h3 style={{ color: "#FFF" }}>Identidade Visual Exclusiva</h3>
+                <p style={{ color: "#EAEAEA" }}>Estilos refinados inspirados em editoriais de moda. Selecione paletas de cores sofisticadas, tipografias cursivas pré-renderizadas e layouts que refletem com perfeição a essência do seu amor.</p>
               </div>
             </div>
           </div>

@@ -13,6 +13,7 @@ module.exports = {
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '\\.css$': '<rootDir>/src/__tests__/styleMock.js',
   },
   roots: ['<rootDir>/src/'],
   testMatch: [

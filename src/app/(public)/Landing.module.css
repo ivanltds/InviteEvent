@@ -109,6 +109,13 @@
   opacity: 1;
 }
 
+.videoPlaceholder {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%);
+  z-index: -1;
+}
+
 .heroContent {
   position: relative;
   z-index: 1;

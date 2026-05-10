@@ -18,6 +18,7 @@ interface MediaItem {
 export default function HeroCarousel({ imagesOverride = [], videosOverride = [] }: HeroCarouselProps) {
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [loadedMedia, setLoadedMedia] = useState<Set<string>>(new Set());
 
   // Unifica e randomiza/ordena as mídias (Vídeos primeiro ou intercalados)
   const mediaQueue = useMemo<MediaItem[]>(() => {
@@ -81,16 +82,29 @@ export default function HeroCarousel({ imagesOverride = [], videosOverride = [] 
   return (
     <div className={styles.carouselContainer}>
       {mediaQueue.map((item, index) => {
+        // Renderizamos apenas a mídia atual e a próxima para poupar memória do navegador
+        const isCurrentOrNext = index === currentIndex || index === (currentIndex + 1) % mediaQueue.length;
+        if (!isCurrentOrNext) return null;
+
         const isActive = index === currentIndex;
         
         if (item.type === 'video') {
+          const isLoaded = loadedMedia.has(item.url);
           return (
             <video
               key={item.url}
-              className={`${styles.slide} ${styles.videoSlide} ${isActive ? styles.active : ''}`}
+              className={`${styles.slide} ${styles.videoSlide} ${isActive && isLoaded ? styles.active : ''}`}
               src={item.url}
               muted
               playsInline
+              preload={isActive ? "auto" : "none"}
+              onCanPlay={() => {
+                setLoadedMedia(prev => {
+                  const newSet = new Set(prev);
+                  newSet.add(item.url);
+                  return newSet;
+                });
+              }}
               // Só dá autoplay se estiver ativo ou for o único. 
               // Melhor deixar o React controlar via ref, mas o autoPlay na tag é útil p mobile
               autoPlay={isActive}

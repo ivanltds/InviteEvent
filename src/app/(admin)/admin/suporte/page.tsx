@@ -326,6 +326,18 @@ export default function MasterSupportPanel() {
                     );
                   })
                 )}
+                
+                {selectedTicket.status === 'finalizado' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '20px 0' }}>
+                    <hr style={{ width: '100%', borderColor: 'rgba(197, 160, 89, 0.2)', marginBottom: '12px' }} />
+                    <span style={{ fontSize: '11px', color: '#C5A059', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', backgroundColor: 'rgba(197, 160, 89, 0.1)', padding: '4px 12px', borderRadius: '12px' }}>
+                      Atendimento Finalizado
+                    </span>
+                    <span style={{ fontSize: '11px', color: '#888', marginTop: '6px' }}>
+                      O SLA foi interrompido.
+                    </span>
+                  </div>
+                )}
                 <div ref={messagesEndRef} />
               </div>
 

@@ -126,4 +126,37 @@ describe('MasterSupportPanel - TDD Fase GREEN 🟢', () => {
       expect(global.fetch).toHaveBeenCalledWith('/api/support/messages', expect.any(Object));
     });
   });
+
+  it('Deve exibir banner de Atendimento Finalizado e interrupção de SLA no chat do painel master', async () => {
+    const finalizadoTicket = {
+      id: 'ticket-f',
+      usuario_id: 'user-1',
+      status: 'finalizado',
+      created_at: new Date().toISOString(),
+      email_usuario: 'cliente1@gmail.com',
+    };
+
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes('/api/support/tickets')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true, tickets: [finalizadoTicket] }),
+        });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ success: true, messages: [] }) });
+    });
+
+    render(<MasterSupportPanel />);
+
+    // Clica no ticket finalizado
+    await waitFor(() => {
+      const card = screen.getByText('cliente1@gmail.com');
+      fireEvent.click(card);
+    });
+
+    // Deve exibir o indicador finalizado
+    await waitFor(() => {
+      expect(screen.getByText('O SLA foi interrompido.')).toBeInTheDocument();
+    });
+  });
 });

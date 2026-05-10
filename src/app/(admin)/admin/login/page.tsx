@@ -226,7 +226,7 @@ function LoginFormContent() {
         <div className={styles.loginForm} style={{ textAlign: 'center', padding: '3rem 2rem' }}>
           <div style={{ fontSize: '4rem', marginBottom: '1.5rem' }}>📧</div>
           <h2 className="cursive" style={{ fontSize: '1.8rem' }}>Quase lá!</h2>
-          <p style={{ color: '#64748b', lineHeight: 1.6, marginBottom: '2rem' }}>
+          <p style={{ color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, marginBottom: '2rem' }}>
             Enviamos um link de confirmação para <strong>{email}</strong>.<br/><br/>
             Assim que você confirmar seu e-mail, seu casamento será criado automaticamente com todas as personalizações que você escolheu!
           </p>
@@ -234,11 +234,11 @@ function LoginFormContent() {
             <button 
               onClick={() => { setShowConfirmationSent(false); setIsSignUp(false); }}
               className={styles.loginBtn}
-              style={{ background: '#f1f5f9', color: '#475569' }}
+              style={{ background: 'rgba(255,255,255,0.1)', color: '#FFF' }}
             >
               Voltar para o Login
             </button>
-            <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '1rem' }}>
+            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)', marginTop: '1rem' }}>
               Dica: Verifique sua caixa de spam se não encontrar o e-mail em alguns minutos.
             </p>
           </div>
@@ -254,14 +254,14 @@ function LoginFormContent() {
         
         {isSignUp && isFromOnboarding && (
           <div style={{ 
-            background: 'rgba(245,158,11,0.1)', 
-            color: 'var(--admin-accent)', 
+            background: 'rgba(197, 160, 89, 0.1)', 
+            color: '#C5A059', 
             padding: '12px', 
             borderRadius: '8px', 
             marginBottom: '1.5rem',
             fontSize: '0.9rem',
             textAlign: 'center',
-            border: '1px dashed var(--admin-accent)'
+            border: '1px dashed rgba(197, 160, 89, 0.5)'
           }}>
             ✨ <strong>Você está quase lá!</strong><br/>
             Crie sua conta para salvar suas personalizações.
@@ -340,7 +340,7 @@ function LoginFormContent() {
             border: 'none',
             marginTop: '1rem',
             cursor: 'pointer',
-            color: 'var(--admin-accent)',
+            color: '#C5A059',
             textDecoration: 'underline'
           }}
         >

@@ -22,8 +22,6 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [slaText, setSlaText] = useState('02:00:00');
-  const [slaColor, setSlaColor] = useState('#10b981'); // Verde
   const [activeUserId, setActiveUserId] = useState(usuarioId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -51,7 +49,11 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
         const res = await fetch('/api/support/tickets');
         const data = await res.json();
         if (data.success && data.tickets && data.tickets.length > 0) {
-          const activeTicket = data.tickets.find((t: Ticket) => t.status !== 'finalizado' && t.status !== 'cancelado');
+          let activeTicket = data.tickets.find((t: Ticket) => t.status !== 'finalizado' && t.status !== 'cancelado');
+          if (!activeTicket) {
+            // Load the last ticket to show history and finalization message
+            activeTicket = data.tickets[data.tickets.length - 1];
+          }
           if (activeTicket) {
             setTicket(activeTicket);
             loadMessages(activeTicket.id);
@@ -86,8 +88,8 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
     let currentTicketId = ticket?.id;
 
     try {
-      // Se não houver ticket ativo, cria um na hora
-      if (!currentTicketId) {
+      // Se não houver ticket ativo, ou o ticket atual estiver finalizado/cancelado, cria um na hora
+      if (!currentTicketId || ticket?.status === 'finalizado' || ticket?.status === 'cancelado') {
         const ticketRes = await fetch('/api/support/tickets', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -97,6 +99,8 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
         if (ticketData.success && ticketData.ticket) {
           setTicket(ticketData.ticket);
           currentTicketId = ticketData.ticket.id;
+          // Clear previous messages as it's a new ticket
+          setMessages([]);
         } else {
           return;
         }
@@ -127,43 +131,6 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Intervalo de cálculo de SLA de 2h
-  useEffect(() => {
-    if (!ticket) return;
-
-    const interval = setInterval(() => {
-      const creationTime = new Date(ticket.created_at).getTime();
-      const limitTime = creationTime + 2 * 60 * 60 * 1000; // 2 horas
-      const now = new Date().getTime();
-      const remaining = limitTime - now;
-
-      if (remaining <= 0) {
-        setSlaText('SLA Excedido');
-        setSlaColor('#ef4444');
-        clearInterval(interval);
-        return;
-      }
-
-      const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
-
-      const formatted = `${hours.toString().padStart(2, '0')}:${minutes
-        .toString()
-        .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-      setSlaText(formatted);
-
-      if (remaining > 1 * 60 * 60 * 1000) {
-        setSlaColor('#10b981'); // Verde (> 1h)
-      } else if (remaining > 30 * 60 * 1000) {
-        setSlaColor('#f59e0b'); // Amarelo (30m - 1h)
-      } else {
-        setSlaColor('#ef4444'); // Vermelho (< 30m)
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [ticket]);
 
   return (
     <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 10000, fontFamily: 'sans-serif' }}>
@@ -227,8 +194,9 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
             </div>
             {ticket && (
               <div style={{ textAlign: 'right' }}>
-                <span style={{ fontSize: '9px', textTransform: 'uppercase', color: '#555', display: 'block' }}>SLA Restante</span>
-                <span style={{ fontSize: '11px', fontWeight: 'bold', color: slaColor }}>{slaText}</span>
+                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#C5A059' }}>
+                  {ticket.status === 'finalizado' ? 'Finalizado' : 'Ativo'}
+                </span>
               </div>
             )}
           </div>
@@ -281,6 +249,18 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
                   </div>
                 );
               })
+            )}
+            
+            {ticket?.status === 'finalizado' && (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '16px 0', width: '100%' }}>
+                <hr style={{ width: '100%', border: 'none', borderTop: '1px dashed rgba(197, 160, 89, 0.3)', marginBottom: '12px' }} />
+                <span style={{ fontSize: '10px', color: '#C5A059', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', backgroundColor: 'rgba(197, 160, 89, 0.1)', padding: '4px 12px', borderRadius: '12px' }}>
+                  Atendimento Finalizado
+                </span>
+                <span style={{ fontSize: '10px', color: '#888', marginTop: '6px', textAlign: 'center' }}>
+                  Envie uma nova mensagem para iniciar um novo atendimento.
+                </span>
+              </div>
             )}
             <div ref={messagesEndRef} />
           </div>

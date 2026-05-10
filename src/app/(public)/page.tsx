@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 
 export default function LandingPage() {
   const [videoIndex, setVideoIndex] = useState(0);
+  const [loadedVideos, setLoadedVideos] = useState<Set<string>>(new Set());
 
   const videos = [
     "/videos/13347145_2160_3840_30fps.mp4",
@@ -31,25 +32,49 @@ export default function LandingPage() {
           <a href="#funcionalidades">Inteligência</a>
           <a href="#galeria">Design</a>
         </div>
-        <Link href="/criar" className={styles.btnPrimary} style={{ padding: '12px 24px', fontSize: '12px' }}>
-          Criar Convite
-        </Link>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <Link href="/admin/login" style={{ color: '#1A1A1A', fontWeight: 600, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', textDecoration: 'none' }}>
+            Login
+          </Link>
+          <Link href="/criar" className={styles.btnPrimary} style={{ padding: '12px 24px', fontSize: '12px' }}>
+            Cadastro
+          </Link>
+        </div>
       </nav>
 
       {/* Hero Section with Video Cross-Fade */}
       <header className={styles.hero}>
         <div className={styles.videoContainer}>
-          {videos.map((src, index) => (
-            <video
-              key={src}
-              src={src}
-              autoPlay
-              muted
-              loop
-              playsInline
-              className={`${styles.videoBg} ${videoIndex === index ? styles.videoBgActive : ''}`}
-            />
-          ))}
+          {/* Skeleton/Placeholder de fundo suave */}
+          <div className={styles.videoPlaceholder}></div>
+          {videos.map((src, index) => {
+            // Renderizamos apenas o vídeo atual e o próximo para poupar memória (evitar travar 4K)
+            const isCurrentOrNext = index === videoIndex || index === (videoIndex + 1) % videos.length;
+            if (!isCurrentOrNext) return null;
+
+            const isActive = videoIndex === index;
+            const isLoaded = loadedVideos.has(src);
+
+            return (
+              <video
+                key={src}
+                src={src}
+                autoPlay={isActive}
+                muted
+                loop
+                playsInline
+                preload={isActive ? "auto" : "none"}
+                onCanPlay={() => {
+                  setLoadedVideos(prev => {
+                    const newSet = new Set(prev);
+                    newSet.add(src);
+                    return newSet;
+                  });
+                }}
+                className={`${styles.videoBg} ${isActive && isLoaded ? styles.videoBgActive : ''}`}
+              />
+            );
+          })}
         </div>
         <div className={styles.heroContent}>
           <h1 className={styles.heroTitle}>O Convite do Seu Casamento,<br/>Elevado ao Nível de <span className={styles.gold}>Obra de Arte</span>.</h1>

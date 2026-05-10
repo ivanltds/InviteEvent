@@ -162,12 +162,13 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
       {/* Caixa de Chat */}
       {isOpen && (
         <div
+          className="support-chat-window"
           style={{
             position: 'absolute',
             bottom: '72px',
             right: '0',
             width: '320px',
-            height: '380px',
+            height: '420px',
             backgroundColor: '#0d0d0d',
             borderRadius: '16px',
             boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
@@ -175,6 +176,7 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
+            transition: 'all 0.3s ease',
           }}
         >
           {/* Cabeçalho */}
@@ -192,8 +194,13 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
               <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: '#C5A059' }}>Suporte ao Cliente</h3>
               <p style={{ margin: 0, fontSize: '10px', color: '#888' }}>Atendimento Exclusivo</p>
             </div>
+            <button 
+              onClick={() => setIsOpen(false)} 
+              style={{ background: 'transparent', border: 'none', color: '#888', fontSize: '20px', cursor: 'pointer', display: 'none' }}
+              className="mobile-close-btn"
+            >×</button>
             {ticket && (
-              <div style={{ textAlign: 'right' }}>
+              <div className="ticket-status" style={{ textAlign: 'right' }}>
                 <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#C5A059' }}>
                   {ticket.status === 'finalizado' ? 'Finalizado' : 'Ativo'}
                 </span>
@@ -310,6 +317,28 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
           </form>
         </div>
       )}
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media (max-width: 600px) {
+          .support-chat-window {
+            position: fixed !important;
+            bottom: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            height: 85% !important;
+            height: 85dvh !important;
+            border-radius: 24px 24px 0 0 !important;
+            z-index: 100000 !important;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.5) !important;
+          }
+          .mobile-close-btn {
+            display: block !important;
+          }
+          .ticket-status {
+            display: none !important;
+          }
+        }
+      `}} />
     </div>
   );
 }

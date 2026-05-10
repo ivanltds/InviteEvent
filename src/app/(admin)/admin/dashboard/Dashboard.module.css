@@ -172,3 +172,169 @@
     padding: 1.5rem;
   }
 }
+
+/* ESTILOS PLATAFORMA CENTRALIZADA */
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.cardHeader h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--admin-text-primary);
+}
+
+.activeBadgeMini {
+  background: #e6f4ea;
+  color: #1e7e34;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.pendingBadgeMini {
+  background: #fff3e0;
+  color: #e65100;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.cardFooter {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 32px;
+}
+
+.roleTag {
+  font-size: 0.7rem;
+  background: #f0f0f0;
+  color: #666;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.cardActions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.miniEditBtn {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.miniEditBtn:hover {
+  background: #e9ecef;
+  border-color: #dee2e6;
+}
+
+.miniDeleteBtn {
+  background: #fff5f5;
+  border: 1px solid #ffe3e3;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.miniDeleteBtn:hover {
+  background: #fa5252;
+  color: white;
+  border-color: #fa5252;
+}
+
+/* MODAIS DE GESTÃO */
+
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+}
+
+.modalContent {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.modalForm label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #444;
+}
+
+.modalForm input {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.modalForm input:focus {
+  border-color: var(--accent-safe);
+}
+
+.modalActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.saveBtn {
+  background: var(--accent-safe);
+  color: white;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cancelBtn {
+  background: #f8f9fa;
+  color: #444;
+  border: 1px solid #dee2e6;
+  padding: 0.8rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+

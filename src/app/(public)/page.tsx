@@ -128,10 +128,10 @@ export default function LandingPage() {
               className={`${styles.bentoCard} ${styles.span2}`} 
               style={{ background: "url('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800') center/cover", color: "white", position: "relative" }}
             >
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.2))", borderRadius: "32px" }}></div>
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 60%)", borderRadius: "32px" }}></div>
               <div style={{ position: "relative", zIndex: 1, marginTop: "auto" }}>
-                <h3 style={{ color: "#FFF" }}>Identidade Visual Exclusiva</h3>
-                <p style={{ color: "#EAEAEA" }}>Estilos refinados inspirados em editoriais de moda. Selecione paletas de cores sofisticadas, tipografias cursivas pré-renderizadas e layouts que refletem com perfeição a essência do seu amor.</p>
+                <h3 style={{ color: "#FFF", textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}>Identidade Visual Exclusiva</h3>
+                <p style={{ color: "#F2F2F2", textShadow: "0 1px 5px rgba(0,0,0,0.5)" }}>Estilos refinados inspirados em editoriais de moda. Selecione paletas de cores sofisticadas, tipografias cursivas pré-renderizadas e layouts que refletem com perfeição a essência do seu amor.</p>
               </div>
             </div>
           </div>
@@ -159,9 +159,9 @@ export default function LandingPage() {
             </div>
             <div className={styles.previewCard}>
               <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=600" style={{ width: '100%', display: 'block', height: '300px', objectFit: 'cover' }} alt="Noivos" />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent 60%)", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "20px", color: "#FFF" }}>
-                <p style={{ fontSize: "13px", fontWeight: 500, margin: "0 0 4px 0" }}>"Os mais lindos! Que alegria imensa viver esse dia com vocês!"</p>
-                <span style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(255,255,255,0.8)" }}>— Camila & Bruno</span>
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 70%)", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "20px", color: "#FFF" }}>
+                <p style={{ color: '#FFFFFF', fontSize: "13px", fontWeight: 500, margin: "0 0 4px 0", textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>"Os mais lindos! Que alegria imensa viver esse dia com vocês!"</p>
+                <span style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(255,255,255,0.9)", textShadow: "0 1px 2px rgba(0,0,0,0.5)" }}>— Camila & Bruno</span>
               </div>
             </div>
           </div>

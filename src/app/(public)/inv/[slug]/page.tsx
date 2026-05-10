@@ -19,6 +19,8 @@ import HeroCarousel from '@/components/ui/HeroCarousel';
 // STORY-056: Envelope Gateway
 import EnvelopeGateway from '@/components/public/EnvelopeGateway/EnvelopeGateway';
 
+import LiveInviteView from '@/components/public/LiveInviteView';
+
 const STORAGE_KEY_PREFIX = 'envelope_views_';
 
 /**
@@ -165,14 +167,8 @@ export default function InvitationPage() {
 
         if (configData) {
           setConfig(configData);
-
-          // Injetar CSS tokens do evento no convite público APENAS (scoped)
-          // STORY-058: event theme tokens ficam em .eventTheme, não no :root global
-          // Injetar CSS tokens do evento no convite público APENAS (scoped)
-          // STORY-058: event theme tokens ficam em .eventTheme, não no :root global
           
           // FIX STORY-060: Evitar offset de 1 dia por conta de Timezone
-          // Ao parsear "YYYY-MM-DD", o navegador assume UTC. Adicionamos T00:00 para forçar local ou parseamos manual.
           const [year, month, day] = configData.data_casamento.split('-').map(Number);
           const date = new Date(year, month - 1, day);
           
@@ -217,89 +213,19 @@ export default function InvitationPage() {
     );
   }
 
-
-
-  // STORY-058: event theme scoped — aplicado APENAS ao convite, não ao admin
-  const eventThemeStyle = {
-    '--bg-primary': config.bg_primary || '#FAF9F6',
-    '--text-main': config.text_main || '#333333',
-    '--accent': config.accent_color || '#B2AC88',
-    '--font-cursive': config.font_cursive || "'Pinyon Script', cursive",
-    '--font-serif': config.font_serif || "'Playfair Display', serif",
-  } as React.CSSProperties;
-
   return (
-    // STORY-058: .eventTheme wrapper — cores do evento ficam scoped aqui,
-    // nunca vazam para o admin chrome ou para o :root global
-    <div style={eventThemeStyle}>
-      <AnimatePresence>
-        {showGateway && (
-          <motion.div
-            key="gateway"
-            initial={{ opacity: 1, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, filter: 'blur(10px)', transition: { duration: 1.2, ease: 'easeInOut' } }}
-            style={{ position: 'fixed', inset: 0, zIndex: 999999 }}
-          >
-            <EnvelopeGateway
-              slug={slug}
-              bgPrimary={config.bg_primary || '#FAF9F6'}
-              textMain={config.text_main || '#333333'}
-              accentColor={config.accent_color || '#c8943a'}
-              coupleNoiva={couple.noiva}
-              coupleNoivo={couple.noivo}
-              date={couple.data}
-              rawDate={couple.rawDate}
-              fontCursive={config.font_cursive}
-              fontSerif={config.font_serif}
-              heroImages={config.hero_images && config.hero_images.length > 0 ? config.hero_images : (previewBase64 ? [previewBase64] : undefined)}
-              onComplete={() => {
-                incrementViewCount(slug);
-                setShowGateway(false);
-              }}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <main className={styles.main}>
-        <section className={styles.hero}>
-          <HeroCarousel 
-            imagesOverride={config.hero_images && config.hero_images.length > 0 ? config.hero_images : (previewBase64 ? [previewBase64] : undefined)} 
-            videosOverride={config.hero_videos}
-          />
-          <h1 className="cursive">{couple.noiva} & {couple.noivo}</h1>
-          <p className={styles.date}>{couple.data}</p>
-
-          <Countdown targetDate={couple.rawDate} />
-
-          <p className={styles.tagline}>O nosso grande dia está chegando!</p>
-          <div className={styles.cta}>
-            <a href="#rsvp" className={styles.primaryBtn}>Confirmar Presença</a>
-            {visibility.presentes && (
-              <Link href={`/presentes?invite=${slug}`} className={styles.secondaryBtn}>Lista de Presentes</Link>
-            )}
-            <Link href={`/mural?invite=${slug}`} className={styles.secondaryBtn}>Mural Vivo</Link>
-          </div>
-        </section>
-      </main>
-
-      {visibility.historia && <Historia config={config} />}
-      {visibility.noivos && <OsNoivos config={config} />}
-      <AgendaSection events={agenda} config={config} />
-      {slug !== 'preview' && <RSVP inviteSlug={slug} config={config} />}
-      {visibility.faq && <FAQ eventoId={config.evento_id} />}
-
-      {slug === 'preview' && (
-        <div className={styles.previewBar}>
-          <div className={styles.previewText}>
-            <h4>Uau, o que achou? ✨</h4>
-            <p>Seu grande dia merece um convite assim. Salve-o agora!</p>
-          </div>
-          <Link href="/admin/login?mode=signup&claim_invite=true" className={styles.ctaButton}>
-            Finalizar e Salvar
-          </Link>
-        </div>
-      )}
-    </div>
+    <LiveInviteView 
+      config={config}
+      couple={couple}
+      visibility={visibility}
+      agenda={agenda}
+      slug={slug}
+      previewBase64={previewBase64}
+      showGateway={showGateway}
+      onGatewayComplete={() => {
+        incrementViewCount(slug);
+        setShowGateway(false);
+      }}
+    />
   );
 }

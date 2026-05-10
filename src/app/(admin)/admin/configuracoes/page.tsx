@@ -19,6 +19,7 @@ import TeamManagement from '@/components/admin/TeamManagement';
 import FontPicker from '@/components/admin/FontPicker/FontPicker';
 import HeroImagesManager from '@/components/admin/HeroImagesManager';
 import { useEvent } from '@/lib/contexts/EventContext';
+import { supabase } from '@/lib/supabase';
 
 const DEFAULT_CONFIG: Omit<Configuracao, 'id' | 'evento_id'> = {
   noiva_nome: 'Noiva',
@@ -54,6 +55,7 @@ const DEFAULT_CONFIG: Omit<Configuracao, 'id' | 'evento_id'> = {
 export default function AdminConfig() {
   const { currentEvent, loading: eventLoading } = useEvent();
   const [config, setConfig] = useState<Configuracao | null>(null);
+  const [agenda, setAgenda] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -64,8 +66,19 @@ export default function AdminConfig() {
     
     setLoading(true);
     try {
-      const data = await configService.getConfig(currentEvent.id);
+      const [data, agendaRes] = await Promise.all([
+        configService.getConfig(currentEvent.id),
+        supabase
+          .from('eventos_agenda')
+          .select('*')
+          .eq('evento_id', currentEvent.id)
+          .order('ordem', { ascending: true })
+      ]);
       
+      if (agendaRes.data) {
+        setAgenda(agendaRes.data);
+      }
+
       if (data) {
         setConfig(data);
       } else {
@@ -282,7 +295,7 @@ export default function AdminConfig() {
                         ) : (
                           <div className={styles.photoPlaceholder}>👰</div>
                         )}
-                        <CldUploadWidget uploadPreset="invite_preset" onSuccess={(res: any) => setConfig({...config, noiva_foto_url: res.info.secure_url})}>
+                        <CldUploadWidget uploadPreset="invite_preset" onSuccess={(res: any) => setConfig({...config, noivo_foto_url: res.info.secure_url})}>
                           {({ open }) => (
                             <button type="button" onClick={() => open()} className={styles.miniUploadBtn}>Trocar Foto</button>
                           )}
@@ -548,7 +561,7 @@ export default function AdminConfig() {
         </div>
 
         <aside className={styles.previewColumn}>
-          <ConfigPreview config={config} />
+          <ConfigPreview config={config} agenda={agenda} />
         </aside>
       </div>
     </main>

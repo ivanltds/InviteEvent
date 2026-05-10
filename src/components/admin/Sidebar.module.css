@@ -5,6 +5,8 @@
   border-right: 1px solid var(--admin-sidebar-border);
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .logo {

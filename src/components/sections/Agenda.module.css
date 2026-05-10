@@ -134,7 +134,7 @@
   transform: translateY(-2px);
 }
 
-@media (max-width: 768px) {
+@container (max-width: 700px) {
   .timeline::before {
     left: 40px;
   }
@@ -156,5 +156,15 @@
 
   .section h2 {
     font-size: 3rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .eventCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .timeline::before {
+    left: 40px;
   }
 }

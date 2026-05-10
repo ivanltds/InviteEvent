@@ -424,3 +424,100 @@
   font-weight: 800;
   color: var(--admin-accent);
 }
+
+/* Botão Voltar (Default Escondido em Desktop) */
+.backButton {
+  display: none;
+  align-items: center;
+  background: none;
+  border: none;
+  color: var(--admin-accent);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+/* RESPONSIVIDADE DO PAINEL */
+
+@media (max-width: 1200px) {
+  .layout {
+    grid-template-columns: 300px 1fr;
+    gap: 1rem;
+  }
+  .metricsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .metricsContainer {
+    padding: 1rem;
+  }
+
+  .metricsGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .layout {
+    grid-template-columns: 1fr; /* Uma única coluna no Mobile */
+    height: calc(100vh - 200px);
+    min-height: 500px;
+    gap: 0;
+    position: relative;
+  }
+
+  .sidebar, .chatPanel {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Logica de Alternancia: Lista vs Chat */
+  .chatPanel {
+    display: none; /* Escondido por padrão até selecionar */
+  }
+
+  .layout.hasSelection .sidebar {
+    display: none; /* Esconde a lista se algo foi selecionado */
+  }
+
+  .layout.hasSelection .chatPanel {
+    display: flex; /* Mostra o chat se algo foi selecionado */
+    flex-direction: column;
+  }
+
+  .backButton {
+    display: flex; /* Libera o botão de voltar no chat header */
+  }
+
+  .chatHeader {
+    padding: 1rem;
+  }
+
+  .chatUser {
+    font-size: 1rem;
+  }
+
+  .statusControls {
+    display: none; /* Opcional: economizar espaço no mobile */
+  }
+
+  .chatMessages {
+    padding: 1rem;
+  }
+
+  .messageBubble {
+    max-width: 85%; /* Balões mais largos em telas pequenas */
+  }
+}

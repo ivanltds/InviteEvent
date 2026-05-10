@@ -100,13 +100,24 @@
   height: 100%;
   object-fit: cover;
   z-index: 0;
-  filter: brightness(0.55);
+  filter: brightness(0.45) saturate(0.9);
   transition: opacity 2.5s ease-in-out;
   opacity: 0;
 }
 
 .videoBgActive {
   opacity: 1;
+}
+
+.videoContainer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  /* Aumentando contraste de fundo para o texto saltar na tela */
+  background: rgba(0, 0, 0, 0.55); 
+  background-image: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.7) 100%);
+  pointer-events: none;
 }
 
 .videoPlaceholder {
@@ -118,10 +129,18 @@
 
 .heroContent {
   position: relative;
-  z-index: 1;
+  z-index: 10;
   max-width: 900px;
-  padding: 0 20px;
+  padding: 0 24px;
   color: #FFFFFF;
+  
+  /* Removemos o bloco de vidro que o usuário rejeitou */
+  animation: fadeInHero 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes fadeInHero {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .heroTitle {
@@ -129,18 +148,22 @@
   font-weight: 700;
   margin-bottom: 24px;
   line-height: 1.1;
-  text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  /* FORÇAR BRANCO EXPLICITAMENTE: Resolve o bug visível no print do usuário */
+  color: #FFFFFF !important;
+  text-shadow: 0 2px 15px rgba(0,0,0,0.8), 0 4px 30px rgba(0,0,0,0.5);
 }
 
 .heroSubtitle {
   font-size: 20px;
   font-weight: 300;
-  margin-bottom: 40px;
-  max-width: 600px;
+  margin-bottom: 48px;
+  max-width: 680px;
   margin-left: auto;
   margin-right: auto;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  color: rgba(255,255,255,0.9);
+  line-height: 1.6;
+  /* Forçar legibilidade */
+  color: rgba(255,255,255,0.95) !important;
+  text-shadow: 0 1px 10px rgba(0,0,0,0.8);
 }
 
 .btnPrimary {
@@ -310,7 +333,16 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.photoBandContent h2 {
+  color: #FFFFFF !important;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+}
+
+.photoBandContent p {
+  color: rgba(255, 255, 255, 0.9) !important;
 }
 
 .photoBandContent {
@@ -321,6 +353,7 @@
 .photoBand h2 {
   font-size: 48px;
   font-style: italic;
+  color: #FFFFFF !important;
 }
 
 /* Mural Preview Section */
@@ -368,7 +401,8 @@
   .splitLayout { grid-template-columns: 1fr; gap: 40px; }
   .bentoGrid { grid-template-columns: 1fr; }
   .span2 { grid-column: span 1; }
-  .heroTitle { font-size: 48px; }
+  .heroTitle { font-size: 44px; }
+  .heroSubtitle { font-size: 16px; }
   .navLinks { display: none; }
   .glassNav { padding: 0 20px; }
 }

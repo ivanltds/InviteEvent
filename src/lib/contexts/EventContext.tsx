@@ -26,15 +26,21 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
   const [userProfile, setUserProfile] = useState<Perfil | null>(null);
   const [userRole, setUserRole] = useState<'owner' | 'organizador' | null>(null);
 
-  const fetchData = async () => {
-    setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+  const isFetching = React.useRef(false);
 
+  const fetchData = async () => {
+    if (isFetching.current) return;
+    isFetching.current = true;
+    
+    setLoading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setLoading(false);
+        isFetching.current = false;
+        return;
+      }
+
       // 1. Perfil
       const { data: profile } = await supabase.from('perfis').select('*').eq('id', user.id).maybeSingle();
       setUserProfile(profile);
@@ -70,11 +76,15 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
       } else {
         setUserRole(null);
       }
-    } catch (e) {
-      console.error('[EventContext] Erro ao carregar dados:', e);
+    } catch (e: any) {
+      // Ignora erros de concorrência de lock do Supabase que são inofensivos e causados por Fast Refresh
+      if (e.name !== 'AbortError') {
+        console.error('[EventContext] Erro ao carregar dados:', e);
+      }
+    } finally {
+      setLoading(false);
+      isFetching.current = false;
     }
-    
-    setLoading(false);
   };
 
   useEffect(() => {

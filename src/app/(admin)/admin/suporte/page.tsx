@@ -235,7 +235,7 @@ export default function MasterSupportPanel() {
         </div>
       </div>
 
-      <div className={styles.layout}>
+      <div className={`${styles.layout} ${selectedTicket ? styles.hasSelection : ''}`}>
         {/* Sidebar de Tickets */}
         <div className={styles.sidebar}>
           <h2 className={styles.sidebarTitle}>Chamados Ativos</h2>
@@ -280,6 +280,13 @@ export default function MasterSupportPanel() {
             <div className={styles.chatContainer}>
               {/* Header do Chat */}
               <div className={styles.chatHeader}>
+                <button 
+                  className={styles.backButton} 
+                  onClick={() => setSelectedTicket(null)}
+                  aria-label="Voltar para a lista"
+                >
+                  ← Voltar
+                </button>
                 <div>
                   <h3 className={styles.chatUser}>{selectedTicket.email_usuario}</h3>
                   <p className={styles.chatSub}>Visualizando histórico do cliente</p>

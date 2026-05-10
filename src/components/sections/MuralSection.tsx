@@ -112,7 +112,7 @@ export default function MuralSection({ eventoId, config }: MuralSectionProps) {
           viewport={{ once: true }}
           style={{ color: config?.accent_color }}
         >
-          Mural Vivo de Lembranças
+          Mural de Lembranças
         </motion.h2>
         <p className={styles.subtitle}>Eternize momentos. Compartilhe fotos, vídeos e mensagens com os noivos.</p>
 

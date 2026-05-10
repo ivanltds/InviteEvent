@@ -10,13 +10,13 @@
 }
 
 .section h2 {
-  font-size: clamp(2.5rem, 8vw, 4rem);
+  font-size: clamp(2.2rem, 12cqw, 4rem);
   color: var(--accent-safe);
   margin-bottom: 1rem;
 }
 
 .subtitle {
-  font-size: clamp(1.2rem, 4vw, 1.8rem);
+  font-size: clamp(1rem, 5cqw, 1.8rem);
   color: var(--accent-safe);
   opacity: 0.8;
   margin-bottom: 2rem;
@@ -25,14 +25,14 @@
 }
 
 .text {
-  font-size: clamp(1rem, 2.5vw, 1.1rem);
+  font-size: clamp(0.95rem, 4cqw, 1.1rem);
   line-height: 1.8;
   color: var(--text-main-safe);
   margin-bottom: 1.5rem;
 }
 
 .highlight {
-  font-size: clamp(1.1rem, 3.5vw, 1.3rem);
+  font-size: clamp(1rem, 5cqw, 1.3rem);
   line-height: 1.8;
   color: var(--accent-safe);
   font-family: var(--font-serif);
@@ -43,7 +43,13 @@
   border-bottom: 1px solid rgba(0,0,0,0.1);
 }
 
-@media (max-width: 768px) {
+@container (max-width: 700px) {
+  .section {
+    padding: 3rem 1.5rem;
+  }
+}
+
+@media (max-width: 700px) {
   .section {
     padding: 3rem 1.5rem;
   }

@@ -2,66 +2,41 @@ import { test as setup, expect } from '@playwright/test';
 
 const authFile = 'tests/.auth/user.json';
 
+// STORY-SYNC: Usuário permanente e estável criado e promovido via Supabase MCP para garantir velocidade zero-conf.
+const STABLE_EMAIL = 'setup-resilient-1778451741578@test.com';
+const STABLE_PASS = 'AdminPassword123!';
+
 setup('authenticate as master admin', async ({ page }) => {
-  const uniqueSuffix = Date.now();
-  const uniqueEmail = `setup-resilient-${uniqueSuffix}@test.com`;
+  console.log(`[AuthSetup] Iniciando login ultra-rápido com usuário persistente: ${STABLE_EMAIL}`);
 
-  // Definir flag global de Playwright para suprimir DOM mutations instáveis
-  await page.addInitScript(() => {
-    (window as any).isPlaywright = true;
-  });
+  // 1. Ir direto para a tela de Login (Modo Entrar, não Criar)
+  await page.goto('/admin/login');
+  
+  // Injetar estilos de bypass de overlay para não travar cliques
+  await page.addStyleTag({ content: 'nextjs-portal, .nextjs-portal { display: none !important; pointer-events: none !important; }' }).catch(() => {});
 
-  // Auto-dismiss de alerts residuais
+  // Auto-dismiss de dialogs inesperados
   page.on('dialog', dialog => dialog.dismiss().catch(() => {}));
 
-  // 1. Iniciar onboarding
-  await page.goto('/criar');
+  // 2. Preencher credenciais estáveis
+  const emailInput = page.getByPlaceholder('E-mail');
+  await expect(emailInput).toBeVisible({ timeout: 10000 });
   
-  // Injetar estilos de bypass de overlay do Next.js
-  await page.addStyleTag({ content: 'nextjs-portal, .nextjs-portal { display: none !important; }' }).catch(() => {});
-
-  await page.getByPlaceholder('Ex: Maria').fill('Maria Setup');
-  await page.getByPlaceholder('Ex: João').fill('Joao Setup');
-  await page.getByText(/Continuar/i).first().click({ force: true });
-
-  // 2. Passo de Cores
-  await expect(page.getByText(/As cores dão o tom/i)).toBeVisible();
-  await page.getByText(/Adorei! Continuar/i).click({ force: true });
-
-  // 3. Passo de Tipografia 
-  await expect(page.getByText(/A letra conta uma história/i)).toBeVisible();
-  await page.getByText(/Perfeito! Continuar/i).click({ force: true });
-
-  // 4. Gerar Convite
-  await page.evaluate(() => localStorage.setItem('skip_gateway', 'true'));
-  const genBtn = page.getByText(/Gerar meu convite/i);
-  await expect(genBtn).toBeVisible();
-  await genBtn.click({ force: true });
-
-  // 5. Preview e Salvar - Instantâneo via LocalStorage Bypass
-  await page.waitForURL(url => url.toString().includes('preview'), { timeout: 15000 });
-
-  const salvarBtn = page.getByText('Finalizar e Salvar');
-  await expect(salvarBtn).toBeVisible({ timeout: 15000 });
-  await salvarBtn.click({ force: true });
-
-  // 6. Cadastro
-  await page.waitForURL(/.*login.*/, { timeout: 15000 });
-  const uniqueCPF = Math.floor(Math.random() * 90000000000 + 10000000000).toString();
-  const uniqueTel = `119${Math.floor(Math.random() * 90000000 + 10000000)}`;
+  await emailInput.fill(STABLE_EMAIL);
+  await page.getByPlaceholder('Senha').fill(STABLE_PASS);
   
-  await page.getByPlaceholder('Nome completo').fill('Setup Master Admin');
-  await page.getByPlaceholder('CPF').first().fill(uniqueCPF);
-  await page.getByPlaceholder('Telefone').fill(uniqueTel);
-  await page.getByPlaceholder('E-mail').fill(uniqueEmail);
-  await page.getByPlaceholder('Senha').fill('AdminPassword123!');
+  // 3. Clicar em Entrar
+  await page.getByRole('button', { name: /Entrar/i }).first().click({ force: true });
+  console.log(`[AuthSetup] Tentativa de login enviada. Aguardando redirecionamento...`);
+
+  // 4. O login normal redireciona para /admin/dashboard (diferente do onboarding que vai pra /configuracoes)
+  // Mas aceitaremos qualquer caminho de administrador que confirme o login bem sucedido.
+  await expect(page).toHaveURL(/.*\/admin\/(dashboard|configuracoes).*/, { timeout: 30000 });
   
-  await page.getByRole('button', { name: /Cadastrar/i }).click({ force: true });
-  
-  // Aguarda configurações com tolerância alta para primeira carga (Novo landing UX)
-  await expect(page).toHaveURL(/.*configuracoes.*/, { timeout: 45000 });
   await page.waitForLoadState('networkidle');
+  console.log(`[AuthSetup] Login bem sucedido. URL atual: ${page.url()}`);
 
-  // 8. Salvar estado da sessão
+  // 5. Salvar o StorageState para compartilhar entre os testes
   await page.context().storageState({ path: authFile });
+  console.log(`[AuthSetup] Sessão armazenada em ${authFile}. Pronto para testes.`);
 });

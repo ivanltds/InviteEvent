@@ -49,11 +49,19 @@ export const SERIF_FONTS: FontOption[] = [
 
 /**
  * Gera URL do Google Fonts com preview otimizado e font-display:swap.
- * O parâmetro `text` faz com que o Google sirva apenas os glifos necessários
- * para o preview, reduzindo o tamanho da fonte carregada ~90%.
+ * Adicionamos caracteres portugueses básicos (áãç...) para evitar quebra
+ * quando o navegador reutiliza o cache parcial em outras partes da página.
  */
 export function getFontUrl(googleFamily: string, previewText: string): string {
-  const encodedText = encodeURIComponent(previewText);
+  // Conjunto alfanumérico completo + pontuação + acentos BR
+  // Isso previne o browser de quebrar o cache quando renderiza textos completos
+  const baseAlphanumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?/()- ";
+  const ptBase = "aáàâãAÁÀÂÃeéêEÉÊiíIÍoóôõOÓÔÕuúUÚcçÇ& ";
+  
+  // Unimos tudo e filtramos duplicatas para manter URL enxuta
+  const uniqueChars = Array.from(new Set((previewText + baseAlphanumeric + ptBase).split(''))).join('');
+  const encodedText = encodeURIComponent(uniqueChars);
+  
   return `https://fonts.googleapis.com/css2?family=${googleFamily}&text=${encodedText}&display=swap`;
 }
 

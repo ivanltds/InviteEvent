@@ -10,7 +10,7 @@
 }
 
 .section h2 {
-  font-size: clamp(2rem, 7vw, 3.5rem);
+  font-size: clamp(2.2rem, 11cqw, 3.5rem);
   color: var(--accent-safe);
   margin-bottom: 4rem;
 }
@@ -57,20 +57,20 @@
 }
 
 .card h3 {
-  font-size: clamp(2rem, 6vw, 3rem);
+  font-size: clamp(2rem, 9cqw, 3rem);
   color: var(--accent-safe);
   margin-bottom: 1.5rem;
 }
 
 .desc {
-  font-size: clamp(1rem, 2.5vw, 1.1rem);
+  font-size: clamp(0.95rem, 4cqw, 1.1rem);
   line-height: 1.6;
   color: var(--text-main-safe);
 }
 
 .conclusion {
   font-family: var(--font-serif);
-  font-size: clamp(1.1rem, 3.5vw, 1.4rem);
+  font-size: clamp(1.1rem, 5cqw, 1.4rem);
   line-height: 1.8;
   color: var(--text-main-safe);
   max-width: 700px;
@@ -78,7 +78,7 @@
   font-style: italic;
 }
 
-@media (max-width: 768px) {
+@container (max-width: 700px) {
   .section {
     padding: 4rem 1.5rem;
   }
@@ -91,5 +91,12 @@
   .photoContainer {
     width: 180px;
     height: 180px;
+  }
+}
+
+/* Fallback para garantir responsividade em navegadores antigos que não suportam container query em viewport padrão */
+@media (max-width: 700px) {
+  .grid {
+    grid-template-columns: 1fr;
   }
 }

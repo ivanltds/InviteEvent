@@ -66,7 +66,7 @@ export default function MuralModeration({ eventId }: MuralModerationProps) {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Moderação do Mural Vivo</h2>
+      <h2 className={styles.title}>Moderação do Mural de Lembranças</h2>
       <div className={styles.grid}>
         {items.map(item => (
           <div key={item.id} className={`${styles.card} ${item.aprovado ? styles.approved : styles.pending}`}>

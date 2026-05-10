@@ -34,6 +34,12 @@ export default function HeroCarousel({ imagesOverride = [], videosOverride = [] 
       videosOverride.forEach(url => queue.push({ type: 'video', url }));
     }
 
+    // Se ainda estiver vazio, usamos imagens placeholder premium para não quebrar o visual (e garantir contraste com o texto branco)
+    if (queue.length === 0) {
+      queue.push({ type: 'image', url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1200' });
+      queue.push({ type: 'image', url: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=1200' });
+    }
+
     return queue;
   }, [imagesOverride, videosOverride]);
 

@@ -108,27 +108,31 @@
   cursor: pointer;
 }
 
-@media (max-width: 1200px) {
+@container (max-width: 1200px) {
   .masonryGrid {
     column-count: 3;
   }
 }
 
-@media (max-width: 768px) {
+@container (max-width: 700px) {
   .masonryGrid {
     column-count: 2;
   }
   .section h2 {
     font-size: 3rem;
   }
-  .closeBtn {
-    top: -2rem;
-    right: 0;
-  }
 }
 
-@media (max-width: 480px) {
+@container (max-width: 400px) {
   .masonryGrid {
     column-count: 1;
   }
 }
+
+/* Fallbacks de Viewport Padrão */
+@media (max-width: 1200px) { .masonryGrid { column-count: 3; } }
+@media (max-width: 700px) { 
+  .masonryGrid { column-count: 2; }
+  .closeBtn { top: -2rem; right: 0; }
+}
+@media (max-width: 400px) { .masonryGrid { column-count: 1; } }

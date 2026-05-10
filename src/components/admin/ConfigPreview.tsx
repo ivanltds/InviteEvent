@@ -2,105 +2,137 @@
 
 import React from 'react';
 import { Configuracao } from '@/lib/types/database';
+import LiveInviteView from '../public/LiveInviteView';
 
 interface ConfigPreviewProps {
   config: Partial<Configuracao>;
+  agenda?: any[];
 }
 
-const getContrastColor = (hexcolor: string) => {
-  if (!hexcolor) return '#ffffff';
-  hexcolor = hexcolor.replace('#', '');
-  if (hexcolor.length === 3) {
-    hexcolor = hexcolor.split('').map(c => c + c).join('');
-  }
-  const r = parseInt(hexcolor.substr(0, 2), 16);
-  const g = parseInt(hexcolor.substr(2, 2), 16);
-  const b = parseInt(hexcolor.substr(4, 2), 16);
-  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq >= 128 ? '#4a4a4a' : '#ffffff';
-};
-
-const ConfigPreview: React.FC<ConfigPreviewProps> = ({ config }) => {
-  const styles = {
-    container: {
-      backgroundColor: config.bg_primary || '#fdfbf7',
-      color: config.text_main || '#4a4a4a',
-      padding: '2rem',
-      borderRadius: '12px',
-      border: `1px solid ${config.accent_color}33`,
-      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-      position: 'sticky' as const,
-      top: '2rem',
-      overflow: 'hidden',
-    },
-    header: {
-      textAlign: 'center' as const,
-      marginBottom: '2rem',
-    },
-    names: {
-      fontFamily: config.font_cursive || "'Pinyon Script', cursive",
-      fontSize: '2.5rem',
-      color: config.accent_color || '#8fa89b',
-      marginBottom: '0.5rem',
-      display: 'block',
-    },
-    date: {
-      fontFamily: config.font_serif || "'Playfair Display', serif",
-      fontSize: '0.9rem',
-      textTransform: 'uppercase' as const,
-      letterSpacing: '0.2rem',
-      opacity: 0.8,
-    },
-    section: {
-      marginTop: '2rem',
-      borderTop: `1px solid ${config.text_main}22`,
-      paddingTop: '1.5rem',
-    },
-    title: {
-      fontFamily: config.font_serif || "'Playfair Display', serif",
-      fontSize: '1.5rem',
-      marginBottom: '1rem',
-    },
-    text: {
-      fontSize: '0.95rem',
-      lineHeight: '1.6',
-      opacity: 0.9,
-    },
-    button: {
-      display: 'inline-block',
-      marginTop: '1.5rem',
-      padding: '0.6rem 1.5rem',
-      backgroundColor: config.accent_color || '#8fa89b',
-      color: getContrastColor(config.accent_color || '#8fa89b'),
-      borderRadius: '4px',
-      fontSize: '0.9rem',
-      fontWeight: '500',
+const ConfigPreview: React.FC<ConfigPreviewProps> = ({ config, agenda = [] }) => {
+  
+  // Construímos a data mockada ou real de forma robusta para o preview
+  const getFormattedDate = () => {
+    if (!config.data_casamento) return '13 de Junho de 2026';
+    try {
+      const [year, month, day] = config.data_casamento.split('-').map(Number);
+      const date = new Date(year, month - 1, day);
+      return date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      });
+    } catch {
+      return '13 de Junho de 2026';
     }
   };
 
+  // Mapeamento da visibilidade em tempo real
+  const visibility = {
+    historia: config.mostrar_historia !== false,
+    noivos: config.mostrar_noivos !== false,
+    faq: config.mostrar_faq !== false,
+    presentes: config.mostrar_presentes !== false
+  };
+
+  // Se tivermos agenda do banco, usamos ela. Senão, fallback para preview preenchido.
+  const displayAgenda = (agenda && agenda.length > 0) ? agenda : [
+    { id: '1', titulo: 'Cerimônia', horario: config.horario_cerimonia || '16:00', local_nome: config.local_cerimonia || 'Igreja', icone: 'church' },
+    { id: '2', titulo: 'Festa', horario: config.horario_recepcao || '18:30', local_nome: 'Recepção', icone: 'party' }
+  ];
+
+  const couple = {
+    noiva: config.noiva_nome || 'Noiva',
+    noivo: config.noivo_nome || 'Noivo',
+    data: getFormattedDate(),
+    rawDate: config.data_casamento || '2026-06-13'
+  };
+
   return (
-    <div style={styles.container} data-testid="config-preview">
-      <div style={{ marginBottom: '1rem', fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05rem', opacity: 0.5 }}>
-        Pré-visualização do Site
-      </div>
-      
-      <div style={styles.header}>
-        <span style={styles.names}>
-          {config.noiva_nome || 'Noiva'} & {config.noivo_nome || 'Noivo'}
-        </span>
-        <div style={styles.date}>13 de Junho de 2026</div>
-      </div>
-
-      <div style={styles.section}>
-        <h3 style={styles.title}>Nossa História</h3>
-        <p style={styles.text}>
-          Tudo começou de um jeito simples... Este é um exemplo de como seu texto aparecerá para os convidados.
-        </p>
-        <div style={styles.button}>Confirmar Presença</div>
+    <div style={{ 
+      position: 'sticky', 
+      top: '2rem', 
+      width: '100%', 
+      display: 'flex', 
+      flexDirection: 'column',
+      gap: '1rem'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase', color: '#666', letterSpacing: '0.05em' }}>
+          📱 Pré-visualização do Convite
+        </div>
+        <div style={{ fontSize: '0.7rem', background: '#e0e7ff', color: '#3730a3', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
+          LIVE
+        </div>
       </div>
 
-      {/* Font loaders for preview */}
+      {/* Emulador de Smartphone para Renderizar o Convite Verdadeiro */}
+      <div style={{
+        width: '100%',
+        maxWidth: '380px',
+        height: '750px',
+        margin: '0 auto',
+        borderRadius: '32px',
+        border: '12px solid #1a1a1a',
+        backgroundColor: '#1a1a1a',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        overflow: 'hidden',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        {/* Notch do iPhone para estética premium */}
+        <div style={{
+          position: 'absolute',
+          top: '0',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '140px',
+          height: '25px',
+          background: '#1a1a1a',
+          borderBottomLeftRadius: '16px',
+          borderBottomRightRadius: '16px',
+          zIndex: 1000000
+        }} />
+
+        {/* Container de Scroll Interno com o componente real */}
+        <div style={{
+          flex: 1,
+          background: '#fff',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          position: 'relative',
+          borderRadius: '20px',
+          // STORY: Para forçar o LiveInviteView a ser lido como mobile forçado no viewport e desabilitar ações
+        }} className="hide-scrollbar">
+          <LiveInviteView 
+            config={config as any}
+            couple={couple}
+            visibility={visibility}
+            agenda={displayAgenda}
+            slug="preview"
+            disableActions={true} // TRAVA AS INTERAÇÕES COMO O USUÁRIO SOLICITOU
+          />
+        </div>
+      </div>
+
+      <p style={{ fontSize: '0.8rem', textAlign: 'center', color: '#999', fontStyle: 'italic' }}>
+        Esta é uma prévia real. Os botões estão inativos no modo de edição.
+      </p>
+
+      {/* Estilos Globais necessários para o preview e loaders de fonte */}
       <style dangerouslySetInnerHTML={{ __html: `
+        .hide-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .hide-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(0,0,0,0.3);
+          border-radius: 10px;
+        }
+        
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display&family=Pinyon+Script&family=Great+Vibes&family=Dancing+Script&family=Alex+Brush&family=Parisienne&family=Rochester&family=Italianno&family=Allura&family=Homemade+Apple&family=Marck+Script&family=Satisfy&family=Courgette&family=Lora&family=Cinzel&family=Cormorant+Garamond&family=EB+Garamond&family=Libre+Baskerville&family=Cardo&family=Marcellus&family=Prata&display=swap');
       `}} />
     </div>

@@ -11,7 +11,7 @@ import OnboardingWizard from '@/components/admin/OnboardingWizard';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { currentEvent, events, setCurrentEvent, refreshEvents, loading: contextLoading } = useEvent();
+  const { currentEvent, events, setCurrentEvent, refreshEvents, loading: contextLoading, userProfile } = useEvent();
 
   const [isCreating, setIsCreating] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
@@ -19,6 +19,36 @@ export default function DashboardPage() {
   const [stats, setStats] = useState({ totalConvites: 0, totalConfirmados: 0, totalPessoasPossiveis: 0, valorPresentes: 0 });
   const [recentRSVPs, setRecentRSVPs] = useState<any[]>([]);
   const [activating, setActivating] = useState(false);
+
+  // Estados para Gestão Centralizada (Antigo EventosManager)
+  const [userRolesMap, setUserRolesMap] = useState<Record<string, string>>({});
+  const [editingEvent, setEditingEvent] = useState<any | null>(null);
+  const [editFormData, setEditFormData] = useState({ nome: '', slug: '' });
+
+  const isMaster = !!userProfile?.is_master;
+
+  // Carregar papéis por evento para definir permissão de edição na plataforma
+  useEffect(() => {
+    async function fetchRoles() {
+      if (currentEvent) return; // Não precisa carregar no modo operacional
+      const { data: userResp } = await supabase.auth.getUser();
+      if (!userResp.user) return;
+
+      const { data } = await supabase
+        .from('evento_organizadores')
+        .select('evento_id, role')
+        .eq('user_id', userResp.user.id);
+      
+      if (data) {
+        const map: Record<string, string> = {};
+        data.forEach(item => {
+          map[item.evento_id] = item.role;
+        });
+        setUserRolesMap(map);
+      }
+    }
+    fetchRoles();
+  }, [events, currentEvent]);
 
   useEffect(() => {
     if (currentEvent && !currentEvent.onboarding_completed) {
@@ -56,6 +86,37 @@ export default function DashboardPage() {
     }
   };
 
+  // Funções portadas de EventosManager
+  const handleEditClick = (e: React.MouseEvent, event: any) => {
+    e.stopPropagation(); // Impede de abrir o dashboard do evento
+    setEditingEvent(event);
+    setEditFormData({ nome: event.nome, slug: event.slug });
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEvent) return;
+    const ok = await eventService.updateEvent(editingEvent.id, editFormData);
+    if (ok) {
+      setEditingEvent(null);
+      await refreshEvents();
+    } else {
+      alert('Erro ao atualizar evento.');
+    }
+  };
+
+  const handleDeleteClick = async (e: React.MouseEvent, eventId: string) => {
+    e.stopPropagation(); // Impede de abrir o dashboard do evento
+    if (!confirm('ATENÇÃO: Isso excluirá permanentemente o casamento, convites, presentes e fotos. Esta ação não pode ser desfeita. Deseja continuar?')) return;
+
+    const ok = await eventService.deleteEvent(eventId);
+    if (ok) {
+      await refreshEvents();
+    } else {
+      alert('Erro ao excluir evento.');
+    }
+  };
+
   const calculateDaysLeft = (date: string) => {
     if (!date) return 0;
     const diff = new Date(date).getTime() - new Date().getTime();
@@ -88,33 +149,108 @@ export default function DashboardPage() {
 
   if (contextLoading) return <div className={styles.loading}>Carregando...</div>;
 
-  // Se não houver evento selecionado, mostra a lista de casamentos (Modo Plataforma)
+  // Se não houver evento selecionado, mostra a lista de casamentos (Modo Plataforma Centralizado)
   if (!currentEvent) {
     return (
       <main className={styles.container}>
         <header className={styles.header}>
-          <h1 className="cursive">Meus Casamentos</h1>
+          <div>
+            <h1 className="cursive">Meus Casamentos</h1>
+            <p style={{ color: '#666', marginTop: '5px', fontSize: '0.9rem' }}>Gerencie seus eventos e acompanhe o progresso.</p>
+          </div>
           <button onClick={() => setIsCreating(true)} className={styles.addBtn}>+ Novo Casamento</button>
         </header>
+        
         <div className={styles.grid}>
-          {events.map(event => (
-            <div key={event.id} className={styles.card} onClick={() => {
-              setCurrentEvent(event);
-              // O Sidebar vai detectar a mudança e permitir entrar no modo operacional
-            }}>
-              <h3>{event.nome}</h3>
-              <span className={styles.slug}>inv/{event.slug}</span>
-            </div>
-          ))}
+          {events.map(event => {
+            const userRoleForEvent = userRolesMap[event.id];
+            // Somente Master e Owners podem editar/excluir
+            const canManage = isMaster || userRoleForEvent === 'owner';
+
+            return (
+              <div key={event.id} className={styles.card} onClick={() => setCurrentEvent(event)}>
+                <div className={styles.cardHeader}>
+                  <h3>{event.nome}</h3>
+                  <span className={event.is_active ? styles.activeBadgeMini : styles.pendingBadgeMini}>
+                    {event.is_active ? 'Ativo' : 'Pendente'}
+                  </span>
+                </div>
+                <span className={styles.slug}>inv/{event.slug}</span>
+                
+                <div className={styles.cardFooter}>
+                  {/* Se for Staff, exibe tag de identificação */}
+                  {!canManage && userRoleForEvent === 'organizador' && (
+                    <span className={styles.roleTag}>Equipe</span>
+                  )}
+                  
+                  {/* Ações aparecem apenas para Owner/Master */}
+                  {canManage && (
+                    <div className={styles.cardActions}>
+                      <button 
+                        className={styles.miniEditBtn} 
+                        onClick={(e) => handleEditClick(e, event)}
+                        title="Editar nome ou URL"
+                      >
+                        ⚙️ Editar
+                      </button>
+                      <button 
+                        className={styles.miniDeleteBtn} 
+                        onClick={(e) => handleDeleteClick(e, event.id)}
+                        title="Excluir Casamento"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
+
+        {/* MODAIS DE GESTÃO */}
+
         {isCreating && (
           <div className={styles.modal}>
             <div className={styles.modalContent}>
               <h2 className="cursive">Novo Casamento</h2>
-              <form onSubmit={handleCreate}>
-                <input value={eventName} onChange={e => setEventName(e.target.value)} placeholder="Nomes do casal..." required />
-                <button type="submit" className={styles.saveBtn}>Criar</button>
-                <button type="button" onClick={() => setIsCreating(false)}>Cancelar</button>
+              <form onSubmit={handleCreate} className={styles.modalForm}>
+                <label>Nomes dos Noivos</label>
+                <input value={eventName} onChange={e => setEventName(e.target.value)} placeholder="Ex: Ana e Carlos" required />
+                <div className={styles.modalActions}>
+                  <button type="submit" className={styles.saveBtn}>Criar</button>
+                  <button type="button" className={styles.cancelBtn} onClick={() => setIsCreating(false)}>Cancelar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {editingEvent && (
+          <div className={styles.modal}>
+            <div className={styles.modalContent}>
+              <h2 className="cursive">Editar Casamento</h2>
+              <form onSubmit={handleSaveEdit} className={styles.modalForm}>
+                <label>Nome de Exibição</label>
+                <input 
+                  value={editFormData.nome} 
+                  onChange={e => setEditFormData({ ...editFormData, nome: e.target.value })} 
+                  required 
+                />
+                <label>URL do Convite (Slug)</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <span style={{ fontSize: '0.85rem', color: '#888' }}>inv/</span>
+                  <input 
+                    style={{ flex: 1 }}
+                    value={editFormData.slug} 
+                    onChange={e => setEditFormData({ ...editFormData, slug: e.target.value })} 
+                    required 
+                  />
+                </div>
+                <div className={styles.modalActions}>
+                  <button type="submit" className={styles.saveBtn}>Salvar</button>
+                  <button type="button" className={styles.cancelBtn} onClick={() => setEditingEvent(null)}>Cancelar</button>
+                </div>
               </form>
             </div>
           </div>

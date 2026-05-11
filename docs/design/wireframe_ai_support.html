@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Watchtower UX Mockup V2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-obsidian: #090909;
+            --card-bg: #121212;
+            --accent-gold: #D4AF37;
+            --accent-gold-glow: rgba(212, 175, 55, 0.15);
+            --border-subtle: #222;
+            --text-primary: #efefef;
+            --text-secondary: #888;
+            --alert-red: #ef4444;
+            --safe-blue: #3b82f6;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-obsidian);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Sim */
+        .sidebar {
+            width: 240px;
+            background: #050505;
+            border-right: 1px solid var(--border-subtle);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .nav-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.2s;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.03); color: white;}
+        .nav-item.active { background: rgba(255,255,255,0.05); color: white; font-weight: 600;}
+        
+        .badge-alert {
+            background: var(--alert-red);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 12px;
+            animation: pulseBadge 2s infinite;
+        }
+        @keyframes pulseBadge {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* Main Content Area */
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Top Nav / Header within main area */
+        .top-nav {
+            height: 60px;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            background: #0a0a0a;
+        }
+        .page-title { font-size: 1.1rem; font-weight: 600; }
+
+        /* Settings Gear Component */
+        .settings-container {
+            position: relative;
+        }
+        .settings-trigger {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            padding: 8px;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+        .settings-trigger:hover { background: #222; color: white;}
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 45px;
+            right: 0;
+            background: #181818;
+            border: 1px solid #333;
+            border-radius: 8px;
+            width: 180px;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 100;
+        }
+        .dropdown-item {
+            padding: 12px 15px;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .dropdown-item:hover { background: #222; }
+        .dropdown-item:first-child { border-radius: 8px 8px 0 0; }
+        .dropdown-item:last-child { border-radius: 0 0 8px 8px; }
+
+        /* Workspace Grid */
+        .workspace {
+            flex: 1;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 25px;
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        .section-title span { color: var(--accent-gold); font-size: 1.5rem; }
+
+        /* Hybrid Chat Container */
+        .chat-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            background: var(--card-bg);
+            grid-column: 1;
+        }
+        .chat-wrapper.ai-active {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 20px var(--accent-gold-glow);
+        }
+        .chat-wrapper.human-active {
+            border-color: var(--safe-blue);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Refined Switcher Component */
+        .control-toggle {
+            display: flex;
+            align-items: center;
+            background: #000;
+            border-radius: 20px;
+            padding: 4px;
+            border: 1px solid #333;
+        }
+        .toggle-btn {
+            padding: 6px 15px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            color: #777;
+        }
+        .toggle-btn.active-mode {
+            background: var(--accent-gold);
+            color: black;
+        }
+        .toggle-btn.expert-mode-active {
+            background: var(--safe-blue);
+            color: white;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+        }
+        .msg {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        .msg.user { align-self: flex-start; background: #222; border: 1px solid #333;}
+        .msg.bot { 
+            align-self: flex-end; 
+            background: rgba(212, 175, 55, 0.05); 
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            position: relative;
+        }
+        .msg.bot::before {
+            content: "✧ AI";
+            position: absolute;
+            top: -18px;
+            right: 5px;
+            font-size: 0.65rem;
+            color: var(--accent-gold);
+            font-weight: bold;
+        }
+
+        /* Specific Requirement Text Component */
+        .system-separator {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #3b82f6; /* Matching expert blue */
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin: 15px 0;
+            background: rgba(59, 130, 246, 0.08);
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px dashed rgba(59, 130, 246, 0.3);
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 12px;
+            color: white;
+            outline: none;
+        }
+        .chat-input:focus { border-color: #555; }
+        .chat-input:disabled {
+            background: #0a0a0a;
+            color: #444;
+            cursor: not-allowed;
+        }
+        .btn-send {
+            background: #222;
+            color: white;
+            border: 1px solid #333;
+            padding: 0 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-send.expert-active {
+            background: var(--safe-blue);
+            border-color: var(--safe-blue);
+        }
+
+        /* Sidebar Details Panel (Right Column) */
+        .details-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .card-stat {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .stat-title { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;}
+        .stat-val { font-size: 1.5rem; font-weight: bold; margin-top: 5px;}
+
+        /* The Kanban Board */
+        .kanban-board {
+            grid-column: 1 / -1;
+            margin-top: 20px;
+        }
+        .kanban-cols {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        .k-col {
+            background: #0f0f0f;
+            border-radius: 12px;
+            padding: 15px;
+            min-height: 200px;
+            border: 1px solid #1a1a1a;
+        }
+        .k-header {
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #ccc;
+        }
+        .k-dot { width: 10px; height: 10px; border-radius: 50%;}
+        .issue-card {
+            background: #181818;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: 0.2s;
+        }
+        .issue-card:hover { border-color: #444; transform: translateY(-2px); }
+
+        /* MODAL OVERLAY - The new Requirement */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            display: none; /* Hidden by default */
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-container {
+            background: var(--card-bg);
+            border: 1px solid #333;
+            width: 600px;
+            border-radius: 16px;
+            padding: 30px;
+            position: relative;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0;}
+            to { transform: translateY(0); opacity: 1;}
+        }
+        .modal-close {
+            position: absolute;
+            top: 20px; right: 20px;
+            background: none; border: none; color: #888; font-size: 1.5rem; cursor: pointer;
+        }
+        .ai-prompt-editor {
+            width: 100%;
+            margin-top: 15px;
+            background: #050505;
+            border: 1px solid #333;
+            color: #a0e5a0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            padding: 15px;
+            border-radius: 8px;
+            resize: none;
+            height: 280px;
+            line-height: 1.5;
+            outline: none;
+        }
+        .ai-prompt-editor:focus { border-color: var(--accent-gold); }
+        
+        .btn-save {
+            width: 100%;
+            margin-top: 20px;
+            background: var(--accent-gold);
+            color: black;
+            font-weight: bold;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Sim -->
+    <div class="sidebar">
+        <h2 style="color: white; font-size: 1.1rem; margin-bottom: 20px; font-weight: 800; letter-spacing: -0.5px;">InviteEventAI</h2>
+        <div class="nav-item">Dashboard</div>
+        <div class="nav-item">Presentes</div>
+        <div class="nav-item active" style="border-left: 3px solid var(--accent-gold)">
+            Suporte
+            <span class="badge-alert">3</span>
+        </div>
+        <div class="nav-item">Financeiro</div>
+    </div>
+
+    <div class="main-area">
+        <!-- TOP NAV with Settings Gear -->
+        <header class="top-nav">
+            <div class="page-title">Central de Suporte Hub</div>
+            
+            <div class="settings-container">
+                <button class="settings-trigger" onclick="toggleDropdown()">⚙️ Configurações</button>
+                <div id="settingsDropdown" class="dropdown-menu">
+                    <div class="dropdown-item" onclick="openPromptModal()">🤖 Configurar Prompt</div>
+                    <div class="dropdown-item">📊 Métricas de IA</div>
+                    <div class="dropdown-item" style="color: #ef4444;">🛑 Desativar Sistema</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="workspace">
+            
+            <!-- LEFT: Chat (Primary Interaction) -->
+            <div class="chat-wrapper ai-active" id="chatContainer">
+                <div class="chat-header">
+                    <div>
+                        <div style="font-weight: 700; font-size: 0.95rem;">Chat #492</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Ticket Aberto por Marcos Souza</div>
+                    </div>
+                    
+                    <!-- SWITCHER -->
+                    <div class="control-toggle">
+                        <div id="btnAI" class="toggle-btn active-mode" onclick="switchMode('ai')">🤖 Bot</div>
+                        <div id="btnExpert" class="toggle-btn" onclick="switchMode('expert')">👤 Especialista</div>
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="messagesContainer">
+                    <div class="msg user">Olá, o meu pix não gerou o código copia e cola. Vocês podem mandar?</div>
+                    <div class="msg bot">Olá Marcos! Verifiquei aqui que sua sessão de checkout expirou. Para garantir a segurança da transação, gerei um novo código PIX agora mesmo para você.</div>
+                    <div class="msg user">Ainda dá erro no banco ao colar. O que faço?</div>
+                    <div class="msg bot">Peço desculpas pelo transtorno! Abri uma análise prioritária com nosso setor técnico para este caso específico.</div>
+                    
+                    <!-- THE REQUIRED TEXT ADJUSTMENT -->
+                    <div class="system-separator" id="interceptLine" style="display: none;">
+                        🔔 Você será atendido em breve por um dos nossos especialistas.
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <input type="text" id="msgInput" class="chat-input" placeholder="Aguardando ação do Bot..." disabled>
+                    <button id="btnSend" class="btn-send">Enviar</button>
+                </div>
+            </div>
+
+            <!-- RIGHT: Meta Stats & Shortcuts -->
+            <div class="details-panel">
+                <div class="card-stat">
+                    <div class="stat-title">Tickets Resolvidos pela IA hoje</div>
+                    <div class="stat-val" style="color: var(--accent-gold);">24</div>
+                </div>
+                <div class="card-stat">
+                    <div class="stat-title">Tempo Médio de Resposta</div>
+                    <div class="stat-val">0.8s</div>
+                </div>
+                <div class="card-stat" style="border-left: 4px solid var(--safe-blue); background: rgba(59, 130, 246, 0.03);">
+                    <div class="stat-title">Status Operacional</div>
+                    <div style="font-size: 0.85rem; margin-top: 5px; color: #888;">Sistemas 100% Operacionais. Motor GPT-4 Omni ativado.</div>
+                </div>
+            </div>
+
+            <!-- BOTTOM: KANBAN (User explicitly liked this!) -->
+            <div class="kanban-board">
+                <div class="section-title"><span>⊞</span> Rastreador de Issues Ativas</div>
+                <div class="kanban-cols">
+                    <!-- COL 1 -->
+                    <div class="k-col">
+                        <div class="k-header"><div class="k-dot" style="background: var(--accent-gold);"></div> ABERTAS</div>
+                        <div class="issue-card">
+                            <div style="font-weight: 600; color: #fff;">PIX Falhou no Banco</div>
+                            <div style="color: #777; margin-top: 5px;">Chat #492</div>
+                        </div>
+                    </div>
+                    <!-- COL 2 -->
+                    <div class="k-col">
+                        <div class="k-header"><div class="k-dot" style="background: var(--safe-blue);"></div> VISUALIZADAS</div>
+                        <div class="issue-card" style="opacity: 0.6;">
+                             <div style="font-weight: 600;">Fonte Errada Agenda</div>
+                        </div>
+                    </div>
+                    <!-- COL 3 -->
+                    <div class="k-col">
+                        <div class="k-header"><div class="k-dot" style="background: #f97316;"></div> EM CORREÇÃO</div>
+                        <div class="issue-card">
+                             <div style="font-weight: 600;">Timeout no Envio RSVP</div>
+                        </div>
+                    </div>
+                    <!-- COL 4 -->
+                    <div class="k-col">
+                        <div class="k-header"><div class="k-dot" style="background: #22c55e;"></div> CORRIGIDAS</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- THE CONFIGURATION MODAL (New Requirement) -->
+    <div id="promptModal" class="modal-overlay">
+        <div class="modal-container">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <h2 style="font-size: 1.3rem; display: flex; align-items: center; gap: 10px;">
+                <span style="color: var(--accent-gold);">✧</span> Configuração do Cérebro da IA
+            </h2>
+            <p style="color: #777; font-size: 0.85rem; margin-top: 5px;">
+                Defina as diretrizes sistêmicas que moldarão a conduta do bot de atendimento.
+            </p>
+            
+            <textarea class="ai-prompt-editor">
+Você é o Assistente Inteligente do InviteEvent.
+TOM: Empático, cordial e pragmático.
+
+REGRAS CRÍTICAS:
+1. Sempre saúda cordialmente.
+2. Nunca exiba senhas, e-mails de terceiros ou códigos fonte.
+3. Se o usuário expressar frustração técnica (ex: "não funciona", "deu erro"), suspenda sua fala, e crie um log na base de ISSUES.
+
+CONTEXTO ATUAL:
+{issues_conhecidas}
+{regras_do_ecossistema}
+            </textarea>
+
+            <button class="btn-save" onclick="closeModal()">Salvar e Aplicar Alterações</button>
+        </div>
+    </div>
+
+    <!-- Interactive UX Logic -->
+    <script>
+        // 1. Dropdown Logic
+        function toggleDropdown() {
+            const drop = document.getElementById('settingsDropdown');
+            drop.style.display = drop.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        // 2. Modal Logic
+        function openPromptModal() {
+            document.getElementById('promptModal').style.display = 'flex';
+            document.getElementById('settingsDropdown').style.display = 'none';
+        }
+        function closeModal() {
+            document.getElementById('promptModal').style.display = 'none';
+        }
+
+        // 3. Hybrid Switch Logic
+        function switchMode(mode) {
+            const container = document.getElementById('chatContainer');
+            const btnAI = document.getElementById('btnAI');
+            const btnExp = document.getElementById('btnExpert');
+            const input = document.getElementById('msgInput');
+            const btnSend = document.getElementById('btnSend');
+            const sep = document.getElementById('interceptLine');
+
+            if (mode === 'ai') {
+                container.className = 'chat-wrapper ai-active';
+                btnAI.className = 'toggle-btn active-mode';
+                btnExp.className = 'toggle-btn';
+                input.disabled = true;
+                input.placeholder = 'IA está no controle...';
+                sep.style.display = 'none';
+                btnSend.className = 'btn-send';
+            } else {
+                container.className = 'chat-wrapper human-active';
+                btnAI.className = 'toggle-btn';
+                btnExp.className = 'toggle-btn expert-mode-active';
+                input.disabled = false;
+                input.placeholder = 'Digite sua mensagem para o convidado...';
+                sep.style.display = 'block';
+                btnSend.className = 'btn-send expert-active';
+                
+                // Scroll to bottom automatically to show specific requirement text
+                setTimeout(() => {
+                    const m = document.getElementById('messagesContainer');
+                    m.scrollTop = m.scrollHeight;
+                }, 100);
+            }
+        }
+
+        // Close dropdown on outside click
+        window.onclick = function(event) {
+            if (!event.target.matches('.settings-trigger')) {
+                var dropdowns = document.getElementsByClassName("dropdown-menu");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.style.display === 'flex') {
+                        openDropdown.style.display = 'none';
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

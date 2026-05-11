@@ -29,6 +29,35 @@ export default function Sidebar() {
   const isMaster = userProfile?.is_master;
   const isOwner = userRole === 'owner';
 
+  // Phase 4: Realtime Surveillance for Support Badges
+  const [pendingAttention, setPendingAttention] = useState(0);
+
+  useEffect(() => {
+    if (!isMaster) return;
+    
+    // Direct connection to initial state
+    import('@/lib/supabase').then(async ({ supabase }) => {
+      const loadCount = async () => {
+         const { count } = await supabase
+           .from('suporte_tickets')
+           .select('*', { count: 'exact', head: true })
+           .eq('needs_human_attention', true);
+         setPendingAttention(count || 0);
+      };
+      
+      loadCount();
+
+      const channel = supabase
+        .channel('support-attention-notifs')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'suporte_tickets' }, () => {
+           loadCount();
+        })
+        .subscribe();
+
+      return () => { supabase.removeChannel(channel); };
+    });
+  }, [isMaster]);
+
   // Itens da Camada Gerencial (Plataforma)
   const platformItems = [
     { 
@@ -50,6 +79,7 @@ export default function Sidebar() {
     { 
       name: 'Suporte', 
       path: '/admin/suporte', 
+      badge: pendingAttention > 0 ? pendingAttention : undefined,
       icon: <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>,
       show: isMaster
     },
@@ -121,17 +151,19 @@ export default function Sidebar() {
 
     if (item.onClick) {
       return (
-        <button key={item.name} onClick={item.onClick} className={className} style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}>
+        <button key={item.name} onClick={item.onClick} className={className} style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', position: 'relative' }}>
           <span className={styles.icon}>{item.icon}</span>
           <span className={styles.name}>{item.name}</span>
+          {item.badge && <span style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', backgroundColor: '#ef4444', color: 'white', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 6px', borderRadius: '999px' }}>{item.badge}</span>}
         </button>
       );
     }
 
     return (
-      <Link key={item.path} href={item.path} className={className}>
+      <Link key={item.path} href={item.path} className={className} style={{ position: 'relative' }}>
         <span className={styles.icon}>{item.icon}</span>
         <span className={styles.name}>{item.name}</span>
+        {item.badge && <span style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', backgroundColor: '#ef4444', color: 'white', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 6px', borderRadius: '999px' }}>{item.badge}</span>}
       </Link>
     );
   };

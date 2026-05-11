@@ -1,0 +1,319 @@
+/* 
+  Mirroring Existing Design System CSS 
+  Then injecting New AI Support Components visually seamlessly 
+*/
+.container {
+  padding: 2.5rem;
+  width: 100%;
+  min-height: calc(100vh - 100px);
+  color: var(--admin-text-primary);
+  font-family: var(--font-sans);
+}
+
+.titleArea {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--admin-sidebar-border);
+  padding-bottom: 0.75rem;
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--admin-text-primary);
+  letter-spacing: -0.025em;
+  font-family: var(--font-serif);
+}
+
+/* NEW Settings Container anchored here */
+.settingsContainer {
+  position: relative;
+}
+.settingsBtn {
+  background: transparent;
+  border: 1px solid var(--admin-input-border);
+  color: var(--admin-text-secondary);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.settingsBtn:hover {
+  background: var(--admin-sidebar-hover-bg);
+  color: var(--admin-text-primary);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 200px;
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-card-border);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  z-index: 100;
+  overflow: hidden;
+}
+.dropdownItem {
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  color: var(--admin-text-primary);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.dropdownItem:hover {
+  background: var(--admin-sidebar-hover-bg);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 2rem;
+  height: 600px;
+  margin-bottom: 2rem;
+}
+
+.sidebar {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-card-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chatPanel {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-card-border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+/* HYBRID MODES matching system styling precisely */
+.chatPanelAI {
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 15px rgba(197, 160, 89, 0.08);
+}
+.chatPanelSpecialist {
+  border-color: #3b82f6;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.08);
+}
+
+.chatHeader {
+  padding: 1.25rem 1.5rem;
+  background: var(--admin-sidebar-active-bg);
+  border-bottom: 1px solid var(--admin-sidebar-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* SWITCHER COMPONENT - NO EMOJIS requirement applied */
+.switchContainer {
+  display: flex;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--admin-sidebar-border);
+  border-radius: 99px;
+  padding: 3px;
+}
+.switchBtn {
+  padding: 5px 14px;
+  border: none;
+  background: transparent;
+  color: var(--admin-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.switchBtnActiveAI {
+  background: var(--admin-accent);
+  color: #111;
+}
+.switchBtnActiveSpec {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.chatMessages {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: rgba(0,0,0,0.1);
+}
+
+/* Message Styles from Original System */
+.messageWrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 75%;
+}
+.messageOther {
+  align-self: flex-start;
+}
+.messageMe {
+  align-self: flex-end;
+}
+.bubble {
+  padding: 0.75rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.messageOther .bubble {
+  background: var(--admin-sidebar-active-bg);
+  border: 1px solid var(--admin-input-border);
+  color: var(--admin-text-primary);
+}
+.messageMe .bubble {
+  background: var(--admin-accent);
+  color: #111;
+  font-weight: 500;
+}
+.messageAI .bubble {
+  background: rgba(197, 160, 89, 0.05);
+  border: 1px solid rgba(197, 160, 89, 0.25);
+  color: var(--admin-text-primary);
+}
+.aiBadge {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  font-weight: bold;
+  color: var(--admin-accent);
+  margin-bottom: 4px;
+  margin-left: 5px;
+}
+
+/* NOTIFICATION TEXT requirement matching styling */
+.sysSeparator {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.05);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px dashed rgba(59, 130, 246, 0.2);
+  margin: 10px 0;
+}
+
+.chatInputArea {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid var(--admin-sidebar-border);
+  display: flex;
+  gap: 0.75rem;
+  background: var(--admin-card-bg);
+}
+.chatInput {
+  flex: 1;
+  background: var(--admin-input-bg);
+  border: 1px solid var(--admin-input-border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: var(--admin-text-primary);
+  outline: none;
+}
+.chatInput:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.btnSend {
+  background: var(--admin-accent);
+  color: #111;
+  font-weight: bold;
+  border: none;
+  padding: 0 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* KANBAN Visual Implementation perfectly aligned to standard Grid cards */
+.kanbanGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+.kanbanCol {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-card-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  min-height: 180px;
+}
+.kanbanHeader {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--admin-text-secondary);
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+.issueCard {
+  background: var(--admin-input-bg);
+  border: 1px solid var(--admin-input-border);
+  border-radius: 8px;
+  padding: 1rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.issueCard:hover { transform: translateY(-2px); border-color: var(--admin-accent); }
+
+/* THE MODAL for system prompt */
+.modalOverlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.modalContent {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-card-border);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 600px;
+  padding: 2rem;
+  position: relative;
+}
+.promptEditor {
+  width: 100%;
+  height: 240px;
+  background: #0d0d0d;
+  border: 1px solid var(--admin-input-border);
+  color: #84cc16; /* distinct dev color within system bounds */
+  font-family: monospace;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1.5rem;
+  outline: none;
+  resize: none;
+}
+.promptEditor:focus { border-color: var(--admin-accent); }
+.closeBtn {
+  position: absolute; top: 1rem; right: 1rem;
+  background: transparent; border: none; color: var(--admin-text-secondary); font-size: 1.5rem; cursor: pointer;
+}

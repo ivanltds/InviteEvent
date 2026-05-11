@@ -44,6 +44,35 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
+    // Phase 2: Integrazione Intelligente Híbrida (PRD-009)
+    // 1. Verificar se o remetente é Master ou Usuário
+    const { data: perfil } = await supabase
+      .from('perfis')
+      .select('is_master')
+      .eq('id', remetente_id)
+      .single();
+
+    const isMaster = perfil?.is_master || false;
+
+    // Se for MASTER enviando, não ativamos o Bot
+    if (!isMaster) {
+      // Acionamento Seguro do Orquestrador em Background/Async
+      import('@/lib/services/aiSupportService').then(async ({ AISupportService }) => {
+        const aiResult = await AISupportService.processMessage(ticket_id, conteudo);
+        
+        if (aiResult.active && aiResult.response) {
+          // Salva a resposta do Bot na tabela de mensagens
+          await supabase
+            .from('suporte_mensagens')
+            .insert([{
+              ticket_id: ticket_id,
+              remetente_id: '00000000-0000-0000-0000-000000000000', // ID Simbólico reservado ao Sistema/Bot
+              conteudo: aiResult.response
+            }]);
+        }
+      }).catch(err => console.error('[AI Hook Fail]', err));
+    }
+
     return NextResponse.json({ success: true, message }, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

@@ -32,30 +32,6 @@
   letter-spacing: 4px;
 }
 
-.bgSite {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  filter: blur(20px) brightness(0.2);
-  transform: scale(1.1);
-  will-change: filter, transform;
-}
-
-.bgSite::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.8) 100%);
-}
-
-.siteCenter { text-align: center; z-index: 2; }
-.siteTitle { font-family: var(--font-serif); font-size: clamp(3.5rem, 7vw, 6.5rem); text-shadow: 0 5px 30px #000; color: #fff; margin-bottom: 15px; }
-.siteDate { letter-spacing: 8px; font-size: 1rem; text-shadow: 0 3px 15px #000; color: rgba(255,255,255,0.8); font-weight: 300; }
-
 .spotlight {
   position: absolute;
   inset: 0;

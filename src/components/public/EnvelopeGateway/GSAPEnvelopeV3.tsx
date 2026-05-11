@@ -120,10 +120,11 @@ export default function GSAPEnvelopeV3({
         ease: "power3.out"
       }, 2.3)
 
-      // Pausa para leitura e mergulho final
+    // Pausa para leitura e mergulho final
       .to(`.${styles.card}`, { scale: 5, autoAlpha: 0, duration: 1.8, ease: "power3.inOut" }, 5.0)
       .to(`.${styles.envelopeBody}`, { z: -1000, y: 400, autoAlpha: 0, duration: 1.8, ease: "power3.inOut" }, 5.0)
-      .to(`.${styles.bgSite}`, { filter: "blur(0px) brightness(1)", scale: 1, duration: 2, ease: "power2.inOut" }, 5.0);
+      // Remove a opacidade do fundo para revelar a página real do Next.js
+      .to(wrapperRef.current?.parentElement || `.${styles.root}`, { backgroundColor: "transparent", duration: 2, ease: "power2.inOut" }, 5.0);
   };
 
   const handleSkip = () => {
@@ -134,10 +135,10 @@ export default function GSAPEnvelopeV3({
   const containerVars = {
     '--gold': accentColor,
     '--gold-light': `${accentColor}99`, // opacity applied
-    '--env-dark': '#121212', // Mantendo dark elegante pro envelope contrastar com o tema dourado/claro do casamento
+    '--env-dark': '#121212', 
     '--env-light': '#242424',
     '--paper-bg': bgPrimary,
-    '--paper-dark': bgPrimary, // fallback
+    '--paper-dark': bgPrimary, 
     '--ink': textMain,
     '--font-cursive': fontCursive,
     '--font-serif': fontSerif,
@@ -150,13 +151,6 @@ export default function GSAPEnvelopeV3({
           Pular Animação →
         </button>
       )}
-
-      <div className={styles.bgSite} style={{ backgroundImage: `url('${coverImage}')` }}>
-        <div className={styles.siteContent}>
-          <h1 className={styles.siteTitle}>{coupleNoiva} & {coupleNoivo}</h1>
-          <p className={styles.siteDate}>{date?.toUpperCase()}</p>
-        </div>
-      </div>
 
       <div className={styles.scene}>
         <div className={styles.envelopeWrapper} ref={wrapperRef} onClick={handleOpen}>

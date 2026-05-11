@@ -34,23 +34,6 @@
   box-shadow: 0 10px 20px rgba(0,0,0,0.05);
 }
 
-.bgSite {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  filter: blur(25px) contrast(0.8);
-  transform: scale(1.1);
-  will-change: filter, transform;
-  z-index: 1;
-}
-
-.siteOverlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.2) 100%);
-}
-
 .bgBloom {
   position: absolute;
   inset: 0;

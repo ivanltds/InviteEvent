@@ -201,7 +201,8 @@ export default function GSAPCinematic({
       .to(`.${styles.card}`, { scale: 5, autoAlpha: 0, duration: 2, ease: "power3.inOut" }, 8.5)
       .to(`.${styles.envBody}`, { z: -800, y: 300, autoAlpha: 0, duration: 1.8, ease: "power3.inOut" }, 8.5)
       .to(`.${styles.spotlight}`, { opacity: 0, duration: 1.5 }, 8.5)
-      .to(`.${styles.bgSite}`, { filter: "blur(0px) brightness(1)", scale: 1, duration: 2.5, ease: "power2.inOut" }, 8.5);
+      // Fade out the overlay background to reveal the real website underneath
+      .to(wrapperRef.current?.parentElement || `.${styles.root}`, { backgroundColor: "transparent", duration: 2.5, ease: "power2.inOut" }, 8.5);
   };
 
   const handleSkip = () => {
@@ -227,13 +228,6 @@ export default function GSAPCinematic({
       {showSkip && isInteractive && (
         <button className={styles.skipBtn} onClick={handleSkip}>Pular →</button>
       )}
-
-      <div className={styles.bgSite} style={{ backgroundImage: `url('${coverImage}')` }}>
-        <div className={styles.siteCenter}>
-          <h1 className={styles.siteTitle}>{coupleNoiva} & {coupleNoivo}</h1>
-          <p className={styles.siteDate}>{date?.toUpperCase()}</p>
-        </div>
-      </div>
 
       <div className={styles.spotlight} style={{ background: `radial-gradient(ellipse at bottom, ${accentColor}1F 0%, ${accentColor}0A 40%, transparent 70%)` }}></div>
       <div ref={ambientRef} id="ambientParticles" className={styles.ambientContainer}></div>

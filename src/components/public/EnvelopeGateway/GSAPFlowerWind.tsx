@@ -174,11 +174,10 @@ export default function GSAPFlowerWind({
       
     // 5. O fundo ganha vida e imagem
       .to(`.${styles.bgBloom}`, { opacity: 0, duration: 2 }, 2.0)
-      .to(`.${styles.bgSite}`, { filter: "blur(0px) contrast(1.1)", scale: 1.02, duration: 3, ease: "power2.inOut" }, 2.5)
+      .to(rootRef.current, { backgroundColor: "transparent", duration: 3, ease: "power2.inOut" }, 2.5)
 
     // 6. Transição final (Zoom In)
-      .to(`.${styles.textCanvas}`, { scale: 1.2, opacity: 0, duration: 1.5, ease: "power2.in", delay: 3.5 })
-      .to(`.${styles.bgSite}`, { scale: 1, duration: 2, ease: "power2.out" }, "-=0.5");
+      .to(`.${styles.textCanvas}`, { scale: 1.2, opacity: 0, duration: 1.5, ease: "power2.in", delay: 3.5 });
   };
 
   const handleSkip = () => {
@@ -207,11 +206,6 @@ export default function GSAPFlowerWind({
       {showSkip && !isOpening && (
         <button className={styles.skipBtn} onClick={handleSkip}>Pular 🌿</button>
       )}
-
-      {/* Fundo da Foto de Casamento */}
-      <div className={styles.bgSite} style={{ backgroundImage: `url('${coverImage}')` }}>
-        <div className={styles.siteOverlay}></div>
-      </div>
 
       {/* Overlay de Transição Floral Inicial */}
       <div className={styles.bgBloom}></div>

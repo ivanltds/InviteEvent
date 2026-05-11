@@ -1,14 +1,14 @@
 import { defineConfig, devices } from '@playwright/test';
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
+import dotenv from 'dotenv';
+import path from 'path';
 
-const PORT = process.env.PORT || '3001';
+// Define which env file to use, defaulting to .env.test.local if it exists, or fallback to .env
+const envPath = process.env.ENV_FILE || '.env.test.local';
+dotenv.config({ path: path.resolve(__dirname, envPath) });
+
+// Use a custom isolated port for local E2E test server to avoid collision with dev (3000)
+const PORT = process.env.PORT || '3005';
 
 /**
  * See https://playwright.dev/docs/test-configuration.

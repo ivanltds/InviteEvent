@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "jest",
     "test:e2e": "playwright test",
+    "test:e2e:local": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:ai": "npx -y tsx tests/ai/pipeline_evaluator.ts",
     "migrate": "node scripts/migrate.js",

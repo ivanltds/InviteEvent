@@ -71,6 +71,8 @@ CREATE POLICY "Organizadores gerenciam presentes" ON presentes
     );
 
 -- 6. POLÍTICAS PARA FAQ
+ALTER TABLE faq ADD COLUMN IF NOT EXISTS evento_id UUID REFERENCES eventos(id) ON DELETE CASCADE;
+
 DROP POLICY IF EXISTS "Organizadores gerenciam FAQ" ON faq;
 
 CREATE POLICY "Leitura pública de FAQ" ON faq FOR SELECT USING (true);

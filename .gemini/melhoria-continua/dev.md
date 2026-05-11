@@ -24,3 +24,10 @@
 **Impacto:** Maior estabilidade do código e prevenção de bugs triviais.
 **Ação corretiva:** OBRIGATÓRIO adotar metodologia TDD ou Test-First. TODO desenvolvimento novo deve ser precedido da criação de testes E2E e/ou Unitários. ATÉ MUDANÇAS PEQUENAS ou pequenos refactors DEVEM incluir cobertura de testes unitários antes da escrita do código de produção.
 **Status:** APLICADO (REGRA MESTRA)
+
+## [2026-05-11] - Tipo: PROCESSO (ALERTA CRITICO)
+**Contexto:** Drift de Schema no Supabase Local-First
+**Problema:** AlteraÃ§Ãµes feitas no banco direto via Dashboard/API nÃ£o foram convertidas em migrations SQL, paralisando a criaÃ§Ã£o do ambiente local.
+**Impacto:** Bloqueio total de novos desenvolvedores ou containers na infra isolada.
+**AÃ§Ã£o corretiva:** NUNCA alterar o banco via dashboard sem criar IMEDIATAMENTE o arquivo .sql correspondente em /supabase/migrations.
+**Status:** APLICADO

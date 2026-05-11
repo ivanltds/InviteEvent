@@ -32,3 +32,10 @@
 **Impacto:** Risco de quebrar compilações ou builds no Vercel de produção antes do PRD estar completamente finalizado e validado.
 **Ação corretiva:** O DevOps deve apenas realizar Git Commits locais durante o desenvolvimento do PRD. O Git Push remoto só deve ser disparado após a conclusão e validação definitiva de todo o PRD.
 **Status:** APLICADO
+
+## [2026-05-11] - Tipo: PROCESSO (ALERTA CRITICO)
+**Contexto:** Drift de Schema no Supabase Local-First
+**Problema:** A pipeline/infra permitiu o avanço de deploys sem garantir que o schema versionado localmente estivesse em paridade 1:1 com produção.
+**Impacto:** Impossibilidade de replicação de infra e recuperação de desastre.
+**Ação corretiva:** Obrigatoriedade de rodar 'npx supabase db lint' ou 'start' localmente antes de subir qualquer nova migration para produção.
+**Status:** APLICADO

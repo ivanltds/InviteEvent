@@ -51,3 +51,9 @@
 2. **Registrar em `.gemini/melhoria-continua/`** — aprendizados da sessão
 3. **Commitar atualizações de contexto** — `git commit -m "docs(maestro): atualizar contexto ao final da sessão"`
 4. **Não dar push** durante a sessão (salvo final de PRD) — conforme regra do DevOps
+## [2026-05-11] - Tipo: GOVERNANÇA (ALERTA CRITICO)
+**Contexto:** Falha de Auditoria de Ativos no Hand-off
+**Problema:** O Maestro autorizou a finalização de PRDs (003, 009) sem validar fisicamente que as novas tabelas citadas no plano possuíam um arquivo de migration rastreável no repositório.
+**Impacto:** Quebra catastrófica da pipeline de bootstrap do projeto.
+**Ação corretiva:** Incluir na lista mental de auditoria ANTES do commit DevOps: 'Existe arquivo .sql para toda nova tabela/coluna descrita na PRD?'.
+**Status:** APLICADO

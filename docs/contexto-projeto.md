@@ -39,6 +39,7 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | 004 | Shielding & Security Gateway     | CONCLUÍDO   | Concluído   |
 | 005 | Data Shielding & Soft Delete     | CONCLUÍDO   | Concluído   |
 | 006 | Unificação Design System & Grids | CONCLUÍDO   | Concluído   |
+| 010 | Multi-Animação de Gateways       | CONCLUÍDO   | Concluído   |
 
 ## Segurança
 - **Última Auditoria:** 2024-05-24
@@ -100,8 +101,9 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/prd/prd-005/prd-inicial.md            | BA          | PRD de Lixeira (Soft Delete) e Governança de Eventos Ativos |
 | docs/prd/prd-006/prd-inicial.md            | BA          | PRD Póstumo de Unificação Visual e Zero-Alert Policy |
 | tests/e2e/prd_006_visual_consistency.spec.ts| QA          | Testes E2E de Uniformidade Visual e Moderação Silenciosa |
+| tests/e2e/prd_010_animacoes_gateways.spec.ts| QA         | Certificação E2E de Motor de Animações GSAP Gateways|
 
 ## Última Atualização
 - Data    : 2026-05-11
-- Por     : Maestro / DEV / QA
-- Motivo  : Conclusão do Ciclo 006: Refatoração Visual, Unificação de Botões, Grid de Agenda e Erradicação de Native Alerts/Emojis em toda a plataforma.
+- Por     : Maestro / DEV
+- Motivo  : Criação da Versão v0.3.1. Entrega e homologação final das animações Cinematic Gateways (incluindo 1:1 wireframe e reversão controlada de Petalas 2). Tudo comitado e versionado.

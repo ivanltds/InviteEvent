@@ -18,3 +18,9 @@
 **Impacto:** DecisÃ£o do Operador consolidada em feedback positivo massivo.
 **AÃ§Ã£o corretiva:** O agente `@ba` obrigatoriamente deve anexar levantamento de telemetria e insights impulsionadores em TODAS as futuras PRDs.
 **Status:** APLICADO
+## [2026-05-11] — Tipo: ESTRATÉGIA DE MÉTRICAS (INSIGHTS V2)
+**Contexto:** Suporte Inteligente V2 / Kanban Realtime
+**Problema:** Necessidade de extrair valor estratégico das novas correlações de banco (1 Issue para N Chamados) e motor semântico.
+**Impacto:** Capacidade de gerar KPIs preditivos de estabilidade de produto e produtividade exponencial da equipe técnica.
+**Ação corretiva:** Elaborado e persistido o "Framework de Estratégia de Métricas e Insights" em docs/estrategia-metricas-insights.md.
+**Status:** APLICADO

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Intelligence - Dashboard de Suporte & IA (Wireframe Oficial)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /* EXTRAÍDO DIRETAMENTE DE Intelligence.module.css */
+        :root {
+            --font-serif: 'Playfair Display', serif;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            background-color: #0d0d0d;
+        }
+
+        .container {
+            padding: 2.5rem;
+            min-height: 100vh;
+            color: #f5e6cc;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+
+        .container::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: radial-gradient(circle at center, rgba(197, 160, 89, 0.03) 0%, transparent 80%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pageTitle h1 {
+            font-family: var(--font-serif);
+            font-size: 2.2rem;
+            color: #ffffff;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin: 0 0 4px 0;
+        }
+
+        .pageTitle p {
+            color: #888;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .liveStatus {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #141414;
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #C5A059;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #C5A059;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 0.4; transform: scale(0.95); }
+        }
+
+        /* NOVO COMPONENTE: TABS (Seguindo padrão minimalista do sistema) */
+        .tabsContainer {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 1;
+        }
+        .tabItem {
+            padding: 12px 0;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            color: #888;
+            cursor: pointer;
+            transition: 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .tabItem.active {
+            color: #C5A059;
+            border-bottom-color: #C5A059;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .span4 { grid-column: span 4; }
+        .span8 { grid-column: span 8; }
+
+        .card {
+            background: #111111;
+            border: 1px solid rgba(197, 160, 89, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .card:hover {
+            border-color: rgba(197, 160, 89, 0.3);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        .cardHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+        }
+
+        .cardTitle {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #C5A059;
+            font-weight: 700;
+        }
+
+        .kpiMain {
+            font-family: var(--font-serif);
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .badgeTrend {
+            display: inline-flex;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            margin-bottom: 1.5rem;
+        }
+
+        .chartWrapper {
+            position: relative;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
+        .absoluteCenter {
+            position: absolute;
+            text-align: center;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .absoluteCenter div {
+            font-size: 1.8rem;
+            font-weight: 700;
+            font-family: var(--font-serif);
+            color: white;
+        }
+
+        .absoluteCenter span {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .aiInsight {
+            background: linear-gradient(135deg, #161616, #0d0d0d);
+            border: 1px solid rgba(197, 160, 89, 0.3);
+        }
+
+        .insightIcon {
+            width: 40px;
+            height: 40px;
+            background: rgba(197, 160, 89, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #C5A059;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .aiTitle {
+            font-family: var(--font-serif);
+            font-size: 1.2rem;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .aiText {
+            font-size: 0.85rem;
+            color: #f5e6cc;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .aiActionBox {
+            background: #141414;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #C5A059;
+            margin-bottom: 1.5rem;
+            font-size: 0.8rem;
+        }
+
+        .btnGold {
+            background: linear-gradient(135deg, #C5A059, #B38F48);
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .table th {
+            text-align: left;
+            color: #888;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .table td {
+            padding: 14px 0;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            color: #e5e5e5;
+        }
+
+        .indicator {
+            display: inline-flex;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .indHot { background: rgba(197, 160, 89, 0.2); color: #C5A059; border: 1px solid rgba(197, 160, 89, 0.3); }
+        .indNorm { background: #1a1a1a; color: #aaa; }
+        .indWarn { background: rgba(239, 68, 68, 0.1); color: #fca5a5; }
+
+        .thumb {
+            width: 36px; height: 36px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #C5A059;
+            font-weight: bold;
+        }
+
+        /* SVG Canvas mock for Graph */
+        .mockChart {
+            width: 100%; height: 250px;
+            background: linear-gradient(to bottom, #111, #131313);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #444;
+            border: 1px dashed rgba(255,255,255,0.05);
+        }
+
+        @media (max-width: 1024px) {
+            .span4, .span8 {
+                grid-column: span 12;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER IDENTICO AO SISTEMA -->
+        <header class="header">
+            <div class="pageTitle">
+                <h1>Master Intelligence</h1>
+                <p>Telemetry Analytics Platform</p>
+            </div>
+            <div class="liveStatus">
+                <div class="dot"></div>
+                <span style="font-size: 0.75rem; font-weight: bold; color: #ffffff; letter-spacing: 1px;">REAL TIME HUB</span>
+            </div>
+        </header>
+
+        <!-- NAVEGAÇÃO POR ABAS INJETADA SEM IMPACTAR ESTRUTURA -->
+        <div class="tabsContainer">
+            <div class="tabItem">Visão Geral</div>
+            <div class="tabItem active">Suporte & IA Analytics</div>
+            <div class="tabItem">Engajamento</div>
+        </div>
+
+        <div class="grid">
+            <!-- 1. KPI DE AUTONOMIA (Reaproveitando Donut Layout) -->
+            <div class="card span4">
+                <div class="cardHeader">
+                    <span class="cardTitle">Autonomia da IA</span>
+                </div>
+                <div class="kpiMain">
+                    78.4%
+                </div>
+                <div>
+                    <span class="badgeTrend">Alta Eficiência</span>
+                </div>
+
+                <div class="chartWrapper">
+                    <!-- Simulação visual de Doughnut SVG -->
+                    <svg width="180" height="180" viewBox="0 0 36 36">
+                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#222" stroke-width="2.5"/>
+                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#C5A059" stroke-width="2.5" stroke-dasharray="78, 100"/>
+                    </svg>
+                    <div class="absoluteCenter">
+                        <div>78%</div>
+                        <span>Resolvido</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #888; marginTop: 1rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <div style="width: 8px; height: 8px; background-color: #C5A059; border-radius: 50%;"></div> IA Autônoma (34)
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <div style="width: 8px; height: 8px; background-color: #222; border-radius: 50%;"></div> Humano (8)
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. GRÁFICO DE DEDUPLICAÇÃO (Reaproveitando LineChart Layout) -->
+            <div class="card span8">
+                <div class="cardHeader">
+                    <span class="cardTitle">Correlação Semântica: Chamados vs Issues</span>
+                </div>
+                <div class="mockChart">
+                    [ Gráfico de Linhas: Linha Ouro (Chamados) vs Linha Cinza (Issues) ]
+                </div>
+                
+                <div style="display: flex; gap: 2rem; margin-top: 1.2rem;">
+                    <div>
+                        <div style="color: #C5A059; font-size: 0.65rem; font-weight: bold; text-transform: uppercase;">Fator de Compressão</div>
+                        <div style="font-family: var(--font-serif); font-size: 1.1rem; color: white;">4.2x Chamados por Bug</div>
+                    </div>
+                    <div>
+                        <div style="color: #10b981; font-size: 0.65rem; font-weight: bold; text-transform: uppercase;">Economia Estimada</div>
+                        <div style="font-family: var(--font-serif); font-size: 1.1rem; color: white;">~12 Horas Homem/Dia</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. RECOMENDAÇÃO IA (Reaproveitando .aiInsight original!) -->
+            <div class="card span4 aiInsight">
+                <div class="insightIcon">✧</div>
+                <div class="aiTitle">Análise de Saúde do Cérebro</div>
+                <p class="aiText">
+                    Sua esteira de testes automatizados validou 14 cenários de intenção do assistente hoje.
+                </p>
+                <div class="aiActionBox">
+                    <span style="font-weight: bold; color: #fff;">Score Qualidade:</span> 100% Aprovado (Pipeline Passando).
+                </div>
+                <button class="btnGold">
+                    Executar Testes de IA Agora
+                </button>
+            </div>
+
+            <!-- 4. HEATMAP DE IMPACTO (Reaproveitando .table original!) -->
+            <div class="card span8">
+                <div class="cardHeader">
+                    <span class="cardTitle">Heatmap de Impacto (Top Bugs)</span>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Título da Issue</th>
+                            <th>Volume Afetados</th>
+                            <th>Gravidade</th>
+                            <th>Status Kanban</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><div class="thumb">#1</div> Erro ao Cadastrar Convite</td>
+                            <td>14 Chamados</td>
+                            <td>Alta</td>
+                            <td><span class="indicator indHot">Aberta</span></td>
+                        </tr>
+                        <tr>
+                            <td><div class="thumb">#2</div> Lentidão no Mural</td>
+                            <td>5 Chamados</td>
+                            <td>Média</td>
+                            <td><span class="indicator indNorm">Visualizada</span></td>
+                        </tr>
+                        <tr>
+                            <td><div class="thumb">#3</div> QR Code Inválido</td>
+                            <td>2 Chamados</td>
+                            <td>Baixa</td>
+                            <td><span class="indicator indNorm">Em Análise</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

@@ -18,3 +18,16 @@
 **Impacto:** RedundÃ¢ncias desnecessÃ¡rias, inconsistÃªncias na identidade visual e retrabalho de refatoraÃ§Ã£o para o Dev.
 **AÃ§Ã£o corretiva:** O UX deve sempre considerar o que jÃ¡ estÃ¡ implementado e operacional na aplicaÃ§Ã£o antes de projetar novas interfaces, criando soluÃ§Ãµes integradas de forma harmÃ´nica e evitando elementos duplicados.
 **Status:** APLICADO
+## [2026-05-11] — Tipo: PROCESSO / DIRETRIZ DE DESIGN
+**Contexto:** Feedback do Operador sobre Geração de Wireframes
+**Problema:** Necessidade de garantir fidelidade absoluta ao legado e minimizar quebra de padrões.
+**Impacto:** Otimização de implementação e redução de refactor de UI.
+**Ação corretiva:** A partir de agora, TODO wireframe gerado deve se basear ESTRITAMENTE nos componentes já codificados e no Design System real do projeto, evitando inventar novos estilos e minimizando impacto colateral no código produtivo.
+**Status:** APLICADO (REGRA MESTRA)
+
+## [2026-05-11] — Tipo: ESTÉTICA / DIRETRIZ DE DESIGN
+**Contexto:** Proibição do uso de Emojis nativos.
+**Problema:** Emojis descaracterizam o tom premium e o Design System formal da plataforma.
+**Impacto:** Prejuízo à imagem visual da marca.
+**Ação corretiva:** PROIBIDO o uso de emojis (ex: ??, ??) em interfaces, designs ou wireframes. Utilize sempre ícones de fontes apropriadas (SVG, Lucide, FontAwesome ou GLYPHS) que sigam o estilo minimalista dourado/preto existente.
+**Status:** APLICADO (REGRA MESTRA)

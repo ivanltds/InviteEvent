@@ -24,3 +24,10 @@
 **Impacto:** Capacidade de gerar KPIs preditivos de estabilidade de produto e produtividade exponencial da equipe tÈcnica.
 **AÁ„o corretiva:** Elaborado e persistido o "Framework de EstratÈgia de MÈtricas e Insights" em docs/estrategia-metricas-insights.md.
 **Status:** APLICADO
+
+## [2026-05-11] - Tipo: PROCESSO / CENTRALIZACAO
+**Contexto:** Governan√ßa de Ativos e Centraliza√ß√£o de Contexto
+**Problema:** Arquivos de Insights e Estrat√©gia gerados ficam 'soltos' e dificultam rastreabilidade global.
+**Impacto:** Perda de rastreabilidade de regras de neg√≥cio por futuros agentes.
+**A√ß√£o corretiva:** SEMPRE incluir os arquivos de Insights/Estrat√©gia no √≠ndice central 'docs/contexto-projeto.md'.
+**Status:** APLICADO

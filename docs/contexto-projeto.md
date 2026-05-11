@@ -102,6 +102,8 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/prd/prd-006/prd-inicial.md            | BA          | PRD Póstumo de Unificação Visual e Zero-Alert Policy |
 | tests/e2e/prd_006_visual_consistency.spec.ts| QA          | Testes E2E de Uniformidade Visual e Moderação Silenciosa |
 | tests/e2e/prd_010_animacoes_gateways.spec.ts| QA         | Certificação E2E de Motor de Animações GSAP Gateways|
+| docs/estrategia-metricas-insights.md       | BA          | Framework Estratégico de Métricas e Visão Preditiva |
+| docs/melhorias-suporte-v2.md               | BA          | Plano de Melhorias Estruturais de Atendimento V2 |
 
 ## Última Atualização
 - Data    : 2026-05-11

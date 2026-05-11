@@ -6,16 +6,24 @@ import { usePathname, useRouter } from 'next/navigation';
 import styles from './Sidebar.module.css';
 import { authService } from '@/lib/services/authService';
 import { useEvent } from '@/lib/contexts/EventContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { currentEvent, events, setCurrentEvent, userProfile, userRole, loading } = useEvent();
 
-  const handleLogout = async () => {
-    if (confirm('Deseja realmente sair?')) {
-      await authService.logout();
-    }
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogoutClick = () => {
+    setShowLogoutModal(true);
+  };
+
+  const executeLogout = async () => {
+    setIsLoggingOut(true);
+    await authService.logout();
+    // O authService.logout já cuida do redirecionamento
   };
 
   const isMaster = userProfile?.is_master;
@@ -74,12 +82,6 @@ export default function Sidebar() {
       show: true
     },
     { 
-      name: 'Galeria', 
-      path: '/admin/galeria', 
-      icon: <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>,
-      show: isOwner || isMaster
-    },
-    { 
       name: 'Mural', 
       path: '/admin/mural', 
       icon: <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>,
@@ -93,7 +95,7 @@ export default function Sidebar() {
     },
     { 
       name: 'Equipe', 
-      path: '/admin/equipe', 
+      path: '/admin/configuracoes#equipe', 
       icon: <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>,
       show: isOwner || isMaster
     },
@@ -166,17 +168,58 @@ export default function Sidebar() {
               </div>
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem' }}>
                 {isMaster && <span style={{ fontSize: '0.65rem', background: 'var(--admin-sidebar-active-bg)', color: 'var(--admin-sidebar-active-text)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>MASTER</span>}
-                {!isMaster && isOwner && <span style={{ fontSize: '0.65rem', background: 'rgba(16, 185, 129, 0.15)', color: 'var(--admin-success)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>OWNER</span>}
-                {!isMaster && !isOwner && userRole === 'organizador' && <span style={{ fontSize: '0.65rem', background: 'rgba(245, 158, 11, 0.15)', color: 'var(--admin-warning)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>STAFF</span>}
+                {!isMaster && isOwner && <span style={{ fontSize: '0.65rem', background: 'rgba(197, 160, 89, 0.15)', color: 'var(--admin-accent)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>PROPRIETÁRIO</span>}
+                {!isMaster && !isOwner && userRole === 'organizador' && <span style={{ fontSize: '0.65rem', background: 'rgba(245, 158, 11, 0.15)', color: 'var(--admin-warning)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>ORGANIZADOR</span>}
               </div>
             </div>
           )}
-          <button onClick={handleLogout} className={styles.navItem} style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', opacity: 0.8 }}>
+          <button onClick={handleLogoutClick} className={styles.navItem} style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', opacity: 0.8 }}>
             <span className={styles.icon}><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline></svg></span>
             <span className={styles.name}>Sair da Conta</span>
           </button>
         </div>
       </nav>
+
+      {/* Modal Premium de Confirmação de Sair */}
+      <AnimatePresence>
+        {showLogoutModal && (
+          <div className={styles.modal}>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              className={styles.modalContent}
+            >
+              <div style={{ color: 'var(--admin-accent)', marginBottom: '1.5rem' }}>
+                <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" strokeWidth="1.5" fill="none" style={{ opacity: 0.8 }}>
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+              </div>
+              <h3>Encerrar Sessão</h3>
+              <p>Tem certeza que deseja sair da sua conta agora?</p>
+              <div className={styles.modalActions}>
+                <button 
+                  className={styles.cancelBtn} 
+                  onClick={() => setShowLogoutModal(false)}
+                  disabled={isLoggingOut}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  className={styles.confirmBtn} 
+                  onClick={executeLogout}
+                  disabled={isLoggingOut}
+                >
+                  {isLoggingOut ? 'Saindo...' : 'Sair da Conta'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </aside>
   );
 }

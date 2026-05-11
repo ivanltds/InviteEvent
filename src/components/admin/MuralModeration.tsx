@@ -5,6 +5,7 @@ import { muralService } from '@/lib/services/muralService';
 import { MuralItem } from '@/lib/types/database';
 import styles from './MuralModeration.module.css';
 import { supabase } from '@/lib/supabase';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface MuralModerationProps {
   eventId: string;
@@ -15,6 +16,7 @@ export default function MuralModeration({ eventId }: MuralModerationProps) {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editCaption, setEditCaption] = useState('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const fetchItems = async () => {
     setLoading(true);
@@ -49,17 +51,21 @@ export default function MuralModeration({ eventId }: MuralModerationProps) {
       setItems(items.map(p => p.id === id ? { ...p, mensagem: editCaption } : p));
       setEditingId(null);
     } else {
-      alert('Erro ao salvar mensagem.');
+      console.error('Erro ao salvar mensagem.');
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Deseja realmente excluir este item?')) {
-      const success = await muralService.deleteItem(id);
-      if (success) {
-        setItems(items.filter(p => p.id !== id));
-      }
+  const triggerDelete = (id: string) => {
+    setConfirmDeleteId(id);
+  };
+
+  const executeDelete = async () => {
+    if (!confirmDeleteId) return;
+    const success = await muralService.deleteItem(confirmDeleteId);
+    if (success) {
+      setItems(items.filter(p => p.id !== confirmDeleteId));
     }
+    setConfirmDeleteId(null);
   };
 
   if (loading) return <div className={styles.loading}>Carregando itens do mural...</div>;
@@ -95,7 +101,10 @@ export default function MuralModeration({ eventId }: MuralModerationProps) {
 
             <div className={styles.content}>
               <div className={styles.badgeTipo}>
-                {item.tipo === 'FOTO' ? '📷 Foto' : item.tipo === 'VIDEO' ? '🎥 Vídeo' : item.tipo === 'MENSAGEM' ? '📝 Mensagem' : '📷+📝 Híbrido'}
+                {item.tipo === 'FOTO' && <><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> <span>Foto</span></>}
+                {item.tipo === 'VIDEO' && <><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg> <span>Vídeo</span></>}
+                {item.tipo === 'MENSAGEM' && <><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> <span>Mensagem</span></>}
+                {item.tipo === 'HIBRIDO' && <><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path></svg><span style={{margin:'0 2px'}}>+</span><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> <span>Híbrido</span></>}
               </div>
               <p className={styles.guestName}>{item.autor || 'Anônimo'}</p>
               
@@ -135,7 +144,7 @@ export default function MuralModeration({ eventId }: MuralModerationProps) {
                   </button>
                 )}
                 <button 
-                  onClick={() => handleDelete(item.id!)}
+                  onClick={() => triggerDelete(item.id!)}
                   className={styles.deleteBtn}
                 >
                   Excluir
@@ -146,6 +155,28 @@ export default function MuralModeration({ eventId }: MuralModerationProps) {
         ))}
         {items.length === 0 && <p className={styles.empty}>Nenhum item enviado para o mural.</p>}
       </div>
+
+      {/* MODAL CONFIRMAÇÃO EXCLUSÃO */}
+      <AnimatePresence>
+        {confirmDeleteId && (
+          <div className={styles.modalOverlay} onClick={() => setConfirmDeleteId(null)}>
+            <motion.div 
+              className={styles.modal} 
+              initial={{ scale: 0.9, opacity: 0 }} 
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <h3>Confirmar Exclusão</h3>
+              <p>Deseja realmente remover este item permanentemente? Esta ação não pode ser revertida.</p>
+              <div className={styles.modalActions}>
+                <button className={styles.cancelDeleteBtn} onClick={() => setConfirmDeleteId(null)}>Cancelar</button>
+                <button className={styles.confirmDeleteBtn} onClick={executeDelete}>Sim, Excluir</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

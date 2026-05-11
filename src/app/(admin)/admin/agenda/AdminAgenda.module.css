@@ -1,192 +1,352 @@
 .container {
-  padding: 2rem;
-  background-color: var(--bg-primary);
+  padding: 2rem 2.5rem;
+  background-color: #F8FAFC;
   min-height: 100vh;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   margin-bottom: 3rem;
+  border-bottom: 1px solid #E2E8F0;
+  padding-bottom: 1.5rem;
 }
 
-.header h1 {
-  font-size: 2rem;
-  color: var(--accent-safe);
+.titleArea h1 {
+  font-size: 2.5rem;
+  color: #2D3748;
+  margin-bottom: 0.3rem;
+}
+
+.subtitle {
+  color: #718096;
+  font-size: 0.95rem;
 }
 
 .addBtn {
-  background-color: var(--accent);
-  color: var(--text-on-accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #D4AF37;
+  color: white;
   border: none;
-  padding: 0.8rem 1.5rem;
-  border-radius: 4px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
   cursor: pointer;
-  text-transform: uppercase;
-  font-weight: bold;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+  transition: all 0.2s;
+}
+
+.addBtn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.addBtn:hover {
+  transform: translateY(-2px);
+  background-color: #B5942E;
+  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.3);
 }
 
 /* Modal */
 .modalOverlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0,0,0,0.5);
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 20px;
 }
 
 .modal {
   background: white;
-  padding: 3rem;
-  border-radius: 12px;
+  padding: 2.5rem;
+  border-radius: 16px;
   width: 100%;
-  max-width: 600px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  max-width: 550px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modal h2 {
+  font-size: 1.5rem;
+  color: #1e293b;
   margin-bottom: 2rem;
-  color: var(--accent-safe);
+  font-weight: 700;
+  border-bottom: 2px solid #F1F5F9;
+  padding-bottom: 1rem;
 }
 
 .fieldGroup {
-  margin-bottom: 1.2rem;
+  margin-bottom: 1.5rem;
 }
 
 .fieldGroup label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: bold;
-  color: #555;
-  font-size: 0.9rem;
+  font-weight: 600;
+  color: #475569;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .fieldGroup input, .fieldGroup select {
   width: 100%;
-  padding: 0.8rem;
-  border: 1px solid rgba(0,0,0,0.1);
-  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #1E293B;
+  transition: border-color 0.2s;
+}
+
+.fieldGroup input:focus, .fieldGroup select:focus {
+  outline: none;
+  border-color: #D4AF37;
 }
 
 .row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .actions {
   display: flex;
   gap: 1rem;
-  margin-top: 2rem;
+  margin-top: 2.5rem;
 }
 
 .saveBtn {
-  flex: 1;
-  background-color: var(--accent);
+  flex: 2;
+  background-color: #D4AF37;
   color: white;
   border: none;
-  padding: 1rem;
-  border-radius: 6px;
+  padding: 0.85rem;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 600;
+  transition: opacity 0.2s;
 }
+
+.saveBtn:hover { background-color: #B5942E; }
 
 .cancelBtn {
   flex: 1;
-  background-color: #f5f5f5;
-  color: #666;
+  background-color: #F1F5F9;
+  color: #64748B;
   border: none;
-  padding: 1rem;
-  border-radius: 6px;
+  padding: 0.85rem;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 600;
 }
 
-/* Grid */
+/* Grid System */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 2rem;
 }
 
 .card {
   background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  border: 1px solid #E2E8F0;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  border-color: #D4AF37;
+}
+
+.cardIconWrapper {
+  background: #F8FAFC;
+  border-right: 1px solid #F1F5F9;
+  width: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cardIconWrapper svg {
+  width: 28px;
+  height: 28px;
+  color: #94A3B8;
+  opacity: 0.7;
+  transition: color 0.3s;
+}
+
+.card:hover .cardIconWrapper svg {
+  color: #D4AF37;
+  opacity: 1;
+}
+
+.cardContent {
+  flex: 1;
   padding: 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  border: 1px solid rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
 }
 
 .cardHeader {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 0.8rem;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
 }
 
 .time {
-  background: var(--bg-primary);
-  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+  background: #FEF3C7;
+  color: #D97706;
+  padding: 3px 10px;
   border-radius: 20px;
-  font-weight: bold;
-  color: var(--accent-safe);
-  font-size: 0.9rem;
+  font-weight: 700;
 }
 
 .card h3 {
   margin: 0;
   font-size: 1.2rem;
+  color: #1E293B;
+  font-weight: 700;
+}
+
+.locationName {
+  font-weight: 600;
+  color: #475569;
+  font-size: 0.95rem;
+  margin: 0.5rem 0 0.2rem 0;
 }
 
 .address {
   font-size: 0.85rem;
-  color: #888;
-  margin-top: 0.5rem;
+  color: #94A3B8;
+  line-height: 1.4;
+  margin-bottom: 1rem;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #F8FAFC;
+}
+
+.mapLinks {
+  display: flex;
+  gap: 6px;
+}
+
+.mapBadge {
+  font-size: 0.7rem;
+  background: #ECFDF5;
+  color: #059669;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
 }
 
 .cardActions {
   display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid #f0f0f0;
+  gap: 0.5rem;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: all 0.2s ease-out;
 }
 
-.editBtn, .deleteBtn {
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+.card:hover .cardActions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.miniEditBtn, .miniDeleteBtn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  background: white;
   cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: bold;
+  transition: all 0.2s;
+  position: relative;
 }
 
-.editBtn {
-  background: #eef2ff;
-  color: #4338ca;
+.miniEditBtn svg, .miniDeleteBtn svg {
+  width: 16px;
+  height: 16px;
 }
 
-.deleteBtn {
-  background: #fef2f2;
-  color: #b91c1c;
+.miniEditBtn {
+  color: #475569;
+}
+.miniEditBtn:hover {
+  color: #D4AF37;
+  border-color: #D4AF37;
+}
+
+.miniDeleteBtn {
+  color: #EF4444;
+}
+.miniDeleteBtn:hover {
+  background: #EF4444;
+  color: white;
+  border-color: #EF4444;
+}
+
+/* Deletion Modal Styles matching current standard */
+.deleteOverlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex;
+  align-items: center; justify-content: center; z-index: 1100;
+}
+.deleteModal {
+  background: white; padding: 2rem; border-radius: 12px; width: 90%; max-width: 400px; text-align: center;
+}
+.deleteModal h3 { margin-top: 0; font-size: 1.25rem; }
+.deleteModal p { color: #64748B; margin-bottom: 2rem; }
+.deleteActions { display: flex; gap: 1rem; }
+.cancelDeleteBtn {
+  flex: 1; padding: 0.75rem; border: 1px solid #E2E8F0; background: white; border-radius: 8px; cursor: pointer;
+}
+.confirmDeleteBtn {
+  flex: 1; padding: 0.75rem; border: none; background: #EF4444; color: white; border-radius: 8px; cursor: pointer; font-weight: 600;
 }
 
 .empty {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 4rem;
-  color: #999;
+  padding: 5rem;
+  color: #94A3B8;
+  font-style: italic;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .row {
     grid-template-columns: 1fr;
+  }
+  .cardActions {
+    opacity: 1;
+    transform: none;
+    top: auto;
+    bottom: 1rem;
   }
 }

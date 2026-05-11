@@ -46,85 +46,120 @@
   background: var(--admin-accent);
 }
 
-.list {
-  display: flex;
-  flex-direction: column;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
-  max-width: 1000px;
+  padding-bottom: 2rem;
 }
 
 .card {
-  background: var(--admin-card-bg);
-  padding: 1.5rem;
+  background: #fff;
   border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  border: 1px solid #E2E8F0;
+  transition: transform 0.2s;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-  border: 1px solid var(--admin-card-border);
-  border-left: 5px solid #eee;
+  flex-direction: column;
 }
 
-.card.aprovado { border-left-color: var(--admin-success); }
-.card.pendente { border-left-color: var(--admin-warning); }
-.card.oculto { border-left-color: var(--admin-danger); }
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.card.aprovado { border-top: 4px solid #D4AF37; }
+.card.pendente { border-top: 4px solid #D4AF37; }
+.card.oculto { border-top: 4px solid #E53E3E; }
+
+.cardContent {
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
 
 .cardHeader {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.cardHeader strong {
+  color: #2D3748;
+  font-size: 1.1rem;
 }
 
 .statusBadge {
   font-size: 0.7rem;
   text-transform: uppercase;
-  background: #f0f0f0;
+  background: #f1f5f9;
   padding: 2px 8px;
-  border-radius: 4px;
-  color: #666;
-  font-weight: bold;
+  border-radius: 6px;
+  color: #64748b;
+  font-weight: 700;
 }
 
 .text {
-  font-size: 1.1rem;
-  color: var(--admin-text-primary);
-  margin: 0.5rem 0;
+  font-size: 0.95rem;
+  color: #4A5568;
+  margin: 0.5rem 0 1.5rem;
   font-style: italic;
+  line-height: 1.5;
+  flex-grow: 1;
 }
 
 .date {
   font-size: 0.8rem;
-  color: var(--admin-text-muted);
+  color: #A0AEC0;
+  margin-top: auto;
 }
 
 .actions {
   display: flex;
-  gap: 0.8rem;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #F1F5F9;
+  background: #F8FAFC;
 }
 
 .approveBtn, .hideBtn, .deleteBtn {
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
+  flex: 1;
+  padding: 0.6rem;
+  border-radius: 8px;
   border: none;
   cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: bold;
-  transition: opacity 0.2s;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
 }
 
-.approveBtn:hover, .hideBtn:hover, .deleteBtn:hover {
-  opacity: 0.8;
+.approveBtn {
+  background-color: #D4AF37;
+  color: white;
+  box-shadow: 0 2px 4px rgba(212, 175, 55, 0.2);
+}
+.approveBtn:hover { 
+  background-color: #B5942E; 
+  transform: translateY(-1px);
 }
 
-.approveBtn { background: var(--admin-success); color: white; }
-.hideBtn { background: var(--admin-warning); color: white; }
-.deleteBtn { background: var(--admin-danger); color: white; }
+.hideBtn, .deleteBtn {
+  background-color: #E2E8F0;
+  color: #4A5568;
+}
+.hideBtn:hover, .deleteBtn:hover { 
+  background-color: #CBD5E0; 
+}
 
 .empty {
-  padding: 4rem;
+  grid-column: 1 / -1;
   text-align: center;
-  color: var(--admin-text-muted);
+  padding: 4rem;
+  color: #A0AEC0;
 }
 
 @media (max-width: 768px) {
@@ -139,4 +174,63 @@
   .actions button {
     flex: 1;
   }
+}
+
+/* --- MODAIS DE CONFIRMAÇÃO PADRÃO --- */
+.modalOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.modal {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+.modal h3 {
+  margin-bottom: 0.8rem;
+  color: var(--admin-text-primary);
+}
+
+.modal p {
+  color: var(--admin-text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.modalActions {
+  display: flex;
+  gap: 1rem;
+}
+
+.cancelDeleteBtn, .confirmDeleteBtn {
+  flex: 1;
+  padding: 0.8rem;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.cancelDeleteBtn {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.confirmDeleteBtn {
+  background: var(--admin-danger);
+  color: white;
 }

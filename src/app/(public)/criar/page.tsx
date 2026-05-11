@@ -321,7 +321,11 @@ export default function PublicOnboarding() {
                   </div>
                 ) : (
                   <div className={styles.uploadPrompt} style={{ color: selectedPalette.primary }}>
-                    <div className={styles.uploadIcon}>📸 / 🎥</div>
+                    <div className={styles.uploadIcon} style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', fontSize: '1rem' }}>
+                      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                      <span style={{opacity: 0.5}}>/</span>
+                      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                    </div>
                     <strong>Arraste ou clique para escolher</strong>
                     <span>JPG, PNG, WEBP ou MP4 • Até 10mb</span>
                   </div>

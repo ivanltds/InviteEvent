@@ -7,6 +7,7 @@ import { rsvpService } from '@/lib/services/rsvpService';
 import { supabase } from '@/lib/supabase';
 import styles from './Dashboard.module.css';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import OnboardingWizard from '@/components/admin/OnboardingWizard';
 
 export default function DashboardPage() {
@@ -24,6 +25,26 @@ export default function DashboardPage() {
   const [userRolesMap, setUserRolesMap] = useState<Record<string, string>>({});
   const [editingEvent, setEditingEvent] = useState<any | null>(null);
   const [editFormData, setEditFormData] = useState({ nome: '', slug: '' });
+  
+  // Controle de Confirmação de Exclusão e Notificações
+  const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
+
+  const triggerToast = (msg: string) => {
+    setToastMsg(msg);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 4000);
+  };
+
+  // Estados e Lógica para Lixeira (Soft Delete)
+  const [deletedEvents, setDeletedEvents] = useState<any[]>([]);
+  const [showTrash, setShowTrash] = useState(false);
+
+  const fetchDeleted = async () => {
+    const list = await eventService.getDeletedEvents();
+    setDeletedEvents(list);
+  };
 
   const isMaster = !!userProfile?.is_master;
 
@@ -58,6 +79,13 @@ export default function DashboardPage() {
     }
   }, [currentEvent]);
 
+  // Recarrega a lixeira sempre que carregar a listagem principal
+  useEffect(() => {
+    if (!currentEvent) {
+      fetchDeleted();
+    }
+  }, [currentEvent, events]);
+
   useEffect(() => {
     async function fetchData() {
       if (!currentEvent) return;
@@ -81,8 +109,10 @@ export default function DashboardPage() {
     const { data } = await eventService.createEvent(eventName);
     if (data) {
       await refreshEvents();
+      setCurrentEvent(null); // Garante que continua na tela geral e não entra automaticamente
       setIsCreating(false);
       setEventName('');
+      triggerToast('Casamento criado com sucesso!');
     }
   };
 
@@ -100,20 +130,48 @@ export default function DashboardPage() {
     if (ok) {
       setEditingEvent(null);
       await refreshEvents();
+      setCurrentEvent(null);
+      triggerToast('Casamento atualizado com sucesso!');
     } else {
-      alert('Erro ao atualizar evento.');
+      triggerToast('Erro ao atualizar evento.');
     }
   };
 
-  const handleDeleteClick = async (e: React.MouseEvent, eventId: string) => {
-    e.stopPropagation(); // Impede de abrir o dashboard do evento
-    if (!confirm('ATENÇÃO: Isso excluirá permanentemente o casamento, convites, presentes e fotos. Esta ação não pode ser desfeita. Deseja continuar?')) return;
+  const handleDeleteClick = (e: React.MouseEvent, event: any) => {
+    e.stopPropagation(); 
+    // Regra de Proteção: Evento Ativo só pode ser excluído por Master
+    if (event.is_active && !isMaster) {
+      triggerToast('Somente o Master pode excluir um casamento ativo.');
+      return;
+    }
+    setDeletingEventId(event.id); // Abre o modal customizado
+  };
 
-    const ok = await eventService.deleteEvent(eventId);
+  const handleRestoreEvent = async (e: React.MouseEvent, eventId: string) => {
+    e.stopPropagation();
+    const ok = await eventService.restoreEvent(eventId);
     if (ok) {
       await refreshEvents();
+      setCurrentEvent(null); // Garante que não vai entrar no evento recém-restaurado
+      await fetchDeleted();
+      triggerToast('Casamento restaurado com sucesso!');
     } else {
-      alert('Erro ao excluir evento.');
+      triggerToast('Erro ao restaurar casamento.');
+    }
+  };
+
+  const executeConfirmDelete = async () => {
+    if (!deletingEventId) return;
+
+    const ok = await eventService.deleteEvent(deletingEventId);
+    setDeletingEventId(null); // Fecha o modal
+
+    if (ok) {
+      await refreshEvents();
+      setCurrentEvent(null); // Força manter na listagem geral e ignora auto-seleção do Contexto
+      triggerToast('Casamento excluído com sucesso!');
+    } else {
+      triggerToast('Erro ao excluir evento.');
     }
   };
 
@@ -162,51 +220,109 @@ export default function DashboardPage() {
         </header>
         
         <div className={styles.grid}>
-          {events.map(event => {
-            const userRoleForEvent = userRolesMap[event.id];
-            // Somente Master e Owners podem editar/excluir
-            const canManage = isMaster || userRoleForEvent === 'owner';
+          <AnimatePresence mode="popLayout">
+            {events.map(event => {
+              const userRoleForEvent = userRolesMap[event.id];
+              // Somente Master e Owners podem editar/excluir
+              const canManage = isMaster || userRoleForEvent === 'owner';
 
-            return (
-              <div key={event.id} className={styles.card} onClick={() => setCurrentEvent(event)}>
-                <div className={styles.cardHeader}>
-                  <h3>{event.nome}</h3>
-                  <span className={event.is_active ? styles.activeBadgeMini : styles.pendingBadgeMini}>
-                    {event.is_active ? 'Ativo' : 'Pendente'}
-                  </span>
-                </div>
-                <span className={styles.slug}>inv/{event.slug}</span>
-                
-                <div className={styles.cardFooter}>
-                  {/* Se for Staff, exibe tag de identificação */}
-                  {!canManage && userRoleForEvent === 'organizador' && (
-                    <span className={styles.roleTag}>Equipe</span>
-                  )}
+              return (
+                <motion.div 
+                  key={event.id} 
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                  className={styles.card} 
+                  onClick={() => setCurrentEvent(event)}
+                >
+                  <div className={styles.cardHeader}>
+                    <h3>{event.nome}</h3>
+                    <span className={event.is_active ? styles.activeBadgeMini : styles.pendingBadgeMini}>
+                      {event.is_active ? 'Ativo' : 'Pendente'}
+                    </span>
+                  </div>
+                  <span className={styles.slug}>inv/{event.slug}</span>
                   
-                  {/* Ações aparecem apenas para Owner/Master */}
-                  {canManage && (
-                    <div className={styles.cardActions}>
-                      <button 
-                        className={styles.miniEditBtn} 
-                        onClick={(e) => handleEditClick(e, event)}
-                        title="Editar nome ou URL"
-                      >
-                        ⚙️ Editar
-                      </button>
-                      <button 
-                        className={styles.miniDeleteBtn} 
-                        onClick={(e) => handleDeleteClick(e, event.id)}
-                        title="Excluir Casamento"
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+                  <div className={styles.cardFooter}>
+                    {/* Se for Staff, exibe tag de identificação */}
+                    {!canManage && userRoleForEvent === 'organizador' && (
+                      <span className={styles.roleTag}>Equipe</span>
+                    )}
+                    
+                    {/* Ações aparecem apenas para Owner/Master */}
+                    {canManage && (
+                      <div className={styles.cardActions}>
+                        <button 
+                          className={styles.miniEditBtn} 
+                          onClick={(e) => handleEditClick(e, event)}
+                          title="Editar nome ou URL"
+                        >
+                          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" style={{marginRight: '4px'}}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Editar
+                        </button>
+                        <button 
+                          className={styles.miniDeleteBtn} 
+                          onClick={(e) => handleDeleteClick(e, event)}
+                          title="Excluir Casamento"
+                        >
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         </div>
+
+        {/* Seção de Lixeira/Restaurar (Restrita ao Master) */}
+        {isMaster && (deletedEvents.length > 0 || showTrash) && (
+          <div className={styles.trashContainer}>
+            <div className={styles.trashHeader}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Casamentos Excluídos (Retenção por 30 dias)</h3>
+              <button 
+                className={styles.toggleTrashBtn}
+                onClick={() => setShowTrash(!showTrash)}
+              >
+                {showTrash ? 'Ocultar' : `Exibir (${deletedEvents.length})`}
+              </button>
+            </div>
+
+            <AnimatePresence>
+              {showTrash && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className={styles.grid}
+                  style={{ overflow: 'hidden', opacity: 0.7 }}
+                >
+                  {deletedEvents.length === 0 && <p style={{color: '#666'}}>Nenhum casamento na lixeira.</p>}
+                  {deletedEvents.map(event => (
+                    <div key={event.id} className={styles.card} style={{ cursor: 'default', background: '#f9fafb' }}>
+                      <div className={styles.cardHeader}>
+                        <h3 style={{ color: '#9ca3af' }}>{event.nome}</h3>
+                      </div>
+                      <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.5rem' }}>
+                        Excluído em: {event.deleted_at ? new Date(event.deleted_at).toLocaleDateString() : 'N/A'}
+                      </p>
+                      <div className={styles.cardFooter} style={{ marginTop: '1rem' }}>
+                        <button 
+                          className={styles.restoreBtn} 
+                          onClick={(e) => handleRestoreEvent(e, event.id)}
+                        >
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" style={{marginRight: '4px'}}><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg> Restaurar
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
 
         {/* MODAIS DE GESTÃO */}
 
@@ -255,6 +371,37 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+
+        {deletingEventId && (
+          <div className={styles.modal}>
+            <div className={styles.modalContent}>
+              <h2 className="cursive" style={{ color: 'var(--admin-danger)' }}>Atenção</h2>
+              <p style={{ margin: '1rem 0', color: '#4a5568', fontSize: '0.95rem', lineHeight: '1.5' }}>
+                Isso excluirá permanentemente o casamento, convites, presentes e fotos. Esta ação <strong>não pode ser desfeita</strong>. 
+                Deseja continuar?
+              </p>
+              <div className={styles.modalActions}>
+                <button onClick={executeConfirmDelete} className={styles.saveBtn}>Sim, Excluir</button>
+                <button onClick={() => setDeletingEventId(null)} className={styles.cancelBtn}>Cancelar</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <AnimatePresence>
+          {showToast && (
+            <motion.div 
+              className={styles.toast}
+              initial={{ opacity: 0, y: -20, x: 20 }}
+              animate={{ opacity: 1, y: 0, x: 0 }}
+              exit={{ opacity: 0, y: -20, x: 20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className={styles.toastIcon}>✓</div>
+              <span>{toastMsg}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     );
   }
@@ -274,7 +421,10 @@ export default function DashboardPage() {
       {!currentEvent.is_active && (
         <div className={styles.activationBanner}>
           <div className={styles.activationText}>
-            <h3>🚀 Seu site está quase pronto para os convidados!</h3>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4.5 16.5c-1.5 1.26-2 2.6-2 2.6s1.34-.5 2.6-2"></path><path d="M8 13l5 5"></path><path d="M18.5 5.5c-2.5-2.5-6.5-2.5-9 0l-6.5 6.5c-1 1-1 2.5 0 3.5l2 2c1 1 2.5 1 3.5 0l6.5-6.5c2.5-2.5 2.5-6.5 0-9z"></path><path d="M15.5 8.5c2.5 2.5 6.5 2.5 9 0l.5-.5c1-1 1-2.5 0-3.5l-2-2c-1-1-2.5-1-3.5 0l-.5.5z"></path></svg>
+              Seu site está quase pronto para os convidados!
+            </h3>
             <p>Ative agora para liberar o RSVP online, lista de presentes e o acesso público ao seu convite digital.</p>
           </div>
           <button 
@@ -290,7 +440,10 @@ export default function DashboardPage() {
       {!currentEvent.onboarding_completed && (
         <div style={{ background: 'rgba(245,158,11,0.1)', color: 'var(--admin-warning)', padding: '15px 20px', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h4 style={{ margin: 0, fontSize: '1rem' }}>🎉 Bem-vindo ao painel do seu evento!</h4>
+            <h4 style={{ margin: 0, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
+              Bem-vindo ao painel do seu evento!
+            </h4>
             <p style={{ margin: '5px 0 0 0', fontSize: '0.9rem', color: 'var(--admin-text-primary)'}}>
               Seu convite inicial já está de pé! Vá na aba <strong>Configurações</strong> para adicionar as suas fotos de capa e biografia.
             </p>

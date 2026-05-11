@@ -364,7 +364,9 @@ export default function MasterSupportPanel() {
             </div>
           ) : (
             <div className={styles.chatPlaceholder}>
-              <div className={styles.placeholderIcon}>💬</div>
+              <div className={styles.placeholderIcon}>
+                <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" strokeWidth="1" style={{opacity: 0.3}}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              </div>
               <h3>Selecione um chamado</h3>
               <p>Escolha um ticket na lista lateral para iniciar o atendimento de suporte.</p>
             </div>

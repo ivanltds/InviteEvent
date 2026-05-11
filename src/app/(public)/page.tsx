@@ -115,12 +115,16 @@ export default function LandingPage() {
               <p>Crie uma lista elegante de presentes virtuais e cotas de lua de mel. Resgate o valor diretamente via PIX para sua conta corrente bancária com taxas extremamente reduzidas e total transparência.</p>
             </div>
             <div className={styles.bentoCard}>
-              <div className={styles.bentoIcon}>♡</div>
+              <div className={styles.bentoIcon}>
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+              </div>
               <h3>RSVP Inteligente e Nominal</h3>
               <p>Permita que seus convidados confirem presença por indivíduo de forma rápida e segura. Acompanhe os números reais e alertas de acompanhantes em tempo real diretamente no seu painel administrativo.</p>
             </div>
             <div className={styles.bentoCard}>
-              <div className={styles.bentoIcon}>📷</div>
+              <div className={styles.bentoIcon}>
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+              </div>
               <h3>Mural Interativo de Memórias</h3>
               <p>Um espaço colaborativo de afeto. Seus convidados sobem fotos tiradas no grande dia e deixam mensagens carinhosas que aparecem em tempo real no painel do casamento, com moderação total de privacidade.</p>
             </div>

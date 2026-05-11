@@ -73,18 +73,21 @@ export default function FAQManager({ eventoId }: { eventoId?: string }) {
           value={formData.pergunta} 
           onChange={(e) => setFormData({...formData, pergunta: e.target.value})}
           required
+          className={styles.input}
         />
         <textarea 
           placeholder="Resposta" 
           value={formData.resposta} 
           onChange={(e) => setFormData({...formData, resposta: e.target.value})}
           required
+          className={styles.textarea}
         />
         <input 
           type="number" 
           placeholder="Ordem" 
           value={formData.ordem} 
           onChange={(e) => setFormData({...formData, ordem: parseInt(e.target.value)})}
+          className={styles.input}
         />
         <div className={styles.formActions}>
           <button type="submit" className={styles.saveBtn}>

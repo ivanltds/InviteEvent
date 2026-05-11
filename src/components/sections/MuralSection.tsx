@@ -122,7 +122,10 @@ export default function MuralSection({ eventoId, config }: MuralSectionProps) {
             onClick={() => setShowForm(true)}
             style={{ backgroundColor: config?.accent_color }}
           >
-            📸 Compartilhar Lembrança
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+              Compartilhar Lembrança
+            </span>
           </button>
         </div>
 
@@ -214,7 +217,10 @@ export default function MuralSection({ eventoId, config }: MuralSectionProps) {
                       onClick={() => { setFormType('MENSAGEM'); setUploads([]); }}
                       style={formType === 'MENSAGEM' ? { backgroundColor: config?.accent_color || '#C5A059' } : {}}
                     >
-                      ✍️ Apenas Recado
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        Apenas Recado
+                      </span>
                     </button>
                     <button 
                       type="button" 
@@ -222,7 +228,10 @@ export default function MuralSection({ eventoId, config }: MuralSectionProps) {
                       onClick={() => setFormType('MIDIA')}
                       style={formType === 'MIDIA' ? { backgroundColor: config?.accent_color || '#C5A059' } : {}}
                     >
-                      📸 Foto ou Vídeo
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                        Foto ou Vídeo
+                      </span>
                     </button>
                   </div>
                   
@@ -239,7 +248,10 @@ export default function MuralSection({ eventoId, config }: MuralSectionProps) {
                       >
                         {({ open }) => (
                           <div className={styles.uploadArea} onClick={() => open()}>
-                            <p>📷 Clique para adicionar Fotos ou Vídeos</p>
+                            <p style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> 
+                              Clique para adicionar Fotos ou Vídeos
+                            </p>
                             <span style={{ fontSize: '0.8rem', color: '#888' }}>(Até 10 arquivos por vez)</span>
                           </div>
                         )}

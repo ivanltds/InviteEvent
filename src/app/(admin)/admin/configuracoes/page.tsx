@@ -7,8 +7,10 @@
  */
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CldUploadWidget } from 'next-cloudinary';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import styles from './AdminConfig.module.css';
 import { configService } from '@/lib/services/configService';
@@ -53,16 +55,25 @@ const DEFAULT_CONFIG: Omit<Configuracao, 'id' | 'evento_id'> = {
 };
 
 export default function AdminConfig() {
+  const router = useRouter();
   const { currentEvent, loading: eventLoading } = useEvent();
+  
   const [config, setConfig] = useState<Configuracao | null>(null);
+  const [originalConfigStr, setOriginalConfigStr] = useState<string>('');
   const [agenda, setAgenda] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  
+  // Novos estados para UX/Controle
+  const [showToast, setShowToast] = useState(false);
+  const [pendingNavUrl, setPendingNavUrl] = useState<string | null>(null);
+  const bypassGuardRef = useRef(false);
+
+  // Verifica sujeira
+  const isDirty = config && originalConfigStr && JSON.stringify(config) !== originalConfigStr;
 
   const fetchConfig = async () => {
-    if (!currentEvent) {
-      return;
-    }
+    if (!currentEvent) return;
     
     setLoading(true);
     try {
@@ -75,12 +86,11 @@ export default function AdminConfig() {
           .order('ordem', { ascending: true })
       ]);
       
-      if (agendaRes.data) {
-        setAgenda(agendaRes.data);
-      }
+      if (agendaRes.data) setAgenda(agendaRes.data);
 
       if (data) {
         setConfig(data);
+        setOriginalConfigStr(JSON.stringify(data));
       } else {
         const newPayload = { 
           ...DEFAULT_CONFIG, 
@@ -89,29 +99,75 @@ export default function AdminConfig() {
           noivo_nome: 'Noivo'
         };
         
-        const { success, error } = await configService.updateConfig(currentEvent.id, newPayload);
-        
+        const { success } = await configService.updateConfig(currentEvent.id, newPayload);
         if (success) {
-          console.log('[Config] Registro inicial criado. Buscando novamente...');
           const newData = await configService.getConfig(currentEvent.id);
           if (newData) {
             setConfig(newData);
-          } else {
-            console.error('[Config] Falha ao recuperar registro recém-criado. RLS pode estar bloqueando SELECT.');
-            throw new Error('Permissão de leitura negada para o novo registro.');
+            setOriginalConfigStr(JSON.stringify(newData));
           }
-        } else {
-          console.error('[Config] Erro ao criar registro inicial:', error);
-          throw error || new Error('Falha na criação do registro de configuração.');
         }
       }
     } catch (err: any) {
-      console.error('[Config] Erro crítico:', err);
-      alert('Erro ao carregar configurações: ' + (err.message || 'Erro desconhecido'));
+      console.error('[Config] Erro:', err);
     } finally {
       setLoading(false);
     }
   };
+
+  // Suporte a Âncoras (ex: #equipe) ao carregar e ao mudar Hash
+  useEffect(() => {
+    if (!loading && typeof window !== 'undefined' && window.location.hash) {
+      const id = window.location.hash.replace('#', '');
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300); // Timeout garante render completo dos sub-componentes
+    }
+  }, [loading]);
+
+  useEffect(() => {
+    const handleHash = () => {
+      const id = window.location.hash.replace('#', '');
+      if (id) {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
+  // Interceptador de navegação interna (Links/Sidebar)
+  useEffect(() => {
+    if (!isDirty) return;
+
+    const handleAnchorClick = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement).closest('a');
+      // Se clicou em um link que não é uma hash tag e não é nova aba
+      if (target && target.href && !target.href.includes('#') && !target.target) {
+        // Interrompe a navegação do Next.js preventivamente
+        e.preventDefault();
+        e.stopPropagation();
+        setPendingNavUrl(target.href);
+      }
+    };
+
+    // Bloqueio de fechamento da aba do navegador
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (bypassGuardRef.current) return;
+      e.preventDefault();
+      return (e.returnValue = 'Você tem alterações não salvas. Deseja mesmo sair?');
+    };
+
+    document.addEventListener('click', handleAnchorClick, true);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      document.removeEventListener('click', handleAnchorClick, true);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isDirty]);
 
   useEffect(() => {
     if (currentEvent) {
@@ -121,27 +177,39 @@ export default function AdminConfig() {
     }
   }, [currentEvent, eventLoading]);
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (e?: React.FormEvent, navigateAfter = false) => {
+    if (e) e.preventDefault();
     if (!config || !currentEvent) return;
 
     setSaving(true);
     try {
-      // Remove metadata fields before update
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id, created_at, updated_at, ...updateData } = config;
       const { success, error } = await configService.updateConfig(currentEvent.id, updateData);
 
       if (success) {
-        alert('Configurações salvas com sucesso!');
+        setOriginalConfigStr(JSON.stringify(config)); // Limpa dirty state
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+        
+        if (navigateAfter && pendingNavUrl) {
+          bypassGuardRef.current = true;
+          window.location.href = pendingNavUrl; // Força o redirecionamento limpo
+        }
       } else {
         console.error('Erro ao salvar:', error);
-        alert('Erro ao salvar configurações: ' + error?.message);
       }
     } catch (err: any) {
-      alert('Erro inesperado: ' + err.message);
+      console.error('Erro inesperado:', err);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDiscardAndLeave = () => {
+    if (pendingNavUrl) {
+      bypassGuardRef.current = true;
+      window.location.href = pendingNavUrl; // Abandona sem salvar
     }
   };
 
@@ -293,9 +361,9 @@ export default function AdminConfig() {
                         {config.noiva_foto_url ? (
                           <img src={config.noiva_foto_url} alt="Noiva" className={styles.couplePreview} />
                         ) : (
-                          <div className={styles.photoPlaceholder}>👰</div>
+                          <div className={styles.photoPlaceholder}><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
                         )}
-                        <CldUploadWidget uploadPreset="invite_preset" onSuccess={(res: any) => setConfig({...config, noivo_foto_url: res.info.secure_url})}>
+                        <CldUploadWidget uploadPreset="invite_preset" onSuccess={(res: any) => setConfig({...config, noiva_foto_url: res.info.secure_url})}>
                           {({ open }) => (
                             <button type="button" onClick={() => open()} className={styles.miniUploadBtn}>Trocar Foto</button>
                           )}
@@ -309,7 +377,7 @@ export default function AdminConfig() {
                         {config.noivo_foto_url ? (
                           <img src={config.noivo_foto_url} alt="Noivo" className={styles.couplePreview} />
                         ) : (
-                          <div className={styles.photoPlaceholder}>🤵</div>
+                          <div className={styles.photoPlaceholder}><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
                         )}
                         <CldUploadWidget uploadPreset="invite_preset" onSuccess={(res: any) => setConfig({...config, noivo_foto_url: res.info.secure_url})}>
                           {({ open }) => (
@@ -527,7 +595,7 @@ export default function AdminConfig() {
                     value={config.whatsapp_template || ''}
                     onChange={(e) => setConfig({...config, whatsapp_template: e.target.value})}
                     placeholder="Use {nome} e {link} para personalizar automaticamente."
-                    className={styles.textarea}
+                    className={styles.whatsappField}
                   />
                   <div className={styles.helpText}>
                     <p>Variáveis disponíveis: <strong>{'{nome}'}</strong> e <strong>{'{link}'}</strong>.</p>
@@ -544,9 +612,7 @@ export default function AdminConfig() {
                 </div>
                 </section>
 
-            <button type="submit" className={styles.saveBtn} disabled={saving}>
-              {saving ? 'Salvando...' : 'Salvar Todas as Alterações'}
-            </button>
+            {/* Botão obsoleto removido, substituído pela Floating Action Bar */}
           </form>
 
           <section className={styles.section} style={{ marginTop: '3rem' }}>
@@ -554,7 +620,7 @@ export default function AdminConfig() {
             <FAQManager eventoId={currentEvent.id} />
           </section>
 
-          <section className={styles.section} style={{ marginTop: '3rem' }}>
+          <section id="equipe" className={styles.section} style={{ marginTop: '3rem' }}>
             <h2>Equipe de Organizadores</h2>
             <TeamManagement />
           </section>
@@ -564,6 +630,92 @@ export default function AdminConfig() {
           <ConfigPreview config={config} agenda={agenda} />
         </aside>
       </div>
+
+      {/* Notificação Toast de Sucesso */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div 
+            initial={{ opacity: 0, y: -50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+            className={styles.toast}
+          >
+            <div className={styles.toastIcon}>✓</div>
+            Configurações salvas com sucesso!
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Barra Flutuante de Salvar Alterações */}
+      <AnimatePresence>
+        {isDirty && !saving && (
+          <motion.div 
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className={styles.floatingBar}
+          >
+            <div className={styles.dirtyText}>
+              <span className={styles.dirtyIndicator}></span>
+              Alterações não salvas
+            </div>
+            <div className={styles.floatActions}>
+              <button 
+                type="button" 
+                className={styles.secondaryFloatBtn}
+                onClick={() => setConfig(JSON.parse(originalConfigStr))}
+              >
+                Descartar
+              </button>
+              <button 
+                type="button" 
+                className={styles.primaryFloatBtn}
+                onClick={(e) => handleSave()}
+              >
+                Salvar Agora
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal de Confirmação ao Sair */}
+      <AnimatePresence>
+        {pendingNavUrl && (
+          <div className={styles.modalOverlay}>
+            <motion.div 
+              className={styles.modal}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+            >
+              <h3>Salvar Alterações?</h3>
+              <p>Você realizou alterações nas configurações do convite. O que deseja fazer antes de sair?</p>
+              
+              <div className={styles.modalButtons}>
+                <button 
+                  className={styles.modalPrimaryBtn}
+                  onClick={(e) => handleSave(undefined, true)}
+                >
+                  Salvar e Continuar
+                </button>
+                <button 
+                  className={styles.modalSecondaryBtn}
+                  onClick={handleDiscardAndLeave}
+                >
+                  Descartar Alterações
+                </button>
+                <button 
+                  className={styles.modalCancelBtn}
+                  onClick={() => setPendingNavUrl(null)}
+                >
+                  Permanecer na Página
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import styles from './AdminConvidados.module.css';
 import { inviteService, InviteWithRSVP } from '@/lib/services/inviteService';
 import { InviteType, Configuracao } from '@/lib/types/database';
@@ -22,6 +23,19 @@ export default function AdminConvidados() {
     telefone: ''
   });
   const [members, setMembers] = useState<{ id?: string; nome: string }[]>([]);
+
+  // Controles de Modais e Toasts Novos
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [confirmRSVPState, setConfirmRSVPState] = useState<{invite: InviteWithRSVP, status: 'confirmado' | 'recusado'} | null>(null);
+  const [infoRSVP, setInfoRSVP] = useState<{mensagem?: string | null, restricoes?: string | null} | null>(null);
+  const [toastMsg, setToastMsg] = useState('');
+  const [showToast, setShowToast] = useState(false);
+
+  const triggerToast = (msg: string) => {
+    setToastMsg(msg);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3500);
+  };
 
   const fetchData = async () => {
     if (!currentEvent) return;
@@ -108,14 +122,19 @@ export default function AdminConvidados() {
     }
   };
 
-  const handleDeleteInvite = async (id: string) => {
-    if (confirm('Deseja realmente excluir este convite?')) {
-      const { success, error } = await inviteService.deleteInvite(id);
-      if (success) {
-        fetchData();
-      } else {
-        alert('Erro ao excluir: ' + error?.message);
-      }
+  const handleDeleteInvite = (id: string) => {
+    setConfirmDeleteId(id);
+  };
+
+  const executeConfirmDelete = async () => {
+    if (!confirmDeleteId) return;
+    const { success, error } = await inviteService.deleteInvite(confirmDeleteId);
+    setConfirmDeleteId(null);
+    if (success) {
+      fetchData();
+      triggerToast('Convite excluído com sucesso.');
+    } else {
+      triggerToast('Erro ao excluir: ' + (error?.message || 'Tente novamente'));
     }
   };
 
@@ -144,22 +163,28 @@ export default function AdminConvidados() {
     setMembers(newMembers);
   };
 
-  const handleManualRSVP = async (invite: InviteWithRSVP, status: 'confirmado' | 'recusado') => {
-    if (confirm(`Deseja forçar o RSVP deste convite para "${status.toUpperCase()}"?`)) {
-      const confirmados = status === 'confirmado' ? invite.limite_pessoas : 0;
-      const { success, error } = await inviteService.updateRSVPManually(invite.id, confirmados, status);
-      if (success) {
-        fetchData();
-      } else {
-        alert('Erro ao forçar RSVP: ' + error?.message);
-      }
+  const handleManualRSVP = (invite: InviteWithRSVP, status: 'confirmado' | 'recusado') => {
+    setConfirmRSVPState({ invite, status });
+  };
+
+  const executeManualRSVP = async () => {
+    if (!confirmRSVPState) return;
+    const { invite, status } = confirmRSVPState;
+    const confirmados = status === 'confirmado' ? invite.limite_pessoas : 0;
+    const { success, error } = await inviteService.updateRSVPManually(invite.id, confirmados, status);
+    setConfirmRSVPState(null);
+    if (success) {
+      fetchData();
+      triggerToast(`RSVP forçado para ${status.toUpperCase()} com sucesso.`);
+    } else {
+      triggerToast('Erro ao atualizar RSVP.');
     }
   };
 
   const copyInviteLink = (slug: string) => {
     const url = `${window.location.origin}/inv/${slug}`;
     navigator.clipboard.writeText(url);
-    alert('Link copiado para o clipboard!');
+    triggerToast('Link copiado para o clipboard!');
   };
 
   const getStats = () => {
@@ -400,36 +425,62 @@ export default function AdminConvidados() {
                         <button 
                           className={styles.whatsappBtn} 
                           onClick={() => handleSendWhatsapp(invite)}
-                          title="Enviar convite via WhatsApp"
+                          data-tooltip="Enviar via WhatsApp"
                         >
-                          Whats
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
                         </button>
+                        
                         <button 
                           className={styles.copyBtn} 
                           onClick={() => copyInviteLink(invite.slug)}
-                          data-invite-slug={invite.slug}
+                          data-tooltip="Copiar Link"
                         >
-                          Link
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                         </button>
-                        <button className={styles.editBtn} onClick={() => startEdit(invite)}>
-                          Editar
+
+                        <button 
+                          className={styles.editBtn} 
+                          onClick={() => startEdit(invite)}
+                          data-tooltip="Editar Convite"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                         </button>
-                        <button className={styles.deleteBtn} onClick={() => handleDeleteInvite(invite.id)}>
-                          Excluir
+
+                        <button 
+                          className={styles.deleteBtn} 
+                          onClick={() => handleDeleteInvite(invite.id)}
+                          data-tooltip="Excluir"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                         </button>
+
                         {!rsvp && (
                           <>
-                            <button className={styles.copyBtn} style={{backgroundColor: 'var(--admin-success)', borderColor: 'var(--admin-success)', color: 'white'}} onClick={() => handleManualRSVP(invite, 'confirmado')}>
-                              ✓ Confirmar
+                            <button 
+                              className={styles.successBtn} 
+                              onClick={() => handleManualRSVP(invite, 'confirmado')}
+                              data-tooltip="Confirmar Manualmente"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                             </button>
-                            <button className={styles.deleteBtn} style={{backgroundColor: 'transparent', color: 'var(--admin-danger)'}} onClick={() => handleManualRSVP(invite, 'recusado')}>
-                              ✕ Recusar
+                            <button 
+                              className={styles.deleteBtn} 
+                              style={{backgroundColor: 'transparent'}} 
+                              onClick={() => handleManualRSVP(invite, 'recusado')}
+                              data-tooltip="Recusar Manualmente"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
                             </button>
                           </>
                         )}
+                        
                         {rsvp && (
-                          <button className={styles.detailBtn} onClick={() => alert(`Mensagem: ${rsvp.mensagem || 'Nenhuma'}\nRestrições: ${rsvp.restricoes || 'Nenhuma'}`)}>
-                            Info
+                          <button 
+                            className={styles.detailBtn} 
+                            onClick={() => setInfoRSVP({ mensagem: rsvp.mensagem, restricoes: rsvp.restricoes })}
+                            data-tooltip="Ver Informações"
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                           </button>
                         )}
                       </div>
@@ -446,6 +497,97 @@ export default function AdminConvidados() {
           </table>
         )}
       </section>
+
+      {/* Modal Excluir Convite */}
+      <AnimatePresence>
+        {confirmDeleteId && (
+          <div className={styles.modalOverlay}>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className={styles.modal}
+              style={{ maxWidth: '380px', textAlign: 'center' }}
+            >
+              <h2 style={{ color: 'var(--admin-danger)', marginBottom: '1rem' }}>Excluir Convite</h2>
+              <p style={{ color: '#64748b', marginBottom: '2rem' }}>Esta ação é definitiva e removerá o convite permanentemente.</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <button className={styles.cancelBtn} onClick={() => setConfirmDeleteId(null)}>Cancelar</button>
+                <button className={styles.saveBtn} onClick={executeConfirmDelete}>Confirmar</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal RSVP Manual */}
+      <AnimatePresence>
+        {confirmRSVPState && (
+          <div className={styles.modalOverlay}>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className={styles.modal}
+              style={{ maxWidth: '400px', textAlign: 'center' }}
+            >
+              <h2 style={{ marginBottom: '1rem' }}>Alterar RSVP</h2>
+              <p style={{ color: '#64748b', margin: '0 0 2rem 0' }}>
+                Deseja forçar o RSVP de <strong>{confirmRSVPState.invite.nome_principal}</strong> para <strong>{confirmRSVPState.status.toUpperCase()}</strong>?
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <button className={styles.cancelBtn} onClick={() => setConfirmRSVPState(null)}>Cancelar</button>
+                <button className={styles.saveBtn} onClick={executeManualRSVP}>Confirmar</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal Info (Mensagens e Restrições) */}
+      <AnimatePresence>
+        {infoRSVP && (
+          <div className={styles.modalOverlay}>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className={styles.modal}
+              style={{ maxWidth: '450px' }}
+            >
+              <h2 style={{ marginBottom: '1.5rem' }}>Informações do RSVP</h2>
+              <div style={{ marginBottom: '1.5rem', textAlign: 'left' }}>
+                <strong style={{ fontSize: '0.85rem', textTransform: 'uppercase', color: '#64748b' }}>Mensagem dos Convidados</strong>
+                <p style={{ padding: '1rem', background: '#f8fafc', borderRadius: '12px', marginTop: '0.5rem', color: '#1e293b', border: '1px solid #f1f5f9' }}>
+                  {infoRSVP.mensagem || 'Nenhuma mensagem enviada.'}
+                </p>
+              </div>
+              <div style={{ marginBottom: '2rem', textAlign: 'left' }}>
+                <strong style={{ fontSize: '0.85rem', textTransform: 'uppercase', color: '#ef4444' }}>Restrições Alimentares</strong>
+                <p style={{ padding: '1rem', background: '#fef2f2', borderRadius: '12px', marginTop: '0.5rem', color: '#b91c1c', border: '1px solid #fee2e2' }}>
+                  {infoRSVP.restricoes || 'Nenhuma restrição relatada.'}
+                </p>
+              </div>
+              <button className={styles.cancelBtn} style={{ width: '100%' }} onClick={() => setInfoRSVP(null)}>Fechar</button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Notification Toast */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20, x: 20 }}
+            animate={{ opacity: 1, y: 0, x: 0 }}
+            exit={{ opacity: 0, y: -20, x: 20 }}
+            className={styles.toast}
+          >
+            <div className={styles.toastIcon}>i</div>
+            <span>{toastMsg}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

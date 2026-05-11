@@ -119,3 +119,70 @@
   padding-top: 1rem;
 }
 
+/* Modal de Confirmação de Logout */
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999999;
+}
+
+.modalContent {
+  background: white;
+  padding: 2.5rem 2rem;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 360px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+.modalContent h3 {
+  font-size: 1.3rem;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.modalContent p {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 1.8rem;
+}
+
+.modalActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.cancelBtn {
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  padding: 0.85rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cancelBtn:hover { background: #e2e8f0; }
+
+.confirmBtn {
+  background: var(--admin-accent);
+  color: white;
+  border: none;
+  padding: 0.85rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+
+.confirmBtn:hover { filter: brightness(0.9); }
+

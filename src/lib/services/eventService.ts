@@ -11,7 +11,11 @@ export const eventService = {
     const { data: profile } = await supabase.from('perfis').select('is_master').eq('id', user.id).maybeSingle();
     
     if (profile?.is_master) {
-      const { data } = await supabase.from('eventos').select('*').order('created_at', { ascending: false });
+      const { data } = await supabase
+        .from('eventos')
+        .select('*')
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false });
       return data || [];
     }
 
@@ -30,6 +34,7 @@ export const eventService = {
       .from('eventos')
       .select('*')
       .in('id', eventIds)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false });
     
     return events || [];
@@ -226,9 +231,38 @@ export const eventService = {
   },
 
   async deleteEvent(eventId: string): Promise<boolean> {
+    // Soft delete: define deleted_at em vez de excluir permanentemente
     const { error } = await supabase
       .from('eventos')
-      .delete()
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', eventId);
+    return !error;
+  },
+
+  async getDeletedEvents(): Promise<Evento[]> {
+    const { data: userResponse } = await supabase.auth.getUser();
+    const user = userResponse.user;
+    if (!user) return [];
+
+    const { data: profile } = await supabase.from('perfis').select('is_master').eq('id', user.id).maybeSingle();
+    
+    if (profile?.is_master) {
+      const { data } = await supabase
+        .from('eventos')
+        .select('*')
+        .not('deleted_at', 'is', null)
+        .order('deleted_at', { ascending: false });
+      return data || [];
+    }
+
+    // Retorna vazio se não for master conforme nova regra de visibilidade restrita
+    return [];
+  },
+
+  async restoreEvent(eventId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('eventos')
+      .update({ deleted_at: null })
       .eq('id', eventId);
     return !error;
   }

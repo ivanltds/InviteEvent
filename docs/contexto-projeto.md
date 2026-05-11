@@ -36,6 +36,9 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | 001 | Consolidação MVP e Estabilização | CONCLUÍDO   | Concluído   |
 | 002 | Nova UI                          | CONCLUÍDO   | Concluído   |
 | 003 | Gestão do Master e Suporte Chat  | CONCLUÍDO   | Concluído   |
+| 004 | Shielding & Security Gateway     | CONCLUÍDO   | Concluído   |
+| 005 | Data Shielding & Soft Delete     | CONCLUÍDO   | Concluído   |
+| 006 | Unificação Design System & Grids | CONCLUÍDO   | Concluído   |
 
 ## Segurança
 - **Última Auditoria:** 2024-05-24
@@ -93,8 +96,12 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/prd/prd-003/fase-4-red.md             | DEV / QA    | Relatório do TDD de Suporte em fase RED (Dashboard & KPIs)|
 | docs/prd/prd-003/fase-4-green.md           | DEV / QA    | Relatório do TDD de Suporte em fase GREEN (Sucesso de Métricas)|
 | src/__tests__/SupportDashboard.test.tsx    | QA          | Suíte de Testes Unitários de Métricas do Dashboard|
+| docs/prd/prd-004/prd-inicial.md            | BA          | PRD de Blindagem de Acesso e Camada de Proteção de Dados |
+| docs/prd/prd-005/prd-inicial.md            | BA          | PRD de Lixeira (Soft Delete) e Governança de Eventos Ativos |
+| docs/prd/prd-006/prd-inicial.md            | BA          | PRD Póstumo de Unificação Visual e Zero-Alert Policy |
+| tests/e2e/prd_006_visual_consistency.spec.ts| QA          | Testes E2E de Uniformidade Visual e Moderação Silenciosa |
 
 ## Última Atualização
-- Data    : 2026-05-09
-- Por     : Maestro / DevOps / DEV
-- Motivo  : Conclusão total do PRD-003 (Gestão do Master e Atendimento Chat) com design alinhado e correção de build do Next.js na Vercel.
+- Data    : 2026-05-11
+- Por     : Maestro / DEV / QA
+- Motivo  : Conclusão do Ciclo 006: Refatoração Visual, Unificação de Botões, Grid de Agenda e Erradicação de Native Alerts/Emojis em toda a plataforma.

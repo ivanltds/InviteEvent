@@ -21,9 +21,13 @@ export async function POST(req: Request) {
     
     // Fallback: Validate via token if user_id not provided by trusted clients
     let uid = userId;
+    let uemail = '';
     if (token) {
       const { data: { user } } = await supabase.auth.getUser(token);
-      if (user) uid = user.id;
+      if (user) {
+        uid = user.id;
+        uemail = user.email || '';
+      }
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -50,12 +54,14 @@ export async function POST(req: Request) {
               name: 'Licença InviteEventAI - Evento Ilimitado',
               description: 'Ativação do RSVP online e recursos premium',
             },
-            unit_amount: 9900, // R$ 99,00
+            unit_amount: 50, // Mínimo permitido pelo Stripe: R$ 0.50 para Testes
           },
           quantity: 1,
         },
       ],
       mode: 'payment',
+      customer_email: uemail || undefined,
+      billing_address_collection: 'required',
       metadata: {
         eventoId: eventoId,
         userId: uid

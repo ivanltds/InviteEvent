@@ -81,14 +81,14 @@ export default function TeamManagement() {
     <div className={styles.managerContainer}>
       <form onSubmit={handleAdd} className={styles.faqForm}>
         <h3>Adicionar Organizador</h3>
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div className={styles.inlineRow}>
           <input 
             type="email" 
             placeholder="E-mail do usuário" 
             value={email} 
             onChange={(e) => setEmail(e.target.value)}
             required
-            style={{ flex: 1 }}
+            className={styles.input}
           />
           <button type="submit" className={styles.saveBtn} disabled={adding}>
             {adding ? '...' : 'Adicionar'}
@@ -105,12 +105,12 @@ export default function TeamManagement() {
           <div key={org.user_id} className={styles.faqItem}>
             <div>
               <strong>{org.email}</strong>
-              <p>Função: <span className={styles.badge}>{org.role}</span></p>
+              <p>Função: <span className={styles.badge}>{org.role === 'owner' ? 'Proprietário' : 'Organizador'}</span></p>
             </div>
             <div className={styles.itemActions}>
               {org.role !== 'owner' && (
                 <>
-                  <button onClick={() => handleTransfer(org.user_id)}>Tornar Owner</button>
+                  <button onClick={() => handleTransfer(org.user_id)}>Tornar Proprietário</button>
                   <button onClick={() => handleRemove(org.user_id)} className={styles.deleteBtn}>Remover</button>
                 </>
               )}

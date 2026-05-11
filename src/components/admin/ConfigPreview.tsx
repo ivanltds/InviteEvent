@@ -58,8 +58,9 @@ const ConfigPreview: React.FC<ConfigPreviewProps> = ({ config, agenda = [] }) =>
       gap: '1rem'
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase', color: '#666', letterSpacing: '0.05em' }}>
-          📱 Pré-visualização do Convite
+        <div style={{ fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase', color: '#666', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg> 
+          Pré-visualização do Convite
         </div>
         <div style={{ fontSize: '0.7rem', background: '#e0e7ff', color: '#3730a3', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
           LIVE

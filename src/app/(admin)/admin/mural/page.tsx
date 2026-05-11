@@ -5,6 +5,7 @@ import { useEvent } from '@/lib/contexts/EventContext';
 import { supabase } from '@/lib/supabase';
 import styles from './AdminMural.module.css';
 import MuralModeration from '@/components/admin/MuralModeration';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type Tab = 'mensagens' | 'fotos';
 
@@ -13,6 +14,7 @@ export default function AdminMural() {
   const [activeTab, setActiveTab] = useState<Tab>('mensagens');
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const fetchMessages = async () => {
     if (!currentEvent) return;
@@ -42,11 +44,15 @@ export default function AdminMural() {
     if (!error) fetchMessages();
   };
 
-  const deleteMessage = async (id: string) => {
-    if (confirm('Excluir este recado permanentemente?')) {
-      const { error } = await supabase.from('mural_mensagens').delete().eq('id', id);
-      if (!error) fetchMessages();
-    }
+  const triggerDelete = (id: string) => {
+    setConfirmDeleteId(id);
+  };
+
+  const executeDelete = async () => {
+    if (!confirmDeleteId) return;
+    const { error } = await supabase.from('mural_mensagens').delete().eq('id', confirmDeleteId);
+    if (!error) fetchMessages();
+    setConfirmDeleteId(null);
   };
 
   if (!currentEvent) return <div className={styles.container}>Selecione um evento...</div>;
@@ -74,7 +80,7 @@ export default function AdminMural() {
       </div>
 
       {activeTab === 'mensagens' ? (
-        <div className={styles.list}>
+        <div className={styles.grid}>
           {loading ? <p>Carregando...</p> : messages.map(msg => (
             <div key={msg.id} className={`${styles.card} ${styles[msg.status]}`}>
               <div className={styles.cardContent}>
@@ -92,7 +98,7 @@ export default function AdminMural() {
                 {msg.status !== 'oculto' && (
                   <button onClick={() => updateStatus(msg.id, 'oculto')} className={styles.hideBtn}>Ocultar</button>
                 )}
-                <button onClick={() => deleteMessage(msg.id)} className={styles.deleteBtn}>Excluir</button>
+                <button onClick={() => triggerDelete(msg.id)} className={styles.deleteBtn}>Excluir</button>
               </div>
             </div>
           ))}
@@ -101,6 +107,28 @@ export default function AdminMural() {
       ) : (
         <MuralModeration eventId={currentEvent.id} />
       )}
+
+      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */}
+      <AnimatePresence>
+        {confirmDeleteId && (
+          <div className={styles.modalOverlay} onClick={() => setConfirmDeleteId(null)}>
+            <motion.div 
+              className={styles.modal}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3>Confirmar Exclusão</h3>
+              <p>Deseja apagar esta mensagem permanentemente do mural?</p>
+              <div className={styles.modalActions}>
+                <button className={styles.cancelDeleteBtn} onClick={() => setConfirmDeleteId(null)}>Cancelar</button>
+                <button className={styles.confirmDeleteBtn} onClick={executeDelete}>Sim, Excluir</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

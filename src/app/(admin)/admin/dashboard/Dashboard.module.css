@@ -338,3 +338,99 @@
   cursor: pointer;
 }
 
+.dangerBtn {
+  background: var(--admin-danger, #ef4444);
+  color: white;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dangerBtn:hover {
+  background: #dc2626;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+/* Toast Notification for high-end feedback */
+.toast {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  background: #064e3b;
+  color: #ecfdf5;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 64, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  z-index: 30000;
+  font-weight: 500;
+  border-left: 4px solid #10b981;
+}
+
+.toastIcon {
+  font-size: 1.2rem;
+  background: #059669;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.trashContainer {
+  margin-top: 3rem;
+  border-top: 1px dashed #e5e7eb;
+  padding-top: 2rem;
+}
+
+.trashHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.trashHeader h3 {
+  color: #6b7280;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.restoreBtn {
+  background: transparent;
+  border: 1px solid #c5a059;
+  color: #c5a059;
+  padding: 0.5rem 0.8rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.restoreBtn:hover {
+  background: rgba(197, 160, 89, 0.1);
+  transform: translateY(-1px);
+}
+
+.toggleTrashBtn {
+  background: transparent;
+  border: none;
+  color: #888;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.toggleTrashBtn:hover {
+  color: #444;
+}
+

@@ -20,6 +20,7 @@ export interface Evento {
   onboarding_completed?: boolean;
   created_at: string;
   updated_at: string;
+  deleted_at?: string | null;
 }
 
 export interface EventoOrganizador {

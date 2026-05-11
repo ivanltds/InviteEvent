@@ -169,11 +169,15 @@ export default function EnvelopeGateway({
                     para celebrar essa união
                   </p>
                   <span className={styles.floatingPen}>
-                    🖋️
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
                     <span className={styles.magicGlow} />
-                    <span className={styles.sparkle1}>✨</span>
+                    <span className={styles.sparkle1}>
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2L14.5 9L22 12L14.5 15L12 22L9.5 15L2 12L9.5 9L12 2Z"></path></svg>
+                    </span>
                     <span className={styles.sparkle2}>✦</span>
-                    <span className={styles.sparkle3}>✨</span>
+                    <span className={styles.sparkle3}>
+                      <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M12 2L14.5 9L22 12L14.5 15L12 22L9.5 15L2 12L9.5 9L12 2Z"></path></svg>
+                    </span>
                   </span>
                 </div>
               </div>

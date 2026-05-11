@@ -84,6 +84,10 @@ describe('MuralModeration', () => {
 
     fireEvent.click(screen.getAllByText('Excluir')[0]);
     
+    // Click confirm button in the modal that opened
+    await waitFor(() => expect(screen.getByText('Sim, Excluir')).toBeInTheDocument());
+    fireEvent.click(screen.getByText('Sim, Excluir'));
+    
     await waitFor(() => {
       expect(muralService.deleteItem).toHaveBeenCalledWith('1');
     });

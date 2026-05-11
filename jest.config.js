@@ -17,6 +17,9 @@ const config = {
   roots: ['<rootDir>/src/'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^react-markdown$': '<rootDir>/src/__mocks__/mockComponent.js',
+    '^remark-gfm$': '<rootDir>/src/__mocks__/dummy.js',
+    '^rehype-raw$': '<rootDir>/src/__mocks__/dummy.js',
   },
   collectCoverage: true,
   collectCoverageFrom: [

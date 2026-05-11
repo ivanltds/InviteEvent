@@ -89,3 +89,43 @@ jest.mock('next/navigation', () => ({
   useParams: jest.fn(() => ({})),
   usePathname: jest.fn(() => ''),
 }));
+
+// Fix ESM SyntaxError: Unexpected token 'export' in react-markdown
+jest.mock('react-markdown', () => {
+  return function MockMarkdown({ children }) {
+    return <div>{children}</div>;
+  };
+});
+
+// Robust Mock Chart.js
+jest.mock('chart.js', () => {
+  const ChartMock = {
+    register: jest.fn(),
+    defaults: {
+      plugins: {
+        legend: { display: true },
+        tooltip: { enabled: true }
+      }
+    }
+  };
+  return {
+    Chart: ChartMock,
+    register: jest.fn(), // direct export support
+    CategoryScale: jest.fn(),
+    LinearScale: jest.fn(),
+    BarElement: jest.fn(),
+    PointElement: jest.fn(),
+    LineElement: jest.fn(),
+    ArcElement: jest.fn(),
+    Title: jest.fn(),
+    Tooltip: jest.fn(),
+    Legend: jest.fn(),
+    Filler: jest.fn(),
+  };
+});
+
+jest.mock('react-chartjs-2', () => ({
+  Bar: () => <div data-testid="mock-bar-chart" />,
+  Doughnut: () => <div data-testid="mock-doughnut-chart" />,
+  Line: () => <div data-testid="mock-line-chart" />,
+}));

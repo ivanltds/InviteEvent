@@ -2,6 +2,25 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import AdminConfig from '../configuracoes/page';
 
+// Mock do configService
+jest.mock('@/lib/services/configService', () => ({
+  configService: {
+    getConfig: jest.fn().mockResolvedValue({
+      id: 1,
+      noiva_nome: 'Layslla',
+      noivo_nome: 'Marcus',
+      historia_titulo: 'Nossa História',
+      historia_subtitulo: 'Subtitulo',
+      historia_texto: 'Era uma vez...',
+      historia_conclusao: 'Fim.',
+      noiva_bio: 'Bio Noiva',
+      noivo_bio: 'Bio Noivo',
+      noivos_conclusao: 'Final',
+    }),
+    updateConfig: jest.fn().mockResolvedValue({ success: true }),
+  },
+}));
+
 // Mock do FAQManager
 jest.mock('@/components/admin/FAQManager', () => () => <div data-testid="faq-manager">FAQ</div>);
 // Mock do TeamManagement

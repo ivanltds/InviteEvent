@@ -82,10 +82,10 @@ describe('AdminConvidados Component Fixed', () => {
     
     await waitFor(() => expect(screen.getByText('João Silva')).toBeInTheDocument());
     
-    const whatsappBtn = screen.getByTitle('Enviar convite via WhatsApp');
+    const whatsappBtn = document.querySelector('.whatsappBtn');
     expect(whatsappBtn).toBeInTheDocument();
     
-    fireEvent.click(whatsappBtn);
+    fireEvent.click(whatsappBtn!);
     expect(spyOpen).toHaveBeenCalledWith(expect.stringContaining('11999999999'), '_blank');
     spyOpen.mockRestore();
   });

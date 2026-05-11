@@ -1,141 +1,172 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import gsap from 'gsap';
 import styles from './GSAPFlowerWind.module.css';
 import { GatewayProps } from './GatewayTypes';
 
 const STORAGE_KEY_PREFIX = 'envelope_opened_';
 
+// Definições idênticas ao wireframe
+const COUNTS = [8, 8, 8];
+const LAYERS = ['layerOuter', 'layerMid', 'layerInner'];
+const Z_OFF = [8, 5, 2];
+const A_OFF = [0, 22.5, 45];
+const LEAF_COLORS = ['#A8C5A0', '#8FB387', '#7AA070', '#C5D8C0', '#90B88A'];
+
 export default function GSAPFlowerWind({
   slug,
-  bgPrimary = '#FAFAF9',
-  textMain = '#2A322E',
-  accentColor = '#8FA89B', // Ex: tom de verde/rosa pastel do evento
+  bgPrimary = '#FDFAF6',
+  textMain = '#3A2E28',
+  accentColor = '#C9A84C', // The "gold" equivalent
   coupleNoiva = 'Noiva',
   coupleNoivo = 'Noivo',
   date = '',
-  fontCursive = "'Pinyon Script', cursive",
-  fontSerif = "'Playfair Display', serif",
-  heroImages = [],
+  fontCursive = "'Great Vibes', cursive",
+  fontSerif = "'Cinzel', serif",
   onComplete
 }: GatewayProps) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const windContainerRef = useRef<HTMLDivElement>(null);
-  const [isOpening, setIsOpening] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const leavesContainerRef = useRef<HTMLDivElement>(null);
+  const pollenContainerRef = useRef<HTMLDivElement>(null);
+  
+  const [isActive, setIsActive] = useState(true);
   const [showSkip, setShowSkip] = useState(false);
 
-  const coverImage = heroImages && heroImages.length > 0
-    ? heroImages[0]
-    : 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=2000';
+  // Helper para gerar variações suaves da cor de sotaque (Para as pétalas)
+  // O wireframe usava tons fixos. Nós derivamos das cores.
+  // Vamos usar um fallback leve se accentColor for dourado/escuro, mas pra manter simples, podemos usar mix com branco.
+  // Criando variações hex para os fills e backs das camadas:
+  const PETAL_FILLS = [
+    `${accentColor}33`, // Outer (mais transparente/claro)
+    `${accentColor}66`, // Mid
+    `${accentColor}99`  // Inner
+  ];
+  const PETAL_BACKS = [
+    `${accentColor}44`,
+    `${accentColor}77`,
+    `${accentColor}AA`
+  ];
 
-  // Gerar paleta harmônica a partir do accentColor (Simular HSL shifts via string injection ou fixar variações)
-  // Pra simplificar, usaremos o accentColor puro, e versões com opacity nos SVGs para criar profundidade floral.
+  // Gera o state de pétalas inicial
+  const petalsData = useMemo(() => {
+    const data: any[] = [];
+    LAYERS.forEach((lid, li) => {
+      const count = COUNTS[li];
+      const fill = PETAL_FILLS[li];
+      const back = PETAL_BACKS[li];
+      for (let i = 0; i < count; i++) {
+        const angle = A_OFF[li] + (360 / count) * i;
+        data.push({
+          id: `${lid}_p${i}`,
+          layerId: lid,
+          layerIndex: li,
+          angle,
+          zOff: Z_OFF[li],
+          zIndex: 10 - li,
+          fill,
+          back
+        });
+      }
+    });
+    return data;
+  }, [accentColor]);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowSkip(true), 2000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Ambient Wind & Flower Float
   useEffect(() => {
-    if (!rootRef.current) return;
+    if (!wrapperRef.current) return;
     
-    const floatTl = gsap.to(`.${styles.flowerCore}`, {
-      y: 15,
-      rotation: 2,
-      duration: 4,
-      yoyo: true,
-      repeat: -1,
-      ease: "sine.inOut"
+    const floatAnim = gsap.to(wrapperRef.current, {
+      y: 12, 
+      duration: 3, 
+      ease: "sine.inOut", 
+      yoyo: true, 
+      repeat: -1
     });
 
-    gsap.to(`.${styles.petalBack}`, {
-      scale: 1.03,
-      rotation: '+=1',
-      duration: 3,
-      stagger: 0.2,
-      yoyo: true,
-      repeat: -1,
-      ease: "sine.inOut"
-    });
+    const xTo = gsap.quickTo(wrapperRef.current, "rotationY", {duration: 1, ease: "power3.out"});
+    const yTo = gsap.quickTo(wrapperRef.current, "rotationX", {duration: 1, ease: "power3.out"});
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isActive) return;
+      xTo(-(window.innerWidth / 2 - e.pageX) / 35);
+      yTo((window.innerHeight / 2 - e.pageY) / 35);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
 
     return () => {
-      floatTl.kill();
+      floatAnim.kill();
+      window.removeEventListener("mousemove", handleMouseMove);
     };
-  }, []);
+  }, [isActive]);
 
-  // Spawner de pétalas sopradas ao vento (Physics Simulation)
-  const spawnWindPetals = () => {
-    if (!windContainerRef.current) return;
-    const container = windContainerRef.current;
-
-    // Gerar cores variadas para as pétalas a partir do accent
-    const petalPalette = [
-      accentColor,
-      `${accentColor}dd`, // Opacidade leve
-      '#FFFFFF',         // Contraste branco
-      '#F8F8F8'          // Off-white
-    ];
-
-    for (let i = 0; i < 45; i++) {
-      const p = document.createElement('div');
-      p.className = styles.physicsPetal;
-      p.style.background = petalPalette[Math.floor(Math.random() * petalPalette.length)];
-      p.style.opacity = '0';
+  const launchFallingLeaves = (count: number, delay: number) => {
+    if (!leavesContainerRef.current) return;
+    const container = leavesContainerRef.current;
+    
+    for (let i = 0; i < count; i++) {
+      const color = LEAF_COLORS[Math.floor(Math.random() * LEAF_COLORS.length)];
+      const w = 24 + Math.random() * 24;
+      const h = w * 1.75;
       
-      // Tamanhos e formas
-      const sizeW = 10 + Math.random() * 15;
-      const sizeH = 15 + Math.random() * 20;
-      p.style.width = `${sizeW}px`;
-      p.style.height = `${sizeH}px`;
-      p.style.borderRadius = `${30 + Math.random()*50}% ${10 + Math.random()*20}% ${30 + Math.random()*50}% ${10 + Math.random()*20}%`;
-      
-      // Posição inicial central
-      const cx = window.innerWidth / 2;
-      const cy = window.innerHeight / 2;
-      p.style.left = `${cx}px`;
-      p.style.top = `${cy}px`;
+      const leaf = document.createElement('div');
+      leaf.className = styles.fallingLeaf;
+      leaf.innerHTML = `<svg width="${w}" height="${h}" viewBox="0 0 40 70" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 20 70 C 0 50, -8 30, 5 10 C 12 0, 28 0, 35 10 C 48 30, 40 50, 20 70 Z" fill="${color}" opacity="0.88"/>
+        <line x1="20" y1="65" x2="20" y2="12" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+      </svg>`;
+      leaf.style.left = (5 + Math.random() * 90) + 'vw';
+      leaf.style.top = '-80px';
+      container.appendChild(leaf);
 
-      container.appendChild(p);
+      const startDelay = delay + Math.random() * 2.5;
+      const dur = 4 + Math.random() * 5;
+      const driftX = (Math.random() - 0.5) * 600;
+      const swayAmp = 80 + Math.random() * 120;
+      const rotSpeed = (Math.random() > 0.5 ? 1 : -1) * (200 + Math.random() * 300);
 
-      const duration = 2.5 + Math.random() * 2;
-      const delay = Math.random() * 0.8;
-      
-      // Trajetória de arco
-      const tx = 600 + Math.random() * 800;
-      const ty = -200 - Math.random() * 400;
+      gsap.to(leaf, { opacity: 0.85, duration: 0.4, delay: startDelay });
 
-      gsap.to(p, {
-        x: tx,
-        y: ty,
-        rotation: 360 + Math.random() * 720,
-        rotationY: Math.random() * 360,
-        opacity: Math.random() * 0.8 + 0.2,
-        scale: Math.random() * 1.2 + 0.4,
-        duration: duration,
-        delay: delay,
-        ease: "power1.out"
+      gsap.to(leaf, {
+        y: window.innerHeight + 120,
+        x: driftX,
+        rotation: rotSpeed,
+        duration: dur,
+        ease: "none",
+        delay: startDelay,
+        onComplete: () => leaf.remove()
       });
 
-      // Queda final e sumiço
-      gsap.to(p, {
-        y: '+=400',
+      gsap.to(leaf, {
+        x: '+=' + swayAmp,
+        duration: 1.4 + Math.random() * 0.6,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: Math.ceil(dur / 1.5),
+        delay: startDelay
+      });
+
+      gsap.to(leaf, {
         opacity: 0,
-        duration: 1.2,
-        delay: delay + duration - 0.8,
-        ease: "power1.in",
-        onComplete: () => p.remove()
+        duration: 1.5,
+        delay: startDelay + dur - 1.5
       });
     }
   };
 
   const handleOpen = () => {
-    if (isOpening) return;
-    setIsOpening(true);
+    if (!isActive || !wrapperRef.current) return;
+    setIsActive(false);
 
-    gsap.killTweensOf(`.${styles.flowerCore}`);
-    gsap.killTweensOf(`.${styles.petalBack}`);
+    gsap.killTweensOf(wrapperRef.current);
+    gsap.to(wrapperRef.current, { rotationX: 0, rotationY: 0, y: 0, duration: 0.6, ease: "power2.out" });
+    gsap.to(`.${styles.hint}`, { autoAlpha: 0, duration: 0.3 });
     gsap.to(`.${styles.skipBtn}`, { autoAlpha: 0, duration: 0.3 });
 
     const tl = gsap.timeline({
@@ -145,39 +176,104 @@ export default function GSAPFlowerWind({
       }
     });
 
-    // 1. Expansão Radial Inicial (Flor Desabrocha)
-    tl.to(`.${styles.callToAction}`, { opacity: 0, y: 20, duration: 0.4, ease: "power2.in" }, 0)
-      .to(`.${styles.petalBack}`, { scale: 1.4, rotation: '+=30', duration: 1.5, ease: "elastic.out(1, 0.5)", stagger: 0.05 }, 0.2)
-      .to(`.${styles.petalMid}`,  { scale: 1.5, rotation: '+=45', duration: 1.8, ease: "elastic.out(1, 0.4)", stagger: 0.06 }, 0.3)
-      .to(`.${styles.petalFront}`,{ scale: 1.4, rotation: '-=20', duration: 1.6, ease: "elastic.out(1, 0.6)", stagger: 0.08 }, 0.4)
-      .to(`.${styles.centerGlow}`, { scale: 2.5, opacity: 0.6, duration: 1.2, ease: "power2.out" }, 0.6)
+    /* 1. RESPIRAÇÃO */
+    tl.to(wrapperRef.current, { scale: 1.06, duration: 0.3, ease: "power1.out" }, 0)
+      .to(wrapperRef.current, { scale: 1, duration: 0.3, ease: "power1.in" }, 0.3);
 
-    // 2. Injeta Pétalas Físicas sopradas pelo vento
-      .add(spawnWindPetals, 1.0)
+    /* 2. DESABROCHAR FLUIDO */
+    LAYERS.forEach((lid, li) => {
+      const count = COUNTS[li];
+      const startT = 0.3 + li * 0.15;
 
-    // 3. A flor inteira se desfaz no vento e sobe
-      .to(`.${styles.flowerCore}`, { 
-        x: 150, 
-        y: -150, 
-        rotation: 15, 
-        scale: 0.8, 
-        filter: "blur(4px)", 
-        opacity: 0.3, 
-        duration: 2, 
-        ease: "power2.inOut" 
-      }, 1.2)
-      
-    // 4. Revela o Texto central do convite
-      .to(`.${styles.textCanvas}`, { opacity: 1, scale: 1, duration: 1.5, ease: "power3.out" }, 1.8)
-      .fromTo(`.${styles.names}`, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 1.2, ease: "power3.out" }, 2.0)
-      .fromTo(`.${styles.dateLabel}`, { opacity: 0 }, { opacity: 1, duration: 1, ease: "power2.out" }, 2.6)
-      
-    // 5. O fundo ganha vida e imagem
-      .to(`.${styles.bgBloom}`, { opacity: 0, duration: 2 }, 2.0)
-      .to(rootRef.current, { backgroundColor: "transparent", duration: 3, ease: "power2.inOut" }, 2.5)
+      for (let i = 0; i < count; i++) {
+        const elId = `#${lid}_p${i}`;
+        tl.to(elId, {
+          rotateX: -160,
+          skewY: (i % 2 === 0 ? 6 : -6),
+          duration: 1.3,
+          ease: "power2.inOut",
+        }, startT + i * 0.04)
+        .set(elId, { zIndex: 1 }, startT + i * 0.04 + 0.65)
+        .to(elId, {
+          skewY: 0,
+          rotateX: -165,
+          duration: 0.6,
+          ease: "elastic.out(1, 0.5)"
+        }, startT + i * 0.04 + 1.3);
+      }
+    });
 
-    // 6. Transição final (Zoom In)
-      .to(`.${styles.textCanvas}`, { scale: 1.2, opacity: 0, duration: 1.5, ease: "power2.in", delay: 3.5 });
+    /* 3. PÓLEN */
+    if (pollenContainerRef.current) {
+      for (let i = 0; i < 50; i++) {
+        const p = document.createElement('div');
+        p.className = styles.pollenDot;
+        const size = 2 + Math.random() * 5;
+        p.style.cssText = `width:${size}px;height:${size}px;margin-left:${-size/2}px;margin-top:${-size/2}px;`;
+        pollenContainerRef.current.appendChild(p);
+        
+        const tx = (Math.random() - 0.5) * 500;
+        const ty = (Math.random() - 0.5) * 500 - 80;
+        const dur = 2 + Math.random();
+        const del = 0.5 + Math.random() * 0.5;
+        
+        tl.to(p, { x: tx, y: ty, scale: Math.random() * 2 + 0.5, opacity: Math.random() * 0.8 + 0.2, duration: dur, ease: "power2.out" }, del)
+          .to(p, { opacity: 0, duration: 0.8 }, del + dur - 0.8);
+      }
+    }
+
+    /* 4. CARTÃO EXPANDE */
+    tl.to(`.${styles.card}`, {
+      inset: 0, borderRadius: "8px",
+      y: -20, z: 40,
+      duration: 1.2, ease: "expo.inOut",
+      boxShadow: "0 20px 50px rgba(0,0,0,0.4)"
+    }, 1.8)
+    .to(`.${styles.cardBorder}`, { borderRadius: "6px", duration: 1.2, ease: "expo.inOut" }, 1.8)
+    .set(`.${styles.card}`, { zIndex: 20 }, 1.9)
+
+    /* 5. CARTÃO TOMA A FRENTE */
+    .to(`.${styles.card}`, {
+      y: 0, z: 100, scale: 1.08,
+      duration: 1.2, ease: "power3.out",
+      boxShadow: "0 40px 80px rgba(0,0,0,0.6)"
+    }, 3.0)
+    .to(`.${styles.layerOuter}, .${styles.layerMid}, .${styles.layerInner}`, {
+      z: -200, opacity: 0.2, duration: 1.2, ease: "power3.out"
+    }, 3.0)
+
+    /* 6. VENTO: Pétalas são SOPRADAS para longe */
+    .add(() => {
+      petalsData.forEach((petal, idx) => {
+        const elId = `#${petal.id}`;
+        const tx = (Math.random() - 0.45) * 1400;
+        const ty = -300 - Math.random() * 600;
+        const tz = -200 - Math.random() * 300;
+        const rot = (Math.random() - 0.5) * 720;
+        const rotX = -90 + (Math.random() - 0.5) * 180;
+        const delay = Math.random() * 0.5;
+
+        gsap.to(elId, {
+          x: tx, y: ty, z: tz,
+          rotation: rot, rotateX: rotX,
+          scale: 0.2 + Math.random() * 0.6,
+          opacity: 0,
+          duration: 2.2 + Math.random() * 1.2,
+          ease: "power1.inOut",
+          delay
+        });
+      });
+    }, 4.0)
+
+    /* 7. FOLHAS CAEM */
+    .add(() => {
+      launchFallingLeaves(22, 0);
+    }, 4.0)
+
+    /* 9. MERGULHO FINAL REVELANDO O FUNDO REAL */
+    .to(`.${styles.card}`, { scale: 5, autoAlpha: 0, duration: 1.8, ease: "power3.inOut" }, 7.0)
+    .to(rootRef.current, { backgroundColor: "transparent", duration: 2, ease: "power2.inOut" }, 7.0)
+    .set(wrapperRef.current, { display: "none" });
   };
 
   const handleSkip = () => {
@@ -185,91 +281,92 @@ export default function GSAPFlowerWind({
     onComplete();
   };
 
-  // Helper para converter hex para rgba simples
-  const hexToRGBA = (hex: string, opacity: number) => {
-    const cleanHex = hex.replace('#', '');
-    const r = parseInt(cleanHex.substring(0, 2), 16);
-    const g = parseInt(cleanHex.substring(2, 4), 16);
-    const b = parseInt(cleanHex.substring(4, 6), 16);
-    return `rgba(${r},${g},${b},${opacity})`;
-  };
-
-  const petalColors = {
-    back: hexToRGBA(accentColor, 0.3),
-    mid: hexToRGBA(accentColor, 0.6),
-    front: accentColor,
-  };
+  const containerVars = {
+    '--gold': accentColor,
+    '--gold-light': `${accentColor}88`,
+    '--card-bg': bgPrimary,
+    '--ink': textMain,
+    '--ink-light': textMain,
+    '--font-cursive': fontCursive,
+    '--font-serif': fontSerif,
+  } as React.CSSProperties;
 
   return (
-    <div className={styles.root} style={{ '--bg': bgPrimary } as React.CSSProperties} ref={rootRef}>
-      
-      {showSkip && !isOpening && (
+    <div className={styles.root} style={containerVars} ref={rootRef}>
+      {showSkip && isActive && (
         <button className={styles.skipBtn} onClick={handleSkip}>Pular 🌿</button>
       )}
 
-      {/* Overlay de Transição Floral Inicial */}
-      <div className={styles.bgBloom}></div>
-
-      {/* Canvas da Ventania */}
-      <div ref={windContainerRef} className={styles.windLayer}></div>
-
-      {/* Textos do Convite (Revelados após sopro) */}
-      <div className={styles.textCanvas}>
-        <p className={styles.topIntro} style={{ fontFamily: fontSerif, color: textMain }}>CELEBRE A VIDA CONOSCO</p>
-        <h1 className={styles.names} style={{ fontFamily: fontCursive, color: accentColor }}>{coupleNoiva} & {coupleNoivo}</h1>
-        <div className={styles.divider} style={{ backgroundColor: accentColor }}></div>
-        <p className={styles.dateLabel} style={{ fontFamily: fontSerif, color: textMain }}>{date?.toUpperCase()}</p>
-      </div>
-
-      {/* O BOTÃO FLOR CENTRAL */}
-      <div className={styles.interactionZone} onClick={handleOpen}>
-        <div className={styles.flowerCore}>
+      <div className={styles.scene}>
+        <div className={styles.flowerWrapper} ref={wrapperRef} onClick={handleOpen}>
           
-          <div className={styles.centerGlow} style={{ background: `radial-gradient(circle, ${accentColor}CC 0%, transparent 70%)` }}></div>
-
-          <svg className={styles.flowerSVG} viewBox="0 0 400 400">
-            <defs>
-              <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="4" stdDeviation="6" floodOpacity="0.15"/>
-              </filter>
-              
-              {/* Geometria da Pétala Natural */}
-              <path id="petalShape" d="M200 200 C 230 130, 280 120, 200 80 C 120 120, 170 130, 200 200 Z" />
-            </defs>
-
-            {/* Camada Traseira (Back Petals) - 8 pétalas */}
-            <g className={styles.petalGroupBack} fill={petalColors.back} filter="url(#shadow)">
-              {[0, 45, 90, 135, 180, 225, 270, 315].map(deg => (
-                <use key={deg} href="#petalShape" className={styles.petalBack} style={{ transformOrigin: '200px 200px', transform: `rotate(${deg}deg) scale(1.1)` }} />
-              ))}
-            </g>
-
-            {/* Camada Média (Mid Petals) - Rotacionadas 22.5 deg */}
-            <g className={styles.petalGroupMid} fill={petalColors.mid}>
-              {[22.5, 67.5, 112.5, 157.5, 202.5, 247.5, 292.5, 337.5].map(deg => (
-                <use key={deg} href="#petalShape" className={styles.petalMid} style={{ transformOrigin: '200px 200px', transform: `rotate(${deg}deg) scale(0.9)` }} />
-              ))}
-            </g>
-
-            {/* Camada Frontal (Front Petals) */}
-            <g className={styles.petalGroupFront} fill={petalColors.front}>
-               {[0, 60, 120, 180, 240, 300].map(deg => (
-                 <use key={deg} href="#petalShape" className={styles.petalFront} style={{ transformOrigin: '200px 200px', transform: `rotate(${deg}deg) scale(0.7)` }} />
-               ))}
-            </g>
-
-            {/* Miolo da Flor */}
-            <circle cx="200" cy="200" r="14" fill="#FFF" filter="url(#shadow)" />
-            <circle cx="200" cy="200" r="8" fill={accentColor} />
-          </svg>
-        </div>
-
-        {!isOpening && (
-          <div className={styles.callToAction} style={{ color: textMain }}>
-            <span style={{ fontFamily: fontSerif }}>TOQUE PARA FLORESCER</span>
+          <div className={styles.card}>
+            <div className={styles.cardBorder}></div>
+            <div className={styles.cardContent}>
+              <div className={styles.cardTopText}>CELEBRE CONOSCO</div>
+              <h2>{coupleNoiva} &<br/>{coupleNoivo}</h2>
+              <div className={styles.cardDivider}></div>
+              <div className={styles.cardDate}>{date}</div>
+            </div>
           </div>
-        )}
+
+          <div className={styles.layerOuter}>
+            {petalsData.filter(p => p.layerId === 'layerOuter').map(petal => (
+              <div key={petal.id} id={petal.id} className={styles.petal} style={{ transform: `translateX(-50%) rotate(${petal.angle}deg) translateZ(${petal.zOff}px)`, zIndex: petal.zIndex }}>
+                <div className={`${styles.petalFace} ${styles.front}`}>
+                  <svg viewBox="0 0 230 230" xmlns="http://www.w3.org/2000/svg" className={styles.petalSvg}>
+                    <path d="M 115 230 C 55 190,15 140,20 90 C 25 40,80 10,115 5 C 150 10,205 40,210 90 C 215 140,175 190,115 230 Z" fill={petal.fill} stroke="rgba(0,0,0,0.05)" strokeWidth="1"/>
+                  </svg>
+                </div>
+                <div className={`${styles.petalFace} ${styles.back}`}>
+                  <svg viewBox="0 0 230 230" xmlns="http://www.w3.org/2000/svg" className={styles.petalSvg}>
+                    <path d="M 115 230 C 55 190,15 140,20 90 C 25 40,80 10,115 5 C 150 10,205 40,210 90 C 215 140,175 190,115 230 Z" fill={petal.back}/>
+                  </svg>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className={styles.layerMid}>
+            {petalsData.filter(p => p.layerId === 'layerMid').map(petal => (
+              <div key={petal.id} id={petal.id} className={styles.petal} style={{ transform: `translateX(-50%) rotate(${petal.angle}deg) translateZ(${petal.zOff}px)`, zIndex: petal.zIndex }}>
+                <div className={`${styles.petalFace} ${styles.front}`}>
+                  <svg viewBox="0 0 230 230" xmlns="http://www.w3.org/2000/svg" className={styles.petalSvg}>
+                    <path d="M 115 230 C 55 190,15 140,20 90 C 25 40,80 10,115 5 C 150 10,205 40,210 90 C 215 140,175 190,115 230 Z" fill={petal.fill} stroke="rgba(0,0,0,0.05)" strokeWidth="1"/>
+                  </svg>
+                </div>
+                <div className={`${styles.petalFace} ${styles.back}`}>
+                  <svg viewBox="0 0 230 230" xmlns="http://www.w3.org/2000/svg" className={styles.petalSvg}>
+                    <path d="M 115 230 C 55 190,15 140,20 90 C 25 40,80 10,115 5 C 150 10,205 40,210 90 C 215 140,175 190,115 230 Z" fill={petal.back}/>
+                  </svg>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className={styles.layerInner}>
+            {petalsData.filter(p => p.layerId === 'layerInner').map(petal => (
+              <div key={petal.id} id={petal.id} className={styles.petal} style={{ transform: `translateX(-50%) rotate(${petal.angle}deg) translateZ(${petal.zOff}px)`, zIndex: petal.zIndex }}>
+                <div className={`${styles.petalFace} ${styles.front}`}>
+                  <svg viewBox="0 0 230 230" xmlns="http://www.w3.org/2000/svg" className={styles.petalSvg}>
+                    <path d="M 115 230 C 55 190,15 140,20 90 C 25 40,80 10,115 5 C 150 10,205 40,210 90 C 215 140,175 190,115 230 Z" fill={petal.fill} stroke="rgba(0,0,0,0.05)" strokeWidth="1"/>
+                  </svg>
+                </div>
+                <div className={`${styles.petalFace} ${styles.back}`}>
+                  <svg viewBox="0 0 230 230" xmlns="http://www.w3.org/2000/svg" className={styles.petalSvg}>
+                    <path d="M 115 230 C 55 190,15 140,20 90 C 25 40,80 10,115 5 C 150 10,205 40,210 90 C 215 140,175 190,115 230 Z" fill={petal.back}/>
+                  </svg>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div ref={pollenContainerRef} className={styles.pollenContainer}></div>
+          <div className={styles.hint}>TOQUE PARA DESABROCHAR</div>
+        </div>
       </div>
+
+      <div ref={leavesContainerRef} className={styles.leavesContainer}></div>
     </div>
   );
 }

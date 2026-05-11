@@ -20,6 +20,7 @@ import EnvelopeGateway from '@/components/public/EnvelopeGateway/EnvelopeGateway
 import GSAPEnvelopeV3 from '@/components/public/EnvelopeGateway/GSAPEnvelopeV3';
 import GSAPCinematic from '@/components/public/EnvelopeGateway/GSAPCinematic';
 import GSAPFlowerWind from '@/components/public/EnvelopeGateway/GSAPFlowerWind';
+import GSAPFlowerWind2 from '@/components/public/EnvelopeGateway/GSAPFlowerWind2';
 
 import { getContrastColor, getLegibleText } from '@/lib/utils/colors';
 
@@ -193,6 +194,7 @@ const LiveInviteView: React.FC<LiveInviteViewProps> = ({
                   case 'envelope_v3': return GSAPEnvelopeV3;
                   case 'cinematic': return GSAPCinematic;
                   case 'flower_wind': return GSAPFlowerWind;
+                  case 'flower_wind_2': return GSAPFlowerWind2;
                   case 'padrao':
                   default: return EnvelopeGateway;
                 }

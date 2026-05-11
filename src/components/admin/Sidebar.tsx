@@ -13,6 +13,12 @@ export default function Sidebar() {
   const router = useRouter();
   const { currentEvent, events, setCurrentEvent, userProfile, userRole, loading } = useEvent();
 
+  // Força Identidade de Plataforma em Rotas Globais
+  const isGlobalPlatformRoute = 
+    pathname.startsWith('/admin/suporte') || 
+    pathname.startsWith('/admin/pagamentos') || 
+    pathname.startsWith('/admin/intelligence');
+
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -35,27 +41,36 @@ export default function Sidebar() {
   useEffect(() => {
     if (!isMaster) return;
     
+    let channel: any = null;
+
     // Direct connection to initial state
     import('@/lib/supabase').then(async ({ supabase }) => {
       const loadCount = async () => {
          const { count } = await supabase
            .from('suporte_tickets')
            .select('*', { count: 'exact', head: true })
-           .eq('needs_human_attention', true);
+           .eq('needs_human_attention', true)
+           .in('status', ['aguardando_atendimento', 'em_atendimento']);
          setPendingAttention(count || 0);
       };
       
       loadCount();
 
-      const channel = supabase
-        .channel('support-attention-notifs')
+      // Unique name per instance to avoid hot-reload conflicts
+      const channelName = `support-attention-${Math.random().toString(36).substring(7)}`;
+      channel = supabase
+        .channel(channelName)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'suporte_tickets' }, () => {
            loadCount();
         })
         .subscribe();
-
-      return () => { supabase.removeChannel(channel); };
     });
+
+    return () => {
+      if (channel) {
+        import('@/lib/supabase').then(({ supabase }) => supabase.removeChannel(channel));
+      }
+    };
   }, [isMaster]);
 
   // Itens da Camada Gerencial (Plataforma)
@@ -175,7 +190,7 @@ export default function Sidebar() {
       </div>
 
       <div className={styles.contextSwitcher}>
-        {currentEvent ? (
+        {currentEvent && !isGlobalPlatformRoute ? (
           <div 
             className={`${styles.activeEvent} ${styles.highlight}`} 
             onClick={() => {
@@ -200,8 +215,16 @@ export default function Sidebar() {
 
       <nav className={styles.nav}>
         <div className={styles.section}>
-          <p className={styles.sectionTitle}>{currentEvent ? 'Módulos do Casamento' : 'Minha Conta'}</p>
-          {(currentEvent ? eventItems : platformItems).map(renderNavItem)}
+          {(() => {
+            const shouldUsePlatformItems = !currentEvent || isGlobalPlatformRoute;
+            
+            return (
+              <>
+                <p className={styles.sectionTitle}>{shouldUsePlatformItems ? 'Minha Conta' : 'Módulos do Casamento'}</p>
+                {(shouldUsePlatformItems ? platformItems : eventItems).map(renderNavItem)}
+              </>
+            );
+          })()}
         </div>
         
         <div className={styles.bottomNav}>

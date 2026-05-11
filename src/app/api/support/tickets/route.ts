@@ -1,13 +1,21 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 export async function GET(request: Request) {
   try {
-    // Busca do Supabase usando client padrão
-    const { data: tickets, error } = await supabase
+    const { searchParams } = new URL(request.url);
+    const usuarioId = searchParams.get('usuarioId');
+
+    let query = supabase
       .from('suporte_tickets')
       .select('*')
       .order('created_at', { ascending: false });
+
+    if (usuarioId) {
+      query = query.eq('usuario_id', usuarioId);
+    }
+
+    const { data: tickets, error } = await query;
 
     if (error) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });

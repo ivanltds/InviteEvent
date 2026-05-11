@@ -12,6 +12,7 @@ Qualquer pedido do Operador deve ser direcionado ao @maestro primeiro.
 | @ux-ui    | Designer UX/UI           | Via MAESTRO — fase EXPERIÊNCIA     |
 | @architect| Arquiteto de software    | Via MAESTRO — fase ARQUITETURA     |
 | @dev      | Desenvolvedor            | Via MAESTRO — fase DEV             |
+| @ai-eng   | Engenheiro de IA         | Via MAESTRO — fase DEV             |
 | @qa       | Engenheiro de QA         | Via MAESTRO — fase VALIDAÇÃO       |
 | @devops   | DevOps                   | Via MAESTRO — VERSÃO e DEPLOY      |
 
@@ -22,7 +23,7 @@ Operador → @maestro
   3. EXPERIÊNCIA → @ux-ui cria wireframes e design system
   4. PRD UPDATE  → @maestro atualiza PRD e quebra em entregas
   5. ARQUITETURA → @architect cria plano de implementação
-  6. DEV         → @dev implementa com TDD
+  6. DEV         → @dev e @ai-eng implementam (TDD + IA)
   7. QA          → @qa valida e aprova
   8. VERSÃO      → @devops commita em pt-BR
   9. DEPLOY      → @devops faz deploy

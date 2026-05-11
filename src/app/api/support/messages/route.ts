@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 export async function GET(request: Request) {
   try {
@@ -54,24 +54,37 @@ export async function POST(request: Request) {
 
     const isMaster = perfil?.is_master || false;
 
+    console.log('--- BOT DEBUG START ---');
+    console.log('[MESSAGES API] isMaster:', isMaster, 'ticket_id:', ticket_id);
+
     // Se for MASTER enviando, não ativamos o Bot
     if (!isMaster) {
-      // Acionamento Seguro do Orquestrador em Background/Async
-      import('@/lib/services/aiSupportService').then(async ({ AISupportService }) => {
+      try {
+        console.log('[MESSAGES API] Importando AISupportService... [Cache Buster v2]');
+        const { AISupportService } = await import('@/lib/services/aiSupportService');
+        
+        console.log('[MESSAGES API] Chamando processMessage...');
         const aiResult = await AISupportService.processMessage(ticket_id, conteudo);
         
-        if (aiResult.active && aiResult.response) {
-          // Salva a resposta do Bot na tabela de mensagens
-          await supabase
+        console.log('[MESSAGES API] Resultado AI:', JSON.stringify(aiResult));
+
+        if (aiResult && aiResult.active && aiResult.response) {
+          console.log('[MESSAGES API] Inserindo resposta no Banco...');
+          const insertRes = await supabase
             .from('suporte_mensagens')
             .insert([{
               ticket_id: ticket_id,
-              remetente_id: '00000000-0000-0000-0000-000000000000', // ID Simbólico reservado ao Sistema/Bot
+              remetente_id: '00000000-0000-0000-0000-000000000000', // ID Simbólico
               conteudo: aiResult.response
             }]);
+          
+          console.log('[MESSAGES API] Resultado Insert:', insertRes.error ? insertRes.error : 'OK');
         }
-      }).catch(err => console.error('[AI Hook Fail]', err));
+      } catch (aiErr) {
+        console.error('[MESSAGES API] AI Hook Fail:', aiErr);
+      }
     }
+    console.log('--- BOT DEBUG END ---');
 
     return NextResponse.json({ success: true, message }, { status: 201 });
   } catch (err: any) {

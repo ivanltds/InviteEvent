@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Ticket {
   id: string;
@@ -23,6 +25,7 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [activeUserId, setActiveUserId] = useState(usuarioId);
+  const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Carregar o ID do usuário autenticado real (Owner, Organizer, Staff)
@@ -45,8 +48,9 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
     if (!isOpen) return;
 
     async function loadSupport() {
+      if (!activeUserId) return;
       try {
-        const res = await fetch('/api/support/tickets');
+        const res = await fetch(`/api/support/tickets?usuarioId=${activeUserId}`);
         const data = await res.json();
         if (data.success && data.tickets && data.tickets.length > 0) {
           let activeTicket = data.tickets.find((t: Ticket) => t.status !== 'finalizado' && t.status !== 'cancelado');
@@ -65,9 +69,45 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
     }
 
     loadSupport();
-  }, [isOpen]);
+  }, [isOpen, activeUserId]);
 
-  // Carregar mensagens do ticket
+  // Carregar mensagens do ticket e assinar tempo real
+  useEffect(() => {
+    if (!ticket?.id) return;
+
+    loadMessages(ticket.id);
+
+    // Injetando Canal de Tempo Real para Capturar Respostas do Robô/Especialista
+    const channelName = `chat-ticket-${ticket.id}`;
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'suporte_mensagens', 
+          filter: `ticket_id=eq.${ticket.id}` 
+        }, 
+        (payload) => {
+          // Adiciona a mensagem nova à lista local apenas se ela não for do usuário atual 
+          // (pois a do usuário já adicionamos localmente pra ser mais rápido)
+          const newMsg = payload.new as Message;
+          setMessages((prev) => {
+            // Evita duplicidade caso já tenha inserido localmente
+            if (prev.some(m => m.id === newMsg.id)) return prev;
+            return [...prev, newMsg];
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [ticket?.id]);
+
+  // Função para carregar carga inicial de mensagens
   async function loadMessages(ticketId: string) {
     try {
       const res = await fetch(`/api/support/messages?ticketId=${ticketId}`);
@@ -83,8 +123,9 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
   // Enviar mensagem
   async function handleSendMessage(e: React.FormEvent) {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || isSending) return;
 
+    setIsSending(true);
     let currentTicketId = ticket?.id;
 
     try {
@@ -118,11 +159,17 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
       });
       const msgData = await msgRes.json();
       if (msgData.success && msgData.message) {
-        setMessages((prev) => [...prev, msgData.message]);
+        setMessages((prev) => {
+          // Prevents race condition duplication with Realtime insertion
+          if (prev.some(m => m.id === msgData.message.id)) return prev;
+          return [...prev, msgData.message];
+        });
         setNewMessage('');
       }
     } catch (err) {
       console.error('Erro ao enviar mensagem:', err);
+    } finally {
+      setIsSending(false);
     }
   }
 
@@ -201,8 +248,12 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
             >×</button>
             {ticket && (
               <div className="ticket-status" style={{ textAlign: 'right' }}>
-                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#C5A059' }}>
-                  {ticket.status === 'finalizado' ? 'Finalizado' : 'Ativo'}
+                <span style={{ 
+                  fontSize: '11px', 
+                  fontWeight: 'bold', 
+                  color: (ticket.status === 'finalizado' || ticket.status === 'cancelado') ? '#888' : '#C5A059' 
+                }}>
+                  {ticket.status === 'finalizado' ? 'Finalizado' : ticket.status === 'cancelado' ? 'Cancelado' : 'Ativo'}
                 </span>
               </div>
             )}
@@ -228,7 +279,8 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
                 </p>
               </div>
             ) : (
-              messages.map((msg) => {
+              /* Explicit final safety deduplication to permanently kill duplicate-key warnings */
+              Array.from(new Map(messages.map(m => [m.id, m])).values()).map((msg) => {
                 const isUser = msg.remetente_id === activeUserId;
                 return (
                   <div
@@ -251,7 +303,17 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
                         border: isUser ? '1px solid rgba(197, 160, 89, 0.2)' : 'none',
                       }}
                     >
-                      {msg.conteudo}
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          p: ({node, ...props}) => <p style={{ margin: 0, marginBottom: '6px' }} {...props} />,
+                          ul: ({node, ...props}) => <ul style={{ margin: '4px 0', paddingLeft: '20px' }} {...props} />,
+                          ol: ({node, ...props}) => <ol style={{ margin: '4px 0', paddingLeft: '20px' }} {...props} />,
+                          li: ({node, ...props}) => <li style={{ marginBottom: '2px' }} {...props} />,
+                        }}
+                      >
+                        {msg.conteudo}
+                      </ReactMarkdown>
                     </div>
                   </div>
                 );
@@ -260,8 +322,8 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
             
             {ticket?.status === 'finalizado' && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '16px 0', width: '100%' }}>
-                <hr style={{ width: '100%', border: 'none', borderTop: '1px dashed rgba(197, 160, 89, 0.3)', marginBottom: '12px' }} />
-                <span style={{ fontSize: '10px', color: '#C5A059', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', backgroundColor: 'rgba(197, 160, 89, 0.1)', padding: '4px 12px', borderRadius: '12px' }}>
+                <hr style={{ width: '100%', border: 'none', borderTop: '1px dashed rgba(255, 255, 255, 0.2)', marginBottom: '12px' }} />
+                <span style={{ fontSize: '10px', color: '#888', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', backgroundColor: 'rgba(255, 255, 255, 0.05)', padding: '4px 12px', borderRadius: '12px' }}>
                   Atendimento Finalizado
                 </span>
                 <span style={{ fontSize: '10px', color: '#888', marginTop: '6px', textAlign: 'center' }}>
@@ -287,7 +349,8 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
               type="text"
               value={newMessage || ''}
               onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Digite sua mensagem..."
+              placeholder={isSending ? "Enviando..." : "Digite sua mensagem..."}
+              disabled={isSending}
               style={{
                 flex: 1,
                 padding: '8px 12px',
@@ -301,6 +364,7 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
             />
             <button
               type="submit"
+              disabled={isSending}
               style={{
                 padding: '8px 16px',
                 borderRadius: '8px',

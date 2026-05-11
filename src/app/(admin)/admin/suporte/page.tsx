@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import styles from './suporte.module.css';
 
 interface Ticket {
@@ -110,19 +112,83 @@ export default function MasterSupportPanel() {
     const ticketChannel = supabase
       .channel('ticket-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'suporte_tickets' }, (payload) => {
-        setTickets(prev => prev.map(t => t.id === payload.new.id ? { ...t, ...payload.new } : t));
-        setSelectedTicket(curr => (curr && curr.id === payload.new.id) ? { ...curr, ...payload.new } : curr);
+        if (payload.eventType === 'INSERT') {
+          // Buscar dados do perfil para não vir em branco
+          supabase.from('perfis').select('email, nome').eq('id', payload.new.usuario_id).single().then(({ data: perfil }) => {
+            const ticketComPerfil = {
+              ...payload.new,
+              email_usuario: perfil?.email || 'Novo Cliente',
+              nome_usuario: perfil?.nome || 'Cliente',
+            } as Ticket;
+            
+            setTickets(prev => {
+              if (prev.some(t => t.id === ticketComPerfil.id)) return prev;
+              return [ticketComPerfil, ...prev];
+            });
+          });
+        } else if (payload.eventType === 'UPDATE') {
+          setTickets(prev => prev.map(t => t.id === payload.new.id ? { ...t, ...payload.new } : t));
+          setSelectedTicket(curr => (curr && curr.id === payload.new.id) ? { ...curr, ...payload.new } : curr);
+        } else if (payload.eventType === 'DELETE') {
+          setTickets(prev => prev.filter(t => t.id === payload.old.id));
+        }
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(ticketChannel); };
+    const issuesChannel = supabase
+      .channel('issues-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'issues' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setIssues(prev => {
+            if (prev.some(iss => iss.id === payload.new.id)) return prev;
+            return [payload.new as Issue, ...prev];
+          });
+        } else if (payload.eventType === 'UPDATE') {
+          setIssues(prev => prev.map(iss => iss.id === payload.new.id ? { ...iss, ...payload.new } : iss));
+        } else if (payload.eventType === 'DELETE') {
+          setIssues(prev => prev.filter(iss => iss.id === payload.old.id));
+        }
+      })
+      .subscribe();
+
+    return () => { 
+      supabase.removeChannel(ticketChannel); 
+      supabase.removeChannel(issuesChannel); 
+    };
   }, []);
 
   useEffect(() => {
-    if (selectedTicket) {
-      loadMessages(selectedTicket.id);
-    }
-  }, [selectedTicket?.id]); // Fix: only retrigger on ID change, not entire ref update
+    if (!selectedTicket?.id) return;
+
+    loadMessages(selectedTicket.id);
+
+    // 🔥 NOVO: Canal Realtime para Atualizar Mensagens no Painel sem precisar de F5
+    const channelName = `admin-chat-${selectedTicket.id}`;
+    const msgChannel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'suporte_mensagens', 
+          filter: `ticket_id=eq.${selectedTicket.id}` 
+        }, 
+        (payload) => {
+          const newMsg = payload.new as Message;
+          setMessages((prev) => {
+            // Proteção contra duplicidade na rede
+            if (prev.some(m => m.id === newMsg.id)) return prev;
+            return [...prev, newMsg];
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(msgChannel);
+    };
+  }, [selectedTicket?.id]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -192,7 +258,11 @@ export default function MasterSupportPanel() {
 
       const data = await res.json();
       if (data.success && data.message) {
-        setMessages((prev) => [...prev, data.message]);
+        setMessages((prev) => {
+          // Evita duplicidade na corrida contra o canal Realtime
+          if (prev.some(m => m.id === data.message.id)) return prev;
+          return [...prev, data.message];
+        });
         
         if (selectedTicket.status === 'aguardando_atendimento') {
           handleUpdateStatus('em_atendimento');
@@ -462,7 +532,20 @@ export default function MasterSupportPanel() {
                               >
                                 {isBot && <span className={styles.aiBadge}>AI Assistente</span>}
                                 <div className={styles.messageBubble} style={isBot ? { background: 'rgba(197, 160, 89, 0.05)', border: '1px solid rgba(197, 160, 89, 0.25)', color: 'var(--admin-text-primary)' } : {}}>
-                                  <p className={styles.messageText}>{msg.conteudo}</p>
+                                  <div className={styles.messageText}>
+                                    <ReactMarkdown 
+                                      remarkPlugins={[remarkGfm]}
+                                      components={{
+                                        p: ({node, ...props}) => <p style={{ margin: 0, marginBottom: '6px' }} {...props} />,
+                                        ul: ({node, ...props}) => <ul style={{ margin: '4px 0', paddingLeft: '20px' }} {...props} />,
+                                        ol: ({node, ...props}) => <ol style={{ margin: '4px 0', paddingLeft: '20px' }} {...props} />,
+                                        li: ({node, ...props}) => <li style={{ marginBottom: '2px' }} {...props} />,
+                                        strong: ({node, ...props}) => <strong style={{ fontWeight: 700, color: 'inherit' }} {...props} />,
+                                      }}
+                                    >
+                                      {msg.conteudo}
+                                    </ReactMarkdown>
+                                  </div>
                                   <span className={styles.messageTime}>
                                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                   </span>
@@ -481,8 +564,8 @@ export default function MasterSupportPanel() {
 
                 {selectedTicket.status === 'finalizado' && (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '20px 0' }}>
-                    <hr style={{ width: '100%', borderColor: 'rgba(197, 160, 89, 0.2)', marginBottom: '12px' }} />
-                    <span style={{ fontSize: '11px', color: '#C5A059', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', backgroundColor: 'rgba(197, 160, 89, 0.1)', padding: '4px 12px', borderRadius: '12px' }}>
+                    <hr style={{ width: '100%', borderColor: 'rgba(255, 255, 255, 0.1)', marginBottom: '12px' }} />
+                    <span style={{ fontSize: '11px', color: '#9ca3af', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', backgroundColor: 'rgba(255, 255, 255, 0.05)', padding: '4px 12px', borderRadius: '12px' }}>
                       Atendimento Finalizado
                     </span>
                   </div>
@@ -530,7 +613,17 @@ export default function MasterSupportPanel() {
             {issues.filter(i => i.status === 'aberta').map(issue => (
               <div key={issue.id} className={styles.issueCard} onClick={() => handleUpdateIssueStatus(issue.id, 'visualizada')}>
                 <div className={styles.issueTitle}>{issue.titulo}</div>
-                <div className={styles.issueMeta}>Issue #{issue.id.slice(0,5).toUpperCase()}</div>
+                {issue.suporte_tickets && issue.suporte_tickets.length > 0 && (
+                  <div style={{ fontSize: '9px', opacity: 0.6, color: '#fff', marginBottom: '6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    Afeta: {issue.suporte_tickets.map((tk: any) => tk.perfis?.nome || tk.perfis?.email || 'Cliente').join(', ')}
+                  </div>
+                )}
+                <div className={styles.issueMeta} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>Issue #{issue.id.slice(0,5).toUpperCase()}</span>
+                  <span style={{ backgroundColor: 'rgba(197, 160, 89, 0.15)', color: 'var(--admin-accent)', padding: '2px 6px', borderRadius: '8px', fontSize: '10px', fontWeight: 'bold' }}>
+                    👥 {issue.suporte_tickets?.length || 0} Chamados
+                  </span>
+                </div>
               </div>
             ))}
           </div>
@@ -543,7 +636,17 @@ export default function MasterSupportPanel() {
             {issues.filter(i => i.status === 'visualizada').map(issue => (
               <div key={issue.id} className={styles.issueCard} onClick={() => handleUpdateIssueStatus(issue.id, 'em_correcao')}>
                 <div className={styles.issueTitle}>{issue.titulo}</div>
-                <div className={styles.issueMeta}>Em análise</div>
+                {issue.suporte_tickets && issue.suporte_tickets.length > 0 && (
+                  <div style={{ fontSize: '9px', opacity: 0.6, color: '#fff', marginBottom: '6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    Afeta: {issue.suporte_tickets.map((tk: any) => tk.perfis?.nome || tk.perfis?.email || 'Cliente').join(', ')}
+                  </div>
+                )}
+                <div className={styles.issueMeta} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>Em análise</span>
+                  <span style={{ backgroundColor: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', padding: '2px 6px', borderRadius: '8px', fontSize: '10px', fontWeight: 'bold' }}>
+                    👥 {issue.suporte_tickets?.length || 0} Chamados
+                  </span>
+                </div>
               </div>
             ))}
           </div>
@@ -556,7 +659,17 @@ export default function MasterSupportPanel() {
             {issues.filter(i => i.status === 'em_correcao').map(issue => (
               <div key={issue.id} className={styles.issueCard} onClick={() => handleUpdateIssueStatus(issue.id, 'corrigida')}>
                 <div className={styles.issueTitle}>{issue.titulo}</div>
-                <div className={styles.issueMeta}>Desenvolvimento atuando</div>
+                {issue.suporte_tickets && issue.suporte_tickets.length > 0 && (
+                  <div style={{ fontSize: '9px', opacity: 0.6, color: '#fff', marginBottom: '6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    Afeta: {issue.suporte_tickets.map((tk: any) => tk.perfis?.nome || tk.perfis?.email || 'Cliente').join(', ')}
+                  </div>
+                )}
+                <div className={styles.issueMeta} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>Dev atuando</span>
+                  <span style={{ backgroundColor: 'rgba(249, 115, 22, 0.15)', color: '#fb923c', padding: '2px 6px', borderRadius: '8px', fontSize: '10px', fontWeight: 'bold' }}>
+                    👥 {issue.suporte_tickets?.length || 0} Chamados
+                  </span>
+                </div>
               </div>
             ))}
           </div>
@@ -569,7 +682,17 @@ export default function MasterSupportPanel() {
             {issues.filter(i => i.status === 'corrigida').map(issue => (
               <div key={issue.id} className={styles.issueCard} style={{ opacity: 0.7 }}>
                 <div className={styles.issueTitle}>{issue.titulo}</div>
-                <div className={styles.issueMeta}>Resolvida</div>
+                {issue.suporte_tickets && issue.suporte_tickets.length > 0 && (
+                  <div style={{ fontSize: '9px', opacity: 0.6, color: '#fff', marginBottom: '6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    Afeta: {issue.suporte_tickets.map((tk: any) => tk.perfis?.nome || tk.perfis?.email || 'Cliente').join(', ')}
+                  </div>
+                )}
+                <div className={styles.issueMeta} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>Finalizada</span>
+                  <span style={{ backgroundColor: 'rgba(34, 197, 94, 0.15)', color: '#4ade80', padding: '2px 6px', borderRadius: '8px', fontSize: '10px', fontWeight: 'bold' }}>
+                    👥 {issue.suporte_tickets?.length || 0} Chamados
+                  </span>
+                </div>
               </div>
             ))}
           </div>

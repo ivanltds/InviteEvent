@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 export async function PATCH(
   request: Request,
@@ -14,9 +14,14 @@ export async function PATCH(
       return NextResponse.json({ success: false, error: 'status é obrigatório' }, { status: 400 });
     }
 
+    const updateData: any = { status, updated_at: new Date().toISOString() };
+    if (status === 'finalizado' || status === 'cancelado') {
+      updateData.needs_human_attention = false;
+    }
+
     const { data: ticket, error } = await supabase
       .from('suporte_tickets')
-      .update({ status, updated_at: new Date().toISOString() })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();

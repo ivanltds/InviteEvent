@@ -22,9 +22,15 @@ function AdminInnerLayout({
   setIsSidebarOpen: (val: boolean) => void; 
 }) {
   const { currentEvent } = useEvent();
+  const pathname = usePathname();
   
-  // PLATFORM DARK SYSTEM TRIGGER: Se currentEvent for NULO, estamos no nível plataforma.
-  const isPlatformLevel = !currentEvent;
+  // Força Nível Plataforma se a rota for explicitamente global
+  const isGlobalPlatformRoute = 
+    pathname.startsWith('/admin/suporte') || 
+    pathname.startsWith('/admin/pagamentos') || 
+    pathname.startsWith('/admin/intelligence');
+
+  const isPlatformLevel = !currentEvent || isGlobalPlatformRoute;
   const themeClass = isPlatformLevel ? 'admin-theme-dark' : '';
 
   return (

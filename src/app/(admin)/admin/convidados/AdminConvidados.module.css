@@ -1,7 +1,8 @@
 .adminMain {
-  padding: 3rem;
-  background-color: var(--admin-bg, #F9F9FB);
+  padding: 2.5rem;
+  background-color: var(--bg-primary);
   min-height: 100vh;
+  color: var(--text-main-safe);
 }
 
 .adminHeader {
@@ -13,9 +14,10 @@
 
 .adminHeader h1 {
   font-family: var(--font-serif);
-  font-size: 2.5rem;
-  color: var(--admin-accent);
-  font-weight: 400;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  margin-bottom: 0.2rem;
 }
 
 .headerActions {

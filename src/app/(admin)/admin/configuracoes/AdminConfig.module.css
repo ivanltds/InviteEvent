@@ -1,7 +1,9 @@
 .container {
-  padding: 3rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 2.5rem;
+  width: 100%;
+  background-color: var(--bg-primary);
+  min-height: 100vh;
+  color: var(--text-main-safe);
 }
 
 .header {
@@ -9,9 +11,11 @@
 }
 
 .header h1 {
-  font-size: 2.5rem;
-  color: var(--admin-accent);
-  margin-bottom: 0.5rem;
+  font-family: var(--font-serif);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  margin-bottom: 0.2rem;
 }
 
 .header p {

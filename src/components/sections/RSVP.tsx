@@ -6,13 +6,15 @@ import Link from 'next/link';
 import { rsvpService } from '@/lib/services/rsvpService';
 import { Convite, ConviteMembro, RSVP as RSVPType, Configuracao } from '@/lib/types/database';
 import { triggerCelebration, triggerSideCannons } from '@/lib/utils/confetti';
+import { Telemetry } from '@/lib/services/telemetryService';
 
 interface RSVPProps {
   inviteSlug?: string;
   config?: Configuracao;
+  isPreviewMode?: boolean;
 }
 
-export default function RSVP({ inviteSlug: propSlug, config: propConfig }: RSVPProps) {
+export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPreviewMode = false }: RSVPProps) {
   const [conviteEncontrado, setConviteEncontrado] = useState<Convite | null>(null);
   const [membros, setMembros] = useState<ConviteMembro[]>([]);
   const [formData, setFormData] = useState({
@@ -48,6 +50,28 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig }: RSVPP
         const urlSlug = params.get('invite');
         const activeSlug = propSlug || urlSlug;
 
+        if (isPreviewMode) {
+          // MOCK DATA FOR PREVIEW SIMULATION
+          const mockInvite = {
+            id: 'demo_invite',
+            nome_principal: 'Convidado Exemplo',
+            tipo: 'casal',
+            limite_pessoas: 2,
+            slug: 'preview'
+          } as Convite;
+          
+          setConviteEncontrado(mockInvite);
+          setFormData(prev => ({ ...prev, nome: 'Convidado Exemplo' }));
+          setMembros([
+            { id: 'demo_member_1', nome: 'Convidado Exemplo', confirmado: true, convite_id: 'demo_invite' } as any,
+            { id: 'demo_member_2', nome: 'Acompanhante Especial', confirmado: true, convite_id: 'demo_invite' } as any
+          ]);
+          setShowForm(true);
+          setNoInviteFound(false);
+          setLoading(false);
+          return; // Skip service calls
+        }
+
         if (activeSlug) {
           const data = await rsvpService.getInviteBySlug(activeSlug);
           if (data) {
@@ -77,6 +101,16 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig }: RSVPP
               setShowForm(false);
             } else {
               setShowForm(true);
+              // Telemetria: Início do engajamento RSVP (O formulário apareceu)
+              if (data.evento_id && !isPreviewMode) {
+                Telemetry.track({
+                  eventoId: data.evento_id,
+                  categoria: 'invite',
+                  eventType: 'rsvp_start',
+                  targetId: data.id,
+                  metadata: { convite_tipo: data.tipo }
+                });
+              }
             }
             setNoInviteFound(false);
           } else {
@@ -144,11 +178,37 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig }: RSVPP
       restricoes: m.restricoes || ''
     }));
 
-    const { success, error } = await rsvpService.submitFullRSVP(rsvpPayload, membersPayload);
+    let success = false;
+    let error = null;
+
+    if (isPreviewMode) {
+      // SIMULAÇÃO PURA: Aguardar um pouco para simular rede e dar sucesso!
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      success = true;
+    } else {
+      const res = await rsvpService.submitFullRSVP(rsvpPayload, membersPayload);
+      success = res.success;
+      error = res.error;
+    }
 
     if (success) {
       setAlertaExcedente(!!isExcedente);
       setEnviado(true);
+
+      // Telemetria: RSVP Concluído com Sucesso!
+      if (conviteEncontrado?.evento_id && !isPreviewMode) {
+        Telemetry.track({
+          eventoId: conviteEncontrado.evento_id,
+          categoria: 'invite',
+          eventType: 'rsvp_success',
+          targetId: conviteEncontrado.id,
+          metadata: {
+            is_recusado: isRecusado,
+            confirmados_count: countConfirmados,
+            is_excedente: isExcedente
+          }
+        });
+      }
 
       if (!isRecusado) {
         const themeColor = propConfig?.accent_color || '#D4AF37';
@@ -157,6 +217,18 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig }: RSVPP
       }
     } else {
       setErrorMessage('Houve um erro ao enviar sua confirmação. Tente novamente mais tarde.');
+      
+      // Telemetria: Erro técnico no submit do RSVP
+      if (conviteEncontrado?.evento_id && !isPreviewMode) {
+        Telemetry.track({
+          eventoId: conviteEncontrado.evento_id,
+          categoria: 'invite',
+          eventType: 'rsvp_error',
+          targetId: conviteEncontrado.id,
+          metadata: { error_snippet: error ? String(error).substring(0, 100) : 'unknown' }
+        });
+      }
+      
       console.error(error);
     }
     setLoading(false);

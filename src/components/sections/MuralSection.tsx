@@ -10,9 +10,10 @@ import { MuralItem, Configuracao } from '@/lib/types/database';
 interface MuralSectionProps {
   eventoId: string;
   config?: Configuracao;
+  isPreviewMode?: boolean;
 }
 
-export default function MuralSection({ eventoId, config }: MuralSectionProps) {
+export default function MuralSection({ eventoId, config, isPreviewMode = false }: MuralSectionProps) {
   const [items, setItems] = useState<MuralItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -26,8 +27,13 @@ export default function MuralSection({ eventoId, config }: MuralSectionProps) {
   useEffect(() => {
     async function load() {
       try {
+        if (!eventoId || eventoId === 'demo') {
+          // Se for preview sem eventoId carregado ainda, não crasha
+          setLoading(false);
+          return;
+        }
+
         const data = await muralService.getApprovedItems(eventoId);
-        // Embaralhar magicamente a ordem
         const shuffled = [...data].sort(() => Math.random() - 0.5);
         setItems(shuffled);
       } catch (e) {
@@ -53,33 +59,39 @@ export default function MuralSection({ eventoId, config }: MuralSectionProps) {
     
     let allSuccess = true;
 
-    if (uploads.length === 0) {
-       // Submit text only
-       const payload: Partial<MuralItem> = {
-         evento_id: eventoId,
-         autor: formData.nome,
-         mensagem: formData.mensagem,
-         tipo: 'MENSAGEM'
-       };
-       const { success } = await muralService.submitItem(payload);
-       if (!success) allSuccess = false;
+    if (isPreviewMode) {
+      // MODO PREVIEW: Simula sucesso sem banco!
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      allSuccess = true;
     } else {
-       // Submit for each uploaded media
-       for (const media of uploads) {
-          let tipo: 'FOTO' | 'MENSAGEM' | 'HIBRIDO' | 'VIDEO' = media.type as 'FOTO'|'VIDEO';
-          if (tipo === 'FOTO' && formData.mensagem.trim() !== '') tipo = 'HIBRIDO';
-          if (tipo === 'VIDEO' && formData.mensagem.trim() !== '') tipo = 'HIBRIDO';
+      if (uploads.length === 0) {
+        // Submit text only
+        const payload: Partial<MuralItem> = {
+          evento_id: eventoId,
+          autor: formData.nome,
+          mensagem: formData.mensagem,
+          tipo: 'MENSAGEM'
+        };
+        const { success } = await muralService.submitItem(payload);
+        if (!success) allSuccess = false;
+      } else {
+        // Submit for each uploaded media
+        for (const media of uploads) {
+            let tipo: 'FOTO' | 'MENSAGEM' | 'HIBRIDO' | 'VIDEO' = media.type as 'FOTO'|'VIDEO';
+            if (tipo === 'FOTO' && formData.mensagem.trim() !== '') tipo = 'HIBRIDO';
+            if (tipo === 'VIDEO' && formData.mensagem.trim() !== '') tipo = 'HIBRIDO';
 
-          const payload: Partial<MuralItem> = {
-            evento_id: eventoId,
-            autor: formData.nome,
-            mensagem: formData.mensagem, // a mesma mensagem para todas as fotos enviadas juntas
-            url_midia: media.url,
-            tipo
-          };
-          const { success } = await muralService.submitItem(payload);
-          if (!success) allSuccess = false;
-       }
+            const payload: Partial<MuralItem> = {
+              evento_id: eventoId,
+              autor: formData.nome,
+              mensagem: formData.mensagem, 
+              url_midia: media.url,
+              tipo
+            };
+            const { success } = await muralService.submitItem(payload);
+            if (!success) allSuccess = false;
+        }
+      }
     }
 
     if (allSuccess) {
@@ -237,25 +249,38 @@ export default function MuralSection({ eventoId, config }: MuralSectionProps) {
                   
                   {formType === 'MIDIA' && (
                     !uploads.length ? (
-                      <CldUploadWidget 
-                        uploadPreset="invite_preset" 
-                        onSuccess={handleUploadSuccess}
-                        options={{
-                          maxFiles: 10,
-                          clientAllowedFormats: ['jpg', 'png', 'webp', 'jpeg', 'mp4', 'mov', 'webm'],
-                          maxFileSize: 15000000,
-                        }}
-                      >
-                        {({ open }) => (
-                          <div className={styles.uploadArea} onClick={() => open()}>
-                            <p style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
-                              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> 
-                              Clique para adicionar Fotos ou Vídeos
-                            </p>
-                            <span style={{ fontSize: '0.8rem', color: '#888' }}>(Até 10 arquivos por vez)</span>
-                          </div>
-                        )}
-                      </CldUploadWidget>
+                      isPreviewMode ? (
+                        <div 
+                          className={styles.uploadArea} 
+                          onClick={() => setUploads([{ url: 'https://images.unsplash.com/photo-1519741497674-611481863552', type: 'FOTO' }])}
+                        >
+                          <p style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> 
+                            Clique para Simular Foto (Modo Preview)
+                          </p>
+                          <span style={{ fontSize: '0.8rem', color: '#888' }}>(Usará foto de amostra em simulação)</span>
+                        </div>
+                      ) : (
+                        <CldUploadWidget 
+                          uploadPreset="invite_preset" 
+                          onSuccess={handleUploadSuccess}
+                          options={{
+                            maxFiles: 10,
+                            clientAllowedFormats: ['jpg', 'png', 'webp', 'jpeg', 'mp4', 'mov', 'webm'],
+                            maxFileSize: 15000000,
+                          }}
+                        >
+                          {({ open }) => (
+                            <div className={styles.uploadArea} onClick={() => open()}>
+                              <p style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> 
+                                Clique para adicionar Fotos ou Vídeos
+                              </p>
+                              <span style={{ fontSize: '0.8rem', color: '#888' }}>(Até 10 arquivos por vez)</span>
+                            </div>
+                          )}
+                        </CldUploadWidget>
+                      )
                     ) : (
                       <div style={{ marginBottom: '1.5rem' }}>
                         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
@@ -278,17 +303,27 @@ export default function MuralSection({ eventoId, config }: MuralSectionProps) {
                         </div>
                         
                         {uploads.length < 10 && (
-                          <CldUploadWidget 
-                            uploadPreset="invite_preset" 
-                            onSuccess={handleUploadSuccess}
-                            options={{ maxFiles: 10 - uploads.length }}
-                          >
-                            {({ open }) => (
-                              <button type="button" onClick={() => open()} style={{ background: 'transparent', border: `1px solid ${config?.accent_color}`, color: config?.accent_color, padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}>
-                                + Adicionar Mais
-                              </button>
-                            )}
-                          </CldUploadWidget>
+                          isPreviewMode ? (
+                            <button 
+                              type="button" 
+                              onClick={() => setUploads([...uploads, { url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622', type: 'FOTO' }])} 
+                              style={{ background: 'transparent', border: `1px solid ${config?.accent_color}`, color: config?.accent_color, padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}
+                            >
+                              + Simular Foto
+                            </button>
+                          ) : (
+                            <CldUploadWidget 
+                              uploadPreset="invite_preset" 
+                              onSuccess={handleUploadSuccess}
+                              options={{ maxFiles: 10 - uploads.length }}
+                            >
+                              {({ open }) => (
+                                <button type="button" onClick={() => open()} style={{ background: 'transparent', border: `1px solid ${config?.accent_color}`, color: config?.accent_color, padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}>
+                                  + Adicionar Mais
+                                </button>
+                              )}
+                            </CldUploadWidget>
+                          )
                         )}
                       </div>
                     )

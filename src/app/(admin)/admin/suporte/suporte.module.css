@@ -1,7 +1,6 @@
 .container {
-  padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding: 2.5rem;
+  width: 100%;
   min-height: calc(100vh - 100px);
   color: var(--admin-text-primary);
   font-family: var(--font-sans);

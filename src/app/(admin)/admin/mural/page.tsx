@@ -60,7 +60,7 @@ export default function AdminMural() {
   return (
     <main className={styles.container}>
       <header className={styles.header}>
-        <h1 className="cursive">Moderação do Mural</h1>
+        <h1>Moderação do Mural</h1>
         <p>Gerencie o que seus convidados estão compartilhando.</p>
       </header>
 

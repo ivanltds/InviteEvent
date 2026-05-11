@@ -91,3 +91,41 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+/* 
+ * PLATFORM DARK THEME INJECTION 
+ * Derived from Majestic Support aesthetic to unify Global Platform Area.
+ */
+.admin-theme-dark {
+  --admin-bg: #0d0d0d; /* Deep Black */
+  --admin-content-bg: #0d0d0d;
+  --admin-sidebar-bg: #161616; /* Dark Gray Gradient Start */
+  --admin-sidebar-text: #f5e6cc; /* Warm Cream */
+  --admin-sidebar-text-muted: #888888;
+  --admin-sidebar-active-bg: rgba(197, 160, 89, 0.15);
+  --admin-sidebar-hover-bg: rgba(255, 255, 255, 0.03);
+  --admin-sidebar-border: rgba(197, 160, 89, 0.1);
+  --admin-header-bg: #161616;
+  --admin-header-text: #ffffff;
+  --admin-card-bg: #111111; /* Container matching support-widget layer */
+  --admin-card-border: rgba(197, 160, 89, 0.15);
+  --admin-input-bg: #141414;
+  --admin-input-border: rgba(197, 160, 89, 0.2);
+  --admin-input-text: #ffffff;
+  --admin-text-primary: #f5e6cc;
+  --admin-text-secondary: #888888;
+  --admin-text-muted: #666666;
+  
+  /* CONTEXTUAL DARK STATE ENHANCEMENTS (HIGH-CONTRAST ACTION COLORS) */
+  --admin-success: #34d399; /* Lighter emerald */
+  --admin-warning: #fbbf24; /* Vibrant amber for black backdrops */
+  --admin-danger: #f87171;  /* Softer red */
+  
+  background-color: #0d0d0d !important;
+  color: #f5e6cc !important;
+}
+
+.admin-theme-dark body {
+  background-color: #0d0d0d !important;
+  color: #f5e6cc !important;
+}

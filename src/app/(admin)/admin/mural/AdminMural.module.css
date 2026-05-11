@@ -1,7 +1,8 @@
 .container {
-  padding: 2rem;
-  background-color: var(--admin-bg);
+  padding: 2.5rem;
+  background-color: var(--bg-primary);
   min-height: 100vh;
+  color: var(--text-main-safe);
 }
 
 .header {
@@ -9,8 +10,11 @@
 }
 
 .header h1 {
-  font-size: 2rem;
-  color: var(--admin-accent);
+  font-family: var(--font-serif);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  margin-bottom: 0.2rem;
 }
 
 .tabs {

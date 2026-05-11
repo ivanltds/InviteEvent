@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InviteEvent - Intelligence Hub Master (Dark Theme)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            /* DESIGN SYSTEM ALIGNED TO CHAT WIDGET DARK THEME */
+            --bg-base: #0d0d0d; /* Deep support black */
+            --bg-panel: #161616; /* Slight lighter layer for containers */
+            --accent-gold: #C5A059; /* Master Majestic Gold */
+            --accent-gold-hover: #B38F48; /* Darker Master Gold */
+            
+            --text-primary: #f5e6cc; /* Warm cream text matching chat bubbles */
+            --text-secondary: #888888; /* Muted gray from support widget */
+            
+            --border-color: rgba(197, 160, 89, 0.15); /* Muted gold transparency */
+            --border-glow: rgba(197, 160, 89, 0.3);
+            
+            --surface-input: #141414; /* Standard dark input background */
+            --surface-active: rgba(197, 160, 89, 0.1); /* Transparent active fill */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Linear noise overlay subtle style from high-end dash */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: radial-gradient(circle at center, rgba(197, 160, 89, 0.03) 0%, transparent 80%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Scrollbar style */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg-base); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+
+        /* Sidebar */
+        aside {
+            width: 80px;
+            background: linear-gradient(180deg, #161616, var(--bg-base));
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 0;
+            gap: 2rem;
+            z-index: 10;
+        }
+
+        .logo-spot {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-hover));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(197, 160, 89, 0.2);
+            color: #000;
+            font-weight: bold;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .nav-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+
+        .nav-icon:hover, .nav-icon.active {
+            background: var(--surface-active);
+            color: var(--accent-gold);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Content */
+        main {
+            flex: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .page-title h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            color: #ffffff;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .page-title p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .live-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #141414;
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #C5A059;
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-gold);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 0.4; transform: scale(0.95); }
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: #111111; /* Match sub-layers perfectly */
+            border: 1px solid rgba(197, 160, 89, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            border-color: var(--border-glow);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        .span-4 { grid-column: span 4; }
+        .span-8 { grid-column: span 8; }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+        }
+
+        .card-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #C5A059;
+            font-weight: 700;
+        }
+
+        .kpi-main {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .badge-trend {
+            display: inline-flex;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        /* Chart Center */
+        .chart-wrapper {
+            position: relative;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
+        .absolute-center {
+            position: absolute;
+            text-align: center;
+        }
+
+        .absolute-center div {
+            font-size: 1.8rem;
+            font-weight: 700;
+            font-family: 'Playfair Display', serif;
+            color: white;
+        }
+        .absolute-center span {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        /* AI Alert Match Chat Style */
+        .ai-insight {
+            background: linear-gradient(135deg, #161616, #0d0d0d);
+            border: 1px solid rgba(197, 160, 89, 0.3);
+        }
+
+        .ai-badge {
+            background: var(--accent-gold);
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: bold;
+            margin-right: 6px;
+        }
+
+        .insight-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--surface-active);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-gold);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .ai-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .ai-text {
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #C5A059, #B38F48);
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            width: 100%;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .btn-gold:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* Heatmap Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            text-align: left;
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        td {
+            padding: 14px 0;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            color: #e5e5e5;
+        }
+
+        .indicator {
+            display: inline-flex;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .ind-hot { background: rgba(197, 160, 89, 0.2); color: var(--accent-gold); border: 1px solid rgba(197, 160, 89, 0.3); }
+        .ind-norm { background: #1a1a1a; color: #aaa; }
+        .ind-warn { background: rgba(239, 68, 68, 0.1); color: #fca5a5; }
+
+        .thumb {
+            width: 36px;
+            height: 36px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fixed Sidebar matching chat context aesthetic -->
+    <aside>
+        <div class="logo-spot">E</div>
+        <div class="nav-icon active">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <div class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+    </aside>
+
+    <!-- Content context -->
+    <main>
+        <header>
+            <div class="page-title">
+                <h1>Master Intelligence</h1>
+                <p>Telemetry Analytics Platform</p>
+            </div>
+            <div class="live-status">
+                <div class="dot"></div>
+                <span style="font-size: 0.75rem; font-weight: bold; color: #ffffff; letter-spacing: 1px;">REAL TIME HUB</span>
+            </div>
+        </header>
+
+        <div class="grid">
+            
+            <!-- Financial Metrics mapped to chat accents -->
+            <div class="card span-4">
+                <div class="card-header">
+                    <span class="card-title">Receita Monitorada</span>
+                </div>
+                <div class="kpi-main">R$ 142.450</div>
+                <div style="margin-bottom: 1.5rem;">
+                    <span class="badge-trend">↑ 12.4% Mensal</span>
+                </div>
+
+                <div class="chart-wrapper">
+                    <canvas id="financialDonut"></canvas>
+                    <div class="absolute-center">
+                        <div>76%</div>
+                        <span>Retido</span>
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem;">
+                    <div style="display: flex; align-items:center; gap: 5px;"><div style="width:8px;height:8px;background:#C5A059;border-radius:50%"></div> Interno</div>
+                    <div style="display: flex; align-items:center; gap: 5px;"><div style="width:8px;height:8px;background:#2a2a2a;border-radius:50%"></div> Fuga Link Ext.</div>
+                </div>
+            </div>
+
+            <!-- User Dwell/Journey Chart in Majestic Style -->
+            <div class="card span-8">
+                <div class="card-header">
+                    <span class="card-title">Jornada & Engajamento de Convidados</span>
+                </div>
+                <div style="height: 280px; position: relative;">
+                    <canvas id="lineJourney"></canvas>
+                </div>
+                
+                <div style="display: flex; gap: 2rem; margin-top: 1.2rem;">
+                    <div>
+                        <div style="color: var(--accent-gold); font-size: 0.65rem; font-weight: bold; text-transform: uppercase;">Ápice de Atenção</div>
+                        <div style="font-family: 'Playfair Display'; font-size: 1.1rem; color: white;">Seção "Os Noivos"</div>
+                    </div>
+                    <div>
+                        <div style="color: #f87171; font-size: 0.65rem; font-weight: bold; text-transform: uppercase;">Dropout Crítico</div>
+                        <div style="font-family: 'Playfair Display'; font-size: 1.1rem; color: white;">Seção "Agenda"</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Action Card completely mapped to Chat Header/Bubble styles -->
+            <div class="card span-4 ai-insight">
+                <div class="insight-icon">✧</div>
+                <div class="ai-title">Recomendação Preditiva</div>
+                <p class="ai-text">
+                    Detectamos que a conversão média cai drasticamente no fluxo de <strong>Agenda -> Presentes</strong> no Mobile. 
+                    Taxa de rejeição na agenda subiu para 41%.
+                </p>
+                <div style="background: #141414; padding: 12px; border-radius: 8px; border-left: 3px solid var(--accent-gold); margin-bottom: 1.5rem; font-size: 0.8rem;">
+                    <span style="font-weight: bold; color: #fff;">Ação Sugerida:</span> Mover Seção de Presentes acima da Agenda para NOVOS eventos de teste.
+                </div>
+                <button class="btn-gold">Executar Otimização Global</button>
+            </div>
+
+            <!-- Interest Heatmap formatted precisely -->
+            <div class="card span-8">
+                <div class="card-header">
+                    <span class="card-title">Radar de Interesse em Presentes</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Gift Item</th>
+                            <th>Cliques</th>
+                            <th>Time On Item</th>
+                            <th>Conversão</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><div class="thumb"></div> Lua de Mel em Paris</td>
+                            <td>2,450</td>
+                            <td>45s</td>
+                            <td>12.5%</td>
+                            <td><span class="indicator ind-hot">Top Vendas</span></td>
+                        </tr>
+                        <tr>
+                            <td><div class="thumb"></div> Jogo de Panelas Premium</td>
+                            <td>1,890</td>
+                            <td>12s</td>
+                            <td>4.2%</td>
+                            <td><span class="indicator ind-norm">Estável</span></td>
+                        </tr>
+                         <tr>
+                            <td><div class="thumb"></div> Cafeteira Espresso Top</td>
+                            <td>3,100</td>
+                            <td>08s</td>
+                            <td style="color: #fca5a5;">0.2%</td>
+                            <td><span class="indicator ind-warn">Fuga Elevada</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // Global Chart.js matching exact design tokens
+        Chart.defaults.color = '#888888';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+
+        // Custom financial donut alignment
+        const ctxDonut = document.getElementById('financialDonut').getContext('2d');
+        new Chart(ctxDonut, {
+            type: 'doughnut',
+            data: {
+                labels: ['Interno', 'Fuga'],
+                datasets: [{
+                    data: [76, 24],
+                    backgroundColor: ['#C5A059', '#222222'],
+                    borderColor: '#111111',
+                    borderWidth: 3,
+                    hoverOffset: 0
+                }]
+            },
+            options: {
+                cutout: '82%',
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Custom journey line with accent gradient fill
+        const ctxLine = document.getElementById('lineJourney').getContext('2d');
+        const grad = ctxLine.createLinearGradient(0, 0, 0, 280);
+        grad.addColorStop(0, 'rgba(197, 160, 89, 0.15)');
+        grad.addColorStop(1, 'rgba(197, 160, 89, 0)');
+
+        new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: ['Entrada', 'História', 'Noivos', 'Agenda', 'RSVP'],
+                datasets: [{
+                    label: 'Engajamento (%)',
+                    data: [100, 94, 89, 48, 32],
+                    borderColor: '#C5A059',
+                    borderWidth: 2,
+                    backgroundColor: grad,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#C5A059',
+                    pointBorderColor: '#111',
+                    pointBorderWidth: 2,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.03)', borderDash: [4, 4] },
+                        ticks: { callback: v => v + '%' }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -192,14 +192,38 @@
 
 @media (max-width: 600px) {
   .previewBar {
-    flex-direction: column;
-    text-align: center;
-    padding: 1.5rem;
+    flex-direction: row; /* Mantém na mesma linha para economizar espaço VERTICAL */
+    padding: 0.8rem 1.2rem;
+    gap: 1rem;
     bottom: 1rem;
-    border-radius: 20px;
+    border-radius: 16px;
+    width: 94%;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .previewText h4 {
+    font-size: 1.2rem; /* Menor no mobile */
+  }
+  
+  .previewText p {
+    font-size: 0.75rem;
+    display: none; /* Oculta descrição no mobile extremo para salvar espaço */
   }
   
   .ctaButton {
-    width: 100%;
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    border-radius: 10px;
   }
+}
+
+/* Em telas super pequenas */
+@media (max-width: 380px) {
+  .previewBar {
+    padding: 0.6rem 0.8rem;
+    gap: 0.5rem;
+  }
+  .previewText h4 { font-size: 1rem; }
+  .ctaButton { padding: 0.5rem 0.8rem; font-size: 0.8rem; }
 }

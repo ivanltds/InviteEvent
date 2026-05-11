@@ -211,12 +211,16 @@ export default function DashboardPage() {
   if (!currentEvent) {
     return (
       <main className={styles.container}>
-        <header className={styles.header}>
+        <header className={styles.header} style={{ marginBottom: '2.5rem' }}>
           <div>
-            <h1 className="cursive">Meus Casamentos</h1>
-            <p style={{ color: '#666', marginTop: '5px', fontSize: '0.9rem' }}>Gerencie seus eventos e acompanhe o progresso.</p>
+            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.2rem', fontWeight: 700, color: 'var(--admin-text-primary)', marginBottom: '0.2rem' }}>
+              Meus Casamentos
+            </h1>
+            <p style={{ color: 'var(--admin-text-secondary)', marginTop: '5px', fontSize: '0.9rem', letterSpacing: '0.5px' }}>
+              Controle centralizado da sua carteira de eventos e assinaturas
+            </p>
           </div>
-          <button onClick={() => setIsCreating(true)} className={styles.addBtn}>+ Novo Casamento</button>
+          <button onClick={() => setIsCreating(true)} className={styles.addBtn}>+ Criar Novo</button>
         </header>
         
         <div className={styles.grid}>
@@ -301,12 +305,12 @@ export default function DashboardPage() {
                 >
                   {deletedEvents.length === 0 && <p style={{color: '#666'}}>Nenhum casamento na lixeira.</p>}
                   {deletedEvents.map(event => (
-                    <div key={event.id} className={styles.card} style={{ cursor: 'default', background: '#f9fafb' }}>
+                    <div key={event.id} className={`${styles.card} ${styles.deletedCard}`}>
                       <div className={styles.cardHeader}>
-                        <h3 style={{ color: '#9ca3af' }}>{event.nome}</h3>
+                        <h3 style={{ color: 'var(--admin-text-muted)', textDecoration: 'line-through' }}>{event.nome}</h3>
                       </div>
-                      <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.5rem' }}>
-                        Excluído em: {event.deleted_at ? new Date(event.deleted_at).toLocaleDateString() : 'N/A'}
+                      <p style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', marginTop: '0.5rem' }}>
+                        Removido: {event.deleted_at ? new Date(event.deleted_at).toLocaleDateString() : 'N/A'}
                       </p>
                       <div className={styles.cardFooter} style={{ marginTop: '1rem' }}>
                         <button 
@@ -375,10 +379,10 @@ export default function DashboardPage() {
         {deletingEventId && (
           <div className={styles.modal}>
             <div className={styles.modalContent}>
-              <h2 className="cursive" style={{ color: 'var(--admin-danger)' }}>Atenção</h2>
-              <p style={{ margin: '1rem 0', color: '#4a5568', fontSize: '0.95rem', lineHeight: '1.5' }}>
+              <h2 style={{ color: 'var(--admin-danger)', fontFamily: 'var(--font-serif)', fontWeight: 700 }}>Atenção</h2>
+              <p style={{ margin: '1.5rem 0', color: 'var(--admin-text-secondary)', fontSize: '0.95rem', lineHeight: '1.6' }}>
                 Isso excluirá permanentemente o casamento, convites, presentes e fotos. Esta ação <strong>não pode ser desfeita</strong>. 
-                Deseja continuar?
+                Deseja prosseguir?
               </p>
               <div className={styles.modalActions}>
                 <button onClick={executeConfirmDelete} className={styles.saveBtn}>Sim, Excluir</button>
@@ -410,7 +414,7 @@ export default function DashboardPage() {
   return (
     <main className={styles.container}>
       <header className={styles.header}>
-        <h1 className="cursive">Painel do Casamento</h1>
+        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.2rem', fontWeight: 700, color: 'var(--admin-text-primary)' }}>Painel do Casamento</h1>
         <div className={styles.status}>
           <span className={currentEvent.is_active ? styles.activeBadge : styles.pendingBadge}>
             {currentEvent.is_active ? 'Site Ativo' : 'Aguardando Ativação'}

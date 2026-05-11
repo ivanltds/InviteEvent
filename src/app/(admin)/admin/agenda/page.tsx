@@ -106,7 +106,7 @@ export default function AdminAgenda() {
     <main className={styles.container}>
       <header className={styles.header}>
         <div className={styles.titleArea}>
-          <h1 className="cursive">Programação do Evento</h1>
+          <h1>Programação do Evento</h1>
           <p className={styles.subtitle}>Organize os momentos importantes e localize os convidados.</p>
         </div>
         <button onClick={() => setIsAdding(true)} className={styles.addBtn}>

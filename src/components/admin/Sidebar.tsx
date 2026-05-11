@@ -53,6 +53,12 @@ export default function Sidebar() {
       icon: <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>,
       show: isMaster
     },
+    { 
+      name: 'Intelligence', 
+      path: '/admin/intelligence', 
+      icon: <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none"><path d="M2 20h.01"></path><path d="M7 20v-4"></path><path d="M12 20v-8"></path><path d="M17 20V8"></path><path d="M22 4L12 14l-4-4-6 6"></path></svg>,
+      show: isMaster
+    },
   ];
 
   // Itens da Camada Operacional (Evento)
@@ -99,6 +105,12 @@ export default function Sidebar() {
       icon: <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>,
       show: isOwner || isMaster
     },
+    {
+      name: 'Visualizar Convite',
+      path: '/admin/visualizar',
+      icon: <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>,
+      show: true
+    }
   ];
 
   const renderNavItem = (item: any) => {

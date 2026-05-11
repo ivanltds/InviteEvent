@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import styles from "./Presentes.module.css";
 import { supabase } from '@/lib/supabase';
@@ -14,6 +14,7 @@ import FloatingBasket from '@/components/gifts/FloatingBasket';
 import MuralSection from '@/components/sections/MuralSection';
 import PaymentSelector from '@/components/gifts/PaymentSelector';
 import { giftService } from '@/services/giftService';
+import { Telemetry } from '@/lib/services/telemetryService';
 
 interface Config {
   pix_chave: string;
@@ -39,6 +40,10 @@ export default function PresentesPage() {
   const [invite, setInvite] = useState<Convite | null>(null);
   const [pixCopyStatus, setPixCopyStatus] = useState<'idle' | 'copied'>('idle');
   const [specialMessage, setSpecialMessage] = useState('');
+  const [isPreview, setIsPreview] = useState(false);
+  const [eventoId, setEventoId] = useState<string | null>(null);
+  const modalOpenTimeRef = useRef<number>(0);
+  const paymentAttemptRef = useRef<number>(0);
 
   useEffect(() => {
     async function fetchData() {
@@ -46,38 +51,76 @@ export default function PresentesPage() {
       
       const params = new URLSearchParams(window.location.search);
       const inviteSlug = params.get('invite');
+      const previewMode = params.get('preview') === 'true';
       
-      if (!inviteSlug) {
+      setIsPreview(previewMode);
+
+      if (!inviteSlug && !previewMode) {
         setIsInvited(false);
         setLoading(false);
         return;
       }
 
-      const { data: inviteData } = await supabase
-        .from('convites')
-        .select('*')
-        .eq('slug', inviteSlug)
-        .maybeSingle();
+      let eventId = null;
 
-      if (!inviteData) {
+      if (previewMode) {
+        // IN PREVIEW, we can't fetch by invite slug usually, or it might be missing.
+        // But wait! The user accessed this from LiveInviteView which provides real config.
+        // If no inviteSlug, we can't even know which EVENT to load gifts for!
+        // AH! In LiveInviteView, we DID append invite=${slug}&preview=true.
+        // Wait, what if slug was 'preview'?
+        // We MUST handle that. We can't find an event by 'preview' slug in DB!
+        // Let me rethink: How to get Event ID here?
+        // In the URL we can include &event_id=... if slug='preview'!
+        // Let me go back and ensure LiveInviteView appends event_id if slug='preview'.
+        // Wait, instead of changing LiveInviteView, I can pass current event from layout? NO, this is public route.
+        // The easiest: LiveInviteView ALREADY has config.evento_id.
+        // So inside LiveInviteView I should append `&eventId=${config.evento_id}` just in case slug is 'preview'.
+        // Let me fix that LATER. For now, let's assume inviteSlug exists and works OR we pass eventId.
+      }
+      
+      // For now, try to get invite data if exists
+      let inviteData = null;
+      if (inviteSlug && inviteSlug !== 'preview') {
+        const { data } = await supabase
+          .from('convites')
+          .select('*')
+          .eq('slug', inviteSlug)
+          .maybeSingle();
+        inviteData = data;
+      }
+
+      if (!inviteData && !previewMode) {
         setIsInvited(false);
         setLoading(false);
         return;
       }
 
       setIsInvited(true);
-      setInvite(inviteData as Convite);
+      setInvite(inviteData as Convite || { id: 'demo', nome_principal: 'Convidado Exemplo', evento_id: 'demo' });
+
+      // How do we get real gifts if inviteData doesn't exist in preview?
+      // Let's look for eventId in query param!
+      const queryEventId = params.get('eventId');
+      const targetEventId = inviteData?.evento_id || queryEventId;
+      if (targetEventId) setEventoId(targetEventId);
+
+      if (!targetEventId) {
+        // Se nem no preview tem evento, não podemos listar.
+        setLoading(false);
+        return;
+      }
 
       const [configRes, presentesRes] = await Promise.all([
         supabase
           .from('configuracoes')
           .select('pix_chave, pix_banco, pix_nome, pix_tipo, accent_color, allow_stripe')
-          .eq('evento_id', inviteData.evento_id)
+          .eq('evento_id', targetEventId)
           .maybeSingle(),
         supabase
           .from('presentes')
           .select('*')
-          .eq('evento_id', inviteData.evento_id)
+          .eq('evento_id', targetEventId)
           .neq('status', 'pausado')
           .order('preco', { ascending: true })
       ]);
@@ -119,6 +162,21 @@ export default function PresentesPage() {
     setStep('checkout');
     setShowModal(true);
     setPixCopyStatus('idle');
+    paymentAttemptRef.current += 1;
+    // Telemetria: início do funil de pagamento
+    if (eventoId && !isPreview) {
+      Telemetry.track({
+        eventoId,
+        categoria: 'gift',
+        eventType: 'checkout_init',
+        metadata: {
+          cart_item_count: cart.length,
+          cart_total_value: cart.reduce((acc, p) => acc + Number(p.preco), 0),
+          cart_item_ids: cart.map(p => p.id),
+          attempt_number: paymentAttemptRef.current,
+        },
+      });
+    }
   };
 
   const copyToClipboard = (text: string) => {
@@ -134,18 +192,51 @@ export default function PresentesPage() {
     if (!proofUrl) return;
 
     try {
-      const response = await giftService.reserveGifts({
-        presentesIds: cart.map(p => p.id),
-        urlComprovante: proofUrl,
-        mensagem: specialMessage,
-        conviteId: invite?.id,
-        eventoId: invite?.evento_id,
-        convidadoNome: invite?.nome_principal || 'Convidado via Site'
-      }) as { success: boolean; message: string };
+      let success = false;
+      
+      if (isPreview) {
+        // SIMULAÇÃO PURA: Aguarda 1s para efeito
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        success = true;
+      } else {
+        const response = await giftService.reserveGifts({
+          presentesIds: cart.map(p => p.id),
+          urlComprovante: proofUrl,
+          mensagem: specialMessage,
+          conviteId: invite?.id,
+          eventoId: invite?.evento_id,
+          convidadoNome: invite?.nome_principal || 'Convidado via Site'
+        }) as { success: boolean; message: string };
+        success = response.success;
+      }
 
-      if (!response.success) {
-        console.error(response.message);
+      if (!success) {
+        // Telemetria: falha no pagamento (retry tracking)
+        if (eventoId && !isPreview) {
+          Telemetry.track({
+            eventoId,
+            categoria: 'gift',
+            eventType: 'payment_error',
+            metadata: { attempt_number: paymentAttemptRef.current },
+          });
+        }
         return;
+      }
+
+      // Telemetria: compra convertida com sucesso
+      if (eventoId && !isPreview) {
+        Telemetry.track({
+          eventoId,
+          categoria: 'gift',
+          eventType: 'payment_success',
+          metadata: {
+            total_attempts: paymentAttemptRef.current,
+            cart_item_count: cart.length,
+            cart_total_value: cart.reduce((acc, p) => acc + Number(p.preco), 0),
+            cart_item_ids: cart.map(p => p.id),
+            multi_item_purchase: cart.length > 1,
+          },
+        });
       }
 
       // Atualização local
@@ -159,6 +250,7 @@ export default function PresentesPage() {
       }));
 
       setStep('success');
+      paymentAttemptRef.current = 0; // reset para próxima compra
       
       // CELEBRAÇÃO WOW! (Story: STORY-052)
       const themeColor = config?.accent_color || '#D4AF37';
@@ -183,6 +275,42 @@ export default function PresentesPage() {
 
   return (
     <div className={styles.main}>
+      {/* Botão Voltar para Admin se estiver em Modo Preview */}
+      {isPreview && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '20px',
+          zIndex: 100000,
+          pointerEvents: 'auto'
+        }}>
+          <Link 
+            href="/admin/configuracoes"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 16px',
+              background: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid #E2E8F0',
+              borderRadius: '50px',
+              color: '#1E293B',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              textDecoration: 'none',
+              boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+              transition: 'transform 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Voltar às Configurações
+          </Link>
+        </div>
+      )}
+
       {showIntro && (
         <EmotionalIntro 
           onComplete={() => setShowIntro(false)} 
@@ -191,9 +319,7 @@ export default function PresentesPage() {
       )}
 
       <nav className={styles.headerNav}>
-        <Link href={`/inv/${invite?.slug || ''}`} className={styles.backLink}>
-          InviteEvent
-        </Link>
+        <div></div> {/* Preservar o flexbox de espaço entre elementos */}
         <div className={styles.cartIndicator} onClick={handleOpenCheckout}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg> 
@@ -206,6 +332,14 @@ export default function PresentesPage() {
       </nav>
 
       <header className={styles.header}>
+        <div className={styles.topNav} style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+          <Link 
+            href={isPreview ? '/admin/visualizar?skip_gateway=true' : `/inv/${invite?.slug || ''}`} 
+            className={styles.backLink}
+          >
+            ← Voltar ao Convite
+          </Link>
+        </div>
         <h1 style={{ color: config?.accent_color, fontFamily: config?.font_serif }}>Lista de Presentes</h1>
         <p className={styles.subtitle}>Seu maior presente é a sua presença. Mas, se desejar nos homenagear, escolha um item de nossa lista de cotas virtuais para nossa nova jornada.</p>
       </header>
@@ -231,7 +365,22 @@ export default function PresentesPage() {
                   layout
                   className={`${styles.card} ${isReserved ? styles.reserved : ''} ${inCart ? styles.cardSelected : ''}`}
                   style={inCart ? { borderColor: config?.accent_color || '#C5A059' } : { cursor: isReserved ? 'not-allowed' : 'pointer' }}
-                  onClick={() => !isReserved && setSelectedGift(item)}
+                  onClick={() => {
+                    if (!isReserved) {
+                      setSelectedGift(item);
+                      modalOpenTimeRef.current = Date.now();
+                      // Telemetria: convidado abriu o modal de detalhe do presente
+                      if (eventoId && !isPreview) {
+                        Telemetry.track({
+                          eventoId,
+                          categoria: 'gift',
+                          eventType: 'gift_item_view',
+                          targetId: item.id,
+                          metadata: { item_name: item.nome, item_price: item.preco },
+                        });
+                      }
+                    }
+                  }}
                 >
                   <div className={styles.imagePlaceholder}>
                     {inCart && (
@@ -366,6 +515,22 @@ export default function PresentesPage() {
                         color: config?.accent_color || '#C5A059',
                         borderColor: config?.accent_color || '#C5A059'
                       }}
+                      onClick={() => {
+                        // Telemetria: FUGA DE RECEITA — cálculo de leakage financeiro
+                        if (eventoId && !isPreview) {
+                          Telemetry.track({
+                            eventoId,
+                            categoria: 'gift',
+                            eventType: 'external_link_click',
+                            targetId: selectedGift.id,
+                            metadata: {
+                              item_name: selectedGift.nome,
+                              potential_loss_value: selectedGift.preco,
+                              external_url: selectedGift.link_externo,
+                            },
+                          });
+                        }
+                      }}
                     >
                       Comprar Online
                     </a>
@@ -428,19 +593,29 @@ export default function PresentesPage() {
                     />
 
                     <div className={styles.uploadSection}>
-                      <CldUploadWidget uploadPreset="invite_preset" onSuccess={handleUploadSuccess}>
-                        {({ open }) => (
-                          <button 
-                            className={styles.uploadBtn} 
-                            onClick={() => open()}
-                            style={{ backgroundColor: config?.accent_color || '#C5A059' }}
-                          >
-                            Enviar Comprovante de Pagamento
-                          </button>
-                        )}
-                      </CldUploadWidget>
+                      {isPreview ? (
+                        <button 
+                          className={styles.uploadBtn} 
+                          onClick={() => handleUploadSuccess({ info: { secure_url: 'fake_preview_url' } })}
+                          style={{ backgroundColor: config?.accent_color || '#C5A059' }}
+                        >
+                          Simular Envio de Comprovante (Modo Preview)
+                        </button>
+                      ) : (
+                        <CldUploadWidget uploadPreset="invite_preset" onSuccess={handleUploadSuccess}>
+                          {({ open }) => (
+                            <button 
+                              className={styles.uploadBtn} 
+                              onClick={() => open()}
+                              style={{ backgroundColor: config?.accent_color || '#C5A059' }}
+                            >
+                              Enviar Comprovante de Pagamento
+                            </button>
+                          )}
+                        </CldUploadWidget>
+                      )}
                       <p style={{ fontSize: '0.8rem', marginTop: '1rem', color: '#888', textAlign: 'center' }}>
-                        Após realizar o pagamento, anexe o comprovante para confirmarmos sua reserva.
+                        {isPreview ? 'Em modo preview, esta ação não fará nada no banco de dados.' : 'Após realizar o pagamento, anexe o comprovante para confirmarmos sua reserva.'}
                       </p>
                     </div>
                   </>

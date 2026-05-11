@@ -22,22 +22,31 @@ export default function DynamicStyles() {
     setMounted(true);
     async function fetchConfig() {
       try {
-        // 1. Identificar Slug (Path: /inv/[slug] ou Query: ?invite=slug)
+        // 1. Identificar Slug (Path: /inv/[slug] ou Query: ?invite=slug) ou EventID direto (fallback para preview)
         const pathSlug = pathname?.startsWith('/inv/') ? pathname.split('/')[2] : null;
         const querySlug = searchParams?.get('invite');
         const activeSlug = pathSlug || querySlug;
+        
+        const queryEventId = searchParams?.get('eventId');
+        
+        let activeEventId = queryEventId;
 
-        if (!activeSlug) return;
+        // 2. Se não temos EventId mas temos Slug, buscar o evento_id do convite
+        if (!activeEventId && activeSlug) {
+          const { data: invite } = await supabase.from('convites').select('evento_id').eq('slug', activeSlug).maybeSingle();
+          if (invite) {
+            activeEventId = invite.evento_id;
+          }
+        }
 
-        // 2. Buscar o evento_id do convite
-        const { data: invite } = await supabase.from('convites').select('evento_id').eq('slug', activeSlug).maybeSingle();
-        if (!invite) return;
+        // Se após todas as tentativas não temos EventID, abortamos
+        if (!activeEventId) return;
 
-        // 3. Buscar a config do evento
+        // 3. Buscar a config do evento diretamente pelo EventID recuperado
         const query = supabase
           .from('configuracoes')
           .select('bg_primary, text_main, accent_color, font_cursive, font_serif')
-          .eq('evento_id', invite.evento_id);
+          .eq('evento_id', activeEventId);
         
         const { data, error } = await query.maybeSingle();
         

@@ -1,0 +1,356 @@
+.root {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #020202;
+  -webkit-font-smoothing: antialiased;
+  color: #fff;
+  z-index: 999999;
+}
+
+.skipBtn {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 50px;
+  font-size: 0.7rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  z-index: 10000;
+  transition: all 0.3s;
+}
+.skipBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  letter-spacing: 4px;
+}
+
+.bgSite {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: blur(20px) brightness(0.2);
+  transform: scale(1.1);
+  will-change: filter, transform;
+}
+
+.bgSite::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.8) 100%);
+}
+
+.siteCenter { text-align: center; z-index: 2; }
+.siteTitle { font-family: var(--font-serif); font-size: clamp(3.5rem, 7vw, 6.5rem); text-shadow: 0 5px 30px #000; color: #fff; margin-bottom: 15px; }
+.siteDate { letter-spacing: 8px; font-size: 1rem; text-shadow: 0 3px 15px #000; color: rgba(255,255,255,0.8); font-weight: 300; }
+
+.spotlight {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.ambientContainer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.ambientDot {
+  position: absolute;
+  background: var(--gold);
+  border-radius: 50%;
+  opacity: 0;
+  filter: blur(1px);
+  animation: floatAmbient linear infinite;
+}
+
+@keyframes floatAmbient {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  20% { opacity: 0.6; }
+  80% { opacity: 0.4; }
+  100% { transform: translateY(-120px) translateX(40px); opacity: 0; }
+}
+
+.scene {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 2200px;
+  z-index: 20;
+}
+
+.envWrapper {
+  position: relative;
+  width: 560px;
+  height: 380px;
+  transform-style: preserve-3d;
+  cursor: pointer;
+  will-change: transform, opacity;
+}
+
+.envShadow {
+  position: absolute;
+  bottom: -40px;
+  left: 5%;
+  width: 90%;
+  height: 20px;
+  background: rgba(0,0,0,0.8);
+  border-radius: 50%;
+  filter: blur(20px);
+  transform: translateZ(-100px) rotateX(90deg);
+}
+
+.envBody {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 40px 60px rgba(0,0,0,0.9));
+}
+
+.svgLayer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.envOutline {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.scanLine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #fff, var(--gold), #fff, transparent);
+  opacity: 0;
+  box-shadow: 0 0 15px 4px var(--gold);
+  z-index: 12;
+  pointer-events: none;
+}
+
+.card {
+  position: absolute;
+  bottom: 8px; left: 20px; right: 20px; height: 364px;
+  background: linear-gradient(135deg, var(--paper) 0%, #EFE9DF 100%);
+  border-radius: 4px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 35px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  will-change: transform, z-index;
+}
+
+.cardLine {
+  opacity: 0;
+  transform: translateY(15px);
+  will-change: opacity, transform;
+  text-align: center;
+  color: var(--ink);
+}
+
+.cardTopText {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 7px;
+  margin-bottom: 15px;
+  color: #888;
+}
+
+.card h2 {
+  font-family: var(--font-cursive);
+  font-size: clamp(3.2rem, 6vw, 4.6rem);
+  line-height: 1.1;
+}
+
+.cardDivider {
+  height: 1px;
+  width: 0px;
+  opacity: 0;
+  margin: 20px auto;
+  will-change: width, opacity;
+}
+
+.cardDate {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  letter-spacing: 5px;
+  color: #444;
+}
+
+.cardBorderOuter { position: absolute; inset: 12px; border: 1px solid var(--gold); opacity: 0.3; }
+.cardBorderInner { position: absolute; inset: 18px; border: 1px solid var(--gold); opacity: 0.7; transition: box-shadow 0.3s; }
+
+.dynamicShadow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 80%);
+  z-index: 2.5;
+  pointer-events: none;
+}
+
+.topFlap {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 250px;
+  transform-origin: top center;
+  transform-style: preserve-3d;
+  z-index: 4;
+  will-change: transform;
+  transform: translateZ(6px);
+}
+
+.flapFront, .flapBack {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+}
+
+.flapFront {
+  filter: drop-shadow(0 15px 25px rgba(0,0,0,0.7));
+}
+
+.flapBack {
+  transform: rotateY(180deg);
+}
+
+.waxSeal {
+  position: absolute;
+  bottom: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 80px;
+  z-index: 10;
+  will-change: transform;
+}
+
+.waxHalf {
+  position: absolute;
+  inset: 0;
+  will-change: transform, opacity;
+}
+
+.waxLeft {
+  clip-path: polygon(0 0, 50% 0, 45% 50%, 53% 85%, 48% 100%, 0 100%);
+  transform-origin: 30% 50%;
+}
+
+.waxRight {
+  clip-path: polygon(100% 0, 50% 0, 45% 50%, 53% 85%, 48% 100%, 100% 100%);
+  transform-origin: 70% 50%;
+}
+
+.waxDesign {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.waxInner {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.7), inset 0 2px 4px rgba(255,255,255,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0,0,0,0.5);
+}
+
+.waxText {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #FFFDFB;
+  text-shadow: 0 2px 4px #000;
+}
+
+.waxParticlesContainer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.waxParticle {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hint {
+  position: absolute;
+  bottom: -60px;
+  width: 100%;
+  text-align: center;
+  font-size: 0.75rem;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  opacity: 0;
+  pointer-events: none;
+  animation: breathe 3s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.3; letter-spacing: 5px; }
+  50% { opacity: 0.7; letter-spacing: 6px; }
+}
+
+/* Adaptabilidade */
+@media (max-width: 768px) {
+  .envWrapper {
+    width: 90vw;
+    height: 61vw;
+    max-height: 320px;
+  }
+  .card {
+    padding: 15px;
+    height: calc(61vw - 15px);
+  }
+  .topFlap {
+    height: 40vw;
+  }
+  .waxSeal {
+    width: 64px;
+    height: 64px;
+    bottom: -28px;
+  }
+  .waxInner { width: 64px; height: 64px; }
+  .waxText { font-size: 1.1rem; }
+  .card h2 { font-size: 2.4rem; }
+  .siteTitle { font-size: 2.8rem; }
+}

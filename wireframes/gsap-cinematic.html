@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lala & Marquinhos — Cinematográfico</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cinzel:wght@400;600&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <style>
+    :root {
+      --gold: #C9A84C;
+      --gold-light: #F0D898;
+      --gold-dim: #8A6F2E;
+      --env-dark: #0E0E0E;
+      --env-mid: #1A1A1A;
+      --env-light: #252525;
+      --paper: #F8F4ED;
+      --ink: #1A1614;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 100vw; height: 100vh;
+      overflow: hidden;
+      background: #000;
+      font-family: 'Montserrat', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── SITE DE FUNDO ─────────────────────── */
+    .bg-site {
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.85)),
+        url('https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=2000') center/cover;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      filter: blur(18px) brightness(0.25);
+      transform: scale(1.05);
+      will-change: filter, transform;
+      color: white;
+    }
+
+    /* ── PARTICLES DE AMBIENTE ─────────────── */
+    #ambientParticles {
+      position: fixed; inset: 0;
+      z-index: 90; pointer-events: none;
+      overflow: hidden;
+    }
+
+    .ambient-dot {
+      position: absolute;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 6px 2px rgba(201,168,76,0.3);
+      will-change: transform, opacity;
+    }
+
+    /* ── SPOTLIGHT (Luz vindo de baixo) ────── */
+    #spotlight {
+      position: fixed;
+      bottom: -100px; left: 50%;
+      transform: translateX(-50%);
+      width: 600px; height: 700px;
+      background: radial-gradient(ellipse at bottom,
+        rgba(201,168,76,0.12) 0%,
+        rgba(201,168,76,0.04) 40%,
+        transparent 70%);
+      z-index: 91; pointer-events: none;
+      opacity: 0;
+    }
+
+    /* ── CENA 3D ───────────────────────────── */
+    .scene {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      perspective: 2200px;
+      z-index: 100; pointer-events: none;
+    }
+
+    .env-wrapper {
+      position: relative;
+      width: 560px; height: 380px;
+      transform-style: preserve-3d;
+      pointer-events: auto;
+      cursor: pointer;
+      will-change: transform;
+      opacity: 0; /* Começa invisível — surge no intro */
+    }
+
+    .env-body {
+      position: absolute; inset: 0;
+      transform-style: preserve-3d;
+      will-change: transform, opacity;
+    }
+
+    /* Sombra ambiental projetada */
+    .env-shadow {
+      position: absolute;
+      bottom: -40px; left: 10%; right: 10%; height: 30px;
+      background: rgba(0,0,0,0.9);
+      filter: blur(20px);
+      border-radius: 50%;
+      z-index: 0;
+    }
+
+    /* ── ESTRUTURA SVG DO ENVELOPE ──────────── */
+    .svg-layer {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+    }
+
+    /* Borda dourada sutil no contorno */
+    .env-outline {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      z-index: 5; pointer-events: none;
+    }
+
+    /* ── SCANNER LINE ───────────────────────── */
+    #scanLine {
+      position: absolute;
+      top: -4px; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        var(--gold-dim) 20%,
+        var(--gold-light) 50%,
+        var(--gold-dim) 80%,
+        transparent 100%);
+      box-shadow: 0 0 20px 4px rgba(201,168,76,0.6), 0 0 60px 10px rgba(201,168,76,0.2);
+      z-index: 20;
+      opacity: 0;
+      will-change: top, opacity;
+    }
+
+    /* Glow abaixo da scan line */
+    #scanLine::after {
+      content: '';
+      position: absolute;
+      top: 4px; left: 0; right: 0; height: 40px;
+      background: linear-gradient(to bottom,
+        rgba(201,168,76,0.08), transparent);
+    }
+
+    /* ── CARTÃO ─────────────────────────────── */
+    .card {
+      position: absolute;
+      bottom: 5px; left: 12px; right: 12px; height: 362px;
+      background: var(--paper);
+      border-radius: 4px;
+      z-index: 2;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 50px 40px;
+      will-change: transform, opacity;
+      transform: translateZ(0);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+      overflow: hidden;
+    }
+
+    /* Linha dourada lateral de luxo */
+    .card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 15%; bottom: 15%; width: 2px;
+      background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+      opacity: 0.6;
+    }
+    .card::after {
+      content: '';
+      position: absolute;
+      right: 0; top: 15%; bottom: 15%; width: 2px;
+      background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+      opacity: 0.6;
+    }
+
+    .card-border-outer { position: absolute; inset: 14px; border: 1px solid var(--gold); opacity: 0.3; }
+    .card-border-inner { position: absolute; inset: 20px; border: 1px solid var(--gold); opacity: 0.7; }
+
+    /* Textos do cartão — revelados linha por linha */
+    .card-line {
+      will-change: opacity, transform;
+      text-align: center;
+      color: var(--ink);
+      opacity: 0;
+    }
+
+    .card-top-text {
+      font-size: 0.65rem; font-weight: 500;
+      letter-spacing: 7px;
+      color: var(--gold-dim);
+      margin-bottom: 25px;
+    }
+
+    .card h2 {
+      font-family: 'Great Vibes', cursive;
+      font-size: 5rem; line-height: 0.9;
+      margin-bottom: 8px;
+    }
+
+    .card-divider {
+      width: 60px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 22px auto;
+      opacity: 0; will-change: opacity, width;
+    }
+
+    .card-date {
+      font-family: 'Cinzel', serif;
+      font-size: 1.05rem; letter-spacing: 4px;
+    }
+
+    /* Sombra interna dinâmica */
+    .dynamic-shadow {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 60%);
+      z-index: 3; pointer-events: none;
+      will-change: opacity;
+    }
+
+    /* ── ABA SUPERIOR ───────────────────────── */
+    .top-flap {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 250px;
+      transform-origin: top center;
+      transform-style: preserve-3d;
+      z-index: 4;
+      will-change: transform;
+      transform: translateZ(6px);
+    }
+
+    .flap-front, .flap-back {
+      position: absolute; inset: 0;
+      backface-visibility: hidden;
+    }
+
+    .flap-back { transform: rotateY(180deg); }
+
+    /* ── LACRE ──────────────────────────────── */
+    .wax-seal {
+      position: absolute;
+      bottom: -42px; left: 50%;
+      transform: translateX(-50%);
+      width: 88px; height: 88px;
+      z-index: 10;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+
+    .wax-half {
+      position: absolute; inset: 0;
+      will-change: transform, opacity;
+    }
+
+    .wax-left  { clip-path: polygon(0 0, 50% 0, 42% 50%, 55% 80%, 45% 100%, 0 100%); transform-origin: 30% 50%; }
+    .wax-right { clip-path: polygon(100% 0, 50% 0, 42% 50%, 55% 80%, 45% 100%, 100% 100%); transform-origin: 70% 50%; }
+
+    .wax-design { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+
+    .wax-inner {
+      width: 88px; height: 88px;
+      background: radial-gradient(circle at 35% 35%, #9E1B1B, #6A0A0A 50%, #2A0202 100%);
+      border-radius: 50%;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.8), inset 0 3px 6px rgba(255,255,255,0.35);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .wax-inner::after {
+      content: '';
+      position: absolute; inset: 5px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+
+    .wax-text {
+      font-family: 'Cinzel', serif;
+      font-size: 1.5rem; font-weight: 600;
+      color: var(--gold-light);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+      z-index: 2;
+    }
+
+    /* ── PARTÍCULAS DO LACRE ────────────────── */
+    #waxParticles {
+      position: absolute; inset: 0;
+      z-index: 15; pointer-events: none;
+    }
+
+    .wax-particle {
+      position: absolute;
+      border-radius: 2px;
+      will-change: transform, opacity;
+      opacity: 0;
+    }
+
+    /* ── HINT ───────────────────────────────── */
+    .hint {
+      position: absolute;
+      bottom: -72px; left: 0; right: 0;
+      text-align: center;
+      font-size: 0.75rem; letter-spacing: 5px;
+      color: rgba(255,255,255,0.5);
+      opacity: 0; /* Surge junto com o envelope */
+    }
+
+    @keyframes float-ambient {
+      0%   { transform: translateY(0px) scale(1); opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 0.6; }
+      100% { transform: translateY(-100vh) scale(1.5); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SITE DE FUNDO -->
+  <div class="bg-site" id="bgSite">
+    <div style="text-align:center; color:white;">
+      <h1 style="font-family:'Great Vibes',cursive; font-size:clamp(3.5rem,10vw,7rem); text-shadow:0 4px 20px rgba(0,0,0,0.8);">Lala & Marquinhos</h1>
+      <p style="letter-spacing:6px; font-size:1rem; margin-top:10px; opacity:0.85;">13 DE JUNHO DE 2026</p>
+    </div>
+  </div>
+
+  <!-- SPOTLIGHT -->
+  <div id="spotlight"></div>
+
+  <!-- PARTÍCULAS AMBIENTE -->
+  <div id="ambientParticles"></div>
+
+  <!-- CENA PRINCIPAL -->
+  <div class="scene">
+    <div class="env-wrapper" id="envWrapper">
+
+      <div class="env-shadow"></div>
+
+      <div class="env-body" id="envBody">
+
+        <!-- Fundo do envelope -->
+        <svg class="svg-layer" style="fill:#0E0E0E;z-index:1;transform:translateZ(-2px)" viewBox="0 0 560 380" preserveAspectRatio="none">
+          <rect width="560" height="380" rx="3"/>
+        </svg>
+
+        <!-- SCANNER LINE -->
+        <div id="scanLine"></div>
+
+        <!-- CARTÃO -->
+        <div class="card" id="card">
+          <div class="card-border-outer"></div>
+          <div class="card-border-inner"></div>
+          <div class="card-line card-top-text" id="line1">VOCÊ ESTÁ CONVIDADO</div>
+          <div class="card-line" id="line2"><h2>Lala &<br>Marquinhos</h2></div>
+          <div class="card-divider" id="lineDivider"></div>
+          <div class="card-line card-date" id="line3">13 DE JUNHO · 2026</div>
+        </div>
+
+        <div class="dynamic-shadow" id="dynShadow"></div>
+
+        <!-- ABAS FRONTAIS -->
+        <svg class="svg-layer" style="z-index:3;transform:translateZ(5px);filter:drop-shadow(0 -5px 15px rgba(0,0,0,0.6))" viewBox="0 0 560 380" preserveAspectRatio="none">
+          <g stroke="rgba(201,168,76,0.06)" stroke-width="1">
+            <path d="M 0 0 L 0 380 L 305 210 L 280 188 Z" fill="#1A1A1A"/>
+            <path d="M 560 0 L 560 380 L 255 210 L 280 188 Z" fill="#1A1A1A"/>
+            <path d="M 0 380 L 560 380 L 305 172 Q 280 158 255 172 Z" fill="#111"/>
+          </g>
+        </svg>
+
+        <!-- Contorno dourado do envelope -->
+        <svg class="env-outline" viewBox="0 0 560 380" preserveAspectRatio="none">
+          <rect width="560" height="380" rx="3" fill="none" stroke="var(--gold)" stroke-width="1" opacity="0.2"/>
+        </svg>
+
+        <!-- ABA SUPERIOR -->
+        <div class="top-flap" id="topFlap">
+          <svg class="flap-back" viewBox="0 0 560 250" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">
+            <path d="M 0 0 L 560 0 L 310 230 Q 280 250 250 230 Z" fill="#0A0A0A"/>
+          </svg>
+          <svg class="flap-front" viewBox="0 0 560 250" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">
+            <path d="M 0 0 L 560 0 L 310 230 Q 280 250 250 230 Z" fill="#1C1C1C"/>
+            <path d="M 0 0 L 560 0 L 310 230 Q 280 250 250 230 Z" fill="none" stroke="var(--gold)" stroke-width="1.5" opacity="0.35"/>
+            <!-- Textura sutil: gradiente de luz no topo da aba -->
+            <path d="M 0 0 L 560 0 L 310 230 Q 280 250 250 230 Z"
+              fill="url(#flapGrad)" opacity="0.3"/>
+          </svg>
+          <!-- Gradiente na aba (definido no SVG inline) -->
+          <svg style="position:absolute;width:0;height:0">
+            <defs>
+              <linearGradient id="flapGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#fff"/>
+                <stop offset="100%" stop-color="transparent"/>
+              </linearGradient>
+            </defs>
+          </svg>
+
+          <!-- LACRE -->
+          <div class="wax-seal" id="waxSeal">
+            <div class="wax-half wax-left" id="waxLeft">
+              <div class="wax-design"><div class="wax-inner"><span class="wax-text">L&amp;M</span></div></div>
+            </div>
+            <div class="wax-half wax-right" id="waxRight">
+              <div class="wax-design"><div class="wax-inner"><span class="wax-text">L&amp;M</span></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PARTÍCULAS DO LACRE -->
+        <div id="waxParticles"></div>
+
+      </div>
+
+      <div class="hint" id="hint">TOQUE PARA REVELAR</div>
+    </div>
+  </div>
+
+  <script>
+    /* ── PARTÍCULAS AMBIENTE ─────────────────── */
+    const ambEl = document.getElementById('ambientParticles');
+    for (let i = 0; i < 35; i++) {
+      const d = document.createElement('div');
+      d.className = 'ambient-dot';
+      const size = 1 + Math.random() * 3;
+      d.style.cssText = `
+        width:${size}px; height:${size}px;
+        left:${Math.random()*100}%; bottom:${Math.random()*30}%;
+        animation: float-ambient ${8+Math.random()*12}s ${Math.random()*8}s linear infinite;
+      `;
+      ambEl.appendChild(d);
+    }
+
+    /* ── ENTRADA CINEMATOGRÁFICA DO ENVELOPE ─── */
+    const envWrapper = document.getElementById('envWrapper');
+    let isActive = false; // Não aceita clique até o intro terminar
+
+    const introTl = gsap.timeline({ onComplete: () => { isActive = true; } });
+
+    // Spotlight acende
+    introTl.to('#spotlight', { opacity: 1, duration: 2, ease: "power2.out" }, 0)
+
+    // Envelope surge das sombras subindo levemente
+    .to(envWrapper, {
+      opacity: 1, y: 0,
+      duration: 2, ease: "power3.out"
+    }, 0.5)
+
+    // Hint aparece
+    .to('#hint', { opacity: 1, duration: 1, ease: "power2.out" }, 2)
+
+    // Inicia idle float
+    .add(() => {
+      gsap.to(envWrapper, { y: 12, duration: 3, ease: "sine.inOut", yoyo: true, repeat: -1, id: "float" });
+    }, 2.5);
+
+    gsap.set(envWrapper, { y: 40 }); // Posição inicial abaixo
+
+    /* ── PARALLAX ────────────────────────────── */
+    const xTo = gsap.quickTo(envWrapper, "rotationY", {duration: 1, ease: "power3.out"});
+    const yTo = gsap.quickTo(envWrapper, "rotationX", {duration: 1, ease: "power3.out"});
+
+    window.addEventListener("mousemove", (e) => {
+      if (!isActive) return;
+      xTo(-(window.innerWidth  / 2 - e.pageX) / 22);
+      yTo( (window.innerHeight / 2 - e.pageY) / 22);
+    });
+
+    /* ── TIMELINE PRINCIPAL ──────────────────── */
+    envWrapper.addEventListener("click", () => {
+      if (!isActive) return;
+      isActive = false;
+
+      gsap.getById("float")?.kill();
+      gsap.to(envWrapper, { rotationX: 0, rotationY: 0, y: 0, duration: 0.6, ease: "power2.out" });
+      gsap.to("#hint", { autoAlpha: 0, duration: 0.3 });
+
+      const tl = gsap.timeline();
+
+      /* 1. SCANNER — linha de luz percorre o envelope */
+      tl.to('#scanLine', { opacity: 1, duration: 0.2 }, 0)
+        .to('#scanLine', { top: '100%', duration: 1.1, ease: "power1.inOut" }, 0.1)
+        .to('#scanLine', { opacity: 0, duration: 0.3 }, 1.1)
+
+      // Spotlight intensifica durante o scan
+        .to('#spotlight', { opacity: 1.8, duration: 0.8, ease: "power2.out" }, 0.2)
+        .to('#spotlight', { opacity: 1, duration: 0.8, ease: "power2.in"  }, 1.0)
+
+      /* 2. LACRE PULSA COMO CORAÇÃO */
+        .to('#waxSeal', { scale: 1.18, duration: 0.18, ease: "power2.out" }, 1.3)
+        .to('#waxSeal', { scale: 0.95, duration: 0.12, ease: "power2.in"  }, 1.48)
+        .to('#waxSeal', { scale: 1.22, duration: 0.15, ease: "power2.out" }, 1.60)
+        .to('#waxSeal', { scale: 1.0,  duration: 0.1,  ease: "power2.in"  }, 1.75)
+
+      /* 3. LACRE EXPLODE EM PARTÍCULAS */
+        .add(() => {
+          const container = document.getElementById('waxParticles');
+          const cx = 280, cy = 340; // Centro do lacre relativo ao envBody
+          const COLORS = ['#9E1B1B','#C04040','#7A0000','#C9A84C','#E8C96A','#F0D898'];
+          for (let i = 0; i < 40; i++) {
+            const p = document.createElement('div');
+            p.className = 'wax-particle';
+            const size = 3 + Math.random() * 8;
+            const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+            p.style.cssText = `
+              width:${size}px; height:${size}px;
+              background:${color};
+              border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+              left:${cx}px; top:${cy}px;
+              box-shadow: 0 0 4px 1px ${color}88;
+            `;
+            container.appendChild(p);
+            const angle = Math.random() * Math.PI * 2;
+            const dist  = 80 + Math.random() * 220;
+            gsap.to(p, {
+              x: Math.cos(angle) * dist,
+              y: Math.sin(angle) * dist + Math.random() * 60,
+              rotation: Math.random() * 720 - 360,
+              opacity: 1,
+              scale: Math.random() * 1.5 + 0.5,
+              duration: 0.3,
+              ease: "power3.out",
+              delay: Math.random() * 0.15
+            });
+            gsap.to(p, {
+              y: '+=' + (100 + Math.random() * 150), // Gravidade
+              opacity: 0,
+              duration: 0.8 + Math.random() * 0.6,
+              ease: "power2.in",
+              delay: 0.2 + Math.random() * 0.2,
+              onComplete: () => p.remove()
+            });
+          }
+        }, 1.85)
+
+        .to('#waxLeft',  { x: -80, y: 120, rotation: -40, scale: 0.6, autoAlpha: 0, duration: 0.8, ease: "power3.in" }, 1.85)
+        .to('#waxRight', { x:  80, y: 120, rotation:  40, scale: 0.6, autoAlpha: 0, duration: 0.8, ease: "power3.in" }, 1.85)
+
+      /* 4. ABA ABRE EM CÂMERA LENTA */
+        .to('#topFlap', {
+          rotateX: 180,
+          duration: 1.4,
+          ease: "power3.inOut"
+        }, 2.2)
+        .set('#topFlap', { zIndex: 1 }, 2.9)
+
+      // Envelope inclina como se alguém o segurasse abrindo
+        .to('#envBody', { rotateX: 18, rotateY: -4, duration: 0.5, ease: "sine.out" }, 2.2)
+        .to('#envBody', { rotateX: 0,  rotateY: 0,  duration: 1.0, ease: "sine.inOut" }, 2.7)
+        .to('#dynShadow', { opacity: 0, duration: 0.8, ease: "power1.inOut" }, 2.4)
+
+      /* 5. CARTÃO SOBE */
+        .to('#card', {
+          y: -380, z: 15,
+          duration: 1.4, ease: "expo.inOut",
+          boxShadow: "0 20px 50px rgba(0,0,0,0.5)"
+        }, 3.4)
+        .to('#envBody', { y: 80, duration: 1.4, ease: "expo.inOut" }, 3.4)
+        .set('#card', { zIndex: 20 }, 4.8)
+
+      /* 6. TEXTOS REVELADOS LINHA A LINHA enquanto o cartão sobe */
+        .to('#line1', { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 3.8)
+        .to('#line2', { opacity: 1, y: 0, duration: 0.7, ease: "power2.out" }, 4.2)
+        .to('#lineDivider', { opacity: 1, width: '60px', duration: 0.6, ease: "power2.out" }, 4.7)
+        .to('#line3', { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 5.0)
+
+      /* 7. CARTÃO TOMA A FRENTE */
+        .to('#card', {
+          y: -120, z: 90, scale: 1.1,
+          duration: 1.2, ease: "power3.out",
+          boxShadow: "0 40px 80px rgba(0,0,0,0.7)"
+        }, 5.0)
+        .to('#envBody', { z: -160, opacity: 0.4, y: 150, duration: 1.2, ease: "power3.out" }, 5.0)
+
+      // Spotlight segue o cartão suavindo — fica mais íntimo
+        .to('#spotlight', { opacity: 0.6, duration: 1.5 }, 5.0)
+
+      /* 8. BRILHO DOURADO DAS LETRAS (Pulso sutil nas bordas) */
+        .to('#card .card-border-inner', {
+          opacity: 1.0, boxShadow: "0 0 15px 2px rgba(201,168,76,0.4)",
+          duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 2
+        }, 5.5)
+
+      /* 9. PAUSA DE LEITURA */
+
+      /* 10. MERGULHO FINAL */
+        .to('#card', { scale: 5, autoAlpha: 0, duration: 2, ease: "power3.inOut" }, 8.5)
+        .to('#envBody', { z: -800, y: 300, autoAlpha: 0, duration: 1.8, ease: "power3.inOut" }, 8.5)
+        .to('#spotlight', { opacity: 0, duration: 1.5 }, 8.5)
+        .to('#bgSite', { filter: "blur(0px) brightness(1)", scale: 1, duration: 2.5, ease: "power2.inOut" }, 8.5)
+        .set('#envWrapper', { display: "none" });
+    });
+  </script>
+</body>
+</html>

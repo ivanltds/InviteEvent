@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lala & Marquinhos — Flor ao Vento</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cinzel:wght@400;600&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <style>
+    :root {
+      --gold: #C9A84C;
+      --gold-light: #F0D898;
+      --petal-1: #F5ECE5;
+      --petal-2: #EDE0D8;
+      --petal-3: #E5D4CB;
+      --card-bg: #FDFAF6;
+      --ink: #3A2E28;
+      --ink-light: #7A6E68;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 100vw; height: 100vh;
+      overflow: hidden;
+      background: #08050A;
+      font-family: 'Montserrat', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .bg-site {
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(to bottom, rgba(20,10,15,0.5), rgba(10,5,10,0.9)),
+        url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=2000') center/cover;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      filter: blur(18px) brightness(0.3);
+      transform: scale(1.05);
+      will-change: filter, transform;
+      color: white;
+    }
+
+    .scene {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      perspective: 2200px;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .flower-wrapper {
+      position: relative;
+      width: 460px; height: 460px;
+      transform-style: preserve-3d;
+      pointer-events: auto;
+      cursor: pointer;
+      will-change: transform;
+    }
+
+    /* CARTÃO */
+    .card {
+      position: absolute;
+      inset: 80px;
+      background: var(--card-bg);
+      border-radius: 50%;
+      z-index: 2;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 30px;
+      will-change: transform, opacity, border-radius;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      overflow: hidden;
+      transform: translateZ(0);
+    }
+
+    .card-border {
+      position: absolute; inset: 12px;
+      border-radius: 50%;
+      border: 1px solid var(--gold);
+      opacity: 0.5;
+      will-change: border-radius;
+    }
+
+    .card-content {
+      position: relative; z-index: 2;
+      text-align: center; color: var(--ink);
+    }
+
+    .card-top-text {
+      font-size: 0.6rem; font-weight: 500;
+      letter-spacing: 5px; color: var(--ink-light);
+      margin-bottom: 15px;
+    }
+
+    .card h2 {
+      font-family: 'Great Vibes', cursive;
+      font-size: 3.2rem; line-height: 0.95;
+      color: var(--ink);
+    }
+
+    .card-divider { width: 30px; height: 1px; background: var(--gold); margin: 18px auto; }
+
+    .card-date {
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem; letter-spacing: 3px;
+      color: var(--ink-light);
+    }
+
+    /* PÉTALAS */
+    .petal {
+      position: absolute;
+      left: 50%; top: 0;
+      transform-origin: 0 230px;
+      transform-style: preserve-3d;
+      will-change: transform, opacity;
+    }
+
+    .petal-face {
+      position: absolute;
+      backface-visibility: hidden;
+    }
+
+    .petal-face.back { transform: rotateY(180deg); }
+
+    .petal svg {
+      position: absolute;
+      top: 0; left: -115px;
+      width: 230px; height: 230px;
+    }
+
+    /* FOLHAS (Separadas para caírem de cima) */
+    .falling-leaf {
+      position: fixed;
+      top: -80px;
+      pointer-events: none;
+      z-index: 200;
+      will-change: transform, opacity;
+      opacity: 0;
+    }
+
+    /* PÓLEN */
+    #pollenContainer {
+      position: absolute; inset: 0;
+      z-index: 50; pointer-events: none;
+    }
+
+    .pollen-dot {
+      position: absolute;
+      border-radius: 50%;
+      background: var(--gold-light);
+      box-shadow: 0 0 6px 2px rgba(201,168,76,0.5);
+      opacity: 0;
+      top: 50%; left: 50%;
+      will-change: transform, opacity;
+    }
+
+    .hint {
+      position: absolute;
+      bottom: -70px; left: 0; right: 0;
+      text-align: center;
+      font-size: 0.75rem; letter-spacing: 5px;
+      color: rgba(255,255,255,0.6);
+      animation: pulse 2.5s infinite;
+    }
+
+    @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.9; } }
+  </style>
+</head>
+<body>
+
+  <div class="bg-site" id="bgSite">
+    <div style="text-align:center; color:white;">
+      <h1 style="font-family:'Great Vibes',cursive; font-size:clamp(3.5rem,10vw,7rem); text-shadow:0 4px 20px rgba(0,0,0,0.8);">Lala & Marquinhos</h1>
+      <p style="letter-spacing:6px; font-size:1rem; margin-top:10px; opacity:0.85;">13 DE JUNHO DE 2026</p>
+    </div>
+  </div>
+
+  <div class="scene">
+    <div class="flower-wrapper" id="flowerWrapper">
+      <div class="card" id="card">
+        <div class="card-border" id="cardBorder"></div>
+        <div class="card-content">
+          <div class="card-top-text">CELEBRE CONOSCO</div>
+          <h2>Lala &<br>Marquinhos</h2>
+          <div class="card-divider"></div>
+          <div class="card-date">13 DE JUNHO · 2026</div>
+        </div>
+      </div>
+
+      <div id="layerOuter" class="layer-outer"></div>
+      <div id="layerMid"   class="layer-mid"></div>
+      <div id="layerInner" class="layer-inner"></div>
+
+      <div id="pollenContainer"></div>
+      <div class="hint" id="hint">TOQUE PARA DESABROCHAR</div>
+    </div>
+  </div>
+
+  <!-- Folhas caindo ficam no body mesmo para ter liberdade total de tela -->
+  <div id="leavesContainer"></div>
+
+  <script>
+    /* ── PALETAS ─────────────────────────────── */
+    const PETAL_FILLS   = ['#F5ECE5','#EDE0D8','#E5D4CB'];
+    const PETAL_BACKS   = ['#DDD0C8','#D5C8C0','#CCC0B8'];
+    const LEAF_COLORS   = ['#A8C5A0','#8FB387','#7AA070','#C5D8C0','#90B88A'];
+
+    /* ── GERA PÉTALAS ────────────────────────── */
+    const COUNTS = [8, 8, 8];
+    const LAYERS = ['layerOuter','layerMid','layerInner'];
+    const Z_OFF  = [8, 5, 2];
+    const A_OFF  = [0, 22.5, 45];
+
+    const allPetals = []; // Para o vento no final
+
+    function makePetalSVG(fill) {
+      return `<svg viewBox="0 0 230 230" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 115 230 C 55 190,15 140,20 90 C 25 40,80 10,115 5 C 150 10,205 40,210 90 C 215 140,175 190,115 230 Z"/>
+      </svg>`;
+    }
+
+    LAYERS.forEach((lid, li) => {
+      const container = document.getElementById(lid);
+      const fill = PETAL_FILLS[li];
+      const back = PETAL_BACKS[li];
+      for (let i = 0; i < COUNTS[li]; i++) {
+        const angle = A_OFF[li] + (360 / COUNTS[li]) * i;
+        const el = document.createElement('div');
+        el.className = 'petal';
+        el.id = `${lid}_p${i}`;
+        el.style.cssText = `transform: translateX(-50%) rotate(${angle}deg) translateZ(${Z_OFF[li]}px); z-index: ${10 - li};`;
+        el.innerHTML = `
+          <div class="petal-face front">
+            <svg viewBox="0 0 230 230" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:-115px;width:230px;height:230px">
+              <path d="M 115 230 C 55 190,15 140,20 90 C 25 40,80 10,115 5 C 150 10,205 40,210 90 C 215 140,175 190,115 230 Z"
+                fill="${fill}" stroke="rgba(0,0,0,0.05)" stroke-width="1"/>
+            </svg>
+          </div>
+          <div class="petal-face back">
+            <svg viewBox="0 0 230 230" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:-115px;width:230px;height:230px">
+              <path d="M 115 230 C 55 190,15 140,20 90 C 25 40,80 10,115 5 C 150 10,205 40,210 90 C 215 140,175 190,115 230 Z"
+                fill="${back}"/>
+            </svg>
+          </div>`;
+        container.appendChild(el);
+        allPetals.push({ el, angle });
+      }
+    });
+
+    /* ── GERA FOLHAS SVG ─────────────────────── */
+    // Forma de folha orgânica criada em SVG
+    function makeLeafSVG(color, w, h) {
+      return `<svg width="${w}" height="${h}" viewBox="0 0 40 70" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 20 70 C 0 50, -8 30, 5 10 C 12 0, 28 0, 35 10 C 48 30, 40 50, 20 70 Z"
+          fill="${color}" opacity="0.88"/>
+        <line x1="20" y1="65" x2="20" y2="12" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+      </svg>`;
+    }
+
+    /* ── PARALLAX + IDLE ─────────────────────── */
+    const flowerWrapper = document.getElementById('flowerWrapper');
+    let isActive = true;
+
+    const floatAnim = gsap.to(flowerWrapper, {
+      y: 12, duration: 3, ease: "sine.inOut", yoyo: true, repeat: -1
+    });
+
+    const xTo = gsap.quickTo(flowerWrapper, "rotationY", {duration: 1, ease: "power3.out"});
+    const yTo = gsap.quickTo(flowerWrapper, "rotationX", {duration: 1, ease: "power3.out"});
+
+    window.addEventListener("mousemove", (e) => {
+      if (!isActive) return;
+      xTo(-(window.innerWidth  / 2 - e.pageX) / 35);
+      yTo( (window.innerHeight / 2 - e.pageY) / 35);
+    });
+
+    /* ── LANÇA FOLHAS CAINDO ─────────────────── */
+    function launchFallingLeaves(count, delay) {
+      const container = document.getElementById('leavesContainer');
+      for (let i = 0; i < count; i++) {
+        const color = LEAF_COLORS[Math.floor(Math.random() * LEAF_COLORS.length)];
+        const w = 24 + Math.random() * 24;
+        const h = w * 1.75;
+        const leaf = document.createElement('div');
+        leaf.className = 'falling-leaf';
+        leaf.innerHTML = makeLeafSVG(color, w, h);
+        leaf.style.left = (5 + Math.random() * 90) + 'vw';
+        leaf.style.top  = '-80px';
+        container.appendChild(leaf);
+
+        const startDelay = delay + Math.random() * 2.5;
+        const dur        = 4 + Math.random() * 5;
+        const driftX     = (Math.random() - 0.5) * 600; // Vento lateral
+        const swayAmp    = 80 + Math.random() * 120;     // Oscilação
+        const rotSpeed   = (Math.random() > 0.5 ? 1 : -1) * (200 + Math.random() * 300);
+
+        gsap.to(leaf, {
+          opacity: 0.85,
+          duration: 0.4,
+          delay: startDelay
+        });
+
+        // Queda com física de vento: oscilação lateral + rotação
+        gsap.to(leaf, {
+          y: window.innerHeight + 120,
+          x: driftX,
+          rotation: rotSpeed,
+          duration: dur,
+          ease: "none",
+          delay: startDelay,
+          onComplete: () => leaf.remove()
+        });
+
+        // Oscilação lateral estilo folha caindo (sway)
+        gsap.to(leaf, {
+          x: '+=' + swayAmp,
+          duration: 1.4 + Math.random() * 0.6,
+          ease: "sine.inOut",
+          yoyo: true,
+          repeat: Math.ceil(dur / 1.5),
+          delay: startDelay
+        });
+
+        // Fade out no fim
+        gsap.to(leaf, {
+          opacity: 0,
+          duration: 1.5,
+          delay: startDelay + dur - 1.5
+        });
+      }
+    }
+
+    /* ── TIMELINE PRINCIPAL ──────────────────── */
+    flowerWrapper.addEventListener("click", () => {
+      if (!isActive) return;
+      isActive = false;
+
+      floatAnim.kill();
+      gsap.to(flowerWrapper, { rotationX: 0, rotationY: 0, y: 0, duration: 0.6, ease: "power2.out" });
+      gsap.to("#hint", { autoAlpha: 0, duration: 0.3 });
+
+      const tl = gsap.timeline();
+
+      /* 1. RESPIRAÇÃO */
+      tl.to(flowerWrapper, { scale: 1.06, duration: 0.3, ease: "power1.out" }, 0)
+        .to(flowerWrapper, { scale: 1,    duration: 0.3, ease: "power1.in" },  0.3)
+
+      /* 2. DESABROCHAR FLUIDO — Pétalas com rotação E balanço natural (skewY) */
+      LAYERS.forEach((lid, li) => {
+        const count  = COUNTS[li];
+        const startT = 0.3 + li * 0.15;
+
+        for (let i = 0; i < count; i++) {
+          const el = document.getElementById(`${lid}_p${i}`);
+
+          // Desabrochar: cada pétala roda para trás com um balanço lateral (skewY)
+          // dando a sensação de que cedeu com fluidez, não de plástico
+          tl.to(el, {
+            rotateX:  -160,
+            skewY:    (i % 2 === 0 ? 6 : -6), // Pétalas alternadas balançam lados opostos
+            duration: 1.3,
+            ease: "power2.inOut",
+          }, startT + i * 0.04)
+          .set(el, { zIndex: 1 }, startT + i * 0.04 + 0.65)
+
+          // Pequena vibração / respiração após abrir — a pétala "pousa"
+          .to(el, {
+            skewY: 0,
+            rotateX: -165,
+            duration: 0.6,
+            ease: "elastic.out(1, 0.5)"
+          }, startT + i * 0.04 + 1.3);
+        }
+      });
+
+      /* 3. PÓLEN */
+      const pollenC = document.getElementById('pollenContainer');
+      for (let i = 0; i < 50; i++) {
+        const p = document.createElement('div');
+        p.className = 'pollen-dot';
+        const size = 2 + Math.random() * 5;
+        p.style.cssText = `width:${size}px;height:${size}px;margin-left:${-size/2}px;margin-top:${-size/2}px;`;
+        pollenC.appendChild(p);
+        const tx = (Math.random() - 0.5) * 500;
+        const ty = (Math.random() - 0.5) * 500 - 80;
+        const dur = 2 + Math.random();
+        const del = 0.5 + Math.random() * 0.5;
+        tl.to(p, { x: tx, y: ty, scale: Math.random() * 2 + 0.5, opacity: Math.random() * 0.8 + 0.2, duration: dur, ease: "power2.out" }, del)
+          .to(p, { opacity: 0, duration: 0.8 }, del + dur - 0.8);
+      }
+
+      /* 4. CARTÃO EXPANDE */
+      tl.to("#card", {
+        inset: 0, borderRadius: "8px",
+        y: -20, z: 40,
+        duration: 1.2, ease: "expo.inOut",
+        boxShadow: "0 20px 50px rgba(0,0,0,0.4)"
+      }, 1.8)
+      .to("#cardBorder", { borderRadius: "6px", duration: 1.2, ease: "expo.inOut" }, 1.8)
+      .set("#card", { zIndex: 20 }, 1.9)
+
+      /* 5. CARTÃO TOMA A FRENTE */
+      .to("#card", {
+        y: 0, z: 100, scale: 1.08,
+        duration: 1.2, ease: "power3.out",
+        boxShadow: "0 40px 80px rgba(0,0,0,0.6)"
+      }, 3.0)
+      .to("#layerOuter, #layerMid, #layerInner", {
+        z: -200, opacity: 0.2, duration: 1.2, ease: "power3.out"
+      }, 3.0)
+
+      /* 6. VENTO: Pétalas são SOPRADAS para longe com trajetórias aleatórias */
+      .add(() => {
+        allPetals.forEach(({ el }, idx) => {
+          // Cada pétala recebe um vetor de vento único
+          const tx    = (Math.random() - 0.45) * 1400; // Maioria soprada pra um lado
+          const ty    = -300 - Math.random() * 600;     // Sobem com o vento
+          const tz    = -200 - Math.random() * 300;
+          const rot   = (Math.random() - 0.5) * 720;
+          const rotX  = -90 + (Math.random() - 0.5) * 180;
+          const delay = Math.random() * 0.5; // Stagger orgânico
+
+          gsap.to(el, {
+            x: tx, y: ty, z: tz,
+            rotation: rot, rotateX: rotX,
+            scale: 0.2 + Math.random() * 0.6,
+            opacity: 0,
+            duration: 2.2 + Math.random() * 1.2,
+            ease: "power1.inOut",
+            delay
+          });
+        });
+      }, 4.0)
+
+      /* 7. FOLHAS CAEM (começam junto com o vento) */
+      .add(() => {
+        launchFallingLeaves(22, 0);
+      }, 4.0)
+
+      /* 8. PAUSA DE LEITURA */
+
+      /* 9. MERGULHO FINAL */
+      .to("#card", { scale: 5, autoAlpha: 0, duration: 1.8, ease: "power3.inOut" }, 7.0)
+      .to("#bgSite", { filter: "blur(0px) brightness(1)", scale: 1, duration: 2, ease: "power2.inOut" }, 7.0)
+      .set("#flowerWrapper", { display: "none" });
+    });
+  </script>
+</body>
+</html>

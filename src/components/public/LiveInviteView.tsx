@@ -11,10 +11,15 @@ import RSVP from '@/components/sections/RSVP';
 import AgendaSection from '@/components/sections/AgendaSection';
 import Countdown from '@/components/sections/Countdown';
 import HeroCarousel from '@/components/ui/HeroCarousel';
-import EnvelopeGateway from '@/components/public/EnvelopeGateway/EnvelopeGateway';
 import { Configuracao } from '@/lib/types/database';
 import Link from 'next/link';
 import { useTrackSection } from '@/hooks/useTrackSection';
+
+// STORY-056 & PRD-010: Sistema Multi-Animação de Entrada
+import EnvelopeGateway from '@/components/public/EnvelopeGateway/EnvelopeGateway';
+import GSAPEnvelopeV3 from '@/components/public/EnvelopeGateway/GSAPEnvelopeV3';
+import GSAPCinematic from '@/components/public/EnvelopeGateway/GSAPCinematic';
+import GSAPFlowerWind from '@/components/public/EnvelopeGateway/GSAPFlowerWind';
 
 import { getContrastColor, getLegibleText } from '@/lib/utils/colors';
 
@@ -182,22 +187,36 @@ const LiveInviteView: React.FC<LiveInviteViewProps> = ({
               zIndex: 999999 
             }}
           >
-            <EnvelopeGateway
-              slug={slug}
-              bgPrimary={config.bg_primary || '#FAF9F6'}
-              textMain={config.text_main || '#333333'}
-              accentColor={config.accent_color || '#c8943a'}
-              coupleNoiva={couple.noiva}
-              coupleNoivo={couple.noivo}
-              date={couple.data}
-              rawDate={couple.rawDate}
-              fontCursive={config.font_cursive}
-              fontSerif={config.font_serif}
-              heroImages={config.hero_images && config.hero_images.length > 0 ? config.hero_images : (previewBase64 ? [previewBase64] : undefined)}
-              onComplete={() => {
-                if (onGatewayComplete) onGatewayComplete();
-              }}
-            />
+            {(() => {
+              const SelectedGateway = (() => {
+                switch(config.animacao_tipo) {
+                  case 'envelope_v3': return GSAPEnvelopeV3;
+                  case 'cinematic': return GSAPCinematic;
+                  case 'flower_wind': return GSAPFlowerWind;
+                  case 'padrao':
+                  default: return EnvelopeGateway;
+                }
+              })();
+
+              return (
+                <SelectedGateway
+                  slug={slug}
+                  bgPrimary={config.bg_primary || '#FAF9F6'}
+                  textMain={config.text_main || '#333333'}
+                  accentColor={config.accent_color || '#c8943a'}
+                  coupleNoiva={couple.noiva}
+                  coupleNoivo={couple.noivo}
+                  date={couple.data}
+                  rawDate={couple.rawDate}
+                  fontCursive={config.font_cursive}
+                  fontSerif={config.font_serif}
+                  heroImages={config.hero_images && config.hero_images.length > 0 ? config.hero_images : (previewBase64 ? [previewBase64] : undefined)}
+                  onComplete={() => {
+                    if (onGatewayComplete) onGatewayComplete();
+                  }}
+                />
+              );
+            })()}
           </motion.div>
         )}
       </AnimatePresence>

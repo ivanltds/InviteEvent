@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lala & Marquinhos — Apresentação Frontal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Great+Vibes&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <style>
+    :root {
+      --gold: #C5A059;
+      --gold-light: #EBD49A;
+      --env-dark: #121212;
+      --env-light: #242424;
+      --paper-bg: #FDFBF7;
+      --paper-dark: #F0EAE0;
+      --ink: #2A2A2A;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 100vw; height: 100vh;
+      overflow: hidden;
+      background-color: #050505;
+      font-family: 'Montserrat', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      color: white;
+    }
+
+    /* MOCKUP DO SITE (Fundo) */
+    .bg-site {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.85)), 
+                  url('https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=2000') center/cover;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      filter: blur(15px) brightness(0.3);
+      transform: scale(1.05);
+      will-change: filter, transform;
+    }
+
+    /* CENA 3D */
+    .scene {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 2500px;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .envelope-wrapper {
+      position: relative;
+      width: 600px;
+      height: 400px;
+      transform-style: preserve-3d;
+      pointer-events: auto;
+      cursor: pointer;
+      will-change: transform;
+    }
+
+    .envelope-body {
+      position: absolute;
+      inset: 0;
+      transform-style: preserve-3d;
+      will-change: transform, opacity;
+      filter: drop-shadow(0 30px 40px rgba(0,0,0,0.8));
+    }
+
+    /* CAMADAS DO ENVELOPE */
+    .svg-layer {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+    }
+
+    .svg-layer.back {
+      fill: var(--env-dark);
+      z-index: 1;
+      transform: translateZ(-2px);
+    }
+
+    .svg-layer.flaps-front {
+      z-index: 3;
+      filter: drop-shadow(0 -5px 15px rgba(0,0,0,0.5));
+      transform: translateZ(5px);
+    }
+
+    /* O BILHETE */
+    .card {
+      position: absolute;
+      bottom: 5px; left: 15px; right: 15px; height: 385px;
+      background: linear-gradient(135deg, var(--paper-bg) 0%, var(--paper-dark) 100%);
+      border-radius: 6px;
+      z-index: 2; 
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      will-change: transform, opacity, z-index;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15), inset 0 0 0 1px rgba(255,255,255,0.8);
+      transform: translateZ(0px);
+    }
+
+    /* Molduras Douradas do Cartão */
+    .card-border-outer {
+      position: absolute; inset: 12px;
+      border: 1px solid var(--gold); opacity: 0.4;
+      border-radius: 2px;
+    }
+    .card-border-inner {
+      position: absolute; inset: 18px;
+      border: 1px solid var(--gold); opacity: 0.8;
+    }
+
+    .card-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      color: var(--ink);
+    }
+
+    .card-top-text {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 6px;
+      margin-bottom: 25px;
+      color: #777;
+    }
+
+    .card h2 {
+      font-family: 'Great Vibes', cursive;
+      font-size: 4.8rem;
+      line-height: 0.9;
+      margin-bottom: 5px;
+      color: var(--env-dark);
+    }
+
+    .card-divider {
+      width: 40px; height: 1px;
+      background: var(--gold);
+      margin: 25px auto;
+    }
+
+    .card-date {
+      font-family: 'Cinzel', serif;
+      font-size: 1.2rem;
+      letter-spacing: 4px;
+      color: var(--ink);
+    }
+
+    .dynamic-shadow {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 70%);
+      z-index: 2.5;
+      pointer-events: none;
+      will-change: opacity;
+    }
+
+    /* ABA SUPERIOR */
+    .top-flap-container {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 260px;
+      transform-origin: top center;
+      transform-style: preserve-3d;
+      z-index: 4; 
+      will-change: transform;
+      transform: translateZ(6px);
+    }
+
+    .top-flap-front, .top-flap-back {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+    }
+
+    .top-flap-front {
+      fill: var(--env-light);
+      filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6));
+    }
+
+    .top-flap-back {
+      fill: var(--env-dark);
+      transform: rotateY(180deg);
+    }
+
+    /* LACRE DE CERA */
+    .wax-seal {
+      position: absolute;
+      bottom: -45px; left: 50%;
+      transform: translateX(-50%);
+      width: 90px; height: 90px;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .wax-half {
+      position: absolute;
+      inset: 0;
+      will-change: transform, opacity;
+    }
+
+    .wax-left { 
+      clip-path: polygon(0 0, 50% 0, 42% 50%, 55% 80%, 45% 100%, 0 100%); 
+      transform-origin: 30% 50%;
+    }
+    .wax-right { 
+      clip-path: polygon(100% 0, 50% 0, 42% 50%, 55% 80%, 45% 100%, 100% 100%); 
+      transform-origin: 70% 50%;
+    }
+
+    .wax-design {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wax-inner {
+      width: 90px; height: 90px;
+      background: radial-gradient(circle at 35% 35%, #9E1B1B, #6A0A0A 50%, #2A0202 100%);
+      border-radius: 50%;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.6), inset 0 3px 6px rgba(255,255,255,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(0,0,0,0.4);
+    }
+
+    .wax-inner::after {
+      content: '';
+      position: absolute;
+      inset: 5px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .wax-text {
+      font-family: 'Cinzel', serif;
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--gold-light);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+      z-index: 2;
+    }
+
+    .hint {
+      position: absolute;
+      bottom: -70px; left: 0; right: 0;
+      text-align: center;
+      font-size: 0.8rem;
+      letter-spacing: 4px;
+      color: rgba(255,255,255,0.6);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-site" id="bgSite">
+    <div style="text-align: center; z-index: 1;">
+      <h1 style="font-family: 'Cinzel', serif; font-size: clamp(3rem, 8vw, 6rem); text-shadow: 0 4px 20px rgba(0,0,0,0.8); margin-bottom: 20px;">Lala & Marquinhos</h1>
+      <p style="letter-spacing: 6px; font-size: 1rem; text-shadow: 0 2px 10px rgba(0,0,0,0.8);">13 DE JUNHO DE 2026</p>
+    </div>
+  </div>
+
+  <div class="scene">
+    <div class="envelope-wrapper" id="envWrapper">
+      <div class="envelope-body" id="envBody">
+
+        <!-- COSTAS DO ENVELOPE -->
+        <svg class="svg-layer back" viewBox="0 0 600 400" preserveAspectRatio="none">
+          <rect width="600" height="400" rx="2" ry="2" />
+        </svg>
+
+        <!-- CARTÃO PREMIUM -->
+        <div class="card" id="card">
+          <div class="card-border-outer"></div>
+          <div class="card-border-inner"></div>
+          <div class="card-content">
+            <div class="card-top-text">O INÍCIO DE SEMPRE</div>
+            <h2>Lala & Marquinhos</h2>
+            <div class="card-divider"></div>
+            <div class="card-date">13 DE JUNHO DE 2026</div>
+          </div>
+        </div>
+
+        <div class="dynamic-shadow" id="dynShadow"></div>
+
+        <!-- ABAS FRONTAIS -->
+        <svg class="svg-layer flaps-front" viewBox="0 0 600 400" preserveAspectRatio="none">
+          <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+            <path d="M 0 0 L 0 400 L 320 220 L 300 200 Z" fill="var(--env-light)" />
+            <path d="M 600 0 L 600 400 L 280 220 L 300 200 Z" fill="var(--env-light)" />
+            <path d="M 0 400 L 600 400 L 320 180 Q 300 165 280 180 Z" fill="#1C1C1C" />
+          </g>
+        </svg>
+
+        <!-- ABA SUPERIOR -->
+        <div class="top-flap-container" id="topFlap">
+          <!-- Costas da aba (Visível invertida) -->
+          <svg class="top-flap-back" viewBox="0 0 600 260" preserveAspectRatio="none">
+            <path d="M 0 0 L 600 0 L 330 240 Q 300 260 270 240 Z" />
+          </svg>
+
+          <!-- Frente da aba -->
+          <svg class="top-flap-front" viewBox="0 0 600 260" preserveAspectRatio="none">
+            <path d="M 0 0 L 600 0 L 330 240 Q 300 260 270 240 Z" fill="var(--env-light)"/>
+            <path d="M 0 0 L 600 0 L 330 240 Q 300 260 270 240 Z" stroke="var(--gold)" stroke-width="1.5" fill="none" opacity="0.4"/>
+          </svg>
+
+          <!-- LACRE -->
+          <div class="wax-seal" id="waxSeal">
+            <div class="wax-half wax-left" id="waxLeft">
+              <div class="wax-design"><div class="wax-inner"><span class="wax-text">L&amp;M</span></div></div>
+            </div>
+            <div class="wax-half wax-right" id="waxRight">
+              <div class="wax-design"><div class="wax-inner"><span class="wax-text">L&amp;M</span></div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="hint" id="hint">TOQUE PARA ABRIR</div>
+    </div>
+  </div>
+
+  <script>
+    const envWrapper = document.getElementById('envWrapper');
+    let isActive = true;
+
+    const floatAnim = gsap.to(envWrapper, {
+      y: 10, duration: 2.5, ease: "sine.inOut", yoyo: true, repeat: -1
+    });
+
+    const xTo = gsap.quickTo(envWrapper, "rotationY", {duration: 0.8, ease: "power3.out"});
+    const yTo = gsap.quickTo(envWrapper, "rotationX", {duration: 0.8, ease: "power3.out"});
+
+    window.addEventListener("mousemove", (e) => {
+      if (!isActive) return;
+      const xAxis = (window.innerWidth / 2 - e.pageX) / 30; 
+      const yAxis = (window.innerHeight / 2 - e.pageY) / 30;
+      xTo(-xAxis); yTo(yAxis);
+    });
+
+    envWrapper.addEventListener("click", () => {
+      if (!isActive) return;
+      isActive = false;
+
+      floatAnim.kill();
+      gsap.to(envWrapper, { rotationX: 0, rotationY: 0, y: 0, duration: 0.5, ease: "power2.out" });
+      gsap.to("#hint", { autoAlpha: 0, duration: 0.3 });
+
+      const tl = gsap.timeline();
+
+      // 1. Lacre rompe
+      tl.to("#waxSeal", { scale: 1.15, duration: 0.2, ease: "back.out(2)" }, 0)
+      .to("#waxLeft", { x: -60, y: 100, rotation: -30, autoAlpha: 0, duration: 0.7, ease: "power2.in" }, 0.25)
+      .to("#waxRight", { x: 60, y: 100, rotation: 30, autoAlpha: 0, duration: 0.7, ease: "power2.in" }, 0.25)
+
+      // 2. Aba gira
+      .to("#topFlap", { rotateX: 180, duration: 1.1, ease: "power3.inOut" }, 0.4)
+      .set("#topFlap", { zIndex: 1 }, 0.95)
+
+      // Solavanco Físico do Envelope
+      .to("#envBody", { rotateX: 15, duration: 0.4, ease: "sine.out" }, 0.4)
+      .to("#envBody", { rotateX: 0, duration: 0.7, ease: "sine.inOut" }, 0.8)
+      .to("#dynShadow", { opacity: 0, duration: 0.6, ease: "power1.inOut" }, 0.6)
+
+      // 3. CARTÃO SAI TOTALMENTE PARA CIMA
+      // Ele vai até y: -430 (o que o tira 100% de dentro do envelope)
+      .to("#card", { 
+        y: -430, 
+        duration: 1.2, 
+        ease: "power2.inOut",
+        boxShadow: "0 20px 50px rgba(0,0,0,0.3)"
+      }, 1.1)
+      .to("#envBody", { y: 80, duration: 1.2, ease: "power2.inOut" }, 1.1)
+
+      // === O GRANDE TRUQUE ===
+      // Quando o cartão chega no topo (fora do envelope), ele ganha zIndex supremo
+      .set("#card", { zIndex: 20 }, 2.3)
+
+      // 4. CARTÃO TOMA A FRENTE DO ENVELOPE TOTALMENTE
+      // Ele desce, cresce levemente e avança no eixo Z para cobrir o envelope descartado
+      .to("#card", {
+        y: -140, // Desce ficando no meio da tela
+        z: 80,   // Vem pra frente
+        scale: 1.1, // Dá destaque
+        duration: 1.2,
+        ease: "power3.out",
+        boxShadow: "0 40px 80px rgba(0,0,0,0.6)"
+      }, 2.3)
+
+      // O Envelope recua para as sombras, perdendo importância
+      .to("#envBody", {
+        z: -150,
+        y: 180,
+        rotationX: -10,
+        opacity: 0.5,
+        duration: 1.2,
+        ease: "power3.out"
+      }, 2.3)
+
+      // 5. PAUSA DRAMÁTICA (Fica na tela sendo lido por 1.5s)
+
+      // 6. CARTÃO MERGULHA NA CÂMERA E REVELA O SITE
+      .to("#card", { scale: 5, autoAlpha: 0, duration: 1.8, ease: "power3.inOut" }, 5.0)
+      .to("#envBody", { z: -1000, y: 400, autoAlpha: 0, duration: 1.8, ease: "power3.inOut" }, 5.0)
+
+      .to("#bgSite", { filter: "blur(0px) brightness(1)", scale: 1, duration: 2, ease: "power2.inOut" }, 5.0)
+
+      .set("#envWrapper", { display: "none" });
+    });
+  </script>
+</body>
+</html>

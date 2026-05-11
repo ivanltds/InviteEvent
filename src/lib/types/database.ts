@@ -127,6 +127,7 @@ export interface Configuracao {
   accent_color?: string;
   font_cursive?: string;
   font_serif?: string;
+  animacao_tipo?: 'padrao' | 'envelope_v3' | 'cinematic' | 'flower_wind';
   created_at?: string;
   updated_at?: string;
   user_id?: string;

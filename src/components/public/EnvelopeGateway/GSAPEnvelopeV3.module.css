@@ -1,0 +1,316 @@
+.root {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #050505;
+  -webkit-font-smoothing: antialiased;
+  color: white;
+  z-index: 999999;
+}
+
+.skipBtn {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  z-index: 10000;
+  transition: all 0.3s ease;
+}
+.skipBtn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.bgSite {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  filter: blur(15px) brightness(0.3);
+  transform: scale(1.05);
+  will-change: filter, transform;
+}
+.bgSite::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.85));
+}
+
+.siteContent {
+  text-align: center; 
+  z-index: 1;
+}
+.siteTitle {
+  font-family: var(--font-serif);
+  font-size: clamp(3rem, 8vw, 6rem); 
+  text-shadow: 0 4px 20px rgba(0,0,0,0.8); 
+  margin-bottom: 20px;
+  color: white;
+}
+.siteDate {
+  letter-spacing: 6px; 
+  font-size: 1rem; 
+  text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+  font-family: 'Montserrat', sans-serif;
+  color: rgba(255,255,255,0.9);
+}
+
+.scene {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 2500px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.envelopeWrapper {
+  position: relative;
+  width: 600px;
+  height: 400px;
+  transform-style: preserve-3d;
+  pointer-events: auto;
+  cursor: pointer;
+  will-change: transform;
+}
+
+.envelopeBody {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 30px 40px rgba(0,0,0,0.8));
+}
+
+.svgLayer {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+}
+
+.back {
+  fill: var(--env-dark);
+  z-index: 1;
+  transform: translateZ(-2px);
+}
+
+.flapsFront {
+  z-index: 3;
+  filter: drop-shadow(0 -5px 15px rgba(0,0,0,0.5));
+  transform: translateZ(5px);
+}
+
+.card {
+  position: absolute;
+  bottom: 5px; left: 15px; right: 15px; height: 385px;
+  background: linear-gradient(135deg, var(--paper-bg) 0%, var(--paper-dark) 100%);
+  border-radius: 6px;
+  z-index: 2; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  will-change: transform, opacity, z-index;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.15), inset 0 0 0 1px rgba(255,255,255,0.8);
+  transform: translateZ(0px);
+}
+
+.cardBorderOuter {
+  position: absolute; inset: 12px;
+  border: 1px solid var(--gold); opacity: 0.4;
+  border-radius: 2px;
+}
+.cardBorderInner {
+  position: absolute; inset: 18px;
+  border: 1px solid var(--gold); opacity: 0.8;
+}
+
+.cardContent {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: var(--ink);
+}
+
+.cardTopText {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 6px;
+  margin-bottom: 25px;
+  color: #777;
+}
+
+.card h2 {
+  font-family: var(--font-cursive);
+  font-size: 4.8rem;
+  line-height: 0.9;
+  margin-bottom: 5px;
+}
+
+.cardDivider {
+  width: 40px; height: 1px;
+  background: var(--gold);
+  margin: 25px auto;
+}
+
+.cardDate {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  letter-spacing: 4px;
+}
+
+.dynamicShadow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 70%);
+  z-index: 2.5;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.topFlapContainer {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 260px;
+  transform-origin: top center;
+  transform-style: preserve-3d;
+  z-index: 4; 
+  will-change: transform;
+  transform: translateZ(6px);
+}
+
+.topFlapFront, .topFlapBack {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+}
+
+.topFlapFront {
+  fill: var(--env-light);
+  filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6));
+}
+
+.topFlapBack {
+  fill: var(--env-dark);
+  transform: rotateY(180deg);
+}
+
+.waxSeal {
+  position: absolute;
+  bottom: -45px; left: 50%;
+  transform: translateX(-50%);
+  width: 90px; height: 90px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.waxHalf {
+  position: absolute;
+  inset: 0;
+  will-change: transform, opacity;
+}
+
+.waxLeft { 
+  clip-path: polygon(0 0, 50% 0, 42% 50%, 55% 80%, 45% 100%, 0 100%); 
+  transform-origin: 30% 50%;
+}
+.waxRight { 
+  clip-path: polygon(100% 0, 50% 0, 42% 50%, 55% 80%, 45% 100%, 100% 100%); 
+  transform-origin: 70% 50%;
+}
+
+.waxDesign {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.waxInner {
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.6), inset 0 3px 6px rgba(255,255,255,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0,0,0,0.4);
+}
+
+.waxInner::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.waxText {
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #FDFBF7;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  z-index: 2;
+}
+
+.hint {
+  position: absolute;
+  bottom: -70px; left: 0; right: 0;
+  text-align: center;
+  font-size: 0.8rem;
+  letter-spacing: 4px;
+  color: rgba(255,255,255,0.6);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* Responsividade Extrema para Celular */
+@media (max-width: 768px) {
+  .envelopeWrapper {
+    width: 90vw;
+    height: 60vw;
+    max-height: 320px;
+  }
+  .card {
+    padding: 20px;
+    height: calc(60vw - 15px);
+  }
+  .card h2 {
+    font-size: 2.5rem;
+  }
+  .topFlapContainer {
+    height: 40vw;
+  }
+  .waxSeal {
+    width: 60px; height: 60px;
+    bottom: -30px;
+  }
+  .waxInner { width: 60px; height: 60px; }
+  .waxText { font-size: 1rem; }
+  .siteTitle { font-size: 2.5rem; }
+}

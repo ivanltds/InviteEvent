@@ -40,6 +40,7 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | 005 | Data Shielding & Soft Delete     | CONCLUÍDO   | Concluído   |
 | 006 | Unificação Design System & Grids | CONCLUÍDO   | Concluído   |
 | 010 | Multi-Animação de Gateways       | CONCLUÍDO   | Concluído   |
+| 011 | Modo Telão Realtime              | CONCLUÍDO   | Concluído   |
 
 ## Segurança
 - **Última Auditoria:** 2024-05-24
@@ -104,8 +105,14 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | tests/e2e/prd_010_animacoes_gateways.spec.ts| QA         | Certificação E2E de Motor de Animações GSAP Gateways|
 | docs/estrategia-metricas-insights.md       | BA          | Framework Estratégico de Métricas e Visão Preditiva |
 | docs/melhorias-suporte-v2.md               | BA          | Plano de Melhorias Estruturais de Atendimento V2 |
+| docs/wireframes/modo-telao-tv.html         | UX/UI       | Wireframe do Modo Telão Realtime 16:9 |
+| docs/prd/prd-011/prd-inicial.md            | BA          | PRD Inicial do Modo Telão Realtime |
+| docs/prd/prd-011/fluxo-ux.md               | UX/UI       | Mapeamento de fluxos e telas do Modo Telão|
+| docs/arquitetura/plano-implementacao-prd-011.md | Arquiteto | Plano técnico para Modo Telão Realtime (TV)|
+| tests/e2e/prd_011_modo_telao.spec.ts       | QA          | Conjunto de testes E2E de estabilidade da TV |
+
 
 ## Última Atualização
-- Data    : 2026-05-11
+- Data    : 2026-05-12
 - Por     : Maestro / DEV
-- Motivo  : Criação da Versão v0.3.1. Entrega e homologação final das animações Cinematic Gateways (incluindo 1:1 wireframe e reversão controlada de Petalas 2). Tudo comitado e versionado.
+- Motivo  : Lançamento da Versão v0.3.2. Finalização total da PRD-011 (Modo Telão Realtime). Página do slideshow responsiva em 16:9 ativa, escuta em tempo real no Supabase conectada e atalho administrativo configurado para maximizar o engajamento na festa do primeiro cliente.

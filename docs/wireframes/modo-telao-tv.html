@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modo Telão TV - Mural de Lembranças Integrado</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
+
+        :root {
+            --accent-gold: #C5A059;
+            --bg-light: #FAF9F6;
+            --text-dark: #1A1A1A;
+            --glass-card: rgba(255, 255, 255, 0.92);
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-light);
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Wrapper Principal - Mantém proporção TV */
+        .tv-viewport {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            background: #f4f2ec;
+            overflow: hidden;
+        }
+
+        /* Padrão sutil de fundo da identidade visual */
+        .tv-viewport::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image: radial-gradient(circle, transparent 60%, rgba(197, 160, 89, 0.05) 100%);
+            z-index: 1; pointer-events: none;
+        }
+
+        /* Layout de Dois Lados para Telão (Mais harmônico para fotos + texto) */
+        .split-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Lado Esquerdo: A Mídia (Foto) */
+        .media-half {
+            flex: 1.2; /* Um pouco maior */
+            position: relative;
+            background: #000;
+            overflow: hidden;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+            z-index: 3;
+        }
+
+        /* Lado Direito: O Recado/Texto */
+        .content-half {
+            flex: 0.8;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            background: var(--bg-light);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Efeito de fundo borrado na área da mídia */
+        .bg-blur {
+            position: absolute;
+            inset: -20px;
+            background-size: cover;
+            background-position: center;
+            filter: blur(20px) brightness(0.6);
+            opacity: 0.8;
+            transition: background-image 0.8s ease;
+        }
+
+        /* A foto centralizada respeitando proporção */
+        .photo-display {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            z-index: 2;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.8s ease, transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .photo-active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Estilos de Texto (Idênticos ao MuralSection / Mural.module.css) */
+        .message-quote {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 2.5rem;
+            line-height: 1.4;
+            color: var(--text-dark);
+            margin-bottom: 2rem;
+            position: relative;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s 0.2s ease, transform 0.8s 0.2s ease;
+        }
+
+        .message-quote::before {
+            content: '“';
+            font-size: 6rem;
+            color: var(--accent-gold);
+            position: absolute;
+            top: -40px; left: -30px;
+            opacity: 0.3;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .message-author {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent-gold);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.8s 0.4s ease, transform 0.8s 0.4s ease;
+        }
+
+        .message-author::before {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 2px;
+            background: var(--accent-gold);
+        }
+
+        /* Classe para acionar animação de texto */
+        .content-active .message-quote, 
+        .content-active .message-author {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* RODA PÉ DO TELÃO (Informações & Logo) */
+        .tv-footer {
+            position: absolute;
+            bottom: 40px;
+            right: 60px;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            z-index: 10;
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.06);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .qr-img {
+            width: 80px; height: 80px;
+        }
+
+        .footer-text h4 {
+            margin: 0 0 2px 0;
+            font-size: 16px;
+            color: var(--text-dark);
+        }
+
+        .footer-text p {
+            margin: 0;
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Modo Apenas Texto (Quando não tem foto) */
+        .text-only-mode .media-half {
+            display: none;
+        }
+        .text-only-mode .content-half {
+            flex: 1;
+            padding: 100px 200px;
+            text-align: center;
+            background: linear-gradient(135deg, #fff 0%, #F5EFEB 100%);
+        }
+        .text-only-mode .message-author {
+            justify-content: center;
+        }
+        .text-only-mode .message-quote {
+            font-size: 3.5rem;
+        }
+
+        /* Notificação de Novo Item */
+        .toast-notify {
+            position: absolute;
+            top: 40px; left: 40px;
+            background: var(--accent-gold);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: bold;
+            display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 10px 20px rgba(197,160,89,0.3);
+            z-index: 20;
+            transform: translateY(-100px);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .toast-notify.show { transform: translateY(0); }
+
+        /* Botões de Depuração da Simulação */
+        .debug-tools {
+            position: absolute; top: 20px; right: 20px; z-index: 999;
+            background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px;
+        }
+        .debug-tools button { padding: 5px 10px; cursor: pointer; border-radius: 4px; border:none; font-size:11px; }
+    </style>
+</head>
+<body>
+
+    <div class="tv-viewport" id="viewport">
+        
+        <!-- Banner flutuante (reaproveitado da lógica realtime) -->
+        <div class="toast-notify" id="toast">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            NOVO RECADO NO MURAL!
+        </div>
+
+        <div class="split-container">
+            <!-- Lado 1: Mídia (Reaproveita visual de Fotos do Mural) -->
+            <div class="media-half" id="mediaBox">
+                <div class="bg-blur" id="blurBg"></div>
+                <img src="assets/photo_sample.png" class="photo-display" id="mainPhoto">
+            </div>
+
+            <!-- Lado 2: Conteúdo (Reaproveita o design do texto do Mural) -->
+            <div class="content-half" id="contentBox">
+                <div id="animTarget" class="content-active">
+                    <blockquote class="message-quote" id="txtMsg">
+                        "Que a felicidade a dois continue sendo o objetivo principal de suas vidas. Que a caminhada seja longa, repleta de amor e compreensão."
+                    </blockquote>
+                    <div class="message-author" id="txtAuthor">
+                        CARLA & RICARDO
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Canto da Tela: CTA para enviar -->
+        <div class="tv-footer">
+            <img src="assets/qr.png" class="qr-img">
+            <div class="footer-text">
+                <h4>Envie sua foto ou recado</h4>
+                <p>Acesse o Mural no QR Code acima.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Ferramentas de Simulação -->
+    <div class="debug-tools">
+        <button onclick="cycleSlide()">Próximo Slide</button>
+        <button style="background:#C5A059; color:#fff;" onclick="simRealtime()">Simular Novo Recado</button>
+    </div>
+
+    <script>
+        const dataset = [
+            {
+                tipo: 'HIBRIDO',
+                src: 'assets/photo_sample.png',
+                msg: "Que a felicidade a dois continue sendo o objetivo principal de suas vidas. Que a caminhada seja longa, repleta de amor e compreensão.",
+                autor: "Carla & Ricardo"
+            },
+            {
+                tipo: 'MENSAGEM',
+                src: '',
+                msg: "Amigos queridos, estamos muito felizes de celebrar esse dia mágico com vocês. Que essa união seja abençoada!",
+                autor: "Tia Beth"
+            },
+            {
+                tipo: 'HIBRIDO',
+                src: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=2070&auto=format&fit=crop',
+                msg: "Look do dia para o casório mais esperado do ano! 🎉",
+                autor: "Bruno Mendes"
+            }
+        ];
+
+        let index = 0;
+        const view = document.getElementById('viewport');
+        const mediaBox = document.getElementById('mediaBox');
+        const blurBg = document.getElementById('blurBg');
+        const photo = document.getElementById('mainPhoto');
+        const txtMsg = document.getElementById('txtMsg');
+        const txtAuthor = document.getElementById('txtAuthor');
+        const target = document.getElementById('animTarget');
+        const toast = document.getElementById('toast');
+
+        function applySlide(data) {
+            // Remove estados de animação
+            photo.classList.remove('photo-active');
+            target.classList.remove('content-active');
+
+            setTimeout(() => {
+                // Altera Layout se for apenas mensagem
+                if (data.tipo === 'MENSAGEM') {
+                    view.classList.add('text-only-mode');
+                } else {
+                    view.classList.remove('text-only-mode');
+                    blurBg.style.backgroundImage = `url('${data.src}')`;
+                    photo.src = data.src;
+                }
+
+                // Atualiza Textos
+                txtMsg.innerText = `"${data.msg}"`;
+                txtAuthor.innerText = data.autor.toUpperCase();
+
+                // Reaplica animações após um pequeno delay
+                setTimeout(() => {
+                    photo.classList.add('photo-active');
+                    target.classList.add('content-active');
+                }, 100);
+
+            }, 800); // tempo do fade out
+        }
+
+        function cycleSlide() {
+            index = (index + 1) % dataset.length;
+            applySlide(dataset[index]);
+        }
+
+        function simRealtime() {
+            toast.classList.add('show');
+            setTimeout(() => {
+                const newItem = {
+                    tipo: 'HIBRIDO',
+                    src: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=2069&auto=format&fit=crop',
+                    msg: "ACABOU DE CHEGAR! Vocês estão lindos demais!!!",
+                    autor: "Pedro Lima"
+                };
+                applySlide(newItem);
+                setTimeout(() => { toast.classList.remove('show'); }, 3000);
+            }, 1000);
+        }
+
+        // Init
+        applySlide(dataset[0]);
+        
+        // Auto cycle
+        setInterval(() => {
+            if(!document.hidden) cycleSlide();
+        }, 8000);
+    </script>
+</body>
+</html>

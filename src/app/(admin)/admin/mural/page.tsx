@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useEvent } from '@/lib/contexts/EventContext';
 import { supabase } from '@/lib/supabase';
 import styles from './AdminMural.module.css';
@@ -59,10 +60,21 @@ export default function AdminMural() {
 
   return (
     <main className={styles.container}>
-      <header className={styles.header}>
-        <h1>Moderação do Mural</h1>
-        <p>Gerencie o que seus convidados estão compartilhando.</p>
-      </header>
+      <div className={styles.headerWrapper}>
+        <header className={styles.header}>
+          <h1>Moderação do Mural</h1>
+          <p>Gerencie o que seus convidados estão compartilhando.</p>
+        </header>
+        
+        <Link 
+          href={`/mural/tv?eventId=${currentEvent.id}`}
+          target="_blank"
+          className={styles.tvModeBtn}
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2.5" fill="none" style={{ display: 'block' }}><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 2 12 7 7 2"></polyline></svg>
+          📺 Iniciar Modo Telão
+        </Link>
+      </div>
 
       <div className={styles.tabs}>
         <button 

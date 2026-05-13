@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wireframe Coexistente: Gestão, Vitrine e Recebidos (PRD-012-A)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
+
+        :root {
+            --admin-accent: #C5A059;
+            --bg-primary: #f8fafc;
+            --text-main-safe: #1e293b;
+            --text-muted: #64748b;
+            --font-serif: 'Playfair Display', serif;
+            --font-sans: 'Inter', sans-serif;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background-color: var(--bg-primary);
+            font-family: var(--font-sans);
+            color: var(--text-main-safe);
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Oficial */
+        .sidebar {
+            width: 280px;
+            background-color: white;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            padding: 2.5rem 1.5rem;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.01);
+        }
+
+        .logo {
+            font-family: var(--font-serif);
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 3rem;
+            padding-left: 1rem;
+        }
+
+        .logo span { color: var(--admin-accent); }
+
+        .nav-item {
+            padding: 1rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover { background-color: #f1f5f9; color: var(--text-main-safe); }
+
+        .nav-item.active {
+            background-color: #fefaf3;
+            color: var(--admin-accent);
+            box-shadow: 0 4px 10px rgba(197, 160, 89, 0.05);
+        }
+
+        /* Conteúdo Principal */
+        .main-content {
+            flex: 1;
+            padding: 2.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Cabeçalho Harmonizado */
+        .adminHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2.5rem;
+        }
+
+        .adminHeader h1 {
+            font-family: var(--font-serif);
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-main-safe);
+            margin: 0 0 0.2rem 0;
+        }
+
+        .adminHeader p { margin: 0; color: var(--text-muted); font-size: 0.95rem; }
+
+        .addBtnLegacy {
+            background-color: var(--admin-accent);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 10px 20px rgba(197, 160, 89, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .addBtnLegacy:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(197, 160, 89, 0.3); }
+
+        /* Navegação das Três Abas */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            background: rgba(0, 0, 0, 0.03);
+            padding: 0.5rem;
+            border-radius: 14px;
+            width: fit-content;
+        }
+
+        .tabBtn {
+            background: none;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            color: #64748b;
+            cursor: pointer;
+            font-family: var(--font-sans);
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .tabBtn:hover { color: var(--text-main-safe); }
+
+        .tabBtn.active {
+            background: white;
+            color: var(--admin-accent);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Stats */
+        .statsRow {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .statCard {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        .statCard span { display: block; font-size: 0.85rem; text-transform: uppercase; color: #64748b; margin-bottom: 0.5rem; font-weight: 600; }
+        .statCard strong { font-size: 1.8rem; color: var(--text-main-safe); font-family: var(--font-serif); }
+
+        /* View Controls Row Real */
+        .controlsRow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .viewToggle {
+            display: flex;
+            gap: 0.5rem;
+            background: #e2e8f0;
+            padding: 0.3rem;
+            border-radius: 10px;
+        }
+
+        .toggleBtn {
+            background: transparent;
+            border: none;
+            padding: 0.4rem;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #64748b;
+            display: flex; align-items: center;
+        }
+
+        .toggleBtn.active { background: white; color: var(--admin-accent); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+        /* Grid */
+        .gridContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            padding-bottom: 4rem;
+        }
+
+        /* Cards Uniformizados */
+        .giftCard {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.02);
+            transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .giftCard:hover { transform: translateY(-10px); box-shadow: 0 30px 60px rgba(197, 160, 89, 0.08); }
+
+        .cardImageWrapper {
+            width: 100%;
+            height: 200px;
+            position: relative;
+            background: #f1f5f9;
+            overflow: hidden;
+        }
+
+        .cardImage { width: 100%; height: 100%; object-fit: cover; }
+
+        /* 👀 BOTÃO FLUTUANTE DE DETALHES UNIFICADO PARA TODAS AS PARTES */
+        .viewDetailsOverlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 5;
+        }
+
+        .giftCard:hover .viewDetailsOverlay { opacity: 1; }
+
+        .detailsBtn {
+            background: white;
+            color: var(--text-main-safe);
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            transition: all 0.2s;
+        }
+
+        .detailsBtn:hover { transform: scale(1.05); color: var(--admin-accent); }
+
+        .categoryBadge {
+            position: absolute;
+            top: 1rem; left: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            z-index: 2;
+        }
+
+        .cardContent { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
+        .cardTitle { font-size: 1.1rem; font-weight: 700; color: var(--text-main-safe); margin: 0 0 0.5rem 0; line-height: 1.4; }
+        .cardPrice { font-size: 1.2rem; color: var(--admin-accent); font-weight: 700; font-family: var(--font-serif); margin-bottom: 1.25rem; }
+
+        /* Ações dos Cards na Gestão Real do Catálogo */
+        .cardMeta {
+            margin-top: auto;
+            padding-top: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #f1f5f9;
+            font-size: 0.85rem;
+        }
+
+        .actionsCellReal {
+            display: flex;
+            gap: 6px;
+        }
+
+        .actionIconBtn {
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f3f4f6;
+            color: #4b5563;
+            transition: all 0.2s;
+        }
+
+        .actionIconBtn:hover {
+            background-color: rgba(197, 160, 89, 0.1);
+            color: var(--admin-accent);
+            transform: translateY(-1px);
+        }
+
+        .actionIconBtn.danger:hover {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* Aba de Vitrine Específicos */
+        .cardActions { margin-top: auto; }
+        .addBtn {
+            background-color: #f8fafc; border: 1px solid #e2e8f0; color: var(--text-muted);
+            padding: 0.8rem; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.9rem;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); width: 100%;
+        }
+
+        .addBtn:hover { background-color: var(--admin-accent); color: white; border-color: var(--admin-accent); }
+
+        .giftCard.added .addBtn { background-color: #10b981; color: white; border-color: #10b981; }
+
+        .animationOverlay {
+            position: absolute; inset: 0; background: rgba(255, 255, 255, 0.85);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 10;
+        }
+        .giftCard.added .animationOverlay { opacity: 1; }
+        .animatedCircle {
+            width: 56px; height: 56px; background: #10b981; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 1.3rem; font-weight: bold;
+            transform: scale(0.3); opacity: 0; transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .giftCard.added .animatedCircle { transform: scale(1); opacity: 1; }
+
+        /* Workspace Lateral Vitrine */
+        .workspace-grid { display: grid; grid-template-columns: 1fr 320px; gap: 2.5rem; }
+        .category-row { display: flex; gap: 8px; margin-bottom: 2rem; }
+        .category-chip { padding: 0.6rem 1.2rem; background-color: white; border: 1px solid #e2e8f0; border-radius: 50px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer; }
+        .category-chip.active { background-color: var(--admin-accent); color: white; border-color: var(--admin-accent); box-shadow: 0 4px 12px rgba(197,160,89,0.2); }
+
+        /* Modal Details */
+        .modalOverlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center; z-index: 9999;
+            opacity: 0; visibility: hidden; transition: all 0.3s ease;
+        }
+        .modalOverlay.show { opacity: 1; visibility: visible; }
+        .modal { background: white; padding: 3rem; border-radius: 24px; width: 100%; max-width: 680px; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15); transform: translateY(30px); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .modalOverlay.show .modal { transform: translateY(0); }
+
+        .detailGrid { display: grid; grid-template-columns: 220px 1fr; gap: 2.5rem; margin-bottom: 2rem; }
+        .detailImage { width: 100%; height: 220px; object-fit: cover; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .detailText h2 { margin: 0 0 0.5rem 0; font-family: var(--font-serif); font-size: 1.6rem; color: var(--text-main-safe); }
+        .detailPrice { font-size: 1.4rem; color: var(--admin-accent); font-weight: 700; font-family: var(--font-serif); margin-bottom: 1rem; }
+        .detailDesc { color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.5rem; }
+
+        .externalLinkBox { background: #f8fafc; padding: 1rem; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 600; }
+        .linkStoreBtn { background: white; border: 1px solid #e2e8f0; color: var(--admin-accent); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+        .linkStoreBtn:hover { border-color: var(--admin-accent); background: #fefaf3; }
+
+        .modalActions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2.5rem; border-top: 1px solid #f1f5f9; padding-top: 1.5rem; }
+        .closeModalBtn { background: #f1f5f9; color: var(--text-muted); border: none; padding: 0.8rem 1.5rem; border-radius: 10px; font-weight: 600; cursor: pointer; }
+        .addModalBtn { background: var(--admin-accent); color: white; border: none; padding: 0.8rem 1.8rem; border-radius: 10px; font-weight: 600; cursor: pointer; }
+
+        /* ==========================================
+           📊 TABELA REAL: PRESENTES RECEBIDOS
+           ========================================== */
+        .tableContainer {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .table th {
+            background-color: #f8fafc;
+            padding: 1.2rem 2rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .table td {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+            color: #334155;
+        }
+
+        .table tbody tr:last-child td { border-bottom: none; }
+        .table tbody tr:hover { background-color: #fcfdff; }
+
+        .itemCell { display: flex; align-items: center; gap: 1.2rem; }
+        .miniThumb { width: 50px; height: 50px; object-fit: cover; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .itemName { font-weight: 600; color: #1e293b; font-size: 0.95rem; }
+
+        .comprovanteThumb {
+            width: 100px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .comprovanteThumb:hover { transform: scale(1.05); }
+
+        .guestTag {
+            display: inline-block;
+            margin-top: 0.3rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: #f1f5f9;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+        }
+
+        /* Widgets & Toasts */
+        .sidebar-widgets { display: flex; flex-direction: column; gap: 2rem; }
+        .recWidget { background: white; border-radius: 24px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); }
+        .widgetTag { display: inline-flex; align-items: center; gap: 6px; background: #fefaf3; color: var(--admin-accent); font-size: 0.75rem; font-weight: 700; padding: 0.5rem 1rem; border-radius: 20px; margin-bottom: 1.25rem; text-transform: uppercase; }
+        .recCard { background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 16px; padding: 1rem; display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; }
+        .recImg { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; }
+        .primaryWidgetBtn { width: 100%; background-color: var(--admin-accent); color: white; border: none; padding: 1rem; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
+        .primaryWidgetBtn:hover { transform: translateY(-2px); }
+
+        .toastContainer { position: fixed; top: 2rem; right: 2rem; z-index: 30000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: #0f172a; color: white; padding: 1rem 1.5rem; border-radius: 12px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15); display: flex; align-items: center; gap: 0.8rem; font-weight: 600; border-left: 4px solid var(--admin-accent); transform: translateX(150%); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .toast.show { transform: translateX(0); }
+        .toastIcon { background: var(--admin-accent); color: white; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 0.7rem; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">Invite<span>Event</span></div>
+        <div class="nav-item"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg> Convidados</div>
+        <div class="nav-item active"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 12V4h-4"></path><path d="M4 4h16v16H4z"></path></svg> Lista de Presentes</div>
+        <div class="nav-item"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> Mural & Mídia</div>
+        <div class="nav-item"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82V21a2 2 0 0 1-2 2"></path></svg> Configurações</div>
+    </aside>
+
+    <main class="main-content">
+        <header class="adminHeader">
+            <div>
+                <h1 id="pageMainTitle">Lista de Presentes</h1>
+                <p id="pageMainSub">Gerencie seus itens recebidos e descubra novas tendências.</p>
+            </div>
+            <button class="addBtnLegacy" id="headerActionBtn" onclick="alert('Ação mantida: Criar presente customizado do zero')">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Novo Presente
+            </button>
+        </header>
+
+        <!-- 🚀 NAVEGAÇÃO PRINCIPAL: RENOMEADA PARA "PRESENTES RECEBIDOS" -->
+        <div class="tabs">
+            <button class="tabBtn active" id="tab-gestao" onclick="switchTab('gestao')">Gestão do Catálogo</button>
+            <button class="tabBtn" id="tab-vitrine" onclick="switchTab('vitrine')" style="position: relative;">
+                Sugestões de Presentes
+                <span style="position: absolute; top: -5px; right: -5px; background: #ff6347; color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; font-weight: 700; box-shadow: 0 2px 5px rgba(255,99,71,0.3);">NOVO</span>
+            </button>
+            <button class="tabBtn" id="tab-comprovantes" onclick="switchTab('comprovantes')">Presentes Recebidos</button>
+        </div>
+
+        <!-- ==========================================
+             ABA 1: GESTÃO DO CATÁLOGO (COM TUDO O QUE JÁ FUNCIONA + VER DETALHES)
+             ========================================== -->
+        <section id="view-gestao">
+            <!-- Stats Real mantida -->
+            <div class="statsRow">
+                <div class="statCard"><span>Total Arrecadado</span><strong>R$ 3.950,00</strong></div>
+                <div class="statCard"><span>Itens no Catálogo</span><strong id="statsTotalItens">2</strong></div>
+                <div class="statCard"><span>Estoque Disponível</span><strong id="statsEstoque">2</strong></div>
+            </div>
+
+            <!-- Controles de visualização real (grid/list switcher) -->
+            <div class="controlsRow">
+                <div style="font-weight: 600; color: var(--text-muted); font-size: 0.9rem;">Visualizando seus presentes ativos</div>
+                <div class="viewToggle">
+                    <button class="toggleBtn active"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></button>
+                    <button class="toggleBtn" onclick="alert('Mantendo visualização em Lista preservada como no sistema original.')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line></svg></button>
+                </div>
+            </div>
+
+            <!-- Grid preservada com ver detalhes -->
+            <div class="gridContainer" id="myListGrid"></div>
+        </section>
+
+        <!-- ==========================================
+             ABA 2: VITRINE INTELIGENTE
+             ========================================== -->
+        <section id="view-vitrine" style="display: none;">
+            <div class="workspace-grid">
+                <!-- Área Principal das Sugestões -->
+                <div class="catalog-area">
+                    <div class="category-row">
+                        <button class="category-chip active" onclick="filterVitrine('todos', this)">Todos os Itens</button>
+                        <button class="category-chip" onclick="filterVitrine('cozinha', this)">Cozinha</button>
+                        <button class="category-chip" onclick="filterVitrine('eletro', this)">Eletrodomésticos</button>
+                        <button class="category-chip" onclick="filterVitrine('lazer', this)">Lazer</button>
+                        <button class="category-chip" onclick="filterVitrine('viagem', this)">Cotas & Viagem</button>
+                    </div>
+                    <div class="gridContainer" id="vitrineGrid"></div>
+                </div>
+
+                <div class="sidebar-widgets">
+                    <div class="recWidget" id="recWidget">
+                        <div class="widgetTag"><svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.283.95l-3.523 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/></svg>Recomendações</div>
+                        <h3 class="widgetTitle" id="recTitle">AirFryer Oven Digital</h3>
+                        <p class="widgetDesc" id="recDesc">Mais de 42 casais adicionaram este eletrodoméstico à lista hoje.</p>
+                        <div class="recCard" id="recCard">
+                            <img src="https://images.unsplash.com/photo-1621972750749-0fbb1abb7736?q=80&w=300&auto=format&fit=crop" class="recImg" id="recImg">
+                            <div><h5 style="margin:0 0 4px 0; font-size:0.85rem;" id="recProdName">Airfryer Oster 12L</h5><span class="recPrice" id="recPrice">R$ 899,90</span></div>
+                        </div>
+                        <button class="primaryWidgetBtn" id="recBtn" onclick="addRecommendation()">Adicionar</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             📊 ABA 3: PRESENTES RECEBIDOS (TABELA REAL COMPLETA)
+             ========================================== -->
+        <section id="view-comprovantes" style="display: none;">
+            <div style="margin-bottom: 1.5rem; font-weight: 600; color: var(--text-muted);">
+                Tabela real consolidada de arrecadações e PIX dos convidados.
+            </div>
+            
+            <div class="tableContainer">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Item Arrecadado</th>
+                            <th>Convidado</th>
+                            <th>Comprovante Pix</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="receivedTableBody">
+                        <!-- Inserido por JS para simular tabela real -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- Modal Detalhes Uniformizado -->
+<div class="modalOverlay" id="detailsModal">
+    <div class="modal">
+        <div class="detailGrid">
+            <img src="" id="modalImg" class="detailImage" alt="">
+            <div class="detailText">
+                <span id="modalCategoryBadge" style="text-transform:uppercase; font-size:0.7rem; font-weight:700; color:var(--admin-accent); letter-spacing:0.05em; display:block; margin-bottom:0.5rem;">COZINHA</span>
+                <h2 id="modalTitle"></h2>
+                <div class="detailPrice" id="modalPrice"></div>
+                <p class="detailDesc" id="modalDesc"></p>
+                <div class="externalLinkBox">
+                    <div>
+                        <div style="color:var(--text-muted); font-size:0.75rem; font-weight:500; margin-bottom:2px;">Loja do Parceiro</div>
+                        <div id="modalPartner">Lomadee</div>
+                    </div>
+                    <a href="#" id="modalExternalLink" target="_blank" class="linkStoreBtn">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                        Visitar Loja
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="modalActions">
+            <button class="closeModalBtn" onclick="closeDetailsModal()">Fechar</button>
+            <button class="addModalBtn" id="modalAddBtn" onclick="addFromModal()">Adicionar à Minha Lista</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toasts -->
+<div class="toastContainer" id="toastContainer"></div>
+
+<script>
+    // Catálogo Global
+    const vitrineCatalog = [
+        { id: 201, nome: "Batedeira KitchenAid Artisan", preco: 2899.00, categoria: "cozinha", catLabel: "Cozinha", imagem: "https://images.unsplash.com/photo-1594385208974-2e75f9d8ad48?q=80&w=400&auto=format&fit=crop", desc: "Ícone de design e performance, com 10 velocidades e construção robusta.", loja: "Amazon Brasil", link: "https://www.amazon.com.br" },
+        { id: 202, nome: "Adega Brastemp Dual Zone", preco: 1499.90, categoria: "eletro", catLabel: "Eletrodomésticos", imagem: "https://images.unsplash.com/photo-1584916201218-f4242ceb4809?q=80&w=400&auto=format&fit=crop", desc: "12 garrafas de capacidade e controle duplo de temperatura independente.", loja: "Brastemp Oficial", link: "https://www.brastemp.com.br" },
+        { id: 203, nome: "Jogo de Jantar Oxford 42 Peças", preco: 749.00, categoria: "cozinha", catLabel: "Cozinha", imagem: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=400&auto=format&fit=crop", desc: "Porcelana acetinada de alta resistência para jantares inesquecíveis.", loja: "Magalu", link: "https://www.magazineluiza.com.br" },
+        { id: 204, nome: "Churrasqueira Portátil Gourmet", preco: 850.00, categoria: "lazer", catLabel: "Lazer", imagem: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=400&auto=format&fit=crop", desc: "Ideal para ambientes compactos e varandas, acabamento em aço inox.", loja: "Carrefour", link: "https://www.carrefour.com.br" },
+        { id: 205, nome: "Cota Lua de Mel: Jantar em Paris", preco: 500.00, categoria: "viagem", catLabel: "Viagem & Cotas", imagem: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=400&auto=format&fit=crop", desc: "Presenteie os noivos com um jantar inesquecível sob as luzes de Paris.", loja: "InviteEvent Gateway", link: "#" }
+    ];
+
+    // Mock de Lista do Casal (Inclui botões originais do sistema)
+    let myAddedItems = [
+        { id: 5001, nome: "Conjunto de Panelas Tramontina 5p", preco: 450.00, imagem: "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?q=80&w=400&fit=crop", desc: "Panelas antiaderentes de altíssima durabilidade.", catLabel: "Cozinha", loja: "Tramontina Store", link: "#", estoque: "1 / 1" },
+        { id: 5002, nome: "Smart TV LG OLED 55\"", preco: 3500.00, imagem: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?q=80&w=400&fit=crop", desc: "Resolução 4K de última geração.", catLabel: "Eletrodomésticos", loja: "Fast Shop", link: "#", estoque: "1 / 1" }
+    ];
+
+    // Mock de Presentes Recebidos (Simulando a Tabela do Sistema)
+    const receivedMock = [
+        { data: "13/05/2026", item: "Smart TV LG OLED 55\"", convidado: "Amanda & Ricardo", convite: "Família Cavalcante", comp: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=200&auto=format&fit=crop" },
+        { data: "12/05/2026", item: "Conjunto de Panelas Tramontina 5p", convidado: "Julio Cesar Souza", convite: "Julio & Esposa", comp: "https://images.unsplash.com/photo-1618044733300-9472054094ee?q=80&w=200&auto=format&fit=crop" }
+    ];
+
+    const recQueue = [
+        { id: 301, title: "AirFryer Oven Digital", desc: "42 casais adicionaram hoje.", prodName: "Airfryer Oster 12L", price: "R$ 899,90", img: "https://images.unsplash.com/photo-1621972750749-0fbb1abb7736?q=80&w=300&auto=format&fit=crop", loja: "Mercado Livre", link: "#" }
+    ];
+
+    let addedIds = new Set();
+    let currentRecIdx = 0;
+    let activeVitrineFilter = 'todos';
+    let productBeingViewed = null;
+    let isFromVitrineContext = false;
+
+    // Trocador de Abas
+    function switchTab(tabName) {
+        document.querySelectorAll('.tabBtn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+
+        document.getElementById('view-gestao').style.display = tabName === 'gestao' ? 'block' : 'none';
+        document.getElementById('view-vitrine').style.display = tabName === 'vitrine' ? 'block' : 'none';
+        document.getElementById('view-comprovantes').style.display = tabName === 'comprovantes' ? 'block' : 'none';
+
+        const mainTitle = document.getElementById('pageMainTitle');
+        const actionBtn = document.getElementById('headerActionBtn');
+        
+        if (tabName === 'gestao') {
+            mainTitle.innerText = "Lista de Presentes";
+            actionBtn.style.display = 'flex';
+            renderMyList();
+        } else if (tabName === 'vitrine') {
+            mainTitle.innerText = "Sugestões de Presentes";
+            actionBtn.style.display = 'none';
+            renderVitrine();
+        } else {
+            mainTitle.innerText = "Presentes Recebidos";
+            actionBtn.style.display = 'none';
+            renderReceivedTable();
+        }
+    }
+
+    // 🔄 RENDER 1: GESTÃO REAL (PRESERVANDO FUNCIONALIDADE + VER DETALHES)
+    function renderMyList() {
+        const grid = document.getElementById('myListGrid');
+        grid.innerHTML = '';
+        
+        myAddedItems.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'giftCard';
+            card.innerHTML = `
+                <div class="cardImageWrapper">
+                    <img src="${item.imagem}" class="cardImage">
+                    <span class="categoryBadge" style="background:#10b981; color:white;">Disponível</span>
+                    
+                    <!-- 👀 VER DETALHES UNIFICADO NA GESTÃO -->
+                    <div class="viewDetailsOverlay">
+                        <button class="detailsBtn" onclick="openDetailsFromManagement(${item.id}, event)">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path></svg>
+                            Ver Detalhes
+                        </button>
+                    </div>
+                </div>
+                <div class="cardContent">
+                    <h3 class="cardTitle">${item.nome}</h3>
+                    <div class="cardPrice">${item.preco.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</div>
+                    
+                    <!-- 🛠️ AÇÕES REAIS PRESERVADAS DA GESTÃO ORIGINAL -->
+                    <div class="cardMeta">
+                        <span>Estoque: <strong>${item.estoque}</strong></span>
+                        <div class="actionsCellReal">
+                            <button class="actionIconBtn" title="Editar" onclick="alert('Abrir Modal de Edição Real do Item')">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            </button>
+                            <button class="actionIconBtn" title="Pausar" onclick="alert('Ação Real: Pausar Presente')">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                            </button>
+                            <button class="actionIconBtn danger" title="Excluir" onclick="removeFromMyList(${item.id}, '${item.nome}', event)">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+
+        document.getElementById('statsTotalItens').innerText = myAddedItems.length;
+        document.getElementById('statsEstoque').innerText = myAddedItems.length;
+    }
+
+    // 🔄 RENDER 2: VITRINE
+    function renderVitrine() {
+        const grid = document.getElementById('vitrineGrid');
+        grid.innerHTML = '';
+        const filtered = activeVitrineFilter === 'todos' ? vitrineCatalog : vitrineCatalog.filter(c => c.categoria === activeVitrineFilter);
+
+        filtered.forEach(item => {
+            const isAdded = addedIds.has(item.id);
+            const card = document.createElement('div');
+            card.className = `giftCard ${isAdded ? 'added' : ''}`;
+            card.id = `vitrine-item-${item.id}`;
+
+            card.innerHTML = `
+                <div class="cardImageWrapper">
+                    <span class="categoryBadge">${item.catLabel}</span>
+                    <img src="${item.imagem}" class="cardImage">
+                    <div class="viewDetailsOverlay">
+                        <button class="detailsBtn" onclick="openDetailsFromVitrine(${item.id}, event)">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path></svg>
+                            Ver Detalhes
+                        </button>
+                    </div>
+                    <div class="animationOverlay"><div class="animatedCircle">✓</div></div>
+                </div>
+                <div class="cardContent">
+                    <h3 class="cardTitle">${item.nome}</h3>
+                    <div class="cardPrice">${item.preco.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</div>
+                    <div class="cardActions">
+                        <button class="addBtn" onclick="addFromVitrine(${item.id}, '${item.nome}', ${item.preco}, '${item.imagem}', event)">
+                            ${isAdded ? '✓ Adicionado' : '+ Adicionar'}
+                        </button>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // 📊 RENDER 3: PRESENTES RECEBIDOS (TABELA SIMULADA COMO NO SISTEMA)
+    function renderReceivedTable() {
+        const tbody = document.getElementById('receivedTableBody');
+        tbody.innerHTML = '';
+
+        receivedMock.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-size:0.85rem; font-weight:500; color:var(--text-muted);">${row.data}</td>
+                <td>
+                    <div class="itemCell">
+                        <img src="${row.comp}" class="miniThumb">
+                        <span class="itemName">${row.item}</span>
+                    </div>
+                </td>
+                <td>
+                    <strong>${row.convidado}</strong><br>
+                    <span class="guestTag">${row.convite}</span>
+                </td>
+                <td>
+                    <img src="${row.comp}" class="comprovanteThumb" onclick="alert('Abrir Comprovante Pix em Tela Cheia')">
+                </td>
+                <td>
+                    <button class="actionIconBtn danger" onclick="alert('Remover Comprovante')" title="Remover"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path></svg></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Lógica de Estado Compartilhado
+    function addFromVitrine(id, name, price, image, e) {
+        if(e) e.stopPropagation();
+        const card = document.getElementById(`vitrine-item-${id}`);
+        
+        if (addedIds.has(id)) {
+            addedIds.delete(id);
+            myAddedItems = myAddedItems.filter(i => i.sourceId !== id);
+            card.classList.remove('added');
+            showToast(`Removido: ${name}`);
+        } else {
+            addedIds.add(id);
+            const rawProd = vitrineCatalog.find(c => c.id === id);
+            myAddedItems.unshift({
+                id: Date.now(),
+                sourceId: id,
+                nome: name,
+                preco: price,
+                imagem: image,
+                desc: rawProd.desc,
+                catLabel: rawProd.catLabel,
+                loja: rawProd.loja,
+                link: rawProd.link,
+                estoque: "1 / 1"
+            });
+            card.classList.add('added');
+            showToast(`✓ Adicionado à sua lista: ${name}`);
+        }
+        setTimeout(() => { renderVitrine(); }, 800);
+    }
+
+    function removeFromMyList(id, name, e) {
+        if(e) e.stopPropagation();
+        const confirmDel = confirm(`Deseja realmente excluir "${name}" da sua lista ativa?`);
+        if(!confirmDel) return;
+
+        const item = myAddedItems.find(i => i.id === id);
+        if (item && item.sourceId) addedIds.delete(item.sourceId);
+        myAddedItems = myAddedItems.filter(i => i.id !== id);
+        renderMyList();
+        showToast(`Removido: ${name}`);
+    }
+
+    // 👀 CONTROLES DE MODAL (UNIFICADO NAS DUAS FRENTES)
+    function openDetailsFromVitrine(prodId, e) {
+        if(e) e.stopPropagation();
+        const prod = vitrineCatalog.find(c => c.id === prodId);
+        isFromVitrineContext = true;
+        populateAndOpenModal(prod, addedIds.has(prod.id));
+    }
+
+    function openDetailsFromManagement(itemId, e) {
+        if(e) e.stopPropagation();
+        const item = myAddedItems.find(i => i.id === itemId);
+        isFromVitrineContext = false;
+        // Na Gestão, o item já está na lista
+        populateAndOpenModal(item, true);
+    }
+
+    function populateAndOpenModal(product, isAdded) {
+        productBeingViewed = product;
+        document.getElementById('modalImg').src = product.imagem;
+        document.getElementById('modalCategoryBadge').innerText = product.catLabel || "GERAL";
+        document.getElementById('modalTitle').innerText = product.nome;
+        document.getElementById('modalPrice').innerText = product.preco.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+        document.getElementById('modalDesc').innerText = product.desc || "Item registrado.";
+        document.getElementById('modalPartner').innerText = product.loja || "Parceiro Integrado";
+        document.getElementById('modalExternalLink').href = product.link || "#";
+
+        const modalBtn = document.getElementById('modalAddBtn');
+        if (isFromVitrineContext) {
+            modalBtn.style.display = 'block';
+            modalBtn.innerText = isAdded ? '✓ Já na Minha Lista' : 'Adicionar à Minha Lista';
+            modalBtn.style.background = isAdded ? '#10b981' : 'var(--admin-accent)';
+        } else {
+            // Esconde o botão de adicionar se já estou visualizando a partir da lista própria
+            modalBtn.style.display = 'none';
+        }
+
+        document.getElementById('detailsModal').classList.add('show');
+    }
+
+    function closeDetailsModal() { document.getElementById('detailsModal').classList.remove('show'); }
+
+    function addFromModal() {
+        if(!productBeingViewed || !isFromVitrineContext) return;
+        if (!addedIds.has(productBeingViewed.id)) {
+            addFromVitrine(productBeingViewed.id, productBeingViewed.nome, productBeingViewed.preco, productBeingViewed.imagem, null);
+        }
+        closeDetailsModal();
+    }
+
+    function filterVitrine(cat, btn) {
+        activeVitrineFilter = cat;
+        document.querySelectorAll('.category-chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderVitrine();
+    }
+
+    function addRecommendation() {
+        if (currentRecIdx >= recQueue.length) return;
+        const item = recQueue[currentRecIdx];
+        myAddedItems.unshift({
+            id: Date.now(),
+            nome: item.prodName,
+            preco: parseFloat(item.price.replace('R$ ', '').replace('.', '').replace(',', '.')),
+            imagem: item.img,
+            desc: item.desc,
+            catLabel: "ELETRO",
+            loja: item.loja,
+            link: item.link,
+            estoque: "1 / 1"
+        });
+        showToast(`🔥 Recomendação: ${item.prodName}`);
+        currentRecIdx++;
+        document.getElementById('recCard').style.display = 'none';
+        document.getElementById('recBtn').style.display = 'none';
+        document.getElementById('recTitle').innerText = "Tudo atualizado!";
+        document.getElementById('recWidget').style.border = "1px dashed var(--admin-accent)";
+    }
+
+    function showToast(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<div class="toastIcon">✓</div><span>${msg}</span>`;
+        toastContainer.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 500);
+        }, 3000);
+    }
+
+    // Bootstrap na Gestão
+    switchTab('gestao');
+</script>
+
+</body>
+</html>

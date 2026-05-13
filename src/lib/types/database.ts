@@ -79,6 +79,31 @@ export interface Presente {
   created_at?: string;
   updated_at?: string;
   user_id?: string;
+  categoria_id?: string | null;
+  base_id?: string | null;
+  // Relacionamento mapeado para joins no Supabase client
+  categoria?: PresenteCategoria | null;
+}
+
+export interface PresenteCategoria {
+  id: string;
+  nome: string;
+  slug: string;
+  ordem_padrao: number;
+  criado_em?: string;
+}
+
+export interface PresenteBase {
+  id: string;
+  nome: string;
+  preco: number;
+  descricao?: string;
+  imagem_url?: string;
+  categoria_id: string;
+  link_varejo_padrao?: string;
+  parceiro_nome?: string;
+  criado_em?: string;
+  categoria?: PresenteCategoria;
 }
 
 export interface Comprovante {

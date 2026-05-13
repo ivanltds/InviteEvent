@@ -15,6 +15,8 @@ Qualquer pedido do Operador deve ser direcionado ao @maestro primeiro.
 | @ai-eng   | Engenheiro de IA         | Via MAESTRO — fase DEV             |
 | @qa       | Engenheiro de QA         | Via MAESTRO — fase VALIDAÇÃO       |
 | @devops   | DevOps                   | Via MAESTRO — VERSÃO e DEPLOY      |
+| @marketplace-expert | Especialista de Afiliados | Via MAESTRO — MONETIZAÇÃO & APIS  |
+| @catalog-expert | Especialista de Catálogo Autônomo | Via MAESTRO — CURA & WATCHLIST |
 
 ## Fluxo Obrigatório
 Operador → @maestro

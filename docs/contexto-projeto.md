@@ -41,6 +41,9 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | 006 | Unificação Design System & Grids | CONCLUÍDO   | Concluído   |
 | 010 | Multi-Animação de Gateways       | CONCLUÍDO   | Concluído   |
 | 011 | Modo Telão Realtime              | CONCLUÍDO   | Concluído   |
+| 12A | Smart Gift List - Fundação       | CONCLUÍDO   | Concluído   |
+| 12B | Smart Gift List - Monetização    | PLANEJADO   | Discovery Fin. |
+| 12C | Smart Gift List - Autônomo       | PLANEJADO   | Discovery Fin. |
 
 ## Segurança
 - **Última Auditoria:** 2024-05-24
@@ -106,13 +109,21 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/estrategia-metricas-insights.md       | BA          | Framework Estratégico de Métricas e Visão Preditiva |
 | docs/melhorias-suporte-v2.md               | BA          | Plano de Melhorias Estruturais de Atendimento V2 |
 | docs/wireframes/modo-telao-tv.html         | UX/UI       | Wireframe do Modo Telão Realtime 16:9 |
+| docs/wireframes/vitrine-importacao-rapida.html | UX/UI       | Wireframe Interativo: Vitrine 1-Clique (Fase A) |
 | docs/prd/prd-011/prd-inicial.md            | BA          | PRD Inicial do Modo Telão Realtime |
 | docs/prd/prd-011/fluxo-ux.md               | UX/UI       | Mapeamento de fluxos e telas do Modo Telão|
 | docs/arquitetura/plano-implementacao-prd-011.md | Arquiteto | Plano técnico para Modo Telão Realtime (TV)|
 | tests/e2e/prd_011_modo_telao.spec.ts       | QA          | Conjunto de testes E2E de estabilidade da TV |
+| docs/prd/prd-012-a/prd-inicial.md          | BA          | PRD-A Smart Gift List — A Fundação Inteligente |
+| docs/prd/prd-012-a/arquitetura.md          | Arquiteto   | Desenho do banco de dados, DER e RLS (Fase A) |
+| docs/prd/prd-012-a/plano-implementacao.md  | Arquiteto   | Plano de Sprints de banco, view dinâmica e frontend |
+| docs/prd/prd-012-b/prd-inicial.md          | BA          | PRD-B Smart Gift List — Motor de Monetização |
+| docs/prd/prd-012-c/prd-inicial.md          | BA          | PRD-C Smart Gift List — Cérebro Autônomo (Self-Healing) |
+| docs/prd/prd-012/relatorio-descoberta-final.md  | Maestro    | Relatório Histórico de Descoberta Expandida |
+| tests/e2e/prd_012a_smart_gift.spec.ts       | QA          | Cobertura E2E de Abas, Vitrine SaaS e Categorização manual|
 
 
 ## Última Atualização
 - Data    : 2026-05-13
-- Por     : Maestro / DEVOPS
-- Motivo  : Lançamento da Versão v0.3.3. Estabilização crítica de ambiente e governança técnica. Correção de trigger de banco (public.qualifiers), integração de fluxo auto-contido (Supabase Local-First) no GitHub Actions, e cura de 100% das regressões de testes unitários (Jest) que sofriam de vazamento de pilha recursiva e drifts de string de UI. Suíte agora blindada e resiliente para pipelines futuros.
+- Por     : Maestro / DEV / QA
+- Motivo  : Lançamento da Versão v0.4.1 — Smart Gift Unification & Intelligence. Realizada a unificação do motor de vitrine: agora itens criados manualmente em qualquer casamento entram no pool de sugestões globais de acordo com sua popularidade matemática (Cliques + Conversões). Criada a view consolidada v2 `view_presentes_ranking_geral` com joins nativos de banco de dados para alto desempenho. Aplicada a blindagem de deduplicação por NOME no React, garantindo que o casal identifique itens preexistentes na sua lista com o status 'Adicionado à sua lista'. A suíte de testes automatizados Playwright E2E validou com sucesso absoluto de 100% GREEN o fluxo cíclico de cadastro manual, unificação no ranking e proteção de duplicidade.

@@ -6,6 +6,8 @@ import styles from './AdminPresentes.module.css';
 import { supabase } from '@/lib/supabase';
 import { CldUploadWidget } from 'next-cloudinary';
 import { useEvent } from '@/lib/contexts/EventContext';
+import { giftService } from '@/lib/services/giftService';
+import { PresenteCategoria, PresenteBase } from '@/lib/types/database';
 
 interface Presente {
   id: string;
@@ -17,6 +19,24 @@ interface Presente {
   quantidade_total: number;
   quantidade_reservada: number;
   link_externo?: string;
+  categoria_id?: string | null;
+  base_id?: string | null;
+  categoria?: { nome: string } | null;
+}
+
+interface UnifiedSuggestion {
+  origin_id: string;
+  type: 'base' | 'custom';
+  nome: string;
+  preco: number;
+  descricao: string;
+  imagem_url: string;
+  categoria_id: string;
+  categoria_nome: string | null;
+  link_externo: string | null;
+  total_clicks: number;
+  total_conversions: number;
+  popularity_score: number;
 }
 
 interface ComprovanteJoin {
@@ -32,11 +52,19 @@ interface ComprovanteJoin {
 
 export default function AdminPresentes() {
   const { currentEvent, loading: eventLoading } = useEvent();
-  const [activeTab, setActiveTab] = useState<'catalogo' | 'recebidos'>('catalogo');
+  const [activeTab, setActiveTab] = useState<'catalogo' | 'sugestoes' | 'recebidos'>('catalogo');
   const [viewType, setViewType] = useState<'grid' | 'list'>('grid'); // Default to beautiful cards
   const [presentes, setPresentes] = useState<Presente[]>([]);
   const [comprovantes, setComprovantes] = useState<ComprovanteJoin[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // --- NOVOS ESTADOS DA FUNDAÇÃO SMART GIFT ---
+  const [baseGifts, setBaseGifts] = useState<UnifiedSuggestion[]>([]);
+  const [categories, setCategories] = useState<PresenteCategoria[]>([]);
+  const [selectedCatId, setSelectedCatId] = useState<string>('todos');
+  const [importingId, setImportingId] = useState<string | null>(null);
+  const [detailBaseItem, setDetailBaseItem] = useState<UnifiedSuggestion | null>(null);
+  const [loadingBase, setLoadingBase] = useState(false);
   
   // Modal & UX States
   const [isAdding, setIsAdding] = useState(false);
@@ -55,7 +83,8 @@ export default function AdminPresentes() {
     imagem_url: '', 
     status: 'disponivel' as Presente['status'],
     quantidade_total: 1,
-    link_externo: '' 
+    link_externo: '',
+    categoria_id: ''
   });
   const [originalDataStr, setOriginalDataStr] = useState<string>('');
   const [pendingNavUrl, setPendingNavUrl] = useState<string | null>(null);
@@ -105,7 +134,7 @@ export default function AdminPresentes() {
     setLoading(true);
     const { data, error } = await supabase
       .from('presentes')
-      .select('*')
+      .select('*, categoria:presentes_categorias(nome)')
       .eq('evento_id', currentEvent.id)
       .order('created_at', { ascending: false });
 
@@ -113,6 +142,26 @@ export default function AdminPresentes() {
       setPresentes(data as Presente[]);
     }
     setLoading(false);
+  };
+
+  const fetchBaseData = async (catId?: string) => {
+    if (!currentEvent) return;
+    setLoadingBase(true);
+    try {
+      // 1. Carregar Categorias se ainda não tivermos
+      if (categories.length === 0) {
+        const cats = await giftService.getCategories();
+        setCategories(cats);
+      }
+      
+      // 2. Carregar Itens Unificados da categoria (SaaS + Customizados Populares)
+      const items = await giftService.getUnifiedSuggestions(catId === 'todos' ? undefined : catId);
+      setBaseGifts(items);
+    } catch (err) {
+      console.error("Erro no carregamento da vitrine unificada", err);
+    } finally {
+      setLoadingBase(false);
+    }
   };
 
   const fetchComprovantes = async () => {
@@ -130,19 +179,65 @@ export default function AdminPresentes() {
     setLoading(false);
   };
 
+  const handleImportGift = async (originId: string, type: 'base' | 'custom') => {
+    if (!currentEvent) return;
+    setImportingId(originId);
+    
+    const result = await giftService.importGiftFromUnified(originId, type, currentEvent.id);
+    if (result.success && result.gift) {
+      // Injetar localmente para atualizar visualmente o grid e contadores na hora
+      const newGift: Presente = {
+        ...result.gift,
+        // Mapeia a categoria no formato esperado pela listagem original
+        categoria: { nome: baseGifts.find(b => b.origin_id === originId)?.categoria_nome || 'Geral' }
+      };
+      
+      setPresentes(prev => [newGift, ...prev]);
+      triggerToast('✨ Presente adicionado à sua lista com sucesso!');
+      setDetailBaseItem(null);
+    } else {
+      triggerToast('❌ Ocorreu um erro ao tentar importar o presente.');
+    }
+    setImportingId(null);
+  };
+
   useEffect(() => {
     if (currentEvent) {
       fetchPresentes();
       fetchComprovantes();
+      // Pré-carrega as categorias globais para popularem o modal de cadastro manual desde o D0
+      giftService.getCategories().then(setCategories).catch(console.error);
     }
   }, [currentEvent]);
 
   useEffect(() => {
     if (currentEvent) {
       if (activeTab === 'catalogo') fetchPresentes();
+      else if (activeTab === 'sugestoes') fetchBaseData(selectedCatId);
       else fetchComprovantes();
     }
-  }, [activeTab]);
+  }, [activeTab, selectedCatId]);
+
+  const clonedBaseIds = useMemo(() => {
+    return new Set(presentes.map(p => p.base_id).filter(Boolean));
+  }, [presentes]);
+
+  // Adiciona pareamento por NOME para detectar itens cadastrados manualmente existentes no casamento
+  const activeGiftNames = useMemo(() => {
+    return new Set(presentes.map(p => p.nome?.trim().toLowerCase()).filter(Boolean));
+  }, [presentes]);
+
+  const recommendedItem = useMemo(() => {
+    // Filtra itens já adicionados (tanto por ID base quanto por equivalência de nome manual)
+    const available = baseGifts.filter(b => 
+      !clonedBaseIds.has(b.origin_id) && 
+      !activeGiftNames.has(b.nome?.trim().toLowerCase())
+    );
+    if (available.length === 0) return null;
+    // A view de banco já calcula e ordena por popularidade matemática (cliques + conversões)
+    return available[0];
+  }, [baseGifts, clonedBaseIds, activeGiftNames]);
+
 
   const stats = useMemo(() => {
     const totalValorArrecadado = comprovantes.reduce((acc, comp) => acc + (Number(comp.presente?.preco) || 0), 0);
@@ -152,7 +247,16 @@ export default function AdminPresentes() {
   }, [presentes, comprovantes]);
 
   const startAddNew = () => {
-    const init = { nome: '', preco: 0, descricao: '', imagem_url: '', status: 'disponivel' as const, quantidade_total: 1, link_externo: '' };
+    const init = { 
+      nome: '', 
+      preco: 0, 
+      descricao: '', 
+      imagem_url: '', 
+      status: 'disponivel' as const, 
+      quantidade_total: 1, 
+      link_externo: '',
+      categoria_id: ''
+    };
     setFormData(init);
     setOriginalDataStr(JSON.stringify(init));
     setEditingItem(null);
@@ -169,7 +273,8 @@ export default function AdminPresentes() {
       imagem_url: item.imagem_url || '',
       status: item.status,
       quantidade_total: item.quantidade_total,
-      link_externo: item.link_externo || ''
+      link_externo: item.link_externo || '',
+      categoria_id: item.categoria_id || ''
     };
     setFormData(init);
     setOriginalDataStr(JSON.stringify(init));
@@ -195,24 +300,34 @@ export default function AdminPresentes() {
       status: newStatus,
       quantidade_total: qtyTotal,
       link_externo: formData.link_externo.trim() || null,
+      categoria_id: formData.categoria_id || null,
       evento_id: currentEvent.id
     };
 
     if (editingItem) {
-      const { data, error } = await supabase.from('presentes').update(payload).eq('id', editingItem.id).select();
+      const { data, error } = await supabase
+        .from('presentes')
+        .update(payload)
+        .eq('id', editingItem.id)
+        .select('*, categoria:presentes_categorias(nome)');
+
       if (!error && data) {
         setPresentes(presentes.map(p => p.id === editingItem.id ? (data[0] as Presente) : p));
         setIsAdding(false);
-        triggerToast('Item atualizado com sucesso.');
+        triggerToast('✨ Item atualizado com sucesso.');
       } else {
         triggerToast('Erro ao atualizar item.');
       }
     } else {
-      const { data, error } = await supabase.from('presentes').insert([payload]).select();
+      const { data, error } = await supabase
+        .from('presentes')
+        .insert([payload])
+        .select('*, categoria:presentes_categorias(nome)');
+
       if (!error && data) {
         setPresentes(prev => [data[0] as Presente, ...prev]);
         setIsAdding(false);
-        triggerToast('Novo item adicionado.');
+        triggerToast('✨ Novo item adicionado.');
       } else {
         triggerToast('Erro ao adicionar item.');
       }
@@ -300,7 +415,8 @@ export default function AdminPresentes() {
       {/* Top Tabs */}
       <div className={styles.tabs}>
         <button className={`${styles.tabBtn} ${activeTab === 'catalogo' ? styles.activeTab : ''}`} onClick={() => setActiveTab('catalogo')}>Gestão do Catálogo</button>
-        <button className={`${styles.tabBtn} ${activeTab === 'recebidos' ? styles.activeTab : ''}`} onClick={() => setActiveTab('recebidos')}>Comprovantes Recebidos</button>
+        <button className={`${styles.tabBtn} ${activeTab === 'sugestoes' ? styles.activeTab : ''}`} onClick={() => setActiveTab('sugestoes')}>Sugestões de Presentes</button>
+        <button className={`${styles.tabBtn} ${activeTab === 'recebidos' ? styles.activeTab : ''}`} onClick={() => setActiveTab('recebidos')}>Presentes Recebidos</button>
       </div>
 
       {/* View Controls (Grid/List) for Catalog only */}
@@ -338,16 +454,28 @@ export default function AdminPresentes() {
                 className={styles.giftCard}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                onClick={() => setDetailItem(item)}
               >
                 <div className={styles.cardImageWrapper}>
                   <img src={item.imagem_url || 'https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=400&auto=format&fit=crop'} alt={item.nome} className={styles.cardImage} />
+                  
+                  {/* Efeito Hover Overlay Premium unificado */}
+                  <div className={styles.hoverOverlay}>
+                    <button className={styles.hoverDetailBtn} onClick={() => setDetailItem(item)}>
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                      Ver Detalhes
+                    </button>
+                  </div>
+
                   <span className={`${styles.cardStatusBadge} ${styles[item.status]}`}>
                     {item.status === 'reservado' && item.quantidade_reservada < item.quantidade_total ? 'Pausado' : item.status}
                   </span>
                 </div>
-                <div className={styles.cardContent}>
-                  <h3 className={styles.cardTitle}>{item.nome}</h3>
+                <div className={styles.cardContent} onClick={() => setDetailItem(item)}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                    <h3 className={styles.cardTitle}>{item.nome}</h3>
+                    {/* 🚨 Null Safety para Produção: Se item legado sem categoria chegar, vira badge 'Geral' */}
+                    <span className={styles.miniBadge}>{item.categoria?.nome ?? 'Geral'}</span>
+                  </div>
                   <span className={styles.cardPrice}>{Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                   <div className={styles.cardMeta}>
                     <span className={styles.stockLabel}>Estoque: <strong>{item.quantidade_total - item.quantidade_reservada} / {item.quantidade_total}</strong></span>
@@ -407,6 +535,115 @@ export default function AdminPresentes() {
             </table>
           </section>
         )
+      ) : activeTab === 'sugestoes' ? (
+        <div>
+          {/* Banner Dinâmico de Recomendações do Dia */}
+          {recommendedItem && (
+            <motion.div 
+              className={styles.recomendaBanner}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className={styles.recomendaContent}>
+                <span className={styles.recomendaBadge}>💡 RECOMENDAÇÕES PARA SUA LISTA</span>
+                <h2>{recommendedItem.nome}</h2>
+                <p style={{ marginTop: '0.5rem' }}>{recommendedItem.descricao?.substring(0, 100)}...</p>
+              </div>
+              <div className={styles.recomendaAction}>
+                <button 
+                  className={styles.recomendaActionBtn}
+                  onClick={() => handleImportGift(recommendedItem.origin_id, recommendedItem.type)}
+                  disabled={importingId === recommendedItem.origin_id}
+                >
+                  {importingId === recommendedItem.origin_id ? 'Adicionando...' : 'Adicionar agora'}
+                </button>
+              </div>
+              <div className={styles.recomendaDecorative}>🎁</div>
+            </motion.div>
+          )}
+
+          {/* Filtro de Categorias via Chips */}
+          <div className={styles.categoriesContainer}>
+            <button 
+              className={`${styles.catBtn} ${selectedCatId === 'todos' ? styles.activeCat : ''}`}
+              onClick={() => setSelectedCatId('todos')}
+            >
+              ✨ Ver Tudo
+            </button>
+            {categories.map(cat => (
+              <button 
+                key={cat.id}
+                className={`${styles.catBtn} ${selectedCatId === cat.id ? styles.activeCat : ''}`}
+                onClick={() => setSelectedCatId(cat.id)}
+              >
+                {cat.nome}
+              </button>
+            ))}
+          </div>
+
+          {/* Grid de Itens Globais (Vitrine SaaS) */}
+          {loadingBase ? (
+            <div className={styles.loading}>Buscando catálogo de luxo...</div>
+          ) : (
+            <div className={styles.vitrineGrid}>
+              {baseGifts.map(baseItem => {
+                const isAlreadyCloned = clonedBaseIds.has(baseItem.origin_id) || 
+                                       activeGiftNames.has(baseItem.nome?.trim().toLowerCase());
+                return (
+                  <motion.div 
+                    key={baseItem.origin_id}
+                    className={styles.giftCard}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                  >
+                    <div className={styles.cardImageWrapper}>
+                      <img src={baseItem.imagem_url || 'https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=400&auto=format&fit=crop'} alt={baseItem.nome} className={styles.cardImage} />
+                      
+                      {/* Hover overlay unificado com 'Ver Detalhes' na Vitrine SaaS */}
+                      <div className={styles.hoverOverlay}>
+                        <button className={styles.hoverDetailBtn} onClick={() => setDetailBaseItem(baseItem)}>
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                          Ver Detalhes
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className={styles.cardContent}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                        <h3 className={styles.cardTitle} style={{ fontSize: '1rem' }}>{baseItem.nome}</h3>
+                        <span className={styles.miniBadge}>{baseItem.categoria_nome || 'Geral'}</span>
+                      </div>
+                      <span className={styles.cardPrice} style={{ fontSize: '1.1rem' }}>{Number(baseItem.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                      
+                      {isAlreadyCloned ? (
+                        <div className={styles.importedBadge}>
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                          Adicionado à sua lista
+                        </div>
+                      ) : (
+                        <button 
+                          className={styles.importBtn} 
+                          onClick={() => handleImportGift(baseItem.origin_id, baseItem.type)}
+                          disabled={importingId === baseItem.origin_id}
+                        >
+                          {importingId === baseItem.origin_id ? (
+                            <span>Adicionando...</span>
+                          ) : (
+                            <>
+                              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                              Adicionar à lista
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+              {baseGifts.length === 0 && <div className={styles.empty}>Nenhum item no catálogo global.</div>}
+            </div>
+          )}
+        </div>
       ) : (
         // COMPROVANTES (Always List)
         <section className={styles.tableContainer}>
@@ -448,7 +685,7 @@ export default function AdminPresentes() {
         )}
       </AnimatePresence>
 
-      {/* Modal: DETAIL PREVIEW */}
+      {/* Modal: DETAIL PREVIEW (Casal) */}
       <AnimatePresence>
         {detailItem && (
           <div className={styles.modalOverlay} onClick={() => setDetailItem(null)}>
@@ -460,6 +697,10 @@ export default function AdminPresentes() {
               <div className={styles.detailGrid}>
                 <img src={detailItem.imagem_url || 'https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=400&fit=crop'} alt="" className={styles.detailImage} />
                 <div className={styles.detailText}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <span className={styles.miniBadge} style={{ background: '#fff3df', color: 'var(--admin-accent)' }}>{detailItem.categoria?.nome ?? 'Geral'}</span>
+                    {detailItem.base_id && <span className={styles.miniBadge} style={{ background: '#eff6ff', color: '#2563eb' }}>⭐ Sugestão Curada</span>}
+                  </div>
                   <h2>{detailItem.nome}</h2>
                   <div className={styles.detailPrice}>{Number(detailItem.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
                   <p className={styles.detailDesc}>{detailItem.descricao || 'Sem descrição registrada para este presente.'}</p>
@@ -472,7 +713,7 @@ export default function AdminPresentes() {
                   {detailItem.link_externo && (
                     <div className={styles.detailMetaItem}>
                       <span>Link da Loja</span>
-                      <a href={detailItem.link_externo} target="_blank" style={{ color: 'var(--admin-accent)' }}>Visitar Loja</a>
+                      <a href={detailItem.link_externo} target="_blank" rel="noreferrer" style={{ color: 'var(--admin-accent)', fontWeight: 700 }}>Visitar Loja Externa</a>
                     </div>
                   )}
                 </div>
@@ -483,6 +724,54 @@ export default function AdminPresentes() {
                   <button className={styles.secondaryFloatBtn} style={{ border: 'none', background: '#fee2e2', color: '#b91c1c' }} onClick={() => openDeleteModal(detailItem.id, 'presente')}>Excluir</button>
                   <button className={styles.saveBtn} onClick={() => handleEditClick(detailItem)}>Editar Item</button>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal: DETAIL PREVIEW DA VITRINE (SaaS) */}
+      <AnimatePresence>
+        {detailBaseItem && (
+          <div className={styles.modalOverlay} onClick={() => setDetailBaseItem(null)}>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+              className={styles.modal} style={{ maxWidth: '700px' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={styles.detailGrid}>
+                <img src={detailBaseItem.imagem_url || 'https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=400&fit=crop'} alt="" className={styles.detailImage} />
+                <div className={styles.detailText}>
+                  <div style={{ marginBottom: '0.5rem' }}>
+                    <span className={styles.miniBadge} style={{ background: 'var(--admin-accent)', color: 'white' }}>{detailBaseItem.categoria?.nome}</span>
+                  </div>
+                  <h2>{detailBaseItem.nome}</h2>
+                  <div className={styles.detailPrice}>{Number(detailBaseItem.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
+                  <p className={styles.detailDesc}>{detailBaseItem.descricao || 'Item premium curado com carinho para inspirar a lista do casal.'}</p>
+                  
+                  {detailBaseItem.link_externo && (
+                    <div style={{ marginTop: '1rem' }}>
+                      <span className={styles.parceiroTag}>🛒 Sugestão de Parceiro Oficial</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className={styles.modalActions}>
+                <button className={styles.cancelBtn} onClick={() => setDetailBaseItem(null)}>Fechar</button>
+                {(clonedBaseIds.has(detailBaseItem.origin_id) || activeGiftNames.has(detailBaseItem.nome?.trim().toLowerCase())) ? (
+                  <div className={styles.importedBadge} style={{ margin: 0 }}>
+                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                     Já Adicionado
+                  </div>
+                ) : (
+                  <button 
+                    className={styles.saveBtn} 
+                    onClick={() => handleImportGift(detailBaseItem.origin_id, detailBaseItem.type)}
+                    disabled={importingId === detailBaseItem.origin_id}
+                  >
+                    {importingId === detailBaseItem.origin_id ? 'Adicionando...' : '✨ Adicionar à Minha Lista'}
+                  </button>
+                )}
               </div>
             </motion.div>
           </div>
@@ -510,6 +799,15 @@ export default function AdminPresentes() {
                 <div className={styles.fieldGroup}>
                   <label>Quantidade Total</label>
                   <input type="number" min="1" value={formData.quantidade_total} onChange={(e) => setFormData({...formData, quantidade_total: parseInt(e.target.value) || 1})} />
+                </div>
+                <div className={`${styles.fieldGroup} ${styles.fullWidth}`}>
+                  <label>Categoria do Presente</label>
+                  <select value={formData.categoria_id} onChange={(e) => setFormData({...formData, categoria_id: e.target.value})}>
+                    <option value="">Sem categoria definida (Geral)</option>
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.nome}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className={`${styles.fieldGroup} ${styles.fullWidth}`}>
                   <label>Descrição</label>

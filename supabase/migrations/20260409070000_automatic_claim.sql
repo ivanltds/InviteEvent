@@ -24,16 +24,16 @@ BEGIN
     -- Se for o primeiro usuário, tenta reivindicar o evento principal
     IF v_is_first THEN
         -- Pega o primeiro evento criado (provavelmente o evento_id na configuracoes id=1 ou similar)
-        SELECT evento_id INTO v_evento_id FROM configuracoes ORDER BY created_at ASC LIMIT 1;
+        SELECT evento_id INTO v_evento_id FROM public.configuracoes ORDER BY created_at ASC LIMIT 1;
         
         IF v_evento_id IS NOT NULL THEN
             -- Vincula como owner
-            INSERT INTO evento_organizadores (evento_id, user_id, role)
+            INSERT INTO public.evento_organizadores (evento_id, user_id, role)
             VALUES (v_evento_id, NEW.id, 'owner')
             ON CONFLICT DO NOTHING;
             
             -- Atualiza user_id legacy se existir
-            UPDATE configuracoes SET user_id = NEW.id WHERE evento_id = v_evento_id;
+            UPDATE public.configuracoes SET user_id = NEW.id WHERE evento_id = v_evento_id;
         END IF;
     END IF;
 

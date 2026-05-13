@@ -14,9 +14,22 @@ describe('PresentesPage', () => {
     jest.clearAllMocks();
     
     (supabase.from as jest.Mock).mockImplementation((table: string) => {
-      const mockChain = (supabase as any).from().select(); 
-
-      if (table === 'convites') {
+      const mockChain = {
+        select: jest.fn().mockReturnThis(),
+        insert: jest.fn().mockReturnThis(),
+        upsert: jest.fn().mockReturnThis(),
+        update: jest.fn().mockReturnThis(),
+        delete: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        neq: jest.fn().mockReturnThis(),
+        or: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: {}, error: null }),
+        maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+        then: jest.fn().mockImplementation(fn => Promise.resolve(fn({ data: [], error: null })))
+      };
+      const chain = mockChain;if (table === 'convites') {
         mockChain.maybeSingle.mockResolvedValue({ data: { id: 'c1' }, error: null });
       } else if (table === 'presentes') {
         mockChain.then = (fn: any) => Promise.resolve(fn({

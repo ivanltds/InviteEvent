@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 type Tab = 'mensagens' | 'fotos';
 
 export default function AdminMural() {
-  const { currentEvent } = useEvent();
+  const { currentEvent, loading: eventLoading } = useEvent();
   const [activeTab, setActiveTab] = useState<Tab>('mensagens');
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,6 +55,8 @@ export default function AdminMural() {
     if (!error) fetchMessages();
     setConfirmDeleteId(null);
   };
+
+  if (eventLoading) return <div className={styles.container}>Carregando...</div>;
 
   if (!currentEvent) return <div className={styles.container}>Selecione um evento...</div>;
 

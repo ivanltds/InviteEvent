@@ -17,7 +17,24 @@ jobs:
       run: npm ci
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
+    - name: Start Supabase (Local-First CI)
+      run: npx supabase start
+      
+    - name: Configure Test Environment Variables
+      run: |
+        echo "NEXT_PUBLIC_ADMIN_PASSWORD=3781" > .env.test.local
+        echo "NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321" >> .env.test.local
+        echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH" >> .env.test.local
+        echo "DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres" >> .env.test.local
+        echo "NODE_ENV=test" >> .env.test.local
+        echo "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=dqt35bpzt" >> .env.test.local
+        echo "CLOUDINARY_API_KEY=276983431258997" >> .env.test.local
+        echo "CLOUDINARY_API_SECRET=2gQVMIS0BVy11Dk3Cnmtzm9WG_4" >> .env.test.local
+        echo "OPENAI_API_KEY=sk-mock-key-for-ci-runs" >> .env.test.local
+
     - name: Run Playwright tests
+      env:
+        ENV_FILE: .env.test.local
       run: npx playwright test
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}

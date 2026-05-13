@@ -129,3 +129,10 @@ jest.mock('react-chartjs-2', () => ({
   Doughnut: () => <div data-testid="mock-doughnut-chart" />,
   Line: () => <div data-testid="mock-line-chart" />,
 }));
+
+// Mock global canvas-confetti to prevent context canvas errors in JSDOM
+jest.mock('canvas-confetti', () => {
+  const mockConfetti = jest.fn(() => Promise.resolve());
+  mockConfetti.create = jest.fn(() => mockConfetti);
+  return mockConfetti;
+});

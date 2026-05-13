@@ -113,6 +113,6 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 
 
 ## Última Atualização
-- Data    : 2026-05-12
-- Por     : Maestro / DEV
-- Motivo  : Lançamento da Versão v0.3.2. Finalização total da PRD-011 (Modo Telão Realtime). Página do slideshow responsiva em 16:9 ativa, escuta em tempo real no Supabase conectada e atalho administrativo configurado para maximizar o engajamento na festa do primeiro cliente.
+- Data    : 2026-05-13
+- Por     : Maestro / DEVOPS
+- Motivo  : Lançamento da Versão v0.3.3. Estabilização crítica de ambiente e governança técnica. Correção de trigger de banco (public.qualifiers), integração de fluxo auto-contido (Supabase Local-First) no GitHub Actions, e cura de 100% das regressões de testes unitários (Jest) que sofriam de vazamento de pilha recursiva e drifts de string de UI. Suíte agora blindada e resiliente para pipelines futuros.

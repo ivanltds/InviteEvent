@@ -28,7 +28,8 @@ export default function EmotionalIntro({ onComplete, accentColor }: EmotionalInt
       setTimeout(onComplete, 800); // Wait for exit animation
     }, 4500);
     return () => clearTimeout(timer);
-  }, [onComplete]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <AnimatePresence>

@@ -28,6 +28,32 @@ export const giftService = {
   },
 
   /**
+   * Adquire um lock de 3 horas para um presente (Lomadee/Links Externos).
+   */
+  async lockGift(presenteId: string, sessionId: string) {
+    const { data, error } = await supabase.rpc('adquirir_lock_presente_v1', {
+      p_presente_id: presenteId,
+      p_session_id: sessionId,
+    });
+
+    if (error) throw error;
+    return data as { sucesso: boolean; mensagem: string };
+  },
+
+  /**
+   * Libera voluntariamente um lock de presente retido pela sessão atual.
+   */
+  async unlockGift(presenteId: string, sessionId: string) {
+    const { error } = await supabase.rpc('liberar_lock_presente_v1', {
+      p_presente_id: presenteId,
+      p_session_id: sessionId,
+    });
+
+    if (error) throw error;
+  },
+
+
+  /**
    * Obtém os KPIs financeiros para o dashboard admin.
    */
   async getDashboardKpis(eventoId: string) {

@@ -42,7 +42,7 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | 010 | Multi-Animação de Gateways       | CONCLUÍDO   | Concluído   |
 | 011 | Modo Telão Realtime              | CONCLUÍDO   | Concluído   |
 | 12A | Smart Gift List - Fundação       | CONCLUÍDO   | Concluído   |
-| 12B | Smart Gift List - Monetização    | PLANEJADO   | Discovery Fin. |
+| 12B | Smart Gift List - Monetização    | CONCLUÍDO   | Concluído   |
 | 12C | Smart Gift List - Autônomo       | PLANEJADO   | Discovery Fin. |
 
 ## Segurança
@@ -110,6 +110,7 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/melhorias-suporte-v2.md               | BA          | Plano de Melhorias Estruturais de Atendimento V2 |
 | docs/wireframes/modo-telao-tv.html         | UX/UI       | Wireframe do Modo Telão Realtime 16:9 |
 | docs/wireframes/vitrine-importacao-rapida.html | UX/UI       | Wireframe Interativo: Vitrine 1-Clique (Fase A) |
+| docs/wireframes/motor-monetizacao-reservas.html| UX/UI       | Wireframe Interativo: Monetização & Reservas (Fase B) |
 | docs/prd/prd-011/prd-inicial.md            | BA          | PRD Inicial do Modo Telão Realtime |
 | docs/prd/prd-011/fluxo-ux.md               | UX/UI       | Mapeamento de fluxos e telas do Modo Telão|
 | docs/arquitetura/plano-implementacao-prd-011.md | Arquiteto | Plano técnico para Modo Telão Realtime (TV)|
@@ -121,9 +122,11 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/prd/prd-012-c/prd-inicial.md          | BA          | PRD-C Smart Gift List — Cérebro Autônomo (Self-Healing) |
 | docs/prd/prd-012/relatorio-descoberta-final.md  | Maestro    | Relatório Histórico de Descoberta Expandida |
 | tests/e2e/prd_012a_smart_gift.spec.ts       | QA          | Cobertura E2E de Abas, Vitrine SaaS e Categorização manual|
+| docs/prd/prd-012-b/plano-implementacao.md  | Arquiteto   | Plano técnico de travas temporárias 3h e PIX Dinâmico|
+| tests/e2e/prd_012b_trava_estoque.spec.ts   | QA          | Suíte E2E de Concorrência Atômica e Interstitial 4s |
 
 
 ## Última Atualização
 - Data    : 2026-05-13
 - Por     : Maestro / DEV / QA
-- Motivo  : Lançamento da Versão v0.4.1 — Smart Gift Unification & Intelligence. Realizada a unificação do motor de vitrine: agora itens criados manualmente em qualquer casamento entram no pool de sugestões globais de acordo com sua popularidade matemática (Cliques + Conversões). Criada a view consolidada v2 `view_presentes_ranking_geral` com joins nativos de banco de dados para alto desempenho. Aplicada a blindagem de deduplicação por NOME no React, garantindo que o casal identifique itens preexistentes na sua lista com o status 'Adicionado à sua lista'. A suíte de testes automatizados Playwright E2E validou com sucesso absoluto de 100% GREEN o fluxo cíclico de cadastro manual, unificação no ranking e proteção de duplicidade.
+- Motivo  : Lançamento da Versão v0.4.2 — Smart Gift Monetization & Atomicity. Lançado oficialmente o motor de concorrência concorrente (PRD-12B). Implementada a camada de travas físicas temporárias de 3 horas para itens de afiliados via RPC atômica com bloqueio concorrente `FOR UPDATE` no Supabase. O fluxo de intermediação interstitial de 4 segundos protege contra a fuga de receita fornecendo feedback dinâmico em tempo real. Lançada a 'Aceleração de Checkout PIX', permitindo presentear com 1-clique a partir de qualquer item. Suíte de testes Playwright E2E certificou toda a jornada com 100% GREEN, apresentando isolamento total de dados e cura completa do bug de renderização loop no timer da introdução emocional.

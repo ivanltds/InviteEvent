@@ -83,6 +83,15 @@ export interface Presente {
   base_id?: string | null;
   // Relacionamento mapeado para joins no Supabase client
   categoria?: PresenteCategoria | null;
+  presentes_locks?: PresenteLock[];
+}
+
+export interface PresenteLock {
+  id: string;
+  presente_id: string;
+  session_id: string;
+  expira_em: string;
+  criado_em?: string;
 }
 
 export interface PresenteCategoria {

@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wireframe de Alta Fidelidade: Motor de Monetização & Reservas (PRD-012-B)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
+
+        :root {
+            --font-serif: 'Playfair Display', serif;
+            --font-sans: 'Inter', sans-serif;
+            --accent-color: #C5A059;
+            --accent-hover: #B38F48;
+            --bg-main: #F9F9FB;
+            --text-dark: #1A1A1A;
+            --text-muted: #71717A;
+            --warning-orange: #ea580c;
+            --success-green: #10b981;
+            --error-red: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            font-family: var(--font-sans);
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        /* Painel Lateral do Simulador (Injetado para testes de UX) */
+        .simulator-sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 280px;
+            background: #1A1A1A;
+            color: #FFF;
+            padding: 30px 20px;
+            z-index: 90;
+            box-shadow: 5px 0 20px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .sim-title {
+            font-family: var(--font-serif);
+            font-size: 1.4rem;
+            color: var(--accent-color);
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+            margin: 0;
+        }
+
+        .sim-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #71717A;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .sim-role-btn {
+            width: 100%;
+            background: #2a2a2e;
+            border: 1px solid #3f3f46;
+            color: #d4d4d8;
+            padding: 12px 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: var(--font-sans);
+            font-size: 13px;
+            font-weight: 600;
+            text-align: left;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+
+        .sim-role-btn:hover {
+            background: #3f3f46;
+        }
+
+        .sim-role-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+        }
+
+        .sim-role-btn small {
+            display: block;
+            font-weight: 400;
+            opacity: 0.75;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .sim-rule-card {
+            background: #27272a;
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 3px solid var(--accent-color);
+            font-size: 12px;
+            line-height: 1.5;
+            color: #e4e4e7;
+        }
+
+        /* Estrutura da Aplicação Real */
+        .app-wrapper {
+            margin-left: 280px; /* Afastado do painel do simulador */
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* Header Oficial da Aplicação (Extraído do print e código) */
+        .headerNav {
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            z-index: 50;
+            display: flex;
+            justify-content: flex-end; /* Alinhamento conforme print (Cesta no canto direito) */
+            align-items: center;
+            padding: 15px 5%;
+        }
+
+        .cartIndicator {
+            background: #FFFFFF;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 50px;
+            padding: 10px 24px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .cartIndicator:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+
+        .cartCount {
+            background-color: var(--accent-color);
+            color: #FFFFFF;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        /* Seção Principal e Títulos */
+        .main-header {
+            padding: 60px 20px 40px;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .backLink {
+            font-family: var(--font-sans);
+            font-weight: 600;
+            font-size: 14px;
+            color: #1A1A1A;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .main-header h1 {
+            font-family: var(--font-serif);
+            font-size: 42px;
+            font-weight: 600;
+            margin: 0 0 12px 0;
+            color: #1a1a1a;
+        }
+
+        .main-header p {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin: 0;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        /* Grid de Presentes Oficial */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 0 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Card Oficial da Aplicação */
+        .card {
+            background: #FFFFFF;
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.02);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.03);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.08);
+        }
+
+        .imagePlaceholder {
+            height: 220px;
+            overflow: hidden;
+            position: relative;
+            background: #f4f4f4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .itemImage {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s;
+        }
+
+        .card:hover .itemImage {
+            transform: scale(1.04);
+        }
+
+        /* Badge de Status / Reservas */
+        .selectedBadge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 6px 14px;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 50px;
+            z-index: 10;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .badge-reserved-other {
+            background-color: var(--warning-orange);
+        }
+
+        .badge-reserved-mine {
+            background-color: var(--success-green);
+        }
+
+        /* Informações do Card */
+        .info {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .description {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .info h3 {
+            font-family: var(--font-serif);
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            color: #1A1A1A;
+        }
+
+        .price {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+
+        .itemActions {
+            margin-top: auto;
+        }
+
+        /* Botão de Ver Detalhes (Oficial) */
+        .giftBtn {
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-family: var(--font-sans);
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            background-color: var(--accent-color);
+            color: #FFFFFF;
+            box-shadow: 0 4px 15px rgba(197, 160, 89, 0.15);
+        }
+
+        .giftBtn:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(197, 160, 89, 0.3);
+        }
+
+        .giftBtn.btn-disabled {
+            background-color: #e4e4e7;
+            color: #a1a1aa;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        .giftBtn.btn-disabled:hover {
+            transform: none;
+            box-shadow: none;
+            background-color: #e4e4e7;
+        }
+
+        /* Card Overlay quando sob Trava e outro visualizador */
+        .card-lock-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(250, 250, 250, 0.85);
+            backdrop-filter: blur(3px);
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .card.is-locked .card-lock-overlay {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .card-lock-overlay svg {
+            color: var(--warning-orange);
+            margin-bottom: 10px;
+        }
+
+        .card-lock-overlay h4 {
+            font-family: var(--font-serif);
+            font-size: 16px;
+            margin: 0 0 5px 0;
+            color: #1a1a1a;
+        }
+
+        .card-lock-overlay p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+
+        /* ==========================================
+           ESTRUTURA DO MODAL DE DETALHES (OFICIAL)
+           ========================================== */
+        .modalOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modalOverlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 32px;
+            width: 100%;
+            max-width: 860px;
+            overflow: hidden;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.2);
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            position: relative;
+            transform: scale(0.96) translateY(30px);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modalOverlay.active .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .closeBtn {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            font-size: 24px;
+            color: var(--text-muted);
+            cursor: pointer;
+            background: none;
+            border: none;
+            z-index: 10;
+            transition: color 0.2s;
+        }
+
+        .closeBtn:hover {
+            color: #1A1A1A;
+        }
+
+        .modalVisual {
+            position: relative;
+            height: 100%;
+            min-height: 450px;
+            background: #f4f4f4;
+        }
+
+        .modalVisual img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            inset: 0;
+        }
+
+        .modalContent {
+            padding: 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modalTag {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+
+        .modalTitle {
+            font-family: var(--font-serif);
+            font-size: 32px;
+            font-weight: 600;
+            color: #1A1A1A;
+            margin: 0 0 10px 0;
+            line-height: 1.2;
+        }
+
+        .modalPrice {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 28px;
+        }
+
+        .modalDescHeading {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            margin-bottom: 12px;
+        }
+
+        .modalDescText {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #52525B;
+            margin: 0 0 32px 0;
+        }
+
+        /* Área de Ações do Modal (Botões Pill do Print) */
+        .modalActions {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            margin-top: auto;
+        }
+
+        .action-row {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 12px;
+        }
+
+        .modalBtnCart {
+            background-color: var(--accent-color);
+            color: #FFFFFF;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 50px;
+            font-family: var(--font-sans);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 15px rgba(197, 160, 89, 0.2);
+        }
+
+        .modalBtnCart:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(197, 160, 89, 0.3);
+        }
+
+        .modalBtnExternal {
+            background-color: transparent;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 16px 24px;
+            border-radius: 50px;
+            font-family: var(--font-sans);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modalBtnExternal:hover {
+            background-color: rgba(197, 160, 89, 0.04);
+            transform: translateY(-2px);
+        }
+
+        /* Painel de Trava Interno do Modal */
+        .modal-lock-notice {
+            background-color: #fef3c7;
+            border: 1px solid #fde68a;
+            border-left: 4px solid var(--warning-orange);
+            border-radius: 12px;
+            padding: 15px 20px;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .modal-lock-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            color: #92400e;
+        }
+
+        .btn-release-reserve {
+            background-color: transparent;
+            border: 1.5px solid var(--error-red);
+            color: var(--error-red);
+            padding: 14px 24px;
+            border-radius: 50px;
+            font-family: var(--font-sans);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            cursor: pointer;
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-release-reserve:hover {
+            background-color: #fef2f2;
+            transform: translateY(-1px);
+        }
+
+
+        /* ==========================================
+           TELA INTERSTITIAL DE 4s (ESTILO PREMIUM)
+           ========================================== */
+        .interstitial-layer {
+            position: fixed;
+            inset: 0;
+            background-color: var(--bg-main);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .interstitial-layer.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .loading-container {
+            background: white;
+            width: 90%;
+            max-width: 540px;
+            padding: 45px;
+            border-radius: 32px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.06);
+            border: 1px solid rgba(0,0,0,0.03);
+            text-align: center;
+            transform: scale(0.96);
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .interstitial-layer.visible .loading-container {
+            transform: scale(1);
+        }
+
+        .flow-graphic {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 35px;
+        }
+
+        .logo-bubble {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #FFF;
+            border: 1px solid #e4e4e7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+            font-family: var(--font-serif);
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .flow-line {
+            flex-grow: 1;
+            max-width: 80px;
+            height: 2px;
+            background: #f4f4f5;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flow-line::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            height: 100%; width: 100%;
+            background: var(--accent-color);
+            animation: flow-slide 1.5s infinite ease-in-out;
+        }
+
+        @keyframes flow-slide {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .interstitial-title {
+            font-family: var(--font-serif);
+            font-size: 26px;
+            font-weight: 600;
+            margin: 0 0 12px 0;
+        }
+
+        .interstitial-warning {
+            background-color: #fef3c7;
+            color: #92400e;
+            border-left: 3px solid var(--warning-orange);
+            border-radius: 12px;
+            padding: 16px 20px;
+            text-align: left;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 35px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .interstitial-progress {
+            margin-bottom: 24px;
+        }
+
+        .p-track {
+            height: 6px;
+            background: #f4f4f5;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .p-bar {
+            height: 100%;
+            background: var(--accent-color);
+            width: 0%;
+            transition: width 4s linear;
+        }
+
+        .p-text {
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .btn-skip {
+            background: #f4f4f5;
+            border: none;
+            color: #18181b;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-skip:hover {
+            background: #e4e4e7;
+        }
+
+        /* Toast de Notificação */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1A1A1A;
+            color: #FFFFFF;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 300;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast.active {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Painel Simulador (UX Tools) -->
+    <aside class="simulator-sidebar">
+        <h2 class="sim-title">InviteEvent <span>UX Simulator</span></h2>
+        
+        <div>
+            <span class="sim-label">Persona da Sessão</span>
+            <button class="sim-role-btn active" id="sim-stranger" onclick="switchSimPersona('stranger')">
+                Convidado Concorrente
+                <small>Tenta acessar presentes bloqueados por terceiros.</small>
+            </button>
+            <button class="sim-role-btn" id="sim-owner" onclick="switchSimPersona('owner')">
+                Dono da Reserva
+                <small>Pode liberar itens que reservou ou pagar via PIX.</small>
+            </button>
+        </div>
+
+        <div>
+            <span class="sim-label">Regras Visualizadas</span>
+            <div class="sim-rule-card">
+                <strong>1. Lock Visual da Vitrine</strong><br>
+                A badge laranja desabilita o "Ver Detalhes" para terceiros diretamente no grid.
+            </div>
+            <div class="sim-rule-card" style="margin-top: 12px;">
+                <strong>2. PIX Sovereign</strong><br>
+                O dono do lock sempre retém o botão "Adicionar à Cesta" habilitado no modal.
+            </div>
+        </div>
+        
+        <div style="margin-top: auto; font-size: 11px; color: #52525b;">
+            PRD-012-B / Wireframe Integrado
+        </div>
+    </aside>
+
+    <!-- Aplicação Real -->
+    <div class="app-wrapper">
+
+        <!-- Header / Navbar Oficial -->
+        <nav class="headerNav">
+            <div class="cartIndicator">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                <span>Cesta</span>
+                <span class="cartCount" id="headerCartBadge">0</span>
+            </div>
+        </nav>
+
+        <!-- Cabeçalho do Evento -->
+        <header class="main-header">
+            <div class="backLink">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Voltar ao Convite
+            </div>
+            <h1>Lista de Presentes</h1>
+            <p>Seu maior presente é a sua presença. Mas, se desejar nos homenagear, escolha um item de nossa lista de cotas virtuais para nossa nova jornada.</p>
+        </header>
+
+        <!-- Catálogo de Presentes (Layout Idêntico aos Prints) -->
+        <main class="grid">
+
+            <!-- PRODUTO 1: Disponível (Fluxo Lomadee) -->
+            <div class="card" id="card-1" onclick="openModal(1)">
+                <div class="imagePlaceholder">
+                    <img src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&q=80&w=400" class="itemImage" alt="Kit Churrasco">
+                </div>
+                <div class="info">
+                    <span class="description">EXPERIÊNCIA</span>
+                    <h3>Kit Churrasco Premium 8</h3>
+                    <span class="price">R$ 80,00</span>
+                    <div class="itemActions">
+                        <button class="giftBtn">Ver Detalhes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PRODUTO 2: Reservado (Comporte-se de acordo com a Persona selecionada no Simulator) -->
+            <div class="card" id="card-2" onclick="openModal(2)">
+                <!-- A badge será dinâmica via JS baseado no Simulator (RESERVADO vs SUA RESERVA) -->
+                <div id="card-2-badge" class="selectedBadge badge-reserved-other">
+                    <svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    RESERVADO
+                </div>
+                <div class="imagePlaceholder">
+                    <img src="https://images.unsplash.com/photo-1574672280600-4accfa5b6f98?auto=format&fit=crop&q=80&w=400" class="itemImage" alt="Formas Assadeira">
+                    
+                    <!-- Overlay de Trava Fria (Bloqueia cliques se for outro visitante) -->
+                    <div class="card-lock-overlay" id="card-2-overlay">
+                        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        <h4>Item Sob Reserva</h4>
+                        <p>Finalizando em loja parceira.</p>
+                    </div>
+                </div>
+                <div class="info">
+                    <span class="description">CASA & DECORAÇÃO</span>
+                    <h3>Kit 2 Formas Assadeira Redonda</h3>
+                    <span class="price">R$ 145,90</span>
+                    <div class="itemActions">
+                        <button class="giftBtn" id="card-2-btn">Ver Detalhes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PRODUTO 3: Disponível -->
+            <div class="card" id="card-3" onclick="openModal(3)">
+                <div class="imagePlaceholder">
+                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=400" class="itemImage" alt="Jogo de Jantar">
+                </div>
+                <div class="info">
+                    <span class="description">COZINHA</span>
+                    <h3>Jogo De Talheres inox</h3>
+                    <span class="price">R$ 220,00</span>
+                    <div class="itemActions">
+                        <button class="giftBtn">Ver Detalhes</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- ==========================================
+         ESTRUTURA DO MODAL (EXACT FIT COM PRINTS)
+         ========================================== -->
+    <div class="modalOverlay" id="giftModal" onclick="closeModal()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <button class="closeBtn" onclick="closeModal()">&times;</button>
+            
+            <!-- Coluna 1: Imagem (Esquerda) -->
+            <div class="modalVisual">
+                <img id="modalImg" src="" alt="Presente">
+            </div>
+            
+            <!-- Coluna 2: Informações & Botões Oficiais (Direita) -->
+            <div class="modalContent">
+                <div class="modalTag" id="modalTagText">PRESENTE</div>
+                <h2 class="modalTitle" id="modalTitleText">Nome do Presente</h2>
+                <div class="modalPrice" id="modalPriceText">R$ 0,00</div>
+
+                <div class="modalDescHeading">Sobre este presente</div>
+                <div class="modalDescText" id="modalDescBody">
+                    Sem descrição detalhada.
+                </div>
+
+                <!-- INJEÇÃO DA REGRA 12B: Notificação de Reserva Dinâmica -->
+                <div id="modalLockNoticeBox" style="display: none;">
+                    <!-- Preenchido pelo JS -->
+                </div>
+
+                <!-- Área Oficial de Botões -->
+                <div class="modalActions">
+                    <div class="action-row" id="standardActions">
+                        <!-- Botão 1: Adicionar à Cesta (Solid Gold) -->
+                        <button class="modalBtnCart" id="btnPixSovereign" onclick="addToBasket()">
+                            Adicionar à Cesta
+                        </button>
+                        
+                        <!-- Botão 2: Comprar Online (Gold Outline) -->
+                        <button class="modalBtnExternal" id="btnBuyOnline" onclick="triggerAffiliateRedirect()">
+                            Comprar Online
+                        </button>
+                    </div>
+
+                    <!-- Novo Botão 12B: Presentear via PIX Direto -->
+                    <button class="modalBtnCart" id="btnDirectPixPay" onclick="buyDirectlyViaPix()" style="width: 100%; margin-top: 10px; background-color: #1A1A1A; box-shadow: 0 6px 15px rgba(0,0,0,0.15); font-weight: bold; gap: 6px;">
+                        ⚡ Presentear via PIX Agora
+                    </button>
+
+                    <!-- Botão de Ação 12B: Liberar Item Exclusivo do Dono -->
+                    <button class="btn-release-reserve" id="btnReleaseReserve" style="display: none;" onclick="cancelReservation()">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+                        Desistir / Liberar Presente
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL DE CHECKOUT / PAGAMENTO PIX (SIMULADO PRD-12B)
+         ========================================== -->
+    <div class="modalOverlay" id="checkoutModal" onclick="closeCheckoutModal()">
+        <div class="modal" style="grid-template-columns: 1fr; max-width: 560px;" onclick="event.stopPropagation()">
+            <button class="closeBtn" onclick="closeCheckoutModal()">&times;</button>
+            <div style="padding: 48px; max-height: 85vh; overflow-y: auto;">
+                <h2 style="font-family: var(--font-serif); margin-bottom: 1.5rem; font-size: 32px; font-weight: 600;">Sua Cesta de Carinho</h2>
+                
+                <div style="margin-bottom: 2rem; background: #f9f9f9; padding: 1.5rem; border-radius: 16px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-weight: 500; color: #555;">
+                        <span id="checkoutItemName">Presente</span>
+                        <span id="checkoutItemPrice">R$ 0,00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem; margin-top: 1rem; padding-top: 1rem; border-top: 2px dashed #ddd; color: var(--accent-color);">
+                        <span>Total</span>
+                        <span id="checkoutTotalValue">R$ 0,00</span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 2rem;">
+                    <label style="font-weight: 600; display: block; margin-bottom: 0.5rem; font-size: 14px;">Uma mensagem especial para nós:</label>
+                    <textarea 
+                        style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 12px; font-family: inherit; font-size: 14px; resize: vertical; min-height: 80px;"
+                        placeholder="Escreva algo carinhoso aqui... (opcional)"
+                    ></textarea>
+                </div>
+
+                <!-- Área de Pagamento Simulada -->
+                <div style="text-align: center; background: #fafafa; border: 1px solid #f0f0f0; border-radius: 16px; padding: 25px;">
+                    <div style="font-weight: 700; margin-bottom: 15px; font-size: 15px; color: #1a1a1a;">Pague com PIX Copia e Cola</div>
+                    <div style="background: #fff; border: 2px solid #eee; border-radius: 12px; padding: 20px; display: inline-block; margin-bottom: 20px;">
+                        <svg width="100" height="100" viewBox="0 0 24 24" fill="#1A1A1A"><path d="M3 3h6v6H3V3zm1 1v4h4V4H4zm1 1h2v2H5V5zm10-2h6v6h-6V3zm1 1v4h4V4h-4zm1 1h2v2h-2V5zM3 15h6v6H3v-6zm1 1v4h4v-4H4zm1 1h2v2H5v-2zm15-2h1v1h-1v-1zm1 1h1v1h-1v-1zm-2 2h1v1h-1v-1zm1 1h1v1h-1v-1zm-1-2h1v1h-1v-1zm3 0h1v1h-1v-1zm-1 1h1v1h-1v-1zm-2-5h2v2h-2v-2zm3 0h1v2h-1v-2zm-3 3h1v1h-1v-1zm1 1h1v1h-1v-1zm1-2h1v1h-1v-1zm-7 3h1v1h-1v-1zm1-2h1v1h-1v-1zm-1 3h1v1h-1v-1zm-4-3h1v1H6v-1zm-1 1h1v1H5v-1zm1 1h1v1H6v-1zm5-1h1v2h-1v-2zm0-2h1v1h-1v-1zm-2 2h1v1H9v-1z"/></svg>
+                    </div>
+                    <button class="modalBtnCart" style="width: 100%;" onclick="confirmSimulatedPayment()">
+                        ✓ Confirmar Pagamento
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==========================================
+         TELA INTERSTITIAL DE REDIRECIONAMENTO (12B)
+         ========================================== -->
+    <div class="interstitial-layer" id="redirectLayer">
+        <div class="loading-container">
+            <div class="flow-graphic">
+                <div class="logo-bubble">I</div>
+                <div class="flow-line"></div>
+                <div class="logo-bubble" style="color: #2563eb; border-color: #2563eb; background: #eff6ff;">L</div>
+            </div>
+
+            <h2 class="interstitial-title">Direcionando para a Loja</h2>
+            
+            <div class="interstitial-warning">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <div>
+                    <strong>Evitando presentes duplicados!</strong><br>
+                    Para sua segurança, reservamos este item por <strong>3 horas</strong> enquanto você conclui a compra na loja parceira.
+                </div>
+            </div>
+
+            <div class="interstitial-progress">
+                <div class="p-track">
+                    <div class="p-bar" id="progressBarEl"></div>
+                </div>
+                <div class="p-text">Você será redirecionado automaticamente em <span id="secondsText">4</span> segundos...</div>
+            </div>
+
+            <button class="btn-skip" onclick="completeRedirection()">Ir Agora e Reservar</button>
+        </div>
+    </div>
+
+
+    <!-- Notificação Toast -->
+    <div class="toast" id="globalToast">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span id="toastText">Item adicionado com sucesso!</span>
+    </div>
+
+    
+    <!-- ==========================================
+         LÓGICA DO PROTÓTIPO / SIMULADOR
+         ========================================== -->
+    <script>
+        const products = {
+            1: {
+                title: "Kit Churrasco Premium 8",
+                tag: "EXPERIÊNCIA",
+                price: "R$ 80,00",
+                img: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&q=80&w=500",
+                desc: "Conjunto ultra-sofisticado com cabos de madeira envernizada e lâminas de aço inox de altíssima durabilidade. O churrasco perfeito para celebrar com os amigos no novo quintal."
+            },
+            2: {
+                title: "Kit 2 Formas Assadeira Redonda",
+                tag: "CASA & DECORAÇÃO",
+                price: "R$ 145,90",
+                img: "https://images.unsplash.com/photo-1574672280600-4accfa5b6f98?auto=format&fit=crop&q=80&w=500",
+                desc: "Duas assadeiras de alta performance com fundo removível antiaderente, perfeitas para tortas e bolos impecáveis.",
+                isReserved: true
+            },
+            3: {
+                title: "Jogo De Talheres inox",
+                tag: "COZINHA",
+                price: "R$ 220,00",
+                img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=500",
+                desc: "Um conjunto luxuoso de 36 talheres totalmente polidos, garantindo requinte e durabilidade para as nossas refeições especiais do dia a dia."
+            }
+        };
+
+        let activePersona = 'stranger'; // 'stranger' | 'owner'
+        let activeProductId = null;
+        let redirectTimeout = null;
+        let progressInterval = null;
+        let basketCount = 0;
+
+        // Alternar a persona simulada
+        function switchSimPersona(persona) {
+            activePersona = persona;
+            document.getElementById('sim-stranger').classList.toggle('active', persona === 'stranger');
+            document.getElementById('sim-owner').classList.toggle('active', persona === 'owner');
+            
+            applyPersonaRulesToUI();
+            
+            // Se o modal estiver aberto, fecha ou atualiza para simular a transição limpa
+            closeModal();
+            triggerToast(`Modo alterado para: ${persona === 'owner' ? 'Dono da Reserva' : 'Outro Convidado'}`);
+        }
+
+        // Aplica as regras visuais nas listas de cards dependendo de quem vê
+        function applyPersonaRulesToUI() {
+            const cardEl = document.getElementById('card-2');
+            const badgeEl = document.getElementById('card-2-badge');
+            const overlayEl = document.getElementById('card-2-overlay');
+            const btnEl = document.getElementById('card-2-btn');
+
+            if (activePersona === 'stranger') {
+                // Se for um desconhecido vendo a reserva de outro:
+                badgeEl.className = "selectedBadge badge-reserved-other";
+                badgeEl.innerHTML = `<svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> RESERVADO`;
+                cardEl.classList.add('is-locked'); // Ativa o visual de bloqueado
+                btnEl.innerText = "Reservado";
+                btnEl.className = "giftBtn btn-disabled";
+            } else {
+                // Se for o DONO vendo sua própria reserva:
+                badgeEl.className = "selectedBadge badge-reserved-mine";
+                badgeEl.innerHTML = `<svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> SUA RESERVA`;
+                cardEl.classList.remove('is-locked'); // Permite ele clicar
+                btnEl.innerText = "Ver Detalhes";
+                btnEl.className = "giftBtn";
+            }
+        }
+
+        // Abrir o Modal Oficial
+        function openModal(id) {
+            // Se estiver travado e for estranho, ignora clique (prevenção extra do grid)
+            if (id === 2 && activePersona === 'stranger') return;
+
+            activeProductId = id;
+            const product = products[id];
+
+            document.getElementById('modalImg').src = product.img;
+            document.getElementById('modalTagText').innerText = product.tag;
+            document.getElementById('modalTitleText').innerText = product.title;
+            document.getElementById('modalPriceText').innerText = product.price;
+            document.getElementById('modalDescBody').innerText = product.desc;
+
+            // Injetar estados de travas do Bloco B
+            const noticeBox = document.getElementById('modalLockNoticeBox');
+            const releaseBtn = document.getElementById('btnReleaseReserve');
+            const buyOnlineBtn = document.getElementById('btnBuyOnline');
+            const pixSovereignBtn = document.getElementById('btnPixSovereign');
+
+            if (id === 2 && activePersona === 'owner') {
+                // Se o produto é o reservado e é dele:
+                noticeBox.style.display = "block";
+                noticeBox.innerHTML = `
+                    <div class="modal-lock-header">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        Sua Reserva Está Ativa
+                    </div>
+                    <div>Este item está reservado para você por mais <strong>⏳ 02:54:12</strong> enquanto conclui sua compra na loja indicada. Se mudar de ideia, libere o item abaixo.</div>
+                `;
+                
+                releaseBtn.style.display = "inline-flex"; // Exibe o botão de Desistir da Reserva
+                buyOnlineBtn.style.display = "inline-flex";
+                buyOnlineBtn.innerText = "Concluir na Loja";
+                
+                // A regra de Soberania do PIX: Ele ainda pode fazer o pix!
+                pixSovereignBtn.style.display = "inline-flex";
+                pixSovereignBtn.innerText = "Pagar Cota PIX";
+            } else {
+                // Layout padrão limpo conforme original
+                noticeBox.style.display = "none";
+                releaseBtn.style.display = "none";
+                buyOnlineBtn.style.display = "inline-flex";
+                buyOnlineBtn.innerText = "Comprar Online";
+                pixSovereignBtn.style.display = "inline-flex";
+                pixSovereignBtn.innerText = "Adicionar à Cesta";
+            }
+
+            document.getElementById('giftModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('giftModal').classList.remove('active');
+        }
+
+        // Fluxo 12B: Interstitial de Redirecionamento (3s hold)
+        function triggerAffiliateRedirect() {
+            closeModal();
+            
+            const layer = document.getElementById('redirectLayer');
+            const bar = document.getElementById('progressBarEl');
+            const timerEl = document.getElementById('secondsText');
+
+            layer.classList.add('visible');
+            
+            // Barra de progresso simulada de 4s
+            setTimeout(() => {
+                bar.style.width = "100%";
+            }, 100);
+
+            let count = 4;
+            timerEl.innerText = count;
+            
+            progressInterval = setInterval(() => {
+                count--;
+                timerEl.innerText = count;
+                if(count <= 0) clearInterval(progressInterval);
+            }, 1000);
+
+            redirectTimeout = setTimeout(() => {
+                completeRedirection();
+            }, 4050);
+        }
+
+        function completeRedirection() {
+            clearTimeout(redirectTimeout);
+            clearInterval(progressInterval);
+
+            const layer = document.getElementById('redirectLayer');
+            layer.classList.remove('visible');
+
+            // Reset progress
+            setTimeout(() => {
+                document.getElementById('progressBarEl').style.width = "0%";
+            }, 500);
+
+            // Simula lógica de negócio: Item clicado entra sob reserva!
+            if(activeProductId === 1) {
+                products[1].isReserved = true;
+                switchSimPersona('owner'); // Muda a persona para dono pra demonstrar o lock
+                
+                // Injetar badge de lock visual no Card 1
+                const card1 = document.getElementById('card-1');
+                const inner = card1.querySelector('.imagePlaceholder');
+                inner.insertAdjacentHTML('beforeend', `
+                    <div class="selectedBadge badge-reserved-mine" id="card-1-badge">
+                        <svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> SUA RESERVA
+                    </div>
+                `);
+                triggerToast("🚀 Redirecionado! Trava de 3h de estoque ativada no Banco de Dados.");
+            } else {
+                triggerToast("🚀 Redirecionado para a loja parceira com Link Afiliado!");
+            }
+        }
+
+        // Cancelamento da Reserva pelo Dono
+        function cancelReservation() {
+            closeModal();
+            
+            // Remove a reserva do produto 2 simulando a invalidação do token no banco
+            delete products[2].isReserved;
+            
+            // Restaura visual padrão
+            const badge2 = document.getElementById('card-2-badge');
+            if(badge2) badge2.remove();
+            
+            const card2 = document.getElementById('card-2');
+            card2.classList.remove('is-locked');
+            document.getElementById('card-2-overlay').style.opacity = 0;
+            
+            const btn = document.getElementById('card-2-btn');
+            btn.className = "giftBtn";
+            btn.innerText = "Ver Detalhes";
+            
+            triggerToast("🔓 Reserva cancelada com sucesso! Item liberado na vitrine.");
+        }
+
+        // Presentear Direto via PIX (Pula Etapa do Carrinho)
+        function buyDirectlyViaPix() {
+            const product = products[activeProductId];
+            closeModal();
+            
+            // Adiciona à cesta visual
+            basketCount++;
+            document.getElementById('headerCartBadge').innerText = basketCount;
+            
+            // Preenche os dados do Checkout
+            document.getElementById('checkoutItemName').innerText = product.title;
+            document.getElementById('checkoutItemPrice').innerText = product.price;
+            document.getElementById('checkoutTotalValue').innerText = product.price;
+            
+            // Abre o modal de checkout
+            document.getElementById('checkoutModal').classList.add('active');
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkoutModal').classList.remove('active');
+        }
+
+        function confirmSimulatedPayment() {
+            closeCheckoutModal();
+            
+            // Marca como comprado em definitivo no grid
+            const card = document.getElementById(`card-${activeProductId}`);
+            if (card) {
+                card.style.opacity = 0.5;
+                card.style.pointerEvents = "none";
+                const btn = card.querySelector('.giftBtn');
+                if(btn) {
+                    btn.innerText = "✨ GANHO VIA PIX";
+                    btn.className = "giftBtn btn-disabled";
+                }
+            }
+            triggerToast("✨ Sucesso! Seu presente via PIX foi enviado aos noivos!");
+        }
+
+        // Simulação do carrinho / PIX Sovereign
+        function addToBasket() {
+            closeModal();
+            basketCount++;
+            document.getElementById('headerCartBadge').innerText = basketCount;
+            
+            // Se o item estava reservado, o PIX quebra o lock e resolve a compra em definitivo!
+            if (activeProductId === 2) {
+                triggerToast("✨ Compra PIX Confirmada! Reserva temporária encerrada definitivamente.");
+                // Simula item removido/ganho
+                const card2 = document.getElementById('card-2');
+                card2.style.opacity = 0.5;
+                card2.style.pointerEvents = "none";
+                const btn = document.getElementById('card-2-btn');
+                btn.innerText = "✨ GANHO VIA PIX";
+                btn.className = "giftBtn btn-disabled";
+            } else {
+                triggerToast("Item adicionado à Cesta com sucesso!");
+            }
+        }
+
+        // Toast Feedback
+        function triggerToast(text) {
+            const toast = document.getElementById('globalToast');
+            document.getElementById('toastText').innerText = text;
+            toast.classList.add('active');
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 4000);
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            applyPersonaRulesToUI();
+        });
+    </script>
+</body>
+</html>

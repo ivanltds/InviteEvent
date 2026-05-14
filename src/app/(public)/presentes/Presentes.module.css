@@ -511,3 +511,35 @@
   stroke: #ccc;
 }
 
+.searchWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+  padding: 0 5%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.searchBox {
+  padding: 14px 24px;
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+  color: #1a1a1a;
+  border-radius: 50px;
+  font-size: 15px;
+  font-family: inherit;
+  width: 100%;
+  max-width: 420px;
+  outline: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  text-align: center;
+}
+
+.searchBox:focus {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  max-width: 480px;
+}
+
+

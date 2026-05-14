@@ -76,6 +76,7 @@ export interface Presente {
   status: 'disponivel' | 'reservado' | 'esgotado' | 'pausado';
   quantidade_total: number;
   quantidade_reservada: number;
+  preco_de?: number;
   created_at?: string;
   updated_at?: string;
   user_id?: string;
@@ -90,6 +91,7 @@ export interface PresenteLock {
   id: string;
   presente_id: string;
   session_id: string;
+  convite_id?: string;
   expira_em: string;
   criado_em?: string;
 }
@@ -106,6 +108,7 @@ export interface PresenteBase {
   id: string;
   nome: string;
   preco: number;
+  preco_de?: number;
   descricao?: string;
   imagem_url?: string;
   categoria_id: string;

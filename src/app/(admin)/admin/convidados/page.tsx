@@ -23,6 +23,7 @@ export default function AdminConvidados() {
     telefone: ''
   });
   const [members, setMembers] = useState<{ id?: string; nome: string }[]>([]);
+  const [search, setSearch] = useState('');
 
   // Controles de Modais e Toasts Novos
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -197,6 +198,20 @@ export default function AdminConvidados() {
   };
 
   const stats = getStats();
+
+  // Lógica de Filtragem Ativa
+  const filteredInvites = invites.filter(invite => {
+    const q = search.toLowerCase();
+    const hasMatchingMember = invite.membros && invite.membros.some(m => m.nome?.toLowerCase().includes(q));
+    const phoneMatch = invite.telefone && invite.telefone.includes(q);
+    
+    return (
+      invite.nome_principal?.toLowerCase().includes(q) ||
+      invite.tipo?.toLowerCase().includes(q) ||
+      hasMatchingMember ||
+      phoneMatch
+    );
+  });
 
   const exportToCSV = () => {
     const headers = ['Convite Principal', 'Nome do Membro', 'Confirmado', 'Tipo', 'Restrições Alimentares', 'Mensagem', 'Telefone'];
@@ -380,6 +395,16 @@ export default function AdminConvidados() {
         </div>
       </section>
 
+      <div className={styles.controlsRow}>
+        <input
+          type="text"
+          className={styles.searchBox}
+          placeholder="Buscar por convidado, membro ou tipo..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
       <section className={styles.tableContainer}>
         {loading ? (
           <p className={styles.loading}>Carregando convidados...</p>
@@ -394,7 +419,7 @@ export default function AdminConvidados() {
               </tr>
             </thead>
             <tbody>
-              {invites.map((invite) => {
+              {filteredInvites.map((invite) => {
                 // Tenta pegar o RSVP do array 'rsvp' (alias ou join padrão)
                 const rsvpArray = (invite as any).rsvp;
                 const rsvp = Array.isArray(rsvpArray) ? rsvpArray[0] : rsvpArray;
@@ -489,9 +514,9 @@ export default function AdminConvidados() {
                   </tr>
                 );
               })}
-              {invites.length === 0 && (
+              {filteredInvites.length === 0 && (
                 <tr>
-                  <td colSpan={5} className={styles.empty}>Nenhum convite cadastrado ainda.</td>
+                  <td colSpan={5} className={styles.empty}>Nenhum convidado localizado para a busca.</td>
                 </tr>
               )}
             </tbody>

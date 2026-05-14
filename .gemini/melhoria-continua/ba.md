@@ -1,4 +1,4 @@
-﻿# Melhoria ContÃ­nua
+# Melhoria ContÃ­nua
 > Arquivo incremental. Nunca apagar entradas.
 > Lido automaticamente pelo MAESTRO antes de acionar o agente correspondente.
 
@@ -49,4 +49,10 @@
 1. Visualizador de Mural para Telões (Slideshow Mode).
 2. Envio de Fotos Instantâneo (QR Code sem Fricção).
 3. Gamificação Visual da Lista de Presentes (Metas).
+**Status:** APLICADO
+## [2026-05-14] - Tipo: NEGÓCIO / CONTROLE OPERACIONAL
+**Contexto:** PRD-012-D (Central de Operações Globais / Painel Manager)
+**Problema:** Ausência de uma interface administrativa unificada (Cockpit) para o Operador gerenciar todos os presentes cadastrados no sistema globalmente e controlar as operações de cura e fila autônoma.
+**Impacto:** Limita a capacidade de monitoramento ativo do catálogo e obriga manutenções diretas no banco de dados para limpezas em lote ou reinicializações do agente de cura.
+**Ação corretiva:** Projetar e especificar a PRD de Operações Globais (PRD-012-D), incluindo CRUD consolidado de catálogo e o botão de gatilho em massa para enfileiramento da cura autônoma (Refresh Curation Queue).
 **Status:** APLICADO

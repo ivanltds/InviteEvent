@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão Global de Presentes (Catálogo SaaS) — InviteEvent AI Master</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-serif: 'Playfair Display', serif;
+            --font-sans: 'Inter', sans-serif;
+            --gold: #C5A059;
+            --gold-hover: #B38F48;
+            --dark-bg: #090909;
+            --card-bg: #111111;
+            --input-bg: #070707;
+            --border-color: rgba(197, 160, 89, 0.1);
+            --border-hover: rgba(197, 160, 89, 0.3);
+            --text-main: #f5e6cc;
+            --text-muted: #777;
+            
+            /* Padrões Cinza Adaptados para Escuro Premium */
+            --btn-gray-bg: rgba(255,255,255,0.04);
+            --btn-gray-border: rgba(255,255,255,0.08);
+            --btn-gray-hover: rgba(255,255,255,0.12);
+            --btn-gray-color: #bbb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            padding: 2.5rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Efeito de brilho sutil clássico do Master Admin */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: radial-gradient(circle at 50% -20%, rgba(197, 160, 89, 0.07) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1350px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* --- Nav --- */
+        .nav-breadcrumb {
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 1.2rem;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .nav-breadcrumb a {
+            color: var(--gold);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* --- Header Master --- */
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 2.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 1.5rem;
+        }
+
+        .page-title h1 {
+            font-family: var(--font-serif);
+            font-size: 2.3rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .page-title p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* --- Botoes Principais --- */
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), var(--gold-hover));
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(197, 160, 89, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #ccc;
+            border: 1px solid var(--btn-gray-border);
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-outline:hover {
+            border-color: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.03);
+            color: #fff;
+        }
+
+        .btn-refresh-green {
+            border-color: #10b981;
+            color: #10b981;
+        }
+
+        .btn-refresh-green:hover {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: #34d399;
+            color: #fff;
+        }
+
+        /* --- Dashboard KPI --- */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .card-kpi {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .card-kpi:hover { border-color: var(--border-hover); }
+
+        .kpi-title {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .kpi-value {
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .kpi-foot { font-size: 0.7rem; color: var(--text-muted); margin-top: 6px; display: block; }
+
+        /* --- Barra de Controles --- */
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-box {
+            background: var(--input-bg);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            padding: 10px 16px;
+            color: #fff;
+            font-size: 0.85rem;
+            font-family: inherit;
+            width: 320px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-box:focus { border-color: var(--gold); }
+
+        .view-toggle {
+            display: flex;
+            gap: 0.5rem;
+            background: #111;
+            padding: 0.3rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .toggle-btn {
+            background: transparent;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #666;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn.active {
+            background: var(--btn-gray-border);
+            color: var(--gold);
+        }
+
+        /* ==========================================
+           📊 TABELA REAL (PADRÃO ORGANIZADOR MUDADO PARA MODO MASTER DARK)
+           ========================================== */
+        .table-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.04);
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+            margin-bottom: 3rem;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .table th {
+            background-color: #151515;
+            padding: 1rem 1.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #777;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .table td {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            vertical-align: middle;
+            color: #d5d5d5;
+            font-size: 0.85rem;
+        }
+
+        .table tbody tr:hover td {
+            background-color: rgba(255,255,255,0.01);
+        }
+
+        .item-cell { display: flex; align-items: center; gap: 1rem; }
+        .thumb-mini { width: 46px; height: 46px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); background: #181818; flex-shrink: 0; }
+        .item-name { font-weight: 600; color: #fff; display: block; margin-bottom: 2px; }
+        .item-id-tag { font-size: 0.7rem; color: #666; font-family: monospace; }
+
+        .price-text { font-weight: 700; color: #e5e5e5; }
+        .price-green { color: #10b981; }
+
+        .badge-status {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-active { background: rgba(16,185,129,0.1); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
+        .status-broken { background: rgba(239,68,68,0.1); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
+        .status-paused { background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1); }
+
+        .weddings-count {
+            background: rgba(197, 160, 89, 0.08);
+            color: var(--gold);
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+
+        /* ==========================================
+           🚀 BOTÕES DE AÇÃO PADRÃO DO APP (CINZA PREMIUM)
+           ========================================== */
+        .actions-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .action-btn-gray {
+            border: 1px solid var(--btn-gray-border);
+            background-color: var(--btn-gray-bg);
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--btn-gray-color);
+            transition: all 0.2s;
+        }
+
+        .action-btn-gray:hover {
+            background-color: var(--btn-gray-hover);
+            border-color: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+
+        .action-btn-gray.danger:hover {
+            background-color: rgba(239,68,68,0.15);
+            border-color: rgba(239,68,68,0.4);
+            color: #fca5a5;
+        }
+
+        .action-btn-gray.cura-special {
+            border-color: rgba(197, 160, 89, 0.3);
+            color: var(--gold);
+        }
+
+        .action-btn-gray.cura-special:hover {
+            background-color: rgba(197, 160, 89, 0.1);
+            border-color: var(--gold);
+            color: #fff;
+        }
+
+        /* ==========================================
+           🃏 MODO CARDS (PADRÃO APP ADAPTADO DARK)
+           ========================================== */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            padding-bottom: 4rem;
+        }
+
+        .gift-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.03);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .gift-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--border-hover);
+            box-shadow: 0 20px 40px rgba(197, 160, 89, 0.06);
+        }
+
+        .card-img-wrap {
+            width: 100%;
+            height: 180px;
+            position: relative;
+            background: #181818;
+            overflow: hidden;
+        }
+
+        .card-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s;}
+        .gift-card:hover .card-img { transform: scale(1.03); }
+
+        .badge-origin-float {
+            position: absolute;
+            top: 12px; left: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #374151;
+            text-transform: uppercase;
+            z-index: 3;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+        }
+
+        .badge-status-float {
+            position: absolute;
+            top: 12px; right: 12px;
+            z-index: 3;
+        }
+
+        .badge-status-float .badge-status {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(8px);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            border: none !important;
+        }
+        .badge-status-float .badge-status.status-active { color: #059669 !important; }
+        .badge-status-float .badge-status.status-broken { color: #d97706 !important; }
+        .badge-status-float .badge-status.status-paused { color: #b91c1c !important; }
+
+        /* 👀 BOTÃO FLUTUANTE DE DETALHES "VER MAIS" AO PASSAR O MOUSE */
+        .viewDetailsOverlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(3px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2;
+        }
+
+        .gift-card:hover .viewDetailsOverlay { opacity: 1; }
+
+        .detailsBtn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 0.65rem 1.3rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            transform: translateY(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .gift-card:hover .detailsBtn { transform: translateY(0); }
+        .detailsBtn:hover { background: var(--gold); transform: scale(1.05); box-shadow: 0 6px 20px rgba(197, 160, 89, 0.4); }
+
+        .card-content { padding: 1.2rem; flex-grow: 1; display: flex; flex-direction: column; }
+        .card-title { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 6px; line-height: 1.4; }
+        .card-price { font-size: 1.15rem; color: var(--gold); font-weight: 700; font-family: var(--font-serif); margin-bottom: 12px; }
+        
+        .card-meta {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Simulated Terminal Console */
+        .daemon-log {
+            background: #070707;
+            color: #888;
+            font-family: monospace;
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.03);
+            margin-top: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .console-title { display: flex; align-items: center; border-bottom: 1px solid #181818; padding-bottom: 6px; margin-bottom: 6px; color: #aaa;}
+        .pulse-dot { width: 6px; height: 6px; background: #10b981; border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 8px #10b981;}
+
+        svg.feather {
+            width: 15px;
+            height: 15px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* ==========================================
+           🎨 MODAL & TOAST SYSTEM (MASTER BLACK ADAPTED)
+           ========================================== */
+        .modalOverlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center; z-index: 9999;
+            opacity: 0; visibility: hidden; transition: all 0.3s ease;
+        }
+        .modalOverlay.show { opacity: 1; visibility: visible; }
+        
+        .modal { 
+            background: #111; 
+            padding: 2.5rem; 
+            border-radius: 24px; 
+            width: 100%; 
+            max-width: 620px; 
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4); 
+            border: 1px solid rgba(197, 160, 89, 0.15);
+            transform: translateY(30px); 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            position: relative;
+        }
+        .modalOverlay.show .modal { transform: translateY(0); }
+
+        .modal h2 {
+            font-family: var(--font-serif);
+            color: #fff;
+            font-size: 1.6rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .modal p {
+            font-size: 0.85rem;
+            color: #aaa;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Detalhes Grid Format */
+        .detailGrid { display: grid; grid-template-columns: 180px 1fr; gap: 2rem; margin-bottom: 1.5rem; }
+        .detailImage { width: 100%; height: 180px; object-fit: cover; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .detailText h2 { margin: 0 0 0.4rem 0; line-height: 1.3; }
+        .detailPrice { font-size: 1.3rem; color: var(--gold); font-weight: 700; font-family: var(--font-serif); margin-bottom: 1.2rem; }
+        
+        .detailMetaBox {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            background: #070707;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.04);
+            margin-bottom: 1rem;
+        }
+
+        .metaLabel { font-size: 0.6rem; text-transform: uppercase; color: #666; display: block; margin-bottom: 2px; font-weight: 700; letter-spacing: 0.5px;}
+        .metaValue { font-size: 0.85rem; color: #ddd; font-weight: 600;}
+
+        .externalLinkBoxModal {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.04);
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #888;
+            word-break: break-all;
+        }
+
+        .modalActions { display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 1.8rem; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 1.2rem; }
+        
+        .btn-modal-cancel { background: rgba(255,255,255,0.05); color: #bbb; border: 1px solid rgba(255,255,255,0.05); padding: 0.7rem 1.4rem; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.8rem; transition: all 0.2s;}
+        .btn-modal-cancel:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        
+        .btn-modal-confirm { background: linear-gradient(135deg, var(--gold), var(--gold-hover)); color: #000; border: none; padding: 0.7rem 1.4rem; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.8rem; transition: all 0.2s;}
+        .btn-modal-confirm:hover { opacity: 0.9; transform: translateY(-1px); }
+        
+        .btn-modal-danger { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); padding: 0.7rem 1.4rem; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.8rem; transition: all 0.2s;}
+        .btn-modal-danger:hover { background: rgba(239, 68, 68, 0.25); color: #fff; border-color: #ef4444;}
+
+        /* Toast Notification Engine */
+        .toastContainer {
+            position: fixed; bottom: 2rem; right: 2rem;
+            display: flex; flex-direction: column; gap: 0.8rem; z-index: 10000;
+            pointer-events: none;
+        }
+        .toast {
+            background: #141414;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateX(60px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: auto;
+            border-left: 4px solid var(--gold);
+        }
+        .toast.show { opacity: 1; transform: translateX(0); }
+        .toast.success { border-left-color: #10b981; }
+        .toast.warn { border-left-color: #eab308; }
+        .toast.error { border-left-color: #ef4444; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- BREADCRUMBS -->
+    <nav class="nav-breadcrumb">
+        <a href="#">Consoles Administrativos</a>
+        <span>/</span>
+        <span style="color:#ccc">Inventário SaaS Global</span>
+    </nav>
+
+    <!-- HEADER -->
+    <header class="header-flex">
+        <div class="page-title">
+            <h1>Gestão Global de Presentes</h1>
+            <p>Controle e auditoria do catálogo SaaS base. Modificações afetam as vitrines de todo o ecossistema.</p>
+        </div>
+        <div class="header-actions">
+            <!-- BOTAO REFRESH MASSIVO -->
+            <button class="btn-outline btn-refresh-green" onclick="triggerBulkCuration()">
+                <svg class="feather" viewBox="0 0 24 24"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                Refresh Curation Queue
+            </button>
+            <!-- NOVO PRESENTE -->
+            <button class="btn-gold" onclick="alert('Invocando módulo de criação de presente base no banco...')">
+                <svg class="feather" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Novo Presente
+            </button>
+        </div>
+    </header>
+
+    <!-- KPIs -->
+    <section class="kpi-grid">
+        <div class="card-kpi">
+            <span class="kpi-title">Inventário Total</span>
+            <div class="kpi-value">483</div>
+            <span class="kpi-foot">Presentes cadastrados no SaaS</span>
+        </div>
+        <div class="card-kpi">
+            <span class="kpi-title">Origem Amazon BR</span>
+            <div class="kpi-value">312</div>
+            <span class="kpi-foot">Vendas via Tag Afiliado</span>
+        </div>
+        <div class="card-kpi">
+            <span class="kpi-title">Origem Magazine Luiza</span>
+            <div class="kpi-value">145</div>
+            <span class="kpi-foot">Vendas via Parceiro Direto</span>
+        </div>
+        <div class="card-kpi" style="border-color: rgba(239,68,68,0.2)">
+            <span class="kpi-title" style="color:#fca5a5;">Links Quebrados (404)</span>
+            <div class="kpi-value" style="color:#fca5a5;" id="brokenCount">26</div>
+            <span class="kpi-foot">Requerem intervenção do Daemon</span>
+        </div>
+    </section>
+
+    <!-- CONTROL ROW -->
+    <div class="controls-row">
+        <input type="text" class="search-box" placeholder="Buscar por nome, ASIN ou SKU...">
+        
+        <!-- VIEW TOGGLE -->
+        <div class="view-toggle">
+            <button class="toggle-btn" id="btn-view-table" onclick="switchView('table')" title="Ver como Tabela">
+                <svg class="feather" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            </button>
+            <button class="toggle-btn active" id="btn-view-cards" onclick="switchView('cards')" title="Ver como Cards">
+                <svg class="feather" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- MODO 1: TABELA (PADRÃO ESTRUTURAL DO ORGANIZADOR ADAPTADO AO DESIGN MASTER) -->
+    <section id="section-table" class="table-card" style="display: none;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Presente / Localizador</th>
+                    <th>Origem</th>
+                    <th>Preço Base</th>
+                    <th>Casamentos Ativos</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="inventoryTableBody">
+                <!-- Preenchido Dinamicamente -->
+            </tbody>
+        </table>
+    </section>
+
+    <!-- MODO 2: CARDS -->
+    <section id="section-cards">
+        <div class="grid-container" id="inventoryCardsGrid">
+            <!-- Preenchido Dinamicamente -->
+        </div>
+    </section>
+
+    <!-- CONSOLE LOG SIMULATION -->
+    <div class="daemon-log">
+        <div class="console-title">
+            <div class="pulse-dot" id="daemonPulse"></div>
+            <strong>CONSOLE DE EXECUÇÃO DAEMON (SELF-HEALING PROD)</strong>
+        </div>
+        <div id="consoleOutput">
+            [SYSTEM] Pronto para execução. Monitorando filas do SQS/Database.
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // DB de Mock com Informações de Casamentos e Recebidos
+    let inventoryData = [
+        {
+            id: 1,
+            nome: "Frigideira Antiaderente 28cm Tramontina",
+            localizador: "ASIN: B07F2R9M8B",
+            origem: "Amazon BR",
+            preco: 99.90,
+            link: "amazon.com.br/dp/B07F2R9M8B?tag=ivanltds-20",
+            casamentos: 142,
+            recebidos: 84, // Total de vezes já presenteado
+            status: "ATIVO",
+            img: "https://m.media-amazon.com/images/I/81H8xX3JhrL._AC_UL320_.jpg"
+        },
+        {
+            id: 2,
+            nome: "Panela de Pressão Clock 4.5L Alumínio",
+            localizador: "SKU: CLK-23499",
+            origem: "Magazine Luiza",
+            preco: 189.90,
+            link: "magazineluiza.com.br/p/clk-23499/?tag=parceiro",
+            casamentos: 89,
+            recebidos: 23,
+            status: "ATIVO",
+            img: "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?q=80&w=400&fit=crop"
+        },
+        {
+            id: 3,
+            nome: "Cafeteira Espresso Três Corações Lov",
+            localizador: "ASIN: B074XCVZZY",
+            origem: "Amazon BR",
+            preco: 450.00,
+            link: "Erro: 404 Link Quebrado",
+            casamentos: 34,
+            recebidos: 12,
+            status: "LINK QUEBRADO",
+            img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&q=80&w=600"
+        }
+    ];
+
+    // Render Table Rows
+    function renderTable() {
+        const tbody = document.getElementById('inventoryTableBody');
+        tbody.innerHTML = '';
+
+        inventoryData.forEach(item => {
+            const isBroken = item.status === "LINK QUEBRADO";
+            const isPaused = item.status === "PAUSADO";
+            
+            let statusClass = "status-active";
+            if(isBroken) statusClass = "status-broken";
+            if(isPaused) statusClass = "status-paused";
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <div class="item-cell">
+                        <img src="${item.img}" class="thumb-mini" onerror="handleImgError(this)">
+                        <div>
+                            <span class="item-name">${item.nome}</span>
+                            <span class="item-id-tag">${item.localizador}</span>
+                        </div>
+                    </div>
+                </td>
+                <td style="font-weight:600; color:#bbb;">${item.origem}</td>
+                <td>
+                    <span class="price-text ${item.status === 'ATIVO' ? 'price-green' : ''}">
+                        R$ ${item.preco.toFixed(2).replace('.', ',')}
+                    </span>
+                </td>
+                <td>
+                    <span class="weddings-count">${item.casamentos} listas</span>
+                </td>
+                <td>
+                    <span class="badge-status ${statusClass}">${item.status}</span>
+                </td>
+                <td>
+                    <div class="actions-row">
+                        <!-- 👀 VER DETALHES -->
+                        <button class="action-btn-gray" title="Ver Detalhes" onclick="triggerDetails(${item.id})">
+                            <svg class="feather" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path></svg>
+                        </button>
+                        <!-- ✏️ EDITAR -->
+                        <button class="action-btn-gray" title="Editar Cadastro" onclick="alert('Abrindo formulário de edição global do presente base...')">
+                            <svg class="feather" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                        <!-- ⏸️ PAUSAR -->
+                        <button class="action-btn-gray" title="Pausar no Catálogo" onclick="triggerPause(${item.id})">
+                            <svg class="feather" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                        </button>
+                        <!-- 🗑️ EXCLUIR (REGRA DE SEGURANÇA GLOBAL) -->
+                        <button class="action-btn-gray danger" title="Excluir Globalmente" onclick="triggerExcluirGlobal(${item.id})">
+                            <svg class="feather" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path></svg>
+                        </button>
+                        <!-- 🔧 CURA (COLOCAR NA FILA) -->
+                        <button class="action-btn-gray cura-special" title="Colocar na Fila de Cura IA" onclick="triggerCura(${item.id})">
+                            <svg class="feather" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Render Cards
+    function renderCards() {
+        const grid = document.getElementById('inventoryCardsGrid');
+        grid.innerHTML = '';
+
+        inventoryData.forEach(item => {
+            const isBroken = item.status === "LINK QUEBRADO";
+            const isPaused = item.status === "PAUSADO";
+            
+            let statusClass = "status-active";
+            if(isBroken) statusClass = "status-broken";
+            if(isPaused) statusClass = "status-paused";
+
+            const card = document.createElement('div');
+            card.className = 'gift-card';
+            card.innerHTML = `
+                <div class="card-img-wrap">
+                    <span class="badge-origin-float">${item.origem}</span>
+                    <span class="badge-status-float">
+                        <span class="badge-status ${statusClass}">${item.status}</span>
+                    </span>
+                    <div class="viewDetailsOverlay">
+                        <button class="detailsBtn" onclick="triggerDetails(${item.id})">
+                            <svg class="feather" viewBox="0 0 24 24" style="width:14px; height:14px; margin-right:2px;"><circle cx="12" cy="12" r="3"></circle><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path></svg>
+                            Ver Mais
+                        </button>
+                    </div>
+                    <img src="${item.img}" class="card-img" onerror="handleImgError(this)">
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">${item.nome}</h3>
+                    <div class="card-price">R$ ${item.preco.toFixed(2).replace('.', ',')}</div>
+                    
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom: 12px; display:flex; flex-direction:column; gap:4px;">
+                        <span>📦 ID: ${item.localizador}</span>
+                        <span>💒 Vinculado a <strong>${item.casamentos} casamentos</strong></span>
+                    </div>
+
+                    <div class="card-meta">
+                        <div class="actions-row">
+                            <button class="action-btn-gray" title="Editar" onclick="alert('Editar global...')">
+                                <svg class="feather" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            </button>
+                            <button class="action-btn-gray" title="Pausar" onclick="triggerPause(${item.id})">
+                                <svg class="feather" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                            </button>
+                            <button class="action-btn-gray danger" title="Excluir Global" onclick="triggerExcluirGlobal(${item.id})">
+                                <svg class="feather" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path></svg>
+                            </button>
+                            <button class="action-btn-gray cura-special" title="Cura" onclick="triggerCura(${item.id})">
+                                <svg class="feather" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // Fallback de Imagem Offline Resiliente (DataURI Inline)
+    function handleImgError(el) {
+        el.onerror = null; // Previne loops recursivos
+        el.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20200%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%23181818%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23444%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214%22%20font-weight%3D%22600%22%3ESEM%20IMAGEM%3C%2Ftext%3E%3C%2Fsvg%3E';
+    }
+
+    // Switch entre Tabela e Cards
+    function switchView(view) {
+        document.getElementById('btn-view-table').classList.remove('active');
+        document.getElementById('btn-view-cards').classList.remove('active');
+        document.getElementById('section-table').style.display = 'none';
+        document.getElementById('section-cards').style.display = 'none';
+
+        if (view === 'table') {
+            document.getElementById('btn-view-table').classList.add('active');
+            document.getElementById('section-table').style.display = 'block';
+            renderTable();
+        } else {
+            document.getElementById('btn-view-cards').classList.add('active');
+            document.getElementById('section-cards').style.display = 'block';
+            renderCards();
+        }
+    }
+
+    // Log Engine
+    function logConsole(msg, type="info") {
+        const div = document.getElementById('consoleOutput');
+        const time = new Date().toLocaleTimeString();
+        let color = "#888";
+        if (type === "warn") color = "#eab308";
+        if (type === "success") color = "#10b981";
+        
+        div.innerHTML = `<div style="margin-bottom:4px;"><span style="color:#444;">[${time}]</span> <span style="color:${color}">${msg}</span></div>` + div.innerHTML;
+    }
+
+    // ==========================================
+    // 🚀 SISTEMA DE TOAST & MODAIS JS
+    // ==========================================
+
+    // Toggler Genérico de Modais
+    function toggleModal(id, show = true) {
+        const modal = document.getElementById(id);
+        if (show) modal.classList.add('show');
+        else modal.classList.remove('show');
+    }
+
+    // Engine de Notificação Toast (Translucido Dark/Gold)
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        let icon = '<svg class="feather" style="width:16px; height:16px;" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        if(type === 'warn') icon = '<svg class="feather" style="width:16px; height:16px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+        if(type === 'error') icon = '<svg class="feather" style="width:16px; height:16px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+
+        toast.innerHTML = `<div>${icon}</div><div style="margin-left:6px;">${message}</div>`;
+        container.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 20);
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 400);
+        }, 3500);
+    }
+
+    // VARIÁVEIS DE CONTEXTO DE AÇÃO
+    let currentDeleteId = null;
+
+    // MODAL EXCLUIR ESTRUTURADO COM SEGURANÇA
+    function triggerExcluirGlobal(id) {
+        const item = inventoryData.find(i => i.id === id);
+        currentDeleteId = id;
+
+        document.getElementById('deleteItemName').innerText = `"${item.nome}"`;
+        document.getElementById('deleteItemCasamentos').innerText = `${item.casamentos} casamentos`;
+        document.getElementById('deleteItemRecebidos').innerText = `${item.recebidos} vezes`;
+        
+        toggleModal('modalExcluir', true);
+    }
+
+    // Gatilho Real de Exclusão pós Confirmação
+    document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+        if (!currentDeleteId) return;
+        
+        const id = currentDeleteId;
+        const item = inventoryData.find(i => i.id === id);
+        
+        toggleModal('modalExcluir', false);
+        logConsole(`OPERADOR: Iniciou exclusão de item global ID ${id}. Verificando integridade referencial...`, "warn");
+        
+        setTimeout(() => {
+            logConsole(`DB SECURITY: Preservando ${item.recebidos} registros contábeis legados.`, "success");
+            logConsole(`DB CLEANUP: Removendo item '${item.nome}' das ${item.casamentos} vitrines ativas.`, "info");
+            
+            inventoryData = inventoryData.filter(i => i.id !== id);
+            
+            setTimeout(() => {
+                logConsole(`SUCESSO: Item global ID ${id} excluído e arquivado em segurança.`, "success");
+                showToast("Item global desativado e arquivado com histórico financeiro blindado!", "success");
+                
+                if (document.getElementById('btn-view-table').classList.contains('active')) renderTable();
+                else renderCards();
+            }, 800);
+        }, 1000);
+    });
+
+    // MODAL DETALHES (RAIO-X LUXUOSO DO PRESENTE BASE)
+    function triggerDetails(id) {
+        const item = inventoryData.find(i => i.id === id);
+        
+        document.getElementById('detImage').src = item.img;
+        document.getElementById('detCategory').innerText = item.origem;
+        document.getElementById('detTitle').innerText = item.nome;
+        document.getElementById('detPrice').innerText = `R$ ${item.preco.toFixed(2).replace('.', ',')}`;
+        document.getElementById('detSku').innerText = item.localizador;
+        document.getElementById('detStatus').innerText = item.status;
+        document.getElementById('detCasamentos').innerText = `${item.casamentos} vitrines`;
+        document.getElementById('detRecebidos').innerText = `${item.recebidos} presenteados`;
+        document.getElementById('detLink').innerText = item.link;
+
+        toggleModal('modalDetails', true);
+    }
+
+    // PAUSAR (NOTIFICAÇÃO TOAST)
+    function triggerPause(id) {
+        const item = inventoryData.find(i => i.id === id);
+        if (item.status === "PAUSADO") {
+            item.status = "ATIVO";
+            showToast(`Item "${item.nome}" reativado nas vitrines globais!`, "success");
+            logConsole(`MÓDULO OPERACIONAL: Item ID ${id} reativado.`, "success");
+        } else {
+            item.status = "PAUSADO";
+            showToast(`Item "${item.nome}" pausado e oculto em todas as vitrines!`, "warn");
+            logConsole(`MÓDULO OPERACIONAL: Item ID ${id} suspenso temporariamente (Pausa).`, "warn");
+        }
+        if (document.getElementById('btn-view-table').classList.contains('active')) renderTable();
+        else renderCards();
+    }
+
+    // FILA DE CURA INDIVIDUAL (NOTIFICAÇÃO TOAST)
+    function triggerCura(id) {
+        const item = inventoryData.find(i => i.id === id);
+        showToast(`Item "${item.nome}" enfileirado para auditoria SerpWow!`, "success");
+        logConsole(`TRIGGER MANUAL: Operador enfileirou item ID ${id} (${item.nome}) para Auto-Cura.`, "warn");
+        
+        const pulse = document.getElementById('daemonPulse');
+        pulse.style.background = "#eab308";
+        pulse.style.boxShadow = "0 0 10px #eab308";
+
+        setTimeout(() => {
+            logConsole(`DAEMON: Auditando link e estoque para '${item.nome}'...`, "info");
+            setTimeout(() => {
+                if (id === 3) { // Cura o item quebrado mock
+                    item.status = "ATIVO";
+                    item.preco = 429.90;
+                    item.link = "amazon.com.br/dp/B074XCVZZY?tag=ivanltds-20";
+                    document.getElementById('brokenCount').innerText = "25";
+                    logConsole(`DAEMON AUTO-HEALING: Link 404 corrigido! Novo preço capturado (R$ 429,90).`, "success");
+                    showToast(`Daemon corrigiu o item "${item.nome}" com sucesso!`, "success");
+                } else {
+                    logConsole(`DAEMON AUDIT: Item '${item.nome}' validado com integridade física 100%.`, "success");
+                }
+                pulse.style.background = "#10b981";
+                pulse.style.boxShadow = "0 0 10px #10b981";
+                
+                if (document.getElementById('btn-view-table').classList.contains('active')) renderTable();
+                else renderCards();
+            }, 1500);
+        }, 800);
+    }
+
+    // MODAL REFRESH BULK CURATION
+    function triggerBulkCuration() {
+        toggleModal('modalRefresh', true);
+    }
+
+    document.getElementById('confirmRefreshBtn').addEventListener('click', () => {
+        toggleModal('modalRefresh', false);
+        logConsole("🔥 GATILHO MASSIVO: Iniciando varredura de lote em catálogo base...", "warn");
+        showToast("Catálogo enviado para a fila de Curation global!", "success");
+        
+        const pulse = document.getElementById('daemonPulse');
+        pulse.style.background = "#eab308";
+        
+        setTimeout(() => {
+            logConsole("LOTE PROD: Validando integridade do ID 1...", "info");
+            setTimeout(() => {
+                logConsole("LOTE PROD: Validando integridade do ID 2...", "info");
+                setTimeout(() => {
+                    logConsole("LOTE PROD: Efetuando AUTO-HEALING do ID 3...", "success");
+                    
+                    const item = inventoryData.find(i => i.id === 3);
+                    item.status = "ATIVO";
+                    item.preco = 429.90;
+                    item.link = "amazon.com.br/dp/B074XCVZZY?tag=ivanltds-20";
+                    document.getElementById('brokenCount').innerText = "25";
+
+                    setTimeout(() => {
+                        logConsole("LOTE PROD: Sucesso total! Auditoria de catálogo concluída.", "success");
+                        pulse.style.background = "#10b981";
+                        showToast("Recalibração de catálogo base concluída pelo Daemon!", "success");
+                        
+                        if (document.getElementById('btn-view-table').classList.contains('active')) renderTable();
+                        else renderCards();
+                    }, 800);
+                }, 1000);
+            }, 1000);
+        }, 800);
+    });
+
+    // Boot
+    renderCards();
+</script>
+
+<!-- ==========================================
+     🎨 ELEMENTOS ESTRUTURAIS DO SISTEMA (MODAIS & TOASTS)
+     ========================================== -->
+
+<!-- 1. MODAL EXCLUIR GLOBAL -->
+<div class="modalOverlay" id="modalExcluir">
+    <div class="modal">
+        <h2 style="color:#fca5a5; display:flex; align-items:center; gap:10px;">
+            <svg class="feather" style="width:22px; height:22px;" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            ALERTA CRÍTICO DE EXCLUSÃO
+        </h2>
+        <p>Você está prestes a excluir permanentemente o item <strong id="deleteItemName" style="color:#fff;"></strong> do Catálogo SaaS Base!</p>
+        
+        <div class="detailMetaBox">
+            <div>
+                <span class="metaLabel">Casamentos Afetados</span>
+                <span class="metaValue" id="deleteItemCasamentos" style="color:#fff;"></span>
+            </div>
+            <div>
+                <span class="metaLabel">Registros Contábeis (Recebidos)</span>
+                <span class="metaValue" id="deleteItemRecebidos" style="color:#fff;"></span>
+            </div>
+        </div>
+
+        <div style="background:rgba(16, 185, 129, 0.06); border:1px solid rgba(16, 185, 129, 0.15); padding:14px; border-radius:10px; margin-bottom:1.5rem; font-size:0.75rem; color:#34d399; display:flex; gap:8px; align-items:flex-start; line-height:1.5;">
+            <span style="font-size: 1rem;">🔒</span>
+            <span><strong>TRATATIVA DE SEGURANÇA ATIVA:</strong> Os históricos financeiros e registros de presentes já recebidos pelos casais serão 100% preservados e auditáveis. A exclusão remove apenas a exibição em vitrines ativas.</span>
+        </div>
+
+        <div class="modalActions">
+            <button class="btn-modal-cancel" onclick="toggleModal('modalExcluir', false)">Cancelar</button>
+            <button class="btn-modal-danger" id="confirmDeleteBtn">Confirmar Exclusão Global</button>
+        </div>
+    </div>
+</div>
+
+<!-- 2. MODAL DETALHES (RAIO-X PRETO LUXUOSO) -->
+<div class="modalOverlay" id="modalDetails">
+    <div class="modal" style="max-width: 680px;">
+        <div class="detailGrid">
+            <img src="" id="detImage" class="detailImage" alt="Imagem do Presente" onerror="handleImgError(this)">
+            <div class="detailText">
+                <span id="detCategory" style="text-transform:uppercase; font-size:0.6rem; font-weight:700; color:var(--gold); letter-spacing:1px; display:block; margin-bottom:4px;">ORIGEM</span>
+                <h2 id="detTitle" style="font-size:1.5rem; color:#fff;"></h2>
+                <div class="detailPrice" id="detPrice"></div>
+                
+                <div class="detailMetaBox">
+                    <div>
+                        <span class="metaLabel">Localizador SaaS</span>
+                        <span class="metaValue" id="detSku"></span>
+                    </div>
+                    <div>
+                        <span class="metaLabel">Status Operacional</span>
+                        <span class="metaValue" id="detStatus"></span>
+                    </div>
+                    <div>
+                        <span class="metaLabel">Casamentos Vinculados</span>
+                        <span class="metaValue" id="detCasamentos"></span>
+                    </div>
+                    <div>
+                        <span class="metaLabel">Total Arrecadado</span>
+                        <span class="metaValue" id="detRecebidos"></span>
+                    </div>
+                </div>
+
+                <div style="margin-top:1rem;">
+                    <span class="metaLabel">Link Afiliado do Parceiro</span>
+                    <div class="externalLinkBoxModal" id="detLink"></div>
+                </div>
+            </div>
+        </div>
+        <div class="modalActions">
+            <button class="btn-modal-cancel" onclick="toggleModal('modalDetails', false)">Fechar Raio-X</button>
+            <button class="btn-modal-confirm" onclick="toggleModal('modalDetails', false); alert('Abrindo editor de catálogo base no banco...')">Editar Cadastro</button>
+        </div>
+    </div>
+</div>
+
+<!-- 3. MODAL REFRESH MASSIVO -->
+<div class="modalOverlay" id="modalRefresh">
+    <div class="modal" style="max-width: 520px;">
+        <h2 style="display:flex; align-items:center; gap:10px; color: #10b981;">
+            <svg class="feather" style="width:22px; height:22px;" viewBox="0 0 24 24"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+            RECALIBRAR CATÁLOGO
+        </h2>
+        <p>Você está invocando o gatilho assíncrono do Daemon para varredura global em lote.</p>
+        <p style="color:#888; font-size:0.8rem; line-height: 1.6;">Isso enfileirará todos os presentes cadastrados na fila de processamento do Servidor para verificação de estoque real, auditoria de links quebrados e sincronização monetária.</p>
+        
+        <div class="modalActions" style="margin-top:1.5rem;">
+            <button class="btn-modal-cancel" onclick="toggleModal('modalRefresh', false)">Cancelar</button>
+            <button class="btn-modal-confirm" style="background:linear-gradient(135deg, #10b981, #059669); color:#fff;" id="confirmRefreshBtn">Disparar Recalibração</button>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toastContainer" id="toastContainer"></div>
+
+</body>
+</html>

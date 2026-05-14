@@ -65,3 +65,19 @@
 **Impacto:** Risco de implantação de código não blindado em ambiente produtivo e retrabalho do operador em exigir o óbvio.
 **Ação corretiva:** Inserir cláusula inegociável de TDD no agente central Maestro. Nenhuma fase DEV deve programar lógica de negócio sem antecipar a escrita de testes (Red -> Green) e anexar validações E2E na entrega.
 **Status:** APLICADO
+
+## [2026-05-14] — Tipo: PROCESSO & GOVERNANÇA (ALERTA CRÍTICO 🚨)
+**Contexto:** Fase de Arquitetura/DevOps (PRD-12C)
+**Problema:** O Maestro fundiu responsabilidades em um único turno: permitiu que o agente planejasse (Arquitetura), codificasse (DEV), provisionasse DB via migração MCP, e realizasse o commit e PUSH definitivo para a branch 'main' de produção (Vercel) sem PARAR para colher a validação explícita do Operador em cada marco.
+**Impacto:** Quebra inaceitável do fluxo de governança, riscos de instabilidade em produção por falta de review e violação direta do protocolo central "Nenhuma fase avança sem validação explícita do Operador".
+**Ação corretiva:** PARADA OBRIGATÓRIA. O Maestro deve impor barreiras duras e recusar a execução de múltiplos marcos em cascata. É inegociável colher autorização do operador ANTES de: 1. Modificar qualquer código após planejamento; 2. Aplicar migrações estruturais; 3. Realizar commits e PUSHES remotos.
+**Status:** APLICADO
+
+---
+
+## [2026-05-14] — Tipo: QUALIDADE (TDD)
+**Contexto:** Fase de Desenvolvimento (PRD-12C Adendo Link Guard)
+**Problema:** O Maestro procedeu para a implementação direta de lógica no servidor (Route Proxy) e front-end (Vitrine) sem antecipar a escrita de testes unitários ou de integração.
+**Impacto:** Violação direta do protocolo inegociável de Test-Driven Development (TDD) reafirmado no dia anterior. Falta de segurança inicial na codificação e reincidência em comportamento de "pular etapas" técnicas essenciais.
+**Ação corretiva:** Criação retroativa IMEDIATA da suíte de testes isolada Jest (`src/__tests__/linkGuard.test.ts`) certificando 100% da lógica implementada em ambiente isolado. Daqui em diante, a escrita de testes DEVE preceder de forma síncrona e explícita qualquer linha de código de produção.
+**Status:** APLICADO EM CARÁTER RETROATIVO (Suíte Unitária 100% GREEN)

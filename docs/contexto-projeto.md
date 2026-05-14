@@ -44,6 +44,7 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | 12A | Smart Gift List - Fundação       | CONCLUÍDO   | Concluído   |
 | 12B | Smart Gift List - Monetização    | CONCLUÍDO   | Concluído   |
 | 12C | Smart Gift List - Autônomo       | CONCLUÍDO   | Concluído   |
+| 12D | Smart Gift List - Cockpit        | CONCLUÍDO   | Concluído   |
 
 ## Segurança
 - **Última Auditoria:** 2024-05-24
@@ -112,6 +113,7 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/wireframes/vitrine-importacao-rapida.html | UX/UI       | Wireframe Interativo: Vitrine 1-Clique (Fase A) |
 | docs/wireframes/motor-monetizacao-reservas.html| UX/UI       | Wireframe Interativo: Monetização & Reservas (Fase B) |
 | docs/wireframes/master-cura-automacao.html     | UX/UI       | Wireframe Interativo: Cérebro Autônomo (Fase C)      |
+| docs/wireframes/master-gestao-presentes.html    | UX/UI       | Wireframe Interativo: Gestão Global de Presentes (Fase D) — V2.0.0 (Segurança Global e Casamentos Ativos) |
 | docs/prd/prd-011/prd-inicial.md            | BA          | PRD Inicial do Modo Telão Realtime |
 | docs/prd/prd-011/fluxo-ux.md               | UX/UI       | Mapeamento de fluxos e telas do Modo Telão|
 | docs/arquitetura/plano-implementacao-prd-011.md | Arquiteto | Plano técnico para Modo Telão Realtime (TV)|
@@ -129,8 +131,19 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/prd/prd-012-c/plano-implementacao.md  | Arquiteto   | Plano técnico de Tabelas Operacionais, Daemon e Reconciliação |
 | src/app/api/intelligence/autonomy/daemon/route.ts | DEV | API Trigger para acionar Daemon Stored Procedure de Auto-Cura |
 | src/app/api/intelligence/reconcile/route.ts | DEV      | API Endpoint para ingestão de relatórios CSV de vendas |
+| src/__tests__/lomadeeDaemon.test.ts    | QA          | Suíte de Testes Unitários do Daemon de Auto-Cura Direta (Amazon/Magalu) |
+| docs/arquitetura/gift-agent-lomadee.md    | Arquiteto   | Especificação Oficial do Agente OpenAI com Normalização Linear SAF (MCDA) |
+| docs/prd/prd-012-d/prd-inicial.md         | BA / Maestro| PRD-D Smart Gift List — Cockpit de Gestão & Cura |
+| docs/arquitetura/plano-implementacao-prd-012-d.md | Arquiteto | Plano de Implementação Técnica para o Cockpit Global (Bloco D)|
+| src/app/api/admin/catalogo/route.ts        | DEV         | Handler de Inventário Global com Filtros, KPIs e Safe-Delete |
+| src/app/api/admin/catalogo/bulk-curate/route.ts | DEV    | Handler de Enfileiramento em Massa na Fila de Auto-Cura |
+| src/app/(admin)/admin/catalogo/CatalogoGlobal.module.css | UX/UI | Módulo de CSS com tema Dark Premium e Efeitos de Vidro Transparente |
+| src/app/(admin)/admin/catalogo/page.tsx    | DEV         | Componente Dashboard Administrativo completo do Cockpit Global |
+| src/app/api/admin/catalogo/approve/route.ts| DEV         | Handler de Aprovação e Promoção de Candidatos locais para Catálogo Global |
+| docs/prd/prd-012/relatorio-conclusao-entrega.md | Maestro/DEV | Relatório Consolidado de Entrega da Suíte PRD-12 (Fundação, Monetização, Automação e Cockpit) |
 
 ## Última Atualização
 - Data    : 2026-05-14
-- Por     : Maestro / DEV / QA
-- Motivo  : Lançamento da Versão v0.5.0 — Cérebro Autônomo (PRD-12C). Implementado o ciclo fechado de Self-Healing de links com gravação atômica de erros via vitrine, ingestão imediata em `fila_ajuste_links` e disparo de RPC `executar_daemon_auto_cura` com replicação global e logs neurais (Audit Trail). Acoplado o reconciliador financeiro offline via upload de CSV e procedure `conciliar_vendas_offline` que cruza cliques Lomadee e telemetria nativa via Token AEG em lote. Expansão final de UX no Cockpit Master Inteligência com console reativo de logs em tempo real e modal rico de auditoria de curadoria.
+- Por     : Maestro / DEV
+- Motivo  : CONCLUSÃO E ENTREGA DO PRD-12 + RELEASE V0.3.4. Finalizada a suíte corporativa de presentes inteligentes. Restaurada paridade visual estrita dos cards de candidatos ao catálogo seguindo as regras globais do design system. Criada documentação consolidada do PRD-12. Corrigidos mocks globais do Jest, garantindo blindagem de testes unitários. Verificado build Next.js de produção com absoluto sucesso (zero erros de compilação). Bump de versão do projeto para v0.3.4 executado com sucesso. Total estabilidade operacional homologada! Pronto para implantação em Produção!
+

@@ -30,10 +30,11 @@ export const giftService = {
   /**
    * Adquire um lock de 3 horas para um presente (Lomadee/Links Externos).
    */
-  async lockGift(presenteId: string, sessionId: string) {
+  async lockGift(presenteId: string, sessionId: string, conviteId?: string) {
     const { data, error } = await supabase.rpc('adquirir_lock_presente_v1', {
       p_presente_id: presenteId,
       p_session_id: sessionId,
+      p_convite_id: conviteId || null,
     });
 
     if (error) throw error;
@@ -104,6 +105,25 @@ export const giftService = {
    * Reporta um link quebrado para a fila de auto-cura (PRD-12C)
    */
   async reportBrokenLink(presenteId: string, baseId: string | null, linkQuebrado: string, motivo: string) {
+    // 🛡️ DEDUPLICAÇÃO: Evitar inserir duplicado na fila se já houver um item PENDENTE para esse presente
+    let checkQuery = supabase
+      .from('fila_ajuste_links')
+      .select('id')
+      .eq('status', 'PENDENTE');
+
+    if (presenteId) {
+      checkQuery = checkQuery.eq('presente_id', presenteId);
+    } else if (baseId) {
+      checkQuery = checkQuery.eq('presente_base_id', baseId);
+    }
+
+    const { data: existing } = await checkQuery;
+    
+    if (existing && existing.length > 0) {
+      console.log(`[Deduplication] Item ${presenteId || baseId} já se encontra na fila como PENDENTE. Ignorando inserção duplicada.`);
+      return existing; // Retorna silenciosamente sem inserir de novo
+    }
+
     const { data, error } = await supabase
       .from('fila_ajuste_links')
       .insert({

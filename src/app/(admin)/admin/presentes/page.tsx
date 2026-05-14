@@ -22,6 +22,13 @@ interface Presente {
   categoria_id?: string | null;
   base_id?: string | null;
   categoria?: { nome: string } | null;
+  presentes_locks?: {
+    id: string;
+    expira_em: string;
+    session_id: string;
+    convite_id?: string;
+    convite?: { nome_principal: string } | null;
+  }[];
 }
 
 interface UnifiedSuggestion {
@@ -65,6 +72,35 @@ export default function AdminPresentes() {
   const [importingId, setImportingId] = useState<string | null>(null);
   const [detailBaseItem, setDetailBaseItem] = useState<UnifiedSuggestion | null>(null);
   const [loadingBase, setLoadingBase] = useState(false);
+  const [search, setSearch] = useState('');
+
+  // Filtros de Busca Dinâmicos (UX Reativa)
+  const filteredPresentes = useMemo(() => {
+    const q = search.toLowerCase();
+    return presentes.filter(item => 
+      item.nome?.toLowerCase().includes(q) || 
+      item.descricao?.toLowerCase().includes(q) ||
+      item.categoria?.nome?.toLowerCase().includes(q)
+    );
+  }, [presentes, search]);
+
+  const filteredBaseGifts = useMemo(() => {
+    const q = search.toLowerCase();
+    return baseGifts.filter(item => 
+      item.nome?.toLowerCase().includes(q) || 
+      item.descricao?.toLowerCase().includes(q) ||
+      item.categoria_nome?.toLowerCase().includes(q)
+    );
+  }, [baseGifts, search]);
+
+  const filteredComprovantes = useMemo(() => {
+    const q = search.toLowerCase();
+    return comprovantes.filter(item => 
+      item.presente?.nome?.toLowerCase().includes(q) || 
+      item.convidado_nome?.toLowerCase().includes(q) ||
+      item.convite?.nome_principal?.toLowerCase().includes(q)
+    );
+  }, [comprovantes, search]);
   
   // Modal & UX States
   const [isAdding, setIsAdding] = useState(false);
@@ -134,7 +170,7 @@ export default function AdminPresentes() {
     setLoading(true);
     const { data, error } = await supabase
       .from('presentes')
-      .select('*, categoria:presentes_categorias(nome)')
+      .select('*, categoria:presentes_categorias(nome), presentes_locks(*, convite:convites(nome_principal))')
       .eq('evento_id', currentEvent.id)
       .order('created_at', { ascending: false });
 
@@ -178,6 +214,8 @@ export default function AdminPresentes() {
     }
     setLoading(false);
   };
+
+
 
   const handleImportGift = async (originId: string, type: 'base' | 'custom') => {
     if (!currentEvent) return;
@@ -419,10 +457,21 @@ export default function AdminPresentes() {
         <button className={`${styles.tabBtn} ${activeTab === 'recebidos' ? styles.activeTab : ''}`} onClick={() => setActiveTab('recebidos')}>Presentes Recebidos</button>
       </div>
 
-      {/* View Controls (Grid/List) for Catalog only */}
-      {activeTab === 'catalogo' && (
-        <div className={styles.controlsRow}>
-          <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#64748b' }}>Visualizando {presentes.length} itens</span>
+      {/* Controles de Grid Unificados (Derivados do Catálogo Global) */}
+      <div className={styles.controlsRow}>
+        <input 
+          type="text" 
+          className={styles.searchBox}
+          placeholder={
+            activeTab === 'catalogo' ? "Buscar por nome, descrição ou categoria..." :
+            activeTab === 'sugestoes' ? "Buscar sugestões do sistema..." :
+            "Buscar comprovantes ou convidados..."
+          }
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        {activeTab === 'catalogo' && (
           <div className={styles.viewToggle}>
             <button 
               className={`${styles.toggleBtn} ${viewType === 'grid' ? styles.active : ''}`} 
@@ -439,8 +488,8 @@ export default function AdminPresentes() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
             </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {loading ? (
         <div className={styles.loading}>Carregando dados...</div>
@@ -448,53 +497,72 @@ export default function AdminPresentes() {
         viewType === 'grid' ? (
           // CARD VIEW
           <div className={styles.gridContainer}>
-            {presentes.map(item => (
-              <motion.div 
-                key={item.id} 
-                className={styles.giftCard}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <div className={styles.cardImageWrapper}>
-                  <img src={item.imagem_url || 'https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=400&auto=format&fit=crop'} alt={item.nome} className={styles.cardImage} />
-                  
-                  {/* Efeito Hover Overlay Premium unificado */}
-                  <div className={styles.hoverOverlay}>
-                    <button className={styles.hoverDetailBtn} onClick={() => setDetailItem(item)}>
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                      Ver Detalhes
-                    </button>
-                  </div>
+            {filteredPresentes.map(item => {
+              const activeLock = item.presentes_locks?.find(lock => new Date(lock.expira_em).getTime() > Date.now());
+              const statusText = activeLock ? '🔒 Sob Reserva' : (item.status === 'reservado' && item.quantidade_reservada < item.quantidade_total ? 'Pausado' : item.status);
+              const statusClass = activeLock ? 'reservado' : item.status;
 
-                  <span className={`${styles.cardStatusBadge} ${styles[item.status]}`}>
-                    {item.status === 'reservado' && item.quantidade_reservada < item.quantidade_total ? 'Pausado' : item.status}
-                  </span>
-                </div>
-                <div className={styles.cardContent} onClick={() => setDetailItem(item)}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                    <h3 className={styles.cardTitle}>{item.nome}</h3>
-                    {/* 🚨 Null Safety para Produção: Se item legado sem categoria chegar, vira badge 'Geral' */}
-                    <span className={styles.miniBadge}>{item.categoria?.nome ?? 'Geral'}</span>
-                  </div>
-                  <span className={styles.cardPrice}>{Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                  <div className={styles.cardMeta}>
-                    <span className={styles.stockLabel}>Estoque: <strong>{item.quantidade_total - item.quantidade_reservada} / {item.quantidade_total}</strong></span>
-                    <div className={styles.actionsCell}>
-                      <button className={styles.editBtn} onClick={(e) => { e.stopPropagation(); handleEditClick(item); }} data-tooltip="Editar">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                      </button>
-                      <button className={styles.successBtn} onClick={(e) => handleToggleStatus(item.id, item.status, e)} data-tooltip="Pausar/Ativar">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-                      </button>
-                      <button className={styles.deleteBtn} onClick={(e) => openDeleteModal(item.id, 'presente', e)} data-tooltip="Excluir">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              return (
+                <motion.div 
+                  key={item.id} 
+                  className={styles.giftCard}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <div className={styles.cardImageWrapper}>
+                    <img src={item.imagem_url || 'https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=400&auto=format&fit=crop'} alt={item.nome} className={styles.cardImage} />
+                    
+                    {/* Efeito Hover Overlay Premium unificado */}
+                    <div className={styles.hoverOverlay}>
+                      <button className={styles.hoverDetailBtn} onClick={() => setDetailItem(item)}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        Ver Detalhes
                       </button>
                     </div>
+
+                    <span 
+                      className={`${styles.cardStatusBadge} ${styles[statusClass]}`}
+                      style={activeLock ? { background: '#f97316', color: 'white' } : {}}
+                    >
+                      {statusText}
+                    </span>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-            {presentes.length === 0 && <div className={styles.empty}>Nenhum presente no catálogo.</div>}
+                  <div className={styles.cardContent} onClick={() => setDetailItem(item)}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                      <h3 className={styles.cardTitle}>{item.nome}</h3>
+                      {/* 🚨 Null Safety para Produção: Se item legado sem categoria chegar, vira badge 'Geral' */}
+                      <span className={styles.miniBadge}>{item.categoria?.nome ?? 'Geral'}</span>
+                    </div>
+                    <span className={styles.cardPrice}>{Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                    <div className={styles.cardMeta}>
+                      <span className={styles.stockLabel}>Estoque: <strong>{item.quantidade_total - item.quantidade_reservada} / {item.quantidade_total}</strong></span>
+                      <div className={styles.actionsCell}>
+                        <button className={styles.editBtn} onClick={(e) => { e.stopPropagation(); handleEditClick(item); }} data-tooltip="Editar">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                        <button className={styles.successBtn} onClick={(e) => handleToggleStatus(item.id, item.status, e)} data-tooltip="Pausar/Ativar">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                        </button>
+                        <button className={styles.deleteBtn} onClick={(e) => openDeleteModal(item.id, 'presente', e)} data-tooltip="Excluir">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                      </div>
+                    </div>
+                    {activeLock && (
+                      <div style={{ marginTop: '0.5rem', fontSize: '0.72rem', color: '#c2410c', background: '#fff7ed', padding: '6px 10px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '2px', border: '1px solid #ffedd5', cursor: 'default' }} onClick={(e) => e.stopPropagation()}>
+                        <div style={{ fontWeight: 650, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span>⏳ Reserva Ativa (3h)</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          Por: <strong style={{ color: '#9a3412' }}>{activeLock.convite?.nome_principal || 'Convidado via Link'}</strong>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+            {filteredPresentes.length === 0 && <div className={styles.empty}>Nenhum presente encontrado para a busca.</div>}
           </div>
         ) : (
           // LIST VIEW
@@ -510,27 +578,44 @@ export default function AdminPresentes() {
                 </tr>
               </thead>
               <tbody>
-                {presentes.map((item) => (
-                  <tr key={item.id} onClick={() => setDetailItem(item)} style={{ cursor: 'pointer' }}>
-                    <td>
-                      <div className={styles.itemCell}>
-                        <img src={item.imagem_url || 'https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=100&fit=crop'} alt="" className={styles.miniThumb} />
-                        <div className={styles.itemInfo}>
-                          <span className={styles.itemName}>{item.nome}</span>
-                          <span className={styles.itemSub}>{item.descricao?.substring(0, 30)}...</span>
+                {filteredPresentes.map((item) => {
+                  const activeLock = item.presentes_locks?.find(lock => new Date(lock.expira_em).getTime() > Date.now());
+                  const statusText = activeLock ? 'sob reserva' : item.status;
+
+                  return (
+                    <tr key={item.id} onClick={() => setDetailItem(item)} style={{ cursor: 'pointer' }}>
+                      <td>
+                        <div className={styles.itemCell}>
+                          <img src={item.imagem_url || 'https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=100&fit=crop'} alt="" className={styles.miniThumb} />
+                          <div className={styles.itemInfo}>
+                            <span className={styles.itemName}>{item.nome}</span>
+                            <span className={styles.itemSub}>{item.descricao?.substring(0, 30)}...</span>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td style={{ fontWeight: 600 }}>{Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                    <td>{item.quantidade_total - item.quantidade_reservada} / {item.quantidade_total}</td>
-                    <td><span className={`${styles.statusBadge} ${styles[item.status]}`}>{item.status}</span></td>
-                    <td className={styles.actionsCell}>
-                      <button className={styles.editBtn} onClick={(e) => { e.stopPropagation(); handleEditClick(item); }} data-tooltip="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-                      <button className={styles.successBtn} onClick={(e) => handleToggleStatus(item.id, item.status, e)} data-tooltip="Pausar/Ativar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg></button>
-                      <button className={styles.deleteBtn} onClick={(e) => openDeleteModal(item.id, 'presente', e)} data-tooltip="Remover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td style={{ fontWeight: 600 }}>{Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                      <td>{item.quantidade_total - item.quantidade_reservada} / {item.quantidade_total}</td>
+                      <td>
+                        <span 
+                          className={`${styles.statusBadge} ${styles[activeLock ? 'reservado' : item.status]}`}
+                          style={activeLock ? { background: '#ffedd5', color: '#ea580c', borderColor: '#fed7aa', fontSize: '0.7rem', fontWeight: 650 } : {}}
+                        >
+                          {statusText}
+                        </span>
+                        {activeLock && (
+                          <div style={{ fontSize: '0.65rem', color: '#c2410c', marginTop: '4px' }}>
+                            👤 {activeLock.convite?.nome_principal || 'Link Externo'}
+                          </div>
+                        )}
+                      </td>
+                      <td className={styles.actionsCell}>
+                        <button className={styles.editBtn} onClick={(e) => { e.stopPropagation(); handleEditClick(item); }} data-tooltip="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                        <button className={styles.successBtn} onClick={(e) => handleToggleStatus(item.id, item.status, e)} data-tooltip="Pausar/Ativar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg></button>
+                        <button className={styles.deleteBtn} onClick={(e) => openDeleteModal(item.id, 'presente', e)} data-tooltip="Remover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </section>
@@ -586,7 +671,7 @@ export default function AdminPresentes() {
             <div className={styles.loading}>Buscando catálogo de luxo...</div>
           ) : (
             <div className={styles.vitrineGrid}>
-              {baseGifts.map(baseItem => {
+              {filteredBaseGifts.map(baseItem => {
                 const isAlreadyCloned = clonedBaseIds.has(baseItem.origin_id) || 
                                        activeGiftNames.has(baseItem.nome?.trim().toLowerCase());
                 return (
@@ -640,7 +725,7 @@ export default function AdminPresentes() {
                   </motion.div>
                 );
               })}
-              {baseGifts.length === 0 && <div className={styles.empty}>Nenhum item no catálogo global.</div>}
+              {filteredBaseGifts.length === 0 && <div className={styles.empty}>Nenhum item de catálogo localizado.</div>}
             </div>
           )}
         </div>
@@ -650,7 +735,7 @@ export default function AdminPresentes() {
           <table className={styles.table}>
             <thead><tr><th>Data</th><th>Item</th><th>Convidado</th><th>Comprovante</th><th>Ações</th></tr></thead>
             <tbody>
-              {comprovantes.map((comp) => (
+              {filteredComprovantes.map((comp) => (
                 <tr key={comp.id}>
                   <td>{new Date(comp.created_at).toLocaleDateString('pt-BR')}</td>
                   <td style={{ fontWeight: 600 }}>{comp.presente?.nome}</td>
@@ -743,7 +828,7 @@ export default function AdminPresentes() {
                 <img src={detailBaseItem.imagem_url || 'https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=400&fit=crop'} alt="" className={styles.detailImage} />
                 <div className={styles.detailText}>
                   <div style={{ marginBottom: '0.5rem' }}>
-                    <span className={styles.miniBadge} style={{ background: 'var(--admin-accent)', color: 'white' }}>{detailBaseItem.categoria?.nome}</span>
+                    <span className={styles.miniBadge} style={{ background: 'var(--admin-accent)', color: 'white' }}>{detailBaseItem.categoria_nome || 'Geral'}</span>
                   </div>
                   <h2>{detailBaseItem.nome}</h2>
                   <div className={styles.detailPrice}>{Number(detailBaseItem.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>

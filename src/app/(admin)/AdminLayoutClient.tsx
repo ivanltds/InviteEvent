@@ -28,6 +28,7 @@ function AdminInnerLayout({
   const isGlobalPlatformRoute = 
     pathname.startsWith('/admin/suporte') || 
     pathname.startsWith('/admin/pagamentos') || 
+    pathname.startsWith('/admin/catalogo') || 
     pathname.startsWith('/admin/intelligence');
 
   const isPlatformLevel = !currentEvent || isGlobalPlatformRoute;

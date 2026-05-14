@@ -179,6 +179,26 @@ export const giftService = {
       return [];
     }
     return data;
+  },
+
+  async lockGift(presenteId: string, sessionId: string, conviteId?: string) {
+    const { data, error } = await supabase.rpc('adquirir_lock_presente_v1', {
+      p_presente_id: presenteId,
+      p_session_id: sessionId,
+      p_convite_id: conviteId || null,
+    });
+
+    if (error) throw error;
+    return data as { sucesso: boolean; mensagem: string };
+  },
+
+  async unlockGift(presenteId: string, sessionId: string) {
+    const { error } = await supabase.rpc('liberar_lock_presente_v1', {
+      p_presente_id: presenteId,
+      p_session_id: sessionId,
+    });
+
+    if (error) throw error;
   }
 };
 

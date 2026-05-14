@@ -16,6 +16,10 @@ const createMockQueryBuilder = () => {
     delete: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
     neq: jest.fn().mockReturnThis(),
+    in: jest.fn().mockReturnThis(),
+    is: jest.fn().mockReturnThis(),
+    gt: jest.fn().mockReturnThis(),
+    lt: jest.fn().mockReturnThis(),
     or: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
     order: jest.fn().mockReturnThis(),
@@ -32,6 +36,11 @@ const createMockQueryBuilder = () => {
 const mockSupabase = {
   from: jest.fn(() => createMockQueryBuilder()),
   rpc: jest.fn().mockResolvedValue({ data: null, error: null }),
+  channel: jest.fn(() => ({
+    on: jest.fn().mockReturnThis(),
+    subscribe: jest.fn().mockReturnThis(),
+    unsubscribe: jest.fn(),
+  })),
   auth: {
     onAuthStateChange: jest.fn(() => ({
       data: { subscription: { unsubscribe: jest.fn() } },

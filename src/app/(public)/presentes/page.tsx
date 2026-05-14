@@ -52,6 +52,20 @@ export default function PresentesPage() {
   const [redirectCountdown, setRedirectCountdown] = useState(4);
   const [redirectGift, setRedirectGift] = useState<Presente | null>(null);
 
+  // NOVOS ESTADOS PRD-12C (Pre-Flight Link Guard)
+  const [isValidatingLink, setIsValidatingLink] = useState(false);
+  const [linkValidationFailed, setLinkValidationFailed] = useState(false);
+  const [search, setSearch] = useState('');
+
+  // Busca reativa inteligente para os convidados
+  const filteredPresentes = useMemo(() => {
+    const q = search.toLowerCase();
+    return presentes.filter(item => 
+      item.nome?.toLowerCase().includes(q) || 
+      item.descricao?.toLowerCase().includes(q)
+    );
+  }, [presentes, search]);
+
   // Computa se o presente atualmente focado em modal está reservado por mim
   const isSelectedGiftLockedByMe = useMemo(() => {
     if (!selectedGift) return false;
@@ -89,10 +103,17 @@ export default function PresentesPage() {
   }, []);
 
   // Controle do Contador e Redirecionamento Intersticial (Story-Redir)
+  // Modificado no PRD-12C para cessar redirecionamento se acusar linkQuebrado
   useEffect(() => {
-    if (!isRedirecting || !redirectGift) return;
+    if (!isRedirecting || !redirectGift || linkValidationFailed) return;
 
     const interval = setInterval(() => {
+      // Verificação dupla interna antes de subtrair
+      if (linkValidationFailed) {
+        clearInterval(interval);
+        return;
+      }
+
       setRedirectCountdown(prev => {
         if (prev <= 1) {
           clearInterval(interval);
@@ -107,7 +128,7 @@ export default function PresentesPage() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isRedirecting, redirectGift]);
+  }, [isRedirecting, redirectGift, linkValidationFailed]);
 
   // Inicialização da Sessão de Identidade e Carga de Dados
   useEffect(() => {
@@ -134,7 +155,7 @@ export default function PresentesPage() {
         return;
       }
 
-      let eventId = null;
+
 
       if (previewMode) {
         // IN PREVIEW, we can't fetch by invite slug usually, or it might be missing.
@@ -243,15 +264,22 @@ export default function PresentesPage() {
   const handleAffiliateClick = async (gift: Presente) => {
     if (!gift.link_externo) return;
     
+    // Reset de Estados de Validação (PRD-12C)
+    setLinkValidationFailed(false);
+    setIsValidatingLink(true);
+    
     // 1. Geração do Token de Reconciliação Offline (PRD-12C)
     const clickToken = 'AEG-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7).toUpperCase();
     
-    // 2. Anexar parâmetro de rastreamento Lomadee sourceId ao link de afiliado
-    const originalLink = gift.link_externo;
+    // 2. Normalização e Anexo de parâmetro de rastreamento Lomadee sourceId (Evita link relativo)
+    let originalLink = gift.link_externo.trim();
+    if (!originalLink.startsWith('http://') && !originalLink.startsWith('https://')) {
+      originalLink = `https://${originalLink}`;
+    }
     const separator = originalLink.includes('?') ? '&' : '?';
-    const trackedLink = `${originalLink}${separator}sourceId=${clickToken}`;
+    const trackedLink = `${originalLink}${separator}source=${clickToken}`;
     
-    // 3. Exibe a overlay intersticial 4s com o link rastreado
+    // 3. Exibe a overlay intersticial 4s com o link rastreado e normalizado
     setRedirectGift({ ...gift, link_externo: trackedLink });
     setIsRedirecting(true);
     setRedirectCountdown(4);
@@ -275,10 +303,73 @@ export default function PresentesPage() {
       });
     }
 
+    // 6. DISPARO SILENCIOSO DE VALIDAÇÃO SERVER-SIDE (PRD-12C Pre-Flight Link Guard)
+    const startValidation = async () => {
+      try {
+        const response = await fetch(`/api/intelligence/autonomy/validate?url=${encodeURIComponent(trackedLink)}`);
+        const data = await response.json();
+        
+        if (data.valid === false) {
+          // A API de Verificação detectou 404 ou Timeout crítico!
+          setLinkValidationFailed(true);
+          
+          // Envia o reporte silencioso imediato para a fila do cérebro autônomo
+          if (!isPreview) {
+            // 1. Reporta o link quebrado para o painel de cura
+            await giftService.reportBrokenLink(
+              gift.id, 
+              gift.base_id || null, 
+              trackedLink, 
+              `Pre-Flight Guard Detectou Falha: HTTP ${data.status || 'DESCONHECIDO'} - ${data.message || 'Link Morto'}`
+            );
+
+            // 2. LIBERAÇÃO TRANSACIONAL DE LOCK (PRD-12C)
+            // Como o link está quebrado, cancelamos o lock atômico imediatamente!
+            try {
+              await giftService.unlockGift(gift.id, guestSessionId);
+              
+              // Reverte o estado em memória instantaneamente para a vitrine
+              setPresentes(prev => prev.map(p => {
+                if (p.id === gift.id) {
+                  return {
+                    ...p,
+                    presentes_locks: (p.presentes_locks || []).filter(l => l.session_id !== guestSessionId)
+                  };
+                }
+                return p;
+              }));
+            } catch (unlockErr) {
+              console.warn('[PreFlight] Erro ao reverter lock transacional:', unlockErr);
+            }
+            
+            // Telemetria adicional para Rastreio de Auto-Cura Injetada
+            if (eventoId) {
+              Telemetry.track({
+                eventoId,
+                categoria: 'gift',
+                eventType: 'broken_link_auto_reported',
+                targetId: gift.id,
+                metadata: {
+                  item_name: gift.nome,
+                  broken_url: trackedLink,
+                  failure_code: data.status
+                }
+              });
+            }
+          }
+        }
+      } catch (valErr) {
+        console.warn('[PreFlight] Erro ao invocar API de validação:', valErr);
+      } finally {
+        setIsValidatingLink(false);
+      }
+    };
+    startValidation(); // Roda paralelo ao countdown!
+
     try {
       if (!isPreview) {
-        // Tenta adquirir o lock atômico de 3h no banco de dados!
-        const res = await giftService.lockGift(gift.id, guestSessionId);
+        // Tenta adquirir o lock atômico de 3h no banco de dados amarrado ao convite!
+        const res = await giftService.lockGift(gift.id, guestSessionId, invite?.id);
         
         if (res.sucesso) {
           // Atualização otimista em memória imediata
@@ -288,6 +379,7 @@ export default function PresentesPage() {
                 id: 'temp_' + Date.now(),
                 presente_id: gift.id,
                 session_id: guestSessionId,
+                convite_id: invite?.id,
                 expira_em: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString()
               };
               return {
@@ -358,10 +450,11 @@ export default function PresentesPage() {
     setTimeout(() => setPixCopyStatus('idle'), 3000);
   };
 
-  const handleUploadSuccess = async (result: any) => {
+  const handleUploadSuccess = async (result: unknown) => {
     if (cart.length === 0) return;
 
-    const proofUrl = result?.info?.secure_url;
+    const info = (result as { info?: { secure_url?: string } })?.info;
+    const proofUrl = info?.secure_url;
     if (!proofUrl) return;
 
     try {
@@ -443,7 +536,7 @@ export default function PresentesPage() {
       triggerCelebration([themeColor, '#FFFFFF', '#F5E6CC']);
       setTimeout(() => triggerSideCannons(3, [themeColor, '#FFFFFF']), 1000);
 
-    } catch (error: any) {
+    } catch (error) {
       console.error('Erro ao processar presentes:', error);
     }
   };
@@ -453,7 +546,7 @@ export default function PresentesPage() {
     return generatePixPayload(
       config?.pix_chave || 'layysllafabiana@gmail.com',
       config?.pix_nome || 'Layslla Fabiana',
-      (config?.pix_tipo || 'email') as any,
+      (config?.pix_tipo || 'email') as 'cpf' | 'cnpj' | 'email' | 'telefone' | 'aleatoria',
       'SAO PAULO',
       totalCartValue
     );
@@ -539,8 +632,20 @@ export default function PresentesPage() {
         </div>
       ) : (
         <>
+          {/* Campo de Busca Convidado */}
+          <div className={styles.searchWrapper}>
+            <input 
+              type="text"
+              className={styles.searchBox}
+              style={search ? { borderColor: config?.accent_color || '#1a1a1a' } : {}}
+              placeholder="Procurar um presente específico..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
           <section className={styles.grid}>
-            {presentes.map(item => {
+            {filteredPresentes.map(item => {
               const inCart = cart.some(p => p.id === item.id);
               const isSoldOut = item.quantidade_reservada >= item.quantidade_total;
 
@@ -613,6 +718,11 @@ export default function PresentesPage() {
                     <div className={styles.description}>{item.descricao || 'EXPERIÊNCIA'}</div>
                     <h3 style={{ fontFamily: config?.font_serif }}>{item.nome}</h3>
                     <div className={styles.price} style={{ color: config?.accent_color || '#C5A059' }}>
+                      {item.preco_de && Number(item.preco_de) > Number(item.preco) && (
+                        <span style={{ textDecoration: 'line-through', opacity: 0.6, marginRight: 8, fontSize: '0.85em' }}>
+                          R$ {Number(item.preco_de).toFixed(2).replace('.', ',')}
+                        </span>
+                      )}
                       R$ {Number(item.preco).toFixed(2).replace('.', ',')}
                     </div>
                     
@@ -634,6 +744,12 @@ export default function PresentesPage() {
               );
             })}
           </section>
+
+          {filteredPresentes.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '4rem 20px', color: '#71717A', fontSize: '1.1rem' }}>
+              Nenhum item corresponde à sua busca. Experimente buscar por outro termo!
+            </div>
+          )}
 
           <FloatingBasket 
             count={cart.length} 
@@ -683,6 +799,11 @@ export default function PresentesPage() {
                   {selectedGift.nome}
                 </h2>
                 <div className={styles.modalPrice} style={{ color: config?.accent_color || '#C5A059' }}>
+                  {selectedGift.preco_de && Number(selectedGift.preco_de) > Number(selectedGift.preco) && (
+                    <span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: 12, fontSize: '0.8em', fontWeight: 400 }}>
+                      {Number(selectedGift.preco_de).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    </span>
+                  )}
                   {Number(selectedGift.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </div>
                 
@@ -936,50 +1057,146 @@ export default function PresentesPage() {
                 gap: '1.5rem'
               }}
             >
-              <div style={{ position: 'relative', width: '80px', height: '80px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <div style={{
-                  position: 'absolute',
-                  width: '100%',
-                  height: '100%',
-                  borderRadius: '50%',
-                  border: '3px solid #e2e8f0',
-                  borderTopColor: config?.accent_color || '#C5A059',
-                  animation: 'spin 1s linear infinite'
-                }}></div>
-                <span style={{ fontSize: '1.5rem', fontWeight: 700, color: config?.accent_color || '#C5A059' }}>{redirectCountdown}</span>
-              </div>
-              
-              <style>{`
-                @keyframes spin {
-                  to { transform: rotate(360deg); }
-                }
-              `}</style>
+              {linkValidationFailed ? (
+                // TELA DE CONTINGÊNCIA: LINK QUEBRADO DETECTADO EM FLIGHT (PRD-12C)
+                <>
+                  <div style={{ 
+                    width: '72px', 
+                    height: '72px', 
+                    background: '#FEF3C7', 
+                    borderRadius: '50%', 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    alignItems: 'center',
+                    border: '2px solid #F59E0B',
+                    color: '#D97706'
+                  }}>
+                    <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                  </div>
 
-              <h2 style={{ 
-                fontFamily: config?.font_serif || 'inherit',
-                color: '#1e293b',
-                fontSize: '1.75rem',
-                margin: 0 
-              }}>
-                Redirecionando para parceiro...
-              </h2>
-              
-              <p style={{ color: '#64748b', fontSize: '1rem', lineHeight: '1.6', margin: 0 }}>
-                Garantindo sua exclusividade! Estamos **reservando o item &quot;{redirectGift.nome}&quot;** temporariamente por **3 horas** em nosso convite para que ninguém mais compre igual.
-              </p>
+                  <h2 style={{ 
+                    fontFamily: config?.font_serif || 'inherit',
+                    color: '#92400E',
+                    fontSize: '1.75rem',
+                    margin: 0 
+                  }}>
+                    Ajuste de Rota Inteligente
+                  </h2>
+                  
+                  <p style={{ 
+                    color: '#451A03', 
+                    fontSize: '1rem', 
+                    lineHeight: '1.7', 
+                    margin: 0, 
+                    background: '#FFFBEB', 
+                    padding: '20px', 
+                    borderRadius: '12px', 
+                    border: '1px solid #FEF3C7' 
+                  }}>
+                    Detectamos que o link deste parceiro está temporariamente indisponível. 
+                    O alerta automático do portal foi acionado e o link será restaurado o quanto antes. 
+                    Enquanto realizamos o ajuste técnico, você pode presentear com 1-clique via PIX de forma 100% segura.
+                  </p>
 
-              <div style={{ 
-                background: '#f0fdf4',
-                border: '1px solid #bbf7d0',
-                borderRadius: '8px',
-                padding: '10px 16px',
-                color: '#166534',
-                fontWeight: 600,
-                fontSize: '0.9rem',
-                marginTop: '0.5rem'
-              }}>
-                ✅ Trava de 3 Horas Ativada com Sucesso!
-              </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', marginTop: '0.5rem' }}>
+                    <button 
+                      onClick={() => {
+                        const target = redirectGift;
+                        setIsRedirecting(false);
+                        setRedirectGift(null);
+                        handleDirectPix(target);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '16px',
+                        background: '#1E293B',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '30px',
+                        fontWeight: 700,
+                        fontSize: '1rem',
+                        cursor: 'pointer',
+                        boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                        transition: 'transform 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                    >
+                      ⚡ Presentear via PIX Agora
+                    </button>
+
+                    <button 
+                      onClick={() => {
+                        setIsRedirecting(false);
+                        setRedirectGift(null);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        background: 'none',
+                        color: '#64748B',
+                        border: 'none',
+                        textDecoration: 'underline',
+                        fontSize: '0.9rem',
+                        fontWeight: 500,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Voltar para a Lista
+                    </button>
+                  </div>
+                </>
+              ) : (
+                // FLUXO PADRÃO DE REDIRECIONAMENTO E RESERVA (PRD-12B)
+                <>
+                  <div style={{ position: 'relative', width: '80px', height: '80px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <div style={{
+                      position: 'absolute',
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: '50%',
+                      border: '3px solid #e2e8f0',
+                      borderTopColor: config?.accent_color || '#C5A059',
+                      animation: 'spin 1s linear infinite'
+                    }}></div>
+                    <span style={{ fontSize: '1.5rem', fontWeight: 700, color: config?.accent_color || '#C5A059' }}>{redirectCountdown}</span>
+                  </div>
+                  
+                  <style>{`
+                    @keyframes spin {
+                      to { transform: rotate(360deg); }
+                    }
+                  `}</style>
+
+                  <h2 style={{ 
+                    fontFamily: config?.font_serif || 'inherit',
+                    color: '#1e293b',
+                    fontSize: '1.75rem',
+                    margin: 0 
+                  }}>
+                    {isValidatingLink ? 'Verificando segurança do link...' : 'Redirecionando para parceiro...'}
+                  </h2>
+                  
+                  <p style={{ color: '#64748b', fontSize: '1rem', lineHeight: '1.6', margin: 0 }}>
+                    Garantindo sua exclusividade! Estamos **reservando o item &quot;{redirectGift.nome}&quot;** temporariamente por **3 horas** em nosso convite para que ninguém mais compre igual.
+                  </p>
+
+                  <div style={{ 
+                    background: '#f0fdf4',
+                    border: '1px solid #bbf7d0',
+                    borderRadius: '8px',
+                    padding: '10px 16px',
+                    color: '#166534',
+                    fontWeight: 600,
+                    fontSize: '0.9rem',
+                    marginTop: '0.5rem'
+                  }}>
+                    ✅ Trava de 3 Horas Ativada com Sucesso!
+                  </div>
+                </>
+              )}
             </motion.div>
           </div>
         )}

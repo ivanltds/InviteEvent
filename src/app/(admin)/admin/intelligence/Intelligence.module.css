@@ -272,3 +272,225 @@
     grid-column: span 12;
   }
 }
+
+/* ============================================================================
+   NOVOS ESTILOS PRD-12C: AUTOMAÇÃO & CURA DE LINKS
+   ============================================================================ */
+
+.dropZone {
+  border: 2px dashed rgba(197, 160, 89, 0.2);
+  border-radius: 12px;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.01);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.dropZone:hover {
+  border-color: rgba(197, 160, 89, 0.6);
+  background: rgba(197, 160, 89, 0.03);
+  transform: translateY(-2px);
+}
+
+.dropZoneActive {
+  border-color: #C5A059;
+  background: rgba(197, 160, 89, 0.08);
+  box-shadow: 0 0 20px rgba(197, 160, 89, 0.1);
+}
+
+.dropIcon {
+  font-size: 2.5rem;
+  color: #C5A059;
+  margin-bottom: 8px;
+  opacity: 0.8;
+  transition: transform 0.3s;
+}
+
+.dropZone:hover .dropIcon {
+  transform: scale(1.1);
+}
+
+.dropText {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e5e5e5;
+}
+
+.dropSubtext {
+  font-size: 0.7rem;
+  color: #888;
+}
+
+.terminal {
+  background: #080808;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  overflow: hidden;
+  box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+  height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+.terminalHeader {
+  background: #141414;
+  padding: 10px 15px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: #C5A059;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+.terminalDots {
+  display: flex;
+  gap: 5px;
+}
+
+.termDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+}
+
+.terminalBody {
+  padding: 15px;
+  overflow-y: auto;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+.logLine {
+  color: #aaa;
+  white-space: pre-wrap;
+}
+
+.logSuccess {
+  color: #10b981;
+}
+
+.logWarning {
+  color: #f59e0b;
+}
+
+.logInfo {
+  color: #C5A059;
+}
+
+.auditBtn {
+  background: transparent;
+  border: 1px solid rgba(197, 160, 89, 0.3);
+  color: #C5A059;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: 0.2s;
+}
+
+.auditBtn:hover {
+  background: #C5A059;
+  color: #000;
+  border-color: #C5A059;
+}
+
+/* MODAL DE AUDITORIA (Framer-Style Overlay) */
+.modalOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+  padding: 20px;
+}
+
+.modalWindow {
+  background: #111111;
+  border: 1px solid rgba(197, 160, 89, 0.3);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalHeader h3 {
+  font-family: var(--font-serif, 'Playfair Display');
+  font-size: 1.25rem;
+  color: #ffffff;
+}
+
+.modalClose {
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalClose:hover {
+  color: #fff;
+}
+
+.modalBody {
+  padding: 24px;
+}
+
+.badgePendente {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badgeProcessando {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.badgeCurado {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badgeFalha {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}

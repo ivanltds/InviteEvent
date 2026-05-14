@@ -98,5 +98,40 @@ export const giftService = {
 
     if (error) throw error;
     return data;
+  },
+
+  /**
+   * Reporta um link quebrado para a fila de auto-cura (PRD-12C)
+   */
+  async reportBrokenLink(presenteId: string, baseId: string | null, linkQuebrado: string, motivo: string) {
+    const { data, error } = await supabase
+      .from('fila_ajuste_links')
+      .insert({
+        presente_id: presenteId,
+        presente_base_id: baseId,
+        link_quebrado: linkQuebrado,
+        motivo_quebra: motivo,
+        status: 'PENDENTE'
+      })
+      .select();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Retorna todos os itens pendentes na fila de ajuste de links (Acesso Master)
+   */
+  async getFilaAjusteLinks() {
+    const { data, error } = await supabase
+      .from('fila_ajuste_links')
+      .select(`
+        *,
+        presentes_base (nome)
+      `)
+      .order('criado_em', { ascending: false });
+      
+    if (error) throw error;
+    return data;
   }
 };

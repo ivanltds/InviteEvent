@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cockpit Master: Cura & Monetização (PRD-12C) — Wireframe de Alta Fidelidade</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;1,700&family=Fira+Code&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-serif: 'Playfair Display', serif;
+            --font-sans: 'Inter', sans-serif;
+            --gold: #C5A059;
+            --gold-hover: #B38F48;
+            --dark-bg: #0d0d0d;
+            --card-bg: #111111;
+            --border-color: rgba(197, 160, 89, 0.1);
+            --border-hover: rgba(197, 160, 89, 0.3);
+            --green-glow: rgba(16, 185, 129, 0.15);
+            --text-main: #f5e6cc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            padding: 2.5rem;
+        }
+
+        /* Efeito de brilho radial ao fundo */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: radial-gradient(circle at 80% 20%, rgba(197, 160, 89, 0.04) 0%, transparent 60%),
+                              radial-gradient(circle at 20% 80%, rgba(16, 185, 129, 0.02) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* --- Header --- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .pageTitle h1 {
+            font-family: var(--font-serif);
+            font-size: 2.2rem;
+            color: #ffffff;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .pageTitle p {
+            color: #888;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .liveStatus {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #141414;
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--gold);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--gold);
+            animation: pulse 2s infinite;
+        }
+
+        .dot-green {
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 0.4; transform: scale(0.95); }
+        }
+
+        /* --- Navegação por Abas --- */
+        .tab-container {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .tab {
+            padding: 12px 0;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            color: #888;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            color: #fff;
+        }
+
+        .tab.active {
+            color: var(--gold);
+            border-bottom: 2px solid var(--gold);
+        }
+
+        /* --- Estrutura do Grid --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeIn 0.5s forwards ease-out;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .span-4 { grid-column: span 4; }
+        .span-8 { grid-column: span 8; }
+        .span-12 { grid-column: span 12; }
+
+        /* --- Cards --- */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+        }
+
+        .card-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gold);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-kpi {
+            font-family: var(--font-serif);
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-subtitle {
+            font-size: 0.75rem;
+            color: #888;
+            margin-bottom: 0.5rem;
+        }
+
+        .badge-trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: var(--green-glow);
+            color: #10b981;
+        }
+
+        .badge-trend.warn {
+            background: rgba(197, 160, 89, 0.1);
+            color: var(--gold);
+        }
+
+        /* --- Tabelas --- */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .table th {
+            text-align: left;
+            color: #888;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .table td {
+            padding: 14px 8px;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            color: #e5e5e5;
+            vertical-align: middle;
+        }
+
+        .table tr:hover td {
+            background: rgba(255,255,255,0.01);
+        }
+
+        .indicator {
+            display: inline-flex;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid transparent;
+        }
+
+        .ind-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .ind-pending {
+            background: rgba(197, 160, 89, 0.1);
+            color: var(--gold);
+            border-color: rgba(197, 160, 89, 0.3);
+        }
+
+        .ind-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .url-preview {
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            color: #888;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .url-preview:hover {
+            color: var(--gold);
+            text-decoration: underline;
+        }
+
+        .thumb {
+            width: 36px;
+            height: 36px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+            color: var(--gold);
+        }
+
+        /* --- Botoes --- */
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), var(--gold-hover));
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-gold:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(197, 160, 89, 0.2);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #aaa;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: rgba(197, 160, 89, 0.05);
+        }
+
+        /* --- CSV Dropzone Widget --- */
+        .dropzone {
+            border: 2px dashed rgba(197, 160, 89, 0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.01);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .dropzone:hover, .dropzone.dragover {
+            border-color: var(--gold);
+            background: rgba(197, 160, 89, 0.05);
+        }
+
+        .dropzone svg {
+            color: var(--gold);
+            margin-bottom: 10px;
+            transition: transform 0.3s;
+        }
+
+        .dropzone:hover svg {
+            transform: translateY(-5px);
+        }
+
+        .dropzone p {
+            font-size: 0.85rem;
+            color: #ccc;
+            margin-bottom: 5px;
+        }
+
+        .dropzone span {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .dropzone-processing {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--card-bg);
+            border-radius: 12px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+
+        /* --- Daemon Audit Logs --- */
+        .daemon-container {
+            background: #0a0a0a;
+            border-radius: 12px;
+            padding: 1rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            height: 180px;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.02);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .daemon-line {
+            color: #888;
+            line-height: 1.4;
+            animation: slideInLine 0.2s forwards;
+        }
+
+        .daemon-line.success { color: #10b981; }
+        .daemon-line.info { color: var(--gold); }
+        .daemon-line.time { color: #555; }
+
+        @keyframes slideInLine {
+            from { opacity: 0; transform: translateX(-5px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* --- Modal Estilo Terminal (AI Audit) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeInModal 0.2s ease-out;
+        }
+
+        @keyframes fadeInModal {
+            from { opacity: 0; } to { opacity: 1; }
+        }
+
+        .modal {
+            background: #121212;
+            border: 1px solid var(--border-hover);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 650px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+            animation: scaleUpModal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes scaleUpModal {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            background: #181818;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gold);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover { color: #fff; }
+
+        .modal-body {
+            padding: 20px;
+            max-height: 450px;
+            overflow-y: auto;
+        }
+
+        .terminal-code {
+            background: #070707;
+            padding: 15px;
+            border-radius: 8px;
+            color: #10b981;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            border: 1px solid rgba(255,255,255,0.02);
+        }
+
+        .terminal-keyword { color: #C5A059; }
+        .terminal-string { color: #e5e5e5; }
+        .terminal-comment { color: #444; font-style: italic; }
+
+        /* SVG Styling */
+        svg.feather {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- --- HEADER --- -->
+    <header class="header">
+        <div class="pageTitle">
+            <h1>Master Intelligence</h1>
+            <p>Telemetry Analytics Platform</p>
+        </div>
+        <div class="liveStatus">
+            <div class="dot dot-green"></div>
+            <span style="font-size: 0.75rem; font-weight: bold; color: #ffffff; letter-spacing: 1px;">AI DAEMON ONLINE</span>
+        </div>
+    </header>
+
+    <!-- --- ABAS --- -->
+    <div class="tab-container">
+        <div class="tab" onclick="alert('Aba legada ativa no sistema de produção real. Este protótipo foca no Bloco C.')">Visão Geral</div>
+        <div class="tab" onclick="alert('Aba legada ativa no sistema de produção real. Este protótipo foca no Bloco C.')">Suporte & IA Analytics</div>
+        <div class="tab active">Cura de Catálogo & Monetização</div>
+    </div>
+
+    <!-- --- CONTEÚDO PRINCIPAL DA ABA ATIVA --- -->
+    <div class="grid">
+        
+        <!-- 1. KPIs TOP (3 Cards) -->
+        <div class="card span-4">
+            <div class="card-header">
+                <span class="card-title">
+                    <svg class="feather"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    Cura Autônoma (Self-Healing)
+                </span>
+            </div>
+            <div class="card-kpi" id="kpi-cura">94.8%</div>
+            <div class="card-subtitle">Taxa de Sucesso na Regeneração de Links</div>
+            <div>
+                <span class="badge-trend">
+                    <svg style="width:10px;height:10px" class="feather"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                    327 Links Curados
+                </span>
+            </div>
+        </div>
+
+        <div class="card span-4">
+            <div class="card-header">
+                <span class="card-title">
+                    <svg class="feather"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                    Watchlist Ativa
+                </span>
+            </div>
+            <div class="card-kpi">84 / 120</div>
+            <div class="card-subtitle">Produtos Base SaaS sendo Vigiados Diariamente</div>
+            <div>
+                <span class="badge-trend warn">
+                    12 Atualizações Hoje
+                </span>
+            </div>
+        </div>
+
+        <div class="card span-4">
+            <div class="card-header">
+                <span class="card-title">
+                    <svg class="feather"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    Comissões Conciliadas
+                </span>
+            </div>
+            <div class="card-kpi" id="kpi-receita">R$ 4.320,80</div>
+            <div class="card-subtitle">Faturamento via Upload offline (Lomadee)</div>
+            <div>
+                <span class="badge-trend">
+                    <svg style="width:10px;height:10px" class="feather"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                    +18.4% vs Mês Anterior
+                </span>
+            </div>
+        </div>
+
+        <!-- 2. Fila de Ajuste de Links (Tabela Dinâmica) - Span 8 -->
+        <div class="card span-8">
+            <div class="card-header">
+                <span class="card-title">
+                    <svg class="feather"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    Fila de Ajuste de Links (Cura Automática)
+                </span>
+                <div style="display:flex; gap:8px">
+                    <button class="btn-outline" onclick="alert('Forçando Daemon a processar Fila agora...')">
+                        <svg class="feather"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                        Processar Daemon
+                    </button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="table" id="queueTable">
+                    <thead>
+                        <tr>
+                            <th>Item / Origem</th>
+                            <th>Motivo</th>
+                            <th>Status</th>
+                            <th>Link Substituto</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="row-1">
+                            <td>
+                                <div style="display:flex; align-items:center">
+                                    <div class="thumb">
+                                        <svg class="feather"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                                    </div>
+                                    <div>
+                                        <strong style="font-size:0.85rem; color:#fff">Batedeira Planetária Arno</strong>
+                                        <div style="font-size:0.7rem; color:#666">EAN: 7891123456</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span style="font-family:'Fira Code';font-size:0.75rem;color:#fca5a5">HTTP 404 (Lomadee)</span></td>
+                            <td><span class="indicator ind-success" id="status-1">CURADO</span></td>
+                            <td><div class="url-preview">redir.lomadee.com/v2/2324...</div></td>
+                            <td>
+                                <button class="btn-outline" onclick="openModal('arno')">
+                                    <svg class="feather"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>
+                                    Audit Trail
+                                </button>
+                            </td>
+                        </tr>
+                        <tr id="row-2">
+                            <td>
+                                <div style="display:flex; align-items:center">
+                                    <div class="thumb">
+                                        <svg class="feather"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                                    </div>
+                                    <div>
+                                        <strong style="font-size:0.85rem; color:#fff">Smart TV LG OLED 55"</strong>
+                                        <div style="font-size:0.7rem; color:#666">EAN: 7899988776</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span style="font-family:'Fira Code';font-size:0.75rem;color:#fbbf24">Estoque Esgotado</span></td>
+                            <td><span class="indicator ind-pending" id="status-2">PROCESSANDO</span></td>
+                            <td><div class="url-preview">--</div></td>
+                            <td>
+                                <button class="btn-outline" onclick="openModal('tv')">
+                                    Audit Trail
+                                </button>
+                            </td>
+                        </tr>
+                        <tr id="row-3">
+                            <td>
+                                <div style="display:flex; align-items:center">
+                                    <div class="thumb">
+                                        <svg class="feather"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                                    </div>
+                                    <div>
+                                        <strong style="font-size:0.85rem; color:#fff">Jogo de Panelas Tramontina 10pçs</strong>
+                                        <div style="font-size:0.7rem; color:#666">EAN: 7895544332</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span style="font-family:'Fira Code';font-size:0.75rem;color:#fca5a5">HTTP 410 (Removed)</span></td>
+                            <td><span class="indicator ind-error">FALHA_MANUAL</span></td>
+                            <td><div class="url-preview" style="color:#fca5a5; text-decoration:line-through;">Nenhuma oferta</div></td>
+                            <td>
+                                <button class="btn-outline" onclick="openModal('tramontina')">
+                                    Audit Trail
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 3. Widget de Faturamento Offline (Lomadee Upload) - Span 4 -->
+        <div class="card span-4" style="display: flex; flex-direction: column;">
+            <div class="card-header">
+                <span class="card-title">
+                    <svg class="feather"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    Reconciliação Lomadee (CSV)
+                </span>
+            </div>
+            <p class="card-subtitle" style="margin-bottom:1rem;">Suba o extrato mensal de vendas para cruzar os <strong>tokens de cliques</strong> e consolidar a receita de comissões.</p>
+            
+            <div class="dropzone" id="csvDropzone" onclick="triggerFileInput()">
+                <div id="dropzoneDefault">
+                    <svg class="feather" style="width:40px; height:40px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                    <p>Clique ou arraste o CSV Lomadee</p>
+                    <span>Formato padrão (Relatório de Vendas)</span>
+                </div>
+                <div class="dropzone-processing" id="dropzoneProcessing">
+                    <div class="dot dot-green" style="margin-bottom:15px; width:15px; height:15px;"></div>
+                    <p style="color:#10b981; font-family:'Fira Code'; font-weight:bold;">MAPEANDO TOKENS...</p>
+                    <span id="scanProgress">Lendo linhas do arquivo CSV...</span>
+                </div>
+            </div>
+            <input type="file" id="csvInput" style="display:none;" accept=".csv" onchange="handleFileSelect()">
+
+            <div class="card-header" style="margin-top:auto; margin-bottom:0.8rem;">
+                <span class="card-title" style="font-size:0.65rem; color:#666;">Console de Auditoria Realtime</span>
+            </div>
+            <div class="daemon-container" id="daemonConsole">
+                <div class="daemon-line"><span class="daemon-line time">[20:01:45]</span> Agente @catalog-expert iniciado. Escutando fila...</div>
+                <div class="daemon-line"><span class="daemon-line time">[20:02:12]</span> Rastreamento Watchlist: 84 SKUs verificados com sucesso.</div>
+                <div class="daemon-line info"><span class="daemon-line time">[20:05:33]</span> EVENTO: Clique roto detectado para 'Batedeira Arno'. Entrada salva na fila de cura.</div>
+                <div class="daemon-line success"><span class="daemon-line time">[20:05:35]</span> AUTO-HEAL: Sucesso ao localizar oferta alternativa na Magalu. Link atualizado (CURADO).</div>
+            </div>
+        </div>
+
+        <!-- 4. Watchlist Ativa e Análise de Menor Preço - Span 12 -->
+        <div class="card span-12">
+            <div class="card-header">
+                <span class="card-title">
+                    <svg class="feather"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    Monitoramento da Watchlist (Análise Diária de Preço + Frete)
+                </span>
+                <button class="btn-gold" style="padding: 8px 16px; font-size: 0.7rem;" onclick="alert('Abrindo formulário de adição rápida ao Catálogo SaaS base...')">
+                    <svg class="feather" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    Adicionar Item à Watchlist
+                </button>
+            </div>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Produto Base</th>
+                            <th>Preço Catálogo</th>
+                            <th>Menor Preço Encontrado</th>
+                            <th>Média Frete</th>
+                            <th>Custo Total Real</th>
+                            <th>Loja Campeã (Link Ativo)</th>
+                            <th>Última Verificação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Fritadeira Airfryer Mondial 4L</strong></td>
+                            <td>R$ 389,90</td>
+                            <td style="color:#10b981; font-weight:bold;">R$ 342,00</td>
+                            <td>R$ 19,90</td>
+                            <td style="color:#fff; font-weight:bold;">R$ 361,90</td>
+                            <td>
+                                <span style="color:var(--gold); font-weight:600;">Magazine Luiza</span>
+                                <div style="font-size:0.7rem; color:#555">Via Lomadee Redir</div>
+                            </td>
+                            <td>Há 2 horas</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Liquidificador Philips Walita RI2244</strong></td>
+                            <td>R$ 199,00</td>
+                            <td style="color:#10b981; font-weight:bold;">R$ 189,00</td>
+                            <td>R$ 0,00 (Prime)</td>
+                            <td style="color:#fff; font-weight:bold;">R$ 189,00</td>
+                            <td>
+                                <span style="color:var(--gold); font-weight:600;">Amazon Brasil</span>
+                                <div style="font-size:0.7rem; color:#555">Promoção Ativa</div>
+                            </td>
+                            <td>Há 4 horas</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Jogo de Cama Trussardi 300 Fios</strong></td>
+                            <td>R$ 899,00</td>
+                            <td>R$ 920,00</td>
+                            <td>R$ 35,00</td>
+                            <td>R$ 955,00</td>
+                            <td>
+                                <span style="color:#888;">Manteve Original</span>
+                                <div style="font-size:0.7rem; color:#555">Concorrente mais caro</div>
+                            </td>
+                            <td>Ontem, 18:45</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- --- MODAL DE AUDITORIA DA IA --- -->
+<div class="modal-overlay" id="auditModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">
+                <svg class="feather"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>
+                Rastreamento de Decisão da IA (Execution Audit Logs)
+            </span>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="margin-bottom: 15px; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px;">
+                <span style="color:#888;">Produto:</span> <strong id="modalProductName" style="color:#fff;">Batedeira Arno</strong><br/>
+                <span style="color:#888;">Trigger ID:</span> <code style="color:var(--gold); font-family:'Fira Code'; font-size:0.75rem;" id="modalTriggerId">ERR-260513-A9</code>
+            </div>
+            <pre class="terminal-code" id="modalCode">Carregando rastreio...</pre>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts de Simulação Interativa -->
+<script>
+    // Bancos de dados mocks para as simulações
+    const auditData = {
+        arno: {
+            title: "Batedeira Planetária Arno",
+            trigger: "HTTP-404-DETECT",
+            trace: `{
+  <span class="terminal-keyword">"timestamp"</span>: <span class="terminal-string">"2026-05-13T20:05:33.012Z"</span>,
+  <span class="terminal-keyword">"agent"</span>: <span class="terminal-string">"@catalog-expert"</span>,
+  <span class="terminal-keyword">"action"</span>: <span class="terminal-string">"SELF_HEALING_EXECUTION"</span>,
+  <span class="terminal-keyword">"steps"</span>: [
+    {
+      <span class="terminal-keyword">"step_1_diagnostico"</span>: <span class="terminal-string">"Entrada identificada na fila de ajuste. Link de varejo antigo retornou HTTP 404."</span>,
+      <span class="terminal-keyword">"data"</span>: { <span class="terminal-keyword">"sku"</span>: <span class="terminal-string">"7891123456"</span>, <span class="terminal-keyword">"category"</span>: <span class="terminal-string">"Eletrodomésticos"</span> }
+    },
+    {
+      <span class="terminal-keyword">"step_2_pesquisa"</span>: <span class="terminal-string">"Efetuando requisição em lote na Lomadee API (LinkBuilder Search) para termos 'Batedeira Arno Planetária'."</span>,
+      <span class="terminal-keyword">"resultados_encontrados"</span>: 3
+    },
+    {
+      <span class="terminal-keyword">"step_3_comparativo"</span>: <span class="terminal-string">"Analisando relevância e melhor preço. Loja 'Magazine Luiza' ofereceu o item similar por R$ 389,00 com maior compatibilidade."</span>
+    },
+    {
+      <span class="terminal-keyword">"step_4_correcao"</span>: <span class="terminal-string">"Patch gerado com sucesso. Substituindo link no Catálogo SaaS Base global e atualizando presentes individuais."</span>,
+      <span class="terminal-keyword">"novo_link"</span>: <span class="terminal-string">"https://redir.lomadee.com/v2/2324685?url=magazineluiza..."</span>
+    }
+  ],
+  <span class="terminal-keyword">"resultado"</span>: <span class="terminal-string">"STATUS_CURADO"</span>
+}`
+        },
+        tv: {
+            title: "Smart TV LG OLED 55\"",
+            trigger: "ESTOQUE-ESGOTADO-DETECT",
+            trace: `{
+  <span class="terminal-keyword">"timestamp"</span>: <span class="terminal-string">"2026-05-13T20:10:01.110Z"</span>,
+  <span class="terminal-keyword">"agent"</span>: <span class="terminal-string">"@catalog-expert"</span>,
+  <span class="terminal-keyword">"action"</span>: <span class="terminal-string">"SELF_HEALING_EXECUTION"</span>,
+  <span class="terminal-keyword">"steps"</span>: [
+    {
+      <span class="terminal-keyword">"step_1_diagnostico"</span>: <span class="terminal-string">"Monitoramento diário apontou falta de estoque na Americanas (varejista original)."</span>
+    },
+    {
+      <span class="terminal-keyword">"step_2_pesquisa"</span>: <span class="terminal-string">"Buscando rede de lojas alternativas na API de Afiliados..."</span>,
+      <span class="terminal-keyword">"status"</span>: <span class="terminal-string">"EM_PROCESSAMENTO"</span>
+    }
+  ],
+  <span class="terminal-keyword">"resultado"</span>: <span class="terminal-string">"PENDENTE"</span>
+}`
+        },
+        tramontina: {
+            title: "Jogo de Panelas Tramontina 10pçs",
+            trigger: "HTTP-410-PERMANENT",
+            trace: `{
+  <span class="terminal-keyword">"timestamp"</span>: <span class="terminal-string">"2026-05-13T19:30:45.889Z"</span>,
+  <span class="terminal-keyword">"agent"</span>: <span class="terminal-string">"@catalog-expert"</span>,
+  <span class="terminal-keyword">"action"</span>: <span class="terminal-string">"SELF_HEALING_EXECUTION"</span>,
+  <span class="terminal-keyword">"steps"</span>: [
+    {
+      <span class="terminal-keyword">"step_1_diagnostico"</span>: <span class="terminal-string">"Produto descontinuado permanentemente pela loja (HTTP 410)."</span>
+    },
+    {
+      <span class="terminal-keyword">"step_2_pesquisa"</span>: <span class="terminal-string">"Tentando mapear modelos substitutos equivalentes no catálogo geral..."</span>
+    },
+    {
+      <span class="terminal-keyword">"step_3_falha"</span>: <span class="terminal-string">"Nenhuma batedeira ou modelo similar com EAN compatível encontrado na rede de afiliados."</span>,
+      <span class="terminal-keyword">"alerta"</span>: <span class="terminal-string">"Requer atenção humana para substituição manual de categoria."</span>
+    }
+  ],
+  <span class="terminal-keyword">"resultado"</span>: <span class="terminal-string">"FALHA_MANUAL"</span>
+}`
+        }
+    };
+
+    function openModal(key) {
+        const item = auditData[key];
+        document.getElementById('modalProductName').innerText = item.title;
+        document.getElementById('modalTriggerId').innerText = item.trigger + '-' + Math.floor(Math.random()*10000);
+        document.getElementById('modalCode').innerHTML = item.trace;
+        document.getElementById('auditModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('auditModal').style.display = 'none';
+    }
+
+    // Simulação do Upload de CSV
+    function triggerFileInput() {
+        document.getElementById('csvInput').click();
+    }
+
+    function handleFileSelect() {
+        const input = document.getElementById('csvInput');
+        if(input.files && input.files.length > 0) {
+            simulateCSVProcessing(input.files[0].name);
+        }
+    }
+
+    function logToConsole(text, type="default") {
+        const consoleEl = document.getElementById('daemonConsole');
+        const now = new Date();
+        const timestamp = `[${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}]`;
+        
+        const line = document.createElement('div');
+        line.className = `daemon-line ${type}`;
+        line.innerHTML = `<span class="daemon-line time">${timestamp}</span> ${text}`;
+        consoleEl.appendChild(line);
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
+
+    function simulateCSVProcessing(filename) {
+        const defaultState = document.getElementById('dropzoneDefault');
+        const processState = document.getElementById('dropzoneProcessing');
+        const progressTxt = document.getElementById('scanProgress');
+
+        defaultState.style.display = 'none';
+        processState.style.display = 'flex';
+
+        logToConsole(`Iniciando parse do arquivo: ${filename}`, "info");
+
+        setTimeout(() => {
+            progressTxt.innerText = "Procurando matches de 'click_token' em analytics_events...";
+            logToConsole(`Escaneando 145 linhas de vendas...`, "default");
+        }, 1200);
+
+        setTimeout(() => {
+            progressTxt.innerText = "Encontrados 14 tokens. Conciliando comissões...";
+            logToConsole(`MATCH DETECTADO: AEG-260512-XF91 associado a 'Casamento João & Maria'`, "success");
+            logToConsole(`MATCH DETECTADO: AEG-260512-KL02 associado a 'Casamento Pedro & Carla'`, "success");
+        }, 2600);
+
+        setTimeout(() => {
+            processState.style.display = 'none';
+            defaultState.style.display = 'block';
+            document.getElementById('csvDropzone').style.borderColor = '#10b981';
+            
+            // Animação de KPI subindo
+            document.getElementById('kpi-receita').innerText = "R$ 4.892,10";
+            document.getElementById('kpi-receita').style.color = "#10b981";
+            
+            logToConsole(`SUCESSO: Reconciliação finalizada. +R$ 571,30 adicionados ao faturamento global.`, "success");
+            
+            alert("CSV Processado com Sucesso!\n\n- 145 transações lidas\n- 14 correspondências exatas encontradas\n- R$ 571,30 creditados em comissões.");
+            
+            setTimeout(() => {
+                document.getElementById('kpi-receita').style.color = "#fff";
+                document.getElementById('csvDropzone').style.borderColor = "rgba(197, 160, 89, 0.2)";
+            }, 3000);
+        }, 4500);
+    }
+
+    // Simulação do Daemon no Background rodando a fila
+    setTimeout(() => {
+        logToConsole("Daemon detectou status PENDENTE para 'Smart TV LG'. Iniciando busca programática...", "info");
+        
+        setTimeout(() => {
+            document.getElementById('status-2').className = "indicator ind-success";
+            document.getElementById('status-2').innerText = "CURADO";
+            document.getElementById('queueTable').rows[2].cells[3].innerHTML = '<div class="url-preview">redir.lomadee.com/v2/998...</div>';
+            document.getElementById('kpi-cura').innerText = "97.1%";
+            logToConsole("AUTO-HEAL: Smart TV LG realocada na Amazon. Link atualizado com sucesso.", "success");
+            
+            // Atualiza objeto mock para curado
+            auditData.tv.trace = auditData.tv.trace.replace('"PENDENTE"', '"CURADO"')
+              .replace('"EM_PROCESSAMENTO"', '"CONCLUÍDO"');
+        }, 4000);
+    }, 10000);
+
+    // Fechar modal ao clicar fora
+    window.onclick = function(event) {
+        const modal = document.getElementById('auditModal');
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+</script>
+</body>
+</html>

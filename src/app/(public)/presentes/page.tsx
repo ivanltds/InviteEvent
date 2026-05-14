@@ -243,15 +243,23 @@ export default function PresentesPage() {
   const handleAffiliateClick = async (gift: Presente) => {
     if (!gift.link_externo) return;
     
-    // 1. Exibe a overlay intersticial 4s
-    setRedirectGift(gift);
+    // 1. Geração do Token de Reconciliação Offline (PRD-12C)
+    const clickToken = 'AEG-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+    
+    // 2. Anexar parâmetro de rastreamento Lomadee sourceId ao link de afiliado
+    const originalLink = gift.link_externo;
+    const separator = originalLink.includes('?') ? '&' : '?';
+    const trackedLink = `${originalLink}${separator}sourceId=${clickToken}`;
+    
+    // 3. Exibe a overlay intersticial 4s com o link rastreado
+    setRedirectGift({ ...gift, link_externo: trackedLink });
     setIsRedirecting(true);
     setRedirectCountdown(4);
     
-    // 2. Fecha o modal de detalhes
+    // 4. Fecha o modal de detalhes
     setSelectedGift(null);
 
-    // 3. Registra Telemetria de Clique Externo (Leakage Prevention)
+    // 5. Registra Telemetria de Clique Externo (Leakage Prevention + Tracking Token)
     if (eventoId && !isPreview) {
       Telemetry.track({
         eventoId,
@@ -262,6 +270,7 @@ export default function PresentesPage() {
           item_name: gift.nome,
           potential_loss_value: gift.preco,
           external_url: gift.link_externo,
+          token: clickToken, // TOKEN DA CONCILIAÇÃO OFFLINE
         },
       });
     }

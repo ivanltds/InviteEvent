@@ -43,7 +43,7 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | 011 | Modo Telão Realtime              | CONCLUÍDO   | Concluído   |
 | 12A | Smart Gift List - Fundação       | CONCLUÍDO   | Concluído   |
 | 12B | Smart Gift List - Monetização    | CONCLUÍDO   | Concluído   |
-| 12C | Smart Gift List - Autônomo       | PLANEJADO   | Discovery Fin. |
+| 12C | Smart Gift List - Autônomo       | CONCLUÍDO   | Concluído   |
 
 ## Segurança
 - **Última Auditoria:** 2024-05-24
@@ -111,6 +111,7 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/wireframes/modo-telao-tv.html         | UX/UI       | Wireframe do Modo Telão Realtime 16:9 |
 | docs/wireframes/vitrine-importacao-rapida.html | UX/UI       | Wireframe Interativo: Vitrine 1-Clique (Fase A) |
 | docs/wireframes/motor-monetizacao-reservas.html| UX/UI       | Wireframe Interativo: Monetização & Reservas (Fase B) |
+| docs/wireframes/master-cura-automacao.html     | UX/UI       | Wireframe Interativo: Cérebro Autônomo (Fase C)      |
 | docs/prd/prd-011/prd-inicial.md            | BA          | PRD Inicial do Modo Telão Realtime |
 | docs/prd/prd-011/fluxo-ux.md               | UX/UI       | Mapeamento de fluxos e telas do Modo Telão|
 | docs/arquitetura/plano-implementacao-prd-011.md | Arquiteto | Plano técnico para Modo Telão Realtime (TV)|
@@ -120,13 +121,16 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/prd/prd-012-a/plano-implementacao.md  | Arquiteto   | Plano de Sprints de banco, view dinâmica e frontend |
 | docs/prd/prd-012-b/prd-inicial.md          | BA          | PRD-B Smart Gift List — Motor de Monetização |
 | docs/prd/prd-012-c/prd-inicial.md          | BA          | PRD-C Smart Gift List — Cérebro Autônomo (Self-Healing) |
+| docs/prd/prd-012-c/prd-refinado.md         | BA / Expert | PRD refinado detalhando Cura de Links e Matching Token|
 | docs/prd/prd-012/relatorio-descoberta-final.md  | Maestro    | Relatório Histórico de Descoberta Expandida |
 | tests/e2e/prd_012a_smart_gift.spec.ts       | QA          | Cobertura E2E de Abas, Vitrine SaaS e Categorização manual|
 | docs/prd/prd-012-b/plano-implementacao.md  | Arquiteto   | Plano técnico de travas temporárias 3h e PIX Dinâmico|
 | tests/e2e/prd_012b_trava_estoque.spec.ts   | QA          | Suíte E2E de Concorrência Atômica e Interstitial 4s |
-
+| docs/prd/prd-012-c/plano-implementacao.md  | Arquiteto   | Plano técnico de Tabelas Operacionais, Daemon e Reconciliação |
+| src/app/api/intelligence/autonomy/daemon/route.ts | DEV | API Trigger para acionar Daemon Stored Procedure de Auto-Cura |
+| src/app/api/intelligence/reconcile/route.ts | DEV      | API Endpoint para ingestão de relatórios CSV de vendas |
 
 ## Última Atualização
-- Data    : 2026-05-13
+- Data    : 2026-05-14
 - Por     : Maestro / DEV / QA
-- Motivo  : Lançamento da Versão v0.4.2 — Smart Gift Monetization & Atomicity. Lançado oficialmente o motor de concorrência concorrente (PRD-12B). Implementada a camada de travas físicas temporárias de 3 horas para itens de afiliados via RPC atômica com bloqueio concorrente `FOR UPDATE` no Supabase. O fluxo de intermediação interstitial de 4 segundos protege contra a fuga de receita fornecendo feedback dinâmico em tempo real. Lançada a 'Aceleração de Checkout PIX', permitindo presentear com 1-clique a partir de qualquer item. Suíte de testes Playwright E2E certificou toda a jornada com 100% GREEN, apresentando isolamento total de dados e cura completa do bug de renderização loop no timer da introdução emocional.
+- Motivo  : Lançamento da Versão v0.5.0 — Cérebro Autônomo (PRD-12C). Implementado o ciclo fechado de Self-Healing de links com gravação atômica de erros via vitrine, ingestão imediata em `fila_ajuste_links` e disparo de RPC `executar_daemon_auto_cura` com replicação global e logs neurais (Audit Trail). Acoplado o reconciliador financeiro offline via upload de CSV e procedure `conciliar_vendas_offline` que cruza cliques Lomadee e telemetria nativa via Token AEG em lote. Expansão final de UX no Cockpit Master Inteligência com console reativo de logs em tempo real e modal rico de auditoria de curadoria.

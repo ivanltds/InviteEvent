@@ -45,6 +45,7 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | 12B | Smart Gift List - Monetização    | CONCLUÍDO   | Concluído   |
 | 12C | Smart Gift List - Autônomo       | CONCLUÍDO   | Concluído   |
 | 12D | Smart Gift List - Cockpit        | CONCLUÍDO   | Concluído   |
+| 013 | Higiene, Segurança & LGPD        | EM EXECUÇÃO | Planejamento / Execução |
 
 ## Segurança
 - **Última Auditoria:** 2024-05-24

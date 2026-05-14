@@ -3,10 +3,10 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './AdminPresentes.module.css';
-import { supabase } from '@/lib/supabase';
 import { CldUploadWidget } from 'next-cloudinary';
 import { useEvent } from '@/lib/contexts/EventContext';
 import { giftService } from '@/lib/services/giftService';
+import { SearchControl } from '@/components/ui/SearchControl';
 import { PresenteCategoria, PresenteBase } from '@/lib/types/database';
 
 interface Presente {
@@ -168,15 +168,8 @@ export default function AdminPresentes() {
   const fetchPresentes = async () => {
     if (!currentEvent) return;
     setLoading(true);
-    const { data, error } = await supabase
-      .from('presentes')
-      .select('*, categoria:presentes_categorias(nome), presentes_locks(*, convite:convites(nome_principal))')
-      .eq('evento_id', currentEvent.id)
-      .order('created_at', { ascending: false });
-
-    if (data && !error) {
-      setPresentes(data as Presente[]);
-    }
+    const data = await giftService.getAdminGifts(currentEvent.id);
+    setPresentes(data as Presente[]);
     setLoading(false);
   };
 
@@ -203,15 +196,8 @@ export default function AdminPresentes() {
   const fetchComprovantes = async () => {
     if (!currentEvent) return;
     setLoading(true);
-    const { data, error } = await supabase
-      .from('comprovantes')
-      .select('*, presente:presentes!inner(nome, preco, evento_id), convite:convites(nome_principal)')
-      .eq('presente.evento_id', currentEvent.id)
-      .order('created_at', { ascending: false });
-
-    if (data && !error) {
-      setComprovantes(data as any[]);
-    }
+    const data = await giftService.getAdminComprovantes(currentEvent.id);
+    setComprovantes(data as any[]);
     setLoading(false);
   };
 
@@ -343,27 +329,20 @@ export default function AdminPresentes() {
     };
 
     if (editingItem) {
-      const { data, error } = await supabase
-        .from('presentes')
-        .update(payload)
-        .eq('id', editingItem.id)
-        .select('*, categoria:presentes_categorias(nome)');
+      const { success, data, error } = await giftService.updateGiftWithReturn(editingItem.id, payload);
 
-      if (!error && data) {
-        setPresentes(presentes.map(p => p.id === editingItem.id ? (data[0] as Presente) : p));
+      if (success && data) {
+        setPresentes(presentes.map(p => p.id === editingItem.id ? (data as Presente) : p));
         setIsAdding(false);
         triggerToast('✨ Item atualizado com sucesso.');
       } else {
         triggerToast('Erro ao atualizar item.');
       }
     } else {
-      const { data, error } = await supabase
-        .from('presentes')
-        .insert([payload])
-        .select('*, categoria:presentes_categorias(nome)');
+      const { success, data, error } = await giftService.createGiftWithReturn(payload);
 
-      if (!error && data) {
-        setPresentes(prev => [data[0] as Presente, ...prev]);
+      if (success && data) {
+        setPresentes(prev => [data as Presente, ...prev]);
         setIsAdding(false);
         triggerToast('✨ Novo item adicionado.');
       } else {
@@ -392,8 +371,8 @@ export default function AdminPresentes() {
   const handleToggleStatus = async (id: string, currentStatus: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     const nextStatus = currentStatus === 'disponivel' ? 'pausado' : 'disponivel';
-    const { error } = await supabase.from('presentes').update({ status: nextStatus }).eq('id', id);
-    if (!error) {
+    const { success } = await giftService.updateGift(id, { status: nextStatus as any });
+    if (success) {
       setPresentes(presentes.map(p => p.id === id ? { ...p, status: nextStatus as Presente['status'] } : p));
       triggerToast(nextStatus === 'pausado' ? 'Item pausado com sucesso.' : 'Item reativado com sucesso.');
     }
@@ -407,9 +386,11 @@ export default function AdminPresentes() {
 
   const executeDelete = async () => {
     if (!confirmDeleteId) return;
-    const table = deleteTargetType === 'presente' ? 'presentes' : 'comprovantes';
-    const { error } = await supabase.from(table).delete().eq('id', confirmDeleteId);
-    if (!error) {
+    const { success } = deleteTargetType === 'presente'
+      ? await giftService.deleteGift(confirmDeleteId)
+      : await giftService.deleteComprovante(confirmDeleteId);
+
+    if (success) {
       if (deleteTargetType === 'presente') setPresentes(presentes.filter(p => p.id !== confirmDeleteId));
       else setComprovantes(comprovantes.filter(c => c.id !== confirmDeleteId));
       triggerToast('Excluído com sucesso.');
@@ -458,19 +439,15 @@ export default function AdminPresentes() {
       </div>
 
       {/* Controles de Grid Unificados (Derivados do Catálogo Global) */}
-      <div className={styles.controlsRow}>
-        <input 
-          type="text" 
-          className={styles.searchBox}
-          placeholder={
-            activeTab === 'catalogo' ? "Buscar por nome, descrição ou categoria..." :
-            activeTab === 'sugestoes' ? "Buscar sugestões do sistema..." :
-            "Buscar comprovantes ou convidados..."
-          }
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-
+      <SearchControl
+        placeholder={
+          activeTab === 'catalogo' ? "Buscar por nome, descrição ou categoria..." :
+          activeTab === 'sugestoes' ? "Buscar sugestões do sistema..." :
+          "Buscar comprovantes ou convidados..."
+        }
+        value={search}
+        onChange={setSearch}
+      >
         {activeTab === 'catalogo' && (
           <div className={styles.viewToggle}>
             <button 
@@ -489,7 +466,7 @@ export default function AdminPresentes() {
             </button>
           </div>
         )}
-      </div>
+      </SearchControl>
 
       {loading ? (
         <div className={styles.loading}>Carregando dados...</div>

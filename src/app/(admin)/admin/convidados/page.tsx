@@ -8,6 +8,7 @@ import { InviteType, Configuracao } from '@/lib/types/database';
 import { generateWhatsappLink } from '@/lib/utils/whatsapp';
 import { configService } from '@/lib/services/configService';
 import { useEvent } from '@/lib/contexts/EventContext';
+import { SearchControl } from '@/components/ui/SearchControl';
 
 export default function AdminConvidados() {
   const { currentEvent, loading: eventLoading } = useEvent();
@@ -395,15 +396,11 @@ export default function AdminConvidados() {
         </div>
       </section>
 
-      <div className={styles.controlsRow}>
-        <input
-          type="text"
-          className={styles.searchBox}
-          placeholder="Buscar por convidado, membro ou tipo..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+      <SearchControl
+        placeholder="Buscar por convidado, membro ou tipo..."
+        value={search}
+        onChange={setSearch}
+      />
 
       <section className={styles.tableContainer}>
         {loading ? (

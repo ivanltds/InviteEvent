@@ -1,4 +1,4 @@
-import { giftService } from '@/services/giftService';
+import { giftService } from '@/lib/services/giftService';
 import { supabase } from '@/lib/supabase';
 
 jest.mock('@/lib/supabase', () => ({

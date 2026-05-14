@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import styles from "./Presentes.module.css";
-import { supabase } from '@/lib/supabase';
 import { CldUploadWidget } from 'next-cloudinary';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Convite, Presente } from '@/lib/types/database';
@@ -13,7 +12,9 @@ import EmotionalIntro from '@/components/gifts/EmotionalIntro';
 import FloatingBasket from '@/components/gifts/FloatingBasket';
 import MuralSection from '@/components/sections/MuralSection';
 import PaymentSelector from '@/components/gifts/PaymentSelector';
-import { giftService } from '@/services/giftService';
+import { giftService } from '@/lib/services/giftService';
+import { inviteService } from '@/lib/services/inviteService';
+import { configService } from '@/lib/services/configService';
 import { Telemetry } from '@/lib/services/telemetryService';
 
 interface Config {
@@ -164,12 +165,7 @@ export default function PresentesPage() {
       // For now, try to get invite data if exists
       let inviteData = null;
       if (inviteSlug && inviteSlug !== 'preview') {
-        const { data } = await supabase
-          .from('convites')
-          .select('*')
-          .eq('slug', inviteSlug)
-          .maybeSingle();
-        inviteData = data;
+        inviteData = await inviteService.getInviteBySlug(inviteSlug);
       }
 
       if (!inviteData && !previewMode) {
@@ -192,26 +188,16 @@ export default function PresentesPage() {
       }
 
       const [configRes, presentesRes] = await Promise.all([
-        supabase
-          .from('configuracoes')
-          .select('pix_chave, pix_banco, pix_nome, pix_tipo, accent_color')
-          .eq('evento_id', targetEventId)
-          .maybeSingle(),
-        supabase
-          .from('presentes')
-          // MODIFICADO PRD-12B: Carregar travas vigentes via JOIN
-          .select('*, presentes_locks(*)')
-          .eq('evento_id', targetEventId)
-          .neq('status', 'pausado')
-          .order('preco', { ascending: true })
+        configService.getConfig(targetEventId),
+        giftService.getPublicGifts(targetEventId)
       ]);
 
-      if (presentesRes.data) {
-        setPresentes(presentesRes.data as Presente[]);
+      if (presentesRes) {
+        setPresentes(presentesRes as Presente[]);
       }
       
-      if (configRes.data) {
-        setConfig(configRes.data as Config);
+      if (configRes) {
+        setConfig(configRes as Config);
       }
       
       setLoading(false);

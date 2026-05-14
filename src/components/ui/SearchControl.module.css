@@ -1,0 +1,35 @@
+.controlsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.searchBox {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 16px;
+  color: #1e293b;
+  font-size: 0.85rem;
+  width: 320px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.searchBox:focus {
+  border-color: var(--admin-accent, #C5A059);
+  box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15);
+}
+
+@media (max-width: 640px) {
+  .controlsRow {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  .searchBox {
+    width: 100%;
+  }
+}

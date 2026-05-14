@@ -56,3 +56,13 @@
 **Impacto:** Limita a capacidade de monitoramento ativo do catálogo e obriga manutenções diretas no banco de dados para limpezas em lote ou reinicializações do agente de cura.
 **Ação corretiva:** Projetar e especificar a PRD de Operações Globais (PRD-012-D), incluindo CRUD consolidado de catálogo e o botão de gatilho em massa para enfileiramento da cura autônoma (Refresh Curation Queue).
 **Status:** APLICADO
+
+## [2026-05-14] — Tipo: NEGÓCIO (DATA INSIGHTS & OPORTUNIDADES PRD-12)
+**Contexto:** Entrega Consolidada da Smart Gift List SaaS (PRD-12 A/B/C/D)
+**Problema:** Necessidade de estruturar e centralizar os caminhos de monetização e inteligência de negócios gerados pelo catálogo global e locks atômicos.
+**Impacto:** Desbloqueio de novas fontes de receita exponencial e dados de telemetria transacional valiosos para parcerias corporativas.
+**Ação corretiva:** Centralização de 3 principais alavancas estratégicas desbloqueadas:
+1. **📊 Telemetria de Consumo & Elasticidade de Preço:** Rastrear quais faixas de preço têm o menor "Checkout Idle Time" (tempo decorrido com lock ativo até confirmação). Esses dados servem de insumo para reordenar sugestões de presentes dinamicamente e otimizar o VPL (Valor Presente Líquido) do portfólio sugerido.
+2. **🎁 Group Gifting (Presente Coletivo Modular):** Aproveitar a tabela `presentes_locks` para criar "Locks Parciais" (cotas). Isso permite que presentes de alto valor (ex: Geladeiras de R$ 4.000) sejam fracionados em 10 cotas de R$ 400, mitigando a barreira de preço para convidados individuais e maximizando a taxa de preenchimento de itens caros.
+3. **📈 CPA Negotiation Data (Afiliados Diretos):** A estatística gerada pelo daemon de Auto-Cura (taxa de links quebrados substituídos por parceiros específicos) dá poder de barganha ao InviteEventAI para negociar contratos B2B DIRETOS de maior margem de comissão com a Lomadee, provando nossa capacidade de redirecionamento autônomo de demanda reprimida.
+**Status:** APLICADO

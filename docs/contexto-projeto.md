@@ -165,7 +165,9 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/prd/prd-014/plano-implementacao.md    | Arquiteto   | Desenho de banco, RPC de Lock Fracionado ACID e Services |
 | supabase/migrations/20260515133000_prd014_cotas_presentes.sql | DEV | Migração SQL que altera o esquema, cria triggers de cotas e RPC ACID de progresso |
 | docs/prd/prd-014/relatorio-qa-fase-1.md    | QA          | Relatório final de garantia de qualidade e verificação de critérios com veredito APROVADO |
-| docs/prd/prd-015/prd-inicial.md            | BA          | PRD Inicial do Booster de Conversão Emergencial & FOMO Ativo |
+| docs/prd/prd-015/fluxo-ux.md               | UX/UI       | Mapeamento detalhado das micro-animações de radar e badges |
+| docs/wireframes/booster-conversao-fomo.html| UX/UI       | Protótipo Interativo com Smart Sorting e Price Suggester |
+| docs/prd/prd-015/plano-implementacao.md    | Arquiteto   | Desenho da API de telemetria cacheada e algoritmos front |
 
 
 ## Última Atualização

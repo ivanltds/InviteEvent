@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protótipo Interativo — Booster de Conversão & FOMO (PRD-015)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #FDFBF9;
+            --accent: #C5A059;
+            --accent-rgb: 197, 160, 89;
+            --text-main: #1C1A17;
+            --text-muted: #7E766B;
+            --fomo-hot: #F97316;
+            --fomo-pulse: #EF4444;
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --shadow-soft: 0 20px 40px rgba(28, 26, 23, 0.05);
+            --shadow-gold: 0 10px 25px rgba(197, 160, 89, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            overflow-x: hidden;
+            padding-bottom: 100px;
+        }
+
+        header {
+            background: linear-gradient(to bottom, #ffffff, var(--bg-base));
+            padding: 60px 20px 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 50px;
+        }
+
+        button.toggle-btn {
+            padding: 12px 24px;
+            border: 1.5px solid rgba(0,0,0,0.08);
+            border-radius: 30px;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+
+        button.toggle-btn:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        }
+
+        button.toggle-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            box-shadow: var(--shadow-gold);
+        }
+
+        /* Grid Container */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 35px;
+            transition: all 0.5s ease;
+        }
+
+        /* Premium Gift Card */
+        .card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid rgba(197, 160, 89, 0.08);
+            box-shadow: var(--shadow-soft);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 420px;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(28, 26, 23, 0.1);
+            border-color: rgba(197, 160, 89, 0.3);
+        }
+
+        /* Media area */
+        .card-media {
+            height: 220px;
+            background: #F3F0EB;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .card:hover .card-media img {
+            transform: scale(1.05);
+        }
+
+        /* Content info */
+        .card-body {
+            padding: 24px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .card-price {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--accent);
+            margin-bottom: auto;
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: #1C1A17;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+        }
+
+        .btn-action:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        /* ==================== PRD-015: FOMO & BADGES CSS ==================== */
+        
+        /* 1. Floating Badges */
+        .fomo-badge {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            z-index: 10;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            animation: badgeEntrance 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        @keyframes badgeEntrance {
+            from { transform: scale(0.5) translateY(-10px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        /* Selo Favorito 🔥 */
+        .fomo-favorite {
+            background: linear-gradient(135deg, #FF8C00, #FF4500);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* Selo Destaque ⭐ */
+        .fomo-weekly {
+            background: linear-gradient(135deg, #D4AF37, #AA771C);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* Pulsar Animation for Hot Icon */
+        .icon-pulse {
+            display: inline-block;
+            animation: heartbeat 1.5s infinite alternate;
+        }
+
+        @keyframes heartbeat {
+            to { transform: scale(1.25); }
+        }
+
+        /* 2. Real-time Viewers Alert (Overlay bottom of media) */
+        .fomo-live-viewers {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(28, 26, 23, 0.85);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 10px 16px;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 5;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            animation: slideUp 0.4s ease-out forwards;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #EF4444;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .live-dot::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: inherit;
+            border-radius: inherit;
+            animation: radarPulse 1.5s infinite;
+            left: 0;
+            top: 0;
+        }
+
+        @keyframes radarPulse {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(3.5); opacity: 0; }
+        }
+
+        /* ==================== PRD-015: ADMIN PRICE SUGGESTER ==================== */
+        .admin-section {
+            margin-top: 80px;
+            border-top: 2px dashed rgba(197, 160, 89, 0.2);
+            padding-top: 60px;
+        }
+
+        .admin-card-banner {
+            background: linear-gradient(135deg, #1C1A17 0%, #2D2A25 100%);
+            color: white;
+            border-radius: 24px;
+            padding: 35px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(197,160,89,0.3);
+        }
+
+        .admin-card-banner::before {
+            content: '💡';
+            position: absolute;
+            right: -20px;
+            bottom: -20px;
+            font-size: 150px;
+            opacity: 0.05;
+            transform: rotate(-15deg);
+        }
+
+        .banner-info {
+            max-width: 60%;
+        }
+
+        .banner-badge {
+            background: rgba(197, 160, 89, 0.2);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .banner-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .banner-text {
+            color: #A39B90;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .banner-text strong {
+            color: white;
+        }
+
+        .banner-cta {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 220px;
+        }
+
+        .btn-suggester {
+            background: var(--accent);
+            color: white;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            box-shadow: var(--shadow-gold);
+            font-family: inherit;
+        }
+
+        .btn-suggester:hover {
+            transform: translateY(-3px);
+            filter: brightness(1.1);
+            box-shadow: 0 15px 30px rgba(197,160,89,0.3);
+        }
+
+        .btn-dismiss {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #A39B90;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-dismiss:hover {
+            color: white;
+            border-color: white;
+        }
+
+        /* Responsive admin */
+        @media (max-width: 768px) {
+            .admin-card-banner {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 30px;
+            }
+            .banner-info {
+                max-width: 100%;
+            }
+            .banner-cta {
+                width: 100%;
+            }
+        }
+
+        /* Success state simulation */
+        .success-pulse {
+            animation: successFlash 1.5s ease;
+        }
+
+        @keyframes successFlash {
+            0% { box-shadow: 0 0 0 0px rgba(197,160,89,0.7); }
+            100% { box-shadow: 0 0 0 30px rgba(197,160,89,0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ======================== VITRINE PÚBLICA ======================== -->
+    <header>
+        <div style="display: inline-block; background: #F1EDE6; padding: 8px 16px; border-radius: 50px; font-size: 12px; font-weight: 600; margin-bottom: 20px;">
+            💻 VISÃO DO CONVIDADO
+        </div>
+        <h1>Nossa Vitrine de Presentes</h1>
+        <p class="subtitle">Demonstração interativa do algoritmo de ordenação por engajamento da telemetria.</p>
+
+        <div class="controls">
+            <button class="toggle-btn active" id="btnStandard" onclick="toggleMode('standard')">
+                📂 Ordenação Tradicional (Inserção)
+            </button>
+            <button class="toggle-btn" id="btnSmart" onclick="toggleMode('smart')">
+                ✨ Ordenação Smart AI (Telemetria)
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="grid" id="giftGrid">
+            <!-- Os cards serão injetados dinamicamente pelo Script -->
+        </div>
+    </div>
+
+    <!-- ======================== PAINEL ADMIN ======================== -->
+    <div class="container admin-section">
+        <div style="text-align: center; margin-bottom: 40px;">
+            <div style="display: inline-block; background: #E6EDF1; padding: 8px 16px; border-radius: 50px; font-size: 12px; font-weight: 600; margin-bottom: 20px; color: #0E7490;">
+                🔒 VISÃO DO ORGANIZADOR (DASHBOARD)
+            </div>
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 2.2rem;">Consultor de Performance</h2>
+        </div>
+
+        <div class="admin-card-banner" id="suggesterBanner">
+            <div class="banner-info">
+                <div class="banner-badge">🚨 ALERTA DE CONVERSÃO</div>
+                <h3 class="banner-title">Destrave seus primeiros presentes!</h3>
+                <p class="banner-text">
+                    Notamos que o item <strong>"Geladeira Side by Side"</strong> (R$ 2.500,00) já teve 12 visualizações, mas nenhuma compra. 
+                    Casamentos a menos de 30 dias faturam **35% mais rápido** ao dividir itens de alto valor.
+                </p>
+            </div>
+            <div class="banner-cta">
+                <button class="btn-suggester" onclick="applySuggestion()">
+                    🪄 Dividir em 10x Cotas de R$ 250
+                </button>
+                <button class="btn-dismiss" onclick="dismissSuggestion()">
+                    Ignorar recomendação
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock de Dados Hydrados
+        const giftData = [
+            {
+                id: 'item-1',
+                title: 'Jogo de Pratos Clássicos',
+                price: 'R$ 450,00',
+                image: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=600&q=80',
+                orderNormal: 1,
+                scoreTelemetry: 10, // Baixo
+                badge: null,
+                liveViewers: 0
+            },
+            {
+                id: 'item-2',
+                title: 'Cafeteira Nespresso Vertuo',
+                price: 'R$ 890,00',
+                image: 'https://images.unsplash.com/photo-1517914309067-b2c5e04f0a36?auto=format&fit=crop&w=600&q=80',
+                orderNormal: 2,
+                scoreTelemetry: 95, // ALTÍSSIMO (Favorito 🔥)
+                badge: 'favorite',
+                liveViewers: 3
+            },
+            {
+                id: 'item-3',
+                title: 'Conjunto de Toalhas Egípcias',
+                price: 'R$ 320,00',
+                image: 'https://images.unsplash.com/photo-1596300919357-77dbd158c7b8?auto=format&fit=crop&w=600&q=80',
+                orderNormal: 3,
+                scoreTelemetry: 12, // Baixo
+                badge: null,
+                liveViewers: 0
+            },
+            {
+                id: 'item-4',
+                title: 'Robô Aspirador Inteligente',
+                price: 'R$ 1.200,00',
+                image: 'https://images.unsplash.com/photo-1518135714426-c18f5ffb6f4d?auto=format&fit=crop&w=600&q=80',
+                orderNormal: 4,
+                scoreTelemetry: 70, // ALTO (Destaque ⭐)
+                badge: 'weekly',
+                liveViewers: 2
+            }
+        ];
+
+        let currentMode = 'standard';
+
+        function renderGrid() {
+            const grid = document.getElementById('giftGrid');
+            grid.innerHTML = '';
+
+            // Ordenação condicional
+            let sortedData = [...giftData];
+            if (currentMode === 'smart') {
+                sortedData.sort((a, b) => b.scoreTelemetry - a.scoreTelemetry);
+            } else {
+                sortedData.sort((a, b) => a.orderNormal - b.orderNormal);
+            }
+
+            sortedData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.animationDelay = `${index * 100}ms`;
+
+                let badgeHtml = '';
+                if (currentMode === 'smart') {
+                    if (item.badge === 'favorite') {
+                        badgeHtml = `<div class="fomo-badge fomo-favorite"><span class="icon-pulse">🔥</span> Favorito da Lista</div>`;
+                    } else if (item.badge === 'weekly') {
+                        badgeHtml = `<div class="fomo-badge fomo-weekly"><span class="icon-pulse">⭐</span> Em Alta na Semana</div>`;
+                    }
+                }
+
+                let liveViewersHtml = '';
+                if (currentMode === 'smart' && item.liveViewers > 0) {
+                    liveViewersHtml = `
+                        <div class="fomo-live-viewers">
+                            <div class="live-dot"></div>
+                            ${item.liveViewers} pessoas estão vendo agora
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="card-media">
+                        ${badgeHtml}
+                        <img src="${item.image}" alt="${item.title}">
+                        ${liveViewersHtml}
+                    </div>
+                    <div class="card-body">
+                        <h4 class="card-title">${item.title}</h4>
+                        <p class="card-price">${item.price}</p>
+                        <button class="btn-action">Adicionar à cesta</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleMode(mode) {
+            currentMode = mode;
+            document.getElementById('btnStandard').classList.toggle('active', mode === 'standard');
+            document.getElementById('btnSmart').classList.toggle('active', mode === 'smart');
+            
+            // Animação suave de transição de Grid
+            const grid = document.getElementById('giftGrid');
+            grid.style.opacity = '0';
+            grid.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                renderGrid();
+                grid.style.opacity = '1';
+                grid.style.transform = 'translateY(0)';
+            }, 300);
+        }
+
+        function applySuggestion() {
+            const banner = document.getElementById('suggesterBanner');
+            banner.innerHTML = `
+                <div class="banner-info" style="max-width: 100%; text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 15px;">✨🏆✨</div>
+                    <h3 class="banner-title">Sugestão Aplicada com Sucesso!</h3>
+                    <p class="banner-text">
+                        O item "Geladeira Side by Side" agora permite cotas fracionadas na Vitrine.
+                    </p>
+                </div>
+            `;
+            banner.classList.add('success-pulse');
+            
+            setTimeout(() => {
+                banner.style.transition = 'all 0.5s ease';
+                banner.style.maxHeight = '0';
+                banner.style.padding = '0';
+                banner.style.opacity = '0';
+                banner.style.margin = '0';
+                banner.style.border = 'none';
+                setTimeout(() => banner.remove(), 500);
+            }, 2000);
+        }
+
+        function dismissSuggestion() {
+            const banner = document.getElementById('suggesterBanner');
+            banner.style.transition = 'all 0.5s ease';
+            banner.style.maxHeight = '0';
+            banner.style.padding = '0';
+            banner.style.opacity = '0';
+            banner.style.margin = '0';
+            banner.style.border = 'none';
+            setTimeout(() => banner.remove(), 500);
+        }
+
+        // Início
+        renderGrid();
+    </script>
+</body>
+</html>

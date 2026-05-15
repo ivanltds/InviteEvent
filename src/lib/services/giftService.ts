@@ -1,6 +1,14 @@
 import { supabase } from '@/lib/supabase';
 import { Presente, PresenteCategoria, PresenteLock, Comprovante } from '@/lib/types/database';
 
+export interface GiftProgress {
+  total_cotas: number;
+  cotas_compradas: number;
+  cotas_bloqueadas: number;
+  disponivel: number;
+  link_externo?: string | null;
+}
+
 export interface ReserveGiftsParams {
   presentesIds: string[];
   urlComprovante: string;
@@ -277,6 +285,126 @@ export const giftService = {
     });
 
     if (error) throw error;
+  },
+
+  async getGiftProgress(presenteId: string): Promise<GiftProgress | null> {
+    const { data: gift, error: giftError } = await supabase
+      .from('presentes')
+      .select('total_cotas, cotas_compradas, permite_cotas, link_externo')
+      .eq('id', presenteId)
+      .single();
+
+    if (giftError || !gift) {
+      console.error('Erro ao buscar progresso do presente:', giftError);
+      return null;
+    }
+
+    const { data: locks, error: locksError } = await supabase
+      .from('presentes_locks')
+      .select('quantidade_cotas')
+      .eq('presente_id', presenteId)
+      .gt('expira_em', new Date().toISOString());
+
+    if (locksError) {
+      console.error('Erro ao buscar locks ativos para progresso:', locksError);
+      return null;
+    }
+
+    const cotas_bloqueadas = (locks || []).reduce((acc, curr) => acc + (Number(curr.quantidade_cotas) || 0), 0);
+    const total_cotas = Number(gift.total_cotas) || 0;
+    const cotas_compradas = Number(gift.cotas_compradas) || 0;
+    const disponivel = total_cotas - (cotas_compradas + cotas_bloqueadas);
+
+    // Regra ACID: Ocultar link de afiliado externo caso haja vendas efetuadas
+    const showExternalLink = cotas_compradas === 0;
+    const link_externo = showExternalLink ? gift.link_externo : null;
+
+    return {
+      total_cotas,
+      cotas_compradas,
+      cotas_bloqueadas,
+      disponivel: disponivel < 0 ? 0 : disponivel,
+      link_externo
+    };
+  },
+
+  async reserveGiftFraction(presenteId: string, quantidadeSolicitada: number, conviteId: string, sessionId: string): Promise<boolean> {
+    const { data, error } = await supabase.rpc('reservar_cotas_presente', {
+      p_presente_id: presenteId,
+      p_convite_id: conviteId,
+      p_session_id: sessionId,
+      p_quantidade_solicitada: quantidadeSolicitada
+    });
+
+    if (error) {
+      console.error('Erro transacional ao reservar fração de cotas:', error);
+      return false;
+    }
+
+    return !!data;
+  },
+
+  async updateGiftQuotaConfiguration(presenteId: string, permiteCotas: boolean, totalCotas?: number | null): Promise<{ success: boolean; error?: Error | null }> {
+    if (!permiteCotas) {
+      return this.updateGift(presenteId, {
+        permite_cotas: false,
+        total_cotas: null,
+      });
+    }
+
+    if (!totalCotas || totalCotas < 2) {
+      return { success: false, error: new Error('O fracionamento exige o mínimo de 2 cotas.') };
+    }
+
+    const { data: gift, error: giftError } = await supabase
+      .from('presentes')
+      .select('preco')
+      .eq('id', presenteId)
+      .single();
+
+    if (giftError || !gift) {
+      return { success: false, error: new Error('Presente não localizado.') };
+    }
+
+    const valorPorCota = Number(gift.preco) / totalCotas;
+    if (valorPorCota < 50) {
+      return { 
+        success: false, 
+        error: new Error(`Violação de Regra de Negócio: O valor mínimo por cota deve ser de R$ 50,00. Essa configuração geraria cotas de R$ ${valorPorCota.toFixed(2)}.`) 
+      };
+    }
+
+    return this.updateGift(presenteId, {
+      permite_cotas: true,
+      total_cotas: totalCotas,
+    });
+  },
+
+  async reserveQuotaFinalization(params: {
+    presenteId: string;
+    urlComprovante: string;
+    quantidadeCotas: number;
+    conviteId?: string;
+    eventoId?: string;
+    convidadoNome?: string;
+    mensagem?: string;
+  }): Promise<boolean> {
+    const { data, error } = await supabase.rpc('reservar_cotas_finalizar', {
+      p_presente_id: params.presenteId,
+      p_url_comprovante: params.urlComprovante,
+      p_quantidade_cotas: params.quantidadeCotas,
+      p_convite_id: params.conviteId,
+      p_evento_id: params.eventoId,
+      p_convidado_nome: params.convidadoNome || 'Convidado via Site',
+      p_mensagem: params.mensagem
+    });
+
+    if (error) {
+      console.error('Erro ao finalizar reserva de cotas:', error);
+      return false;
+    }
+
+    return !!data;
   },
 
   // --- OPERAÇÕES DE ADMINISTRAÇÃO CONSOLIDADA ---

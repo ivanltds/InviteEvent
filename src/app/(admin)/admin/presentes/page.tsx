@@ -29,6 +29,9 @@ interface Presente {
     convite_id?: string;
     convite?: { nome_principal: string } | null;
   }[];
+  permite_cotas?: boolean;
+  total_cotas?: number;
+  cotas_compradas?: number;
 }
 
 interface UnifiedSuggestion {
@@ -120,7 +123,9 @@ export default function AdminPresentes() {
     status: 'disponivel' as Presente['status'],
     quantidade_total: 1,
     link_externo: '',
-    categoria_id: ''
+    categoria_id: '',
+    permite_cotas: false,
+    total_cotas: 1
   });
   const [originalDataStr, setOriginalDataStr] = useState<string>('');
   const [pendingNavUrl, setPendingNavUrl] = useState<string | null>(null);
@@ -279,7 +284,9 @@ export default function AdminPresentes() {
       status: 'disponivel' as const, 
       quantidade_total: 1, 
       link_externo: '',
-      categoria_id: ''
+      categoria_id: '',
+      permite_cotas: false,
+      total_cotas: 2
     };
     setFormData(init);
     setOriginalDataStr(JSON.stringify(init));
@@ -298,7 +305,9 @@ export default function AdminPresentes() {
       status: item.status,
       quantidade_total: item.quantidade_total,
       link_externo: item.link_externo || '',
-      categoria_id: item.categoria_id || ''
+      categoria_id: item.categoria_id || '',
+      permite_cotas: item.permite_cotas || false,
+      total_cotas: item.total_cotas || 2
     };
     setFormData(init);
     setOriginalDataStr(JSON.stringify(init));
@@ -308,6 +317,15 @@ export default function AdminPresentes() {
   const handleSave = async () => {
     if (!currentEvent) return;
     setLoading(true);
+    
+    if (formData.permite_cotas) {
+      const valPerCota = Number(formData.preco) / (Number(formData.total_cotas) || 1);
+      if (valPerCota < 50) {
+        triggerToast('❌ O valor de cada cota deve ser de no mínimo R$ 50,00.');
+        setLoading(false);
+        return;
+      }
+    }
     
     const qtyTotal = Number(formData.quantidade_total);
     const qtyReservada = editingItem ? editingItem.quantidade_reservada : 0;
@@ -322,10 +340,12 @@ export default function AdminPresentes() {
       descricao: formData.descricao.trim(),
       imagem_url: formData.imagem_url,
       status: newStatus,
-      quantidade_total: qtyTotal,
+      quantidade_total: formData.permite_cotas ? 1 : qtyTotal,
       link_externo: formData.link_externo.trim() || null,
       categoria_id: formData.categoria_id || null,
-      evento_id: currentEvent.id
+      evento_id: currentEvent.id,
+      permite_cotas: formData.permite_cotas,
+      total_cotas: formData.permite_cotas ? Number(formData.total_cotas) : null
     };
 
     if (editingItem) {
@@ -508,7 +528,12 @@ export default function AdminPresentes() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
                       <h3 className={styles.cardTitle}>{item.nome}</h3>
                       {/* 🚨 Null Safety para Produção: Se item legado sem categoria chegar, vira badge 'Geral' */}
-                      <span className={styles.miniBadge}>{item.categoria?.nome ?? 'Geral'}</span>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        {item.permite_cotas && (
+                          <span className={styles.miniBadge} style={{ background: '#e0f2fe', color: '#0369a1', fontWeight: 700 }}>Cotas ({item.cotas_compradas || 0}/{item.total_cotas})</span>
+                        )}
+                        <span className={styles.miniBadge}>{item.categoria?.nome ?? 'Geral'}</span>
+                      </div>
                     </div>
                     <span className={styles.cardPrice}>{Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                     <div className={styles.cardMeta}>
@@ -769,7 +794,11 @@ export default function AdminPresentes() {
                   
                   <div className={styles.detailMetaItem}>
                     <span>Disponibilidade</span>
-                    <span>{detailItem.quantidade_total - detailItem.quantidade_reservada} de {detailItem.quantidade_total} unidades</span>
+                    {detailItem.permite_cotas ? (
+                      <span>{detailItem.total_cotas! - (detailItem.cotas_compradas || 0)} de {detailItem.total_cotas} cotas restantes</span>
+                    ) : (
+                      <span>{detailItem.quantidade_total - detailItem.quantidade_reservada} de {detailItem.quantidade_total} unidades</span>
+                    )}
                   </div>
                   
                   {detailItem.link_externo && (
@@ -860,7 +889,65 @@ export default function AdminPresentes() {
                 </div>
                 <div className={styles.fieldGroup}>
                   <label>Quantidade Total</label>
-                  <input type="number" min="1" value={formData.quantidade_total} onChange={(e) => setFormData({...formData, quantidade_total: parseInt(e.target.value) || 1})} />
+                  <input 
+                    type="number" 
+                    min="1" 
+                    disabled={formData.permite_cotas}
+                    value={formData.permite_cotas ? 1 : formData.quantidade_total} 
+                    onChange={(e) => setFormData({...formData, quantidade_total: parseInt(e.target.value) || 1})} 
+                    style={formData.permite_cotas ? { background: '#f1f5f9', cursor: 'not-allowed' } : {}}
+                  />
+                </div>
+                <div className={`${styles.fieldGroup} ${styles.fullWidth}`} style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={formData.permite_cotas} 
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setFormData({
+                          ...formData, 
+                          permite_cotas: checked,
+                          quantidade_total: checked ? 1 : formData.quantidade_total,
+                          total_cotas: checked ? 2 : formData.total_cotas
+                        });
+                      }}
+                      style={{ width: '18px', height: '18px' }}
+                    />
+                    <div>
+                      <div style={{ fontWeight: 600, color: '#1e293b' }}>Dividir em Cotas Coletivas 🤝</div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 400 }}>Múltiplos convidados presenteiam com cotas através de Pix.</div>
+                    </div>
+                  </label>
+
+                  {formData.permite_cotas && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingTop: '12px', borderTop: '1px solid #e2e8f0', marginTop: '12px' }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Nº de Divisões (Cotas)</label>
+                        <input 
+                          type="number" 
+                          min="2" 
+                          max="200"
+                          value={formData.total_cotas} 
+                          onChange={(e) => setFormData({...formData, total_cotas: parseInt(e.target.value) || 2})}
+                          style={{ marginTop: '6px' }}
+                        />
+                      </div>
+                      <div style={{ flex: 1, background: '#ffffff', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>VALOR POR COTA</div>
+                        <div style={{ 
+                          fontSize: '1.1rem', 
+                          fontWeight: 700, 
+                          color: (Number(formData.preco) / (Number(formData.total_cotas) || 1)) < 50 ? '#e11d48' : '#059669' 
+                        }}>
+                          {(Number(formData.preco) / (Number(formData.total_cotas) || 1)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        </div>
+                        {(Number(formData.preco) / (Number(formData.total_cotas) || 1)) < 50 && (
+                          <div style={{ fontSize: '0.65rem', color: '#e11d48', marginTop: '2px', fontWeight: 600 }}>Mínimo de R$ 50,00</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className={`${styles.fieldGroup} ${styles.fullWidth}`}>
                   <label>Categoria do Presente</label>

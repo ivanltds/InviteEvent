@@ -85,6 +85,10 @@ export interface Presente {
   user_id?: string;
   categoria_id?: string | null;
   base_id?: string | null;
+  // Campos de Cotas (PRD-014)
+  permite_cotas?: boolean;
+  total_cotas?: number | null;
+  cotas_compradas?: number;
   // Relacionamento mapeado para joins no Supabase client
   categoria?: PresenteCategoria | null;
   presentes_locks?: PresenteLock[];
@@ -97,6 +101,7 @@ export interface PresenteLock {
   convite_id?: string;
   expira_em: string;
   criado_em?: string;
+  quantidade_cotas?: number; // PRD-014
 }
 
 export interface PresenteCategoria {
@@ -129,6 +134,7 @@ export interface Comprovante {
   url_comprovante: string;
   mensagem?: string;
   created_at?: string;
+  cotas_pagas?: number; // PRD-014
 }
 
 export interface Configuracao {
@@ -208,6 +214,15 @@ export interface DatabaseRPCs {
       p_mensagem?: string;
     };
     Returns: { success: boolean; message: string };
+  };
+  reservar_cotas_presente: {
+    Args: {
+      p_presente_id: string;
+      p_convite_id: string;
+      p_session_id: string;
+      p_quantidade_solicitada: number;
+    };
+    Returns: boolean;
   };
 }
 

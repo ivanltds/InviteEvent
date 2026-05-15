@@ -12,7 +12,7 @@ import EmotionalIntro from '@/components/gifts/EmotionalIntro';
 import FloatingBasket from '@/components/gifts/FloatingBasket';
 import MuralSection from '@/components/sections/MuralSection';
 import PaymentSelector from '@/components/gifts/PaymentSelector';
-import { giftService } from '@/lib/services/giftService';
+import { giftService, GiftProgress } from '@/lib/services/giftService';
 import { inviteService } from '@/lib/services/inviteService';
 import { configService } from '@/lib/services/configService';
 import { Telemetry } from '@/lib/services/telemetryService';
@@ -58,6 +58,13 @@ export default function PresentesPage() {
   const [linkValidationFailed, setLinkValidationFailed] = useState(false);
   const [search, setSearch] = useState('');
 
+  // NOVOS ESTADOS PRD-014 (Gestão de Cotas na UI Pública)
+  const [quotaProgress, setQuotaProgress] = useState<GiftProgress | null>(null);
+  const [selectedQuotas, setSelectedQuotas] = useState(1);
+  const [isQuotaFlow, setIsQuotaFlow] = useState(false);
+  const [isReservingQuotaLock, setIsReservingQuotaLock] = useState(false);
+  const [quotaSelectedGift, setQuotaSelectedGift] = useState<Presente | null>(null);
+
   // Busca reativa inteligente para os convidados
   const filteredPresentes = useMemo(() => {
     const q = search.toLowerCase();
@@ -102,6 +109,19 @@ export default function PresentesPage() {
     const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // PRD-014: Sincronizador dinâmico do progresso de cotas
+  useEffect(() => {
+    if (selectedGift && selectedGift.permite_cotas) {
+      setSelectedQuotas(1);
+      setQuotaProgress(null);
+      giftService.getGiftProgress(selectedGift.id).then(res => {
+        if (res) setQuotaProgress(res);
+      });
+    } else {
+      setQuotaProgress(null);
+    }
+  }, [selectedGift]);
 
   // Controle do Contador e Redirecionamento Intersticial (Story-Redir)
   // Modificado no PRD-12C para cessar redirecionamento se acusar linkQuebrado
@@ -213,8 +233,12 @@ export default function PresentesPage() {
   }, []);
 
   const totalCartValue = useMemo(() => {
+    if (isQuotaFlow && quotaSelectedGift) {
+      const valorCota = Number(quotaSelectedGift.preco) / (Number(quotaSelectedGift.total_cotas) || 1);
+      return valorCota * selectedQuotas;
+    }
     return cart.reduce((acc, item) => acc + Number(item.preco), 0);
-  }, [cart]);
+  }, [cart, isQuotaFlow, quotaSelectedGift, selectedQuotas]);
 
   const toggleToCart = (item: Presente) => {
     if (cart.find(p => p.id === item.id)) {
@@ -430,6 +454,40 @@ export default function PresentesPage() {
     setShowModal(true);
   };
 
+  const handleReserveQuotaAndCheckout = async () => {
+    if (!selectedGift) return;
+    
+    setIsReservingQuotaLock(true);
+    
+    try {
+      let success = true;
+      if (!isPreview) {
+        success = await giftService.reserveGiftFraction(
+          selectedGift.id, 
+          selectedQuotas, 
+          invite?.id || '', 
+          guestSessionId
+        );
+      }
+      
+      if (!success) {
+        alert('Desculpe, não há cotas disponíveis suficientes no momento ou outro convidado acabou de reservar.');
+        setIsReservingQuotaLock(false);
+        return;
+      }
+      
+      setQuotaSelectedGift(selectedGift);
+      setIsQuotaFlow(true);
+      setStep('checkout');
+      setShowModal(true);
+      setSelectedGift(null);
+    } catch (err) {
+      console.error('Erro ao travar cota temporária:', err);
+    } finally {
+      setIsReservingQuotaLock(false);
+    }
+  };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setPixCopyStatus('copied');
@@ -447,9 +505,18 @@ export default function PresentesPage() {
       let success = false;
       
       if (isPreview) {
-        // SIMULAÇÃO PURA: Aguarda 1s para efeito
         await new Promise(resolve => setTimeout(resolve, 1500));
         success = true;
+      } else if (isQuotaFlow && quotaSelectedGift) {
+        success = await giftService.reserveQuotaFinalization({
+          presenteId: quotaSelectedGift.id,
+          urlComprovante: proofUrl,
+          quantidadeCotas: selectedQuotas,
+          conviteId: invite?.id,
+          eventoId: invite?.evento_id,
+          convidadoNome: invite?.nome_principal || 'Convidado via Site',
+          mensagem: specialMessage
+        });
       } else {
         const response = await giftService.reserveGifts({
           presentesIds: cart.map(p => p.id),
@@ -463,7 +530,6 @@ export default function PresentesPage() {
       }
 
       if (!success) {
-        // Telemetria: falha no pagamento (retry tracking)
         if (eventoId && !isPreview) {
           Telemetry.track({
             eventoId,
@@ -475,7 +541,6 @@ export default function PresentesPage() {
         return;
       }
 
-      // Telemetria: compra convertida com sucesso
       if (eventoId && !isPreview) {
         Telemetry.track({
           eventoId,
@@ -483,36 +548,49 @@ export default function PresentesPage() {
           eventType: 'payment_success',
           metadata: {
             total_attempts: paymentAttemptRef.current,
-            cart_item_count: cart.length,
-            cart_total_value: cart.reduce((acc, p) => acc + Number(p.preco), 0),
-            cart_item_ids: cart.map(p => p.id),
-            multi_item_purchase: cart.length > 1,
+            cart_item_count: isQuotaFlow ? 1 : cart.length,
+            cart_total_value: totalCartValue,
+            is_quota: isQuotaFlow,
           },
         });
       }
 
-      // Limpar eventuais locks de 3h ativos desta sessão já que a compra foi consumada (Soberania do PIX)
-      if (!isPreview) {
+      if (!isPreview && !isQuotaFlow) {
         cart.forEach(p => {
           giftService.unlockGift(p.id, guestSessionId).catch(() => {});
         });
       }
 
-      // Atualização local
-      const updatedIds = cart.map(p => p.id);
-      setPresentes(prev => prev.map(p => {
-        if (updatedIds.includes(p.id)) {
-          const newQty = p.quantidade_reservada + 1;
-          // Modificado: Limpar lock local também para manter consistência instantânea no re-render
-          return { 
-            ...p, 
-            quantidade_reservada: newQty, 
-            status: newQty >= p.quantidade_total ? 'reservado' : 'disponivel',
-            presentes_locks: (p.presentes_locks || []).filter(l => l.session_id !== guestSessionId)
-          };
-        }
-        return p;
-      }));
+      // Atualização local reativa para ambos os cenários
+      if (isQuotaFlow && quotaSelectedGift) {
+        setPresentes(prev => prev.map(p => {
+          if (p.id === quotaSelectedGift.id) {
+            const currentBought = Number(p.cotas_compradas) || 0;
+            const newBought = currentBought + selectedQuotas;
+            const total = Number(p.total_cotas) || 1;
+            return {
+              ...p,
+              cotas_compradas: newBought,
+              status: newBought >= total ? 'esgotado' : 'disponivel'
+            };
+          }
+          return p;
+        }));
+      } else {
+        const updatedIds = cart.map(p => p.id);
+        setPresentes(prev => prev.map(p => {
+          if (updatedIds.includes(p.id)) {
+            const newQty = p.quantidade_reservada + 1;
+            return { 
+              ...p, 
+              quantidade_reservada: newQty, 
+              status: newQty >= p.quantidade_total ? 'reservado' : 'disponivel',
+              presentes_locks: (p.presentes_locks || []).filter(l => l.session_id !== guestSessionId)
+            };
+          }
+          return p;
+        }));
+      }
 
       setStep('success');
       paymentAttemptRef.current = 0; // reset para próxima compra
@@ -676,6 +754,11 @@ export default function PresentesPage() {
                         Selecionado ✓
                       </span>
                     )}
+                    {item.permite_cotas && !inCart && (
+                      <span className={styles.selectedBadge} style={{ background: '#0284c7', fontWeight: 700 }}>
+                        COLETIVO 🤝
+                      </span>
+                    )}
                     {isLockedByMe && !inCart && (
                       <span className={styles.selectedBadge} style={{ background: '#10b981', fontWeight: 700, border: '1px solid rgba(255,255,255,0.4)' }}>
                         SUA RESERVA ⏳
@@ -711,6 +794,23 @@ export default function PresentesPage() {
                       )}
                       R$ {Number(item.preco).toFixed(2).replace('.', ',')}
                     </div>
+
+                    {item.permite_cotas && (
+                      <div style={{ margin: '12px 0', fontSize: '0.75rem' }}>
+                        <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden', border: '1px solid #e2e8f0', position: 'relative' }}>
+                          <div style={{ 
+                            height: '100%', 
+                            width: `${Math.min(100, ((item.cotas_compradas || 0) / (item.total_cotas || 1)) * 100)}%`, 
+                            background: config?.accent_color || '#C5A059',
+                            transition: 'width 0.3s ease'
+                          }} />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#71717a', marginTop: '4px', fontWeight: 600 }}>
+                          <span>{item.cotas_compradas || 0}/{item.total_cotas} cotas</span>
+                          <span>{Math.round(((item.cotas_compradas || 0) / (item.total_cotas || 1)) * 100)}%</span>
+                        </div>
+                      </div>
+                    )}
                     
                     <div className={styles.itemActions}>
                       <button 
@@ -846,38 +946,142 @@ export default function PresentesPage() {
                 )}
 
                 <div className={styles.modalActions} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {/* BLOCO DE COTAS PRD-014 */}
+                  {selectedGift.permite_cotas && (
+                    <div style={{
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '16px',
+                      padding: '20px',
+                      marginBottom: '8px',
+                      textAlign: 'left'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <span style={{ fontWeight: 600, color: '#334155', fontSize: '0.9rem' }}>Presente em Cotas</span>
+                        <span style={{ background: '#e0f2fe', color: '#0369a1', fontSize: '0.75rem', fontWeight: 700, padding: '4px 8px', borderRadius: '20px' }}>
+                          COLETIVO
+                        </span>
+                      </div>
+
+                      {quotaProgress && (
+                        <div style={{ marginBottom: '16px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#64748b', marginBottom: '6px' }}>
+                            <span>{quotaProgress.cotas_compradas} de {quotaProgress.total_cotas} cotas compradas</span>
+                            <span>{Math.round(((quotaProgress.cotas_compradas) / quotaProgress.total_cotas) * 100)}%</span>
+                          </div>
+                          <div style={{ height: '8px', background: '#e2e8f0', borderRadius: '10px', overflow: 'hidden' }}>
+                            <div style={{ 
+                              height: '100%', 
+                              width: `${Math.min(100, ((quotaProgress.cotas_compradas) / quotaProgress.total_cotas) * 100)}%`, 
+                              background: config?.accent_color || '#C5A059',
+                              borderRadius: '10px',
+                              transition: 'width 0.3s ease' 
+                            }}></div>
+                          </div>
+                          {quotaProgress.cotas_bloqueadas > 0 && (
+                            <div style={{ fontSize: '0.75rem', color: '#d97706', marginTop: '4px', fontStyle: 'italic' }}>
+                              🔒 {quotaProgress.cotas_bloqueadas} cota(s) reservada(s) temporariamente por outros
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <div style={{ background: '#FFFFFF', padding: '14px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                        <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '10px', fontWeight: 500 }}>Quantas cotas deseja dar?</div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '4px' }}>
+                            <button 
+                              type="button"
+                              onClick={() => setSelectedQuotas(prev => Math.max(1, prev - 1))}
+                              style={{ width: '32px', height: '32px', border: 'none', background: '#f1f5f9', fontWeight: 700, borderRadius: '6px', cursor: 'pointer' }}
+                            >
+                              -
+                            </button>
+                            <span style={{ fontSize: '1.1rem', fontWeight: 600 }}>{selectedQuotas}</span>
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                const maxAvail = quotaProgress ? quotaProgress.disponivel : (Number(selectedGift.total_cotas) || 99);
+                                setSelectedQuotas(prev => Math.min(maxAvail > 0 ? maxAvail : 99, prev + 1));
+                              }}
+                              style={{ width: '32px', height: '32px', border: 'none', background: '#f1f5f9', fontWeight: 700, borderRadius: '6px', cursor: 'pointer' }}
+                            >
+                              +
+                            </button>
+                          </div>
+                          
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Total Parcial</div>
+                            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a' }}>
+                              {((Number(selectedGift.preco) / (Number(selectedGift.total_cotas) || 1)) * selectedQuotas).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button 
+                        onClick={handleReserveQuotaAndCheckout}
+                        disabled={isReservingQuotaLock || (quotaProgress ? quotaProgress.disponivel <= 0 : false)}
+                        style={{
+                          marginTop: '16px',
+                          width: '100%',
+                          padding: '14px',
+                          borderRadius: '30px',
+                          background: (quotaProgress && quotaProgress.disponivel <= 0) ? '#cbd5e1' : '#1E293B',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          fontWeight: 700,
+                          fontSize: '0.95rem',
+                          cursor: (quotaProgress && quotaProgress.disponivel <= 0) ? 'not-allowed' : 'pointer',
+                          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+                          transition: 'transform 0.2s'
+                        }}
+                      >
+                        {isReservingQuotaLock ? 'Processando...' : (quotaProgress && quotaProgress.disponivel <= 0 ? 'Cotas Esgotadas' : 'Reservar Cota e Gerar PIX ⚡')}
+                      </button>
+                    </div>
+                  )}
+
                   {/* CTA #1: Fast Checkout PIX (Aceleração de Funil) */}
                   <button 
-                    onClick={() => handleDirectPix(selectedGift)}
+                    onClick={() => !selectedGift.permite_cotas && handleDirectPix(selectedGift)}
                     className={styles.modalBtnCart}
                     style={{ 
-                      backgroundColor: '#1E293B',
-                      color: '#FFF',
+                      backgroundColor: selectedGift.permite_cotas ? '#e2e8f0' : '#1E293B',
+                      color: selectedGift.permite_cotas ? '#94a3b8' : '#FFF',
                       fontWeight: 700,
-                      border: '2px solid #1E293B',
+                      border: selectedGift.permite_cotas ? '2px solid #cbd5e1' : '2px solid #1E293B',
+                      cursor: selectedGift.permite_cotas ? 'not-allowed' : 'pointer',
+                      opacity: selectedGift.permite_cotas ? 0.6 : 1,
                       width: '100%'
                     }}
+                    disabled={selectedGift.permite_cotas}
                   >
-                    ⚡ Presentear via PIX Agora
+                    ⚡ Presentear via PIX Agora (Valor Integral)
                   </button>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', width: '100%' }}>
                     <button 
                       onClick={() => {
-                        toggleToCart(selectedGift);
-                        setSelectedGift(null);
+                        if (!selectedGift.permite_cotas) {
+                          toggleToCart(selectedGift);
+                          setSelectedGift(null);
+                        }
                       }}
                       className={styles.modalBtnCart}
                       style={{ 
-                        backgroundColor: cart.some(p => p.id === selectedGift.id) ? '#333' : (config?.accent_color || '#C5A059'),
-                        color: '#FFF',
+                        backgroundColor: selectedGift.permite_cotas ? '#e2e8f0' : (cart.some(p => p.id === selectedGift.id) ? '#333' : (config?.accent_color || '#C5A059')),
+                        color: selectedGift.permite_cotas ? '#94a3b8' : '#FFF',
+                        cursor: selectedGift.permite_cotas ? 'not-allowed' : 'pointer',
+                        opacity: selectedGift.permite_cotas ? 0.6 : 1,
                         width: '100%'
                       }}
+                      disabled={selectedGift.permite_cotas}
                     >
                       {cart.some(p => p.id === selectedGift.id) ? 'Remover ✓' : 'Adicionar à Cesta'}
                     </button>
                     
-                    {selectedGift.link_externo && (
+                    {((!selectedGift.permite_cotas && selectedGift.link_externo) || (selectedGift.permite_cotas && quotaProgress && quotaProgress.link_externo)) && (
                       <button 
                         onClick={() => handleAffiliateClick(selectedGift)}
                         className={styles.modalBtnExternal}
@@ -921,12 +1125,19 @@ export default function PresentesPage() {
                     <h2 style={{ fontFamily: config?.font_serif, marginBottom: '1.5rem', fontSize: '32px' }}>Sua Cesta de Carinho</h2>
                     
                     <div className={styles.cartSummary}>
-                      {cart.map(item => (
-                        <div key={item.id} className={styles.cartItem}>
-                          <span>{item.nome}</span>
-                          <span>{Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                      {isQuotaFlow && quotaSelectedGift ? (
+                        <div className={styles.cartItem}>
+                          <span>Cota de {quotaSelectedGift.nome} ({selectedQuotas}x)</span>
+                          <span>{totalCartValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                         </div>
-                      ))}
+                      ) : (
+                        cart.map(item => (
+                          <div key={item.id} className={styles.cartItem}>
+                            <span>{item.nome}</span>
+                            <span>{Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                          </div>
+                        ))
+                      )}
                       <div className={styles.cartTotalLine} style={{ color: config?.accent_color }}>
                         <span>Total</span>
                         <span>{totalCartValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
@@ -998,7 +1209,7 @@ export default function PresentesPage() {
                     </p>
                     <button 
                       className={styles.giftBtn} 
-                      onClick={() => { setShowModal(false); setCart([]); }}
+                      onClick={() => { setShowModal(false); setCart([]); setIsQuotaFlow(false); setQuotaSelectedGift(null); }}
                       style={{ backgroundColor: config?.accent_color || '#C5A059', maxWidth: '250px', margin: '0 auto', borderRadius: '30px' }}
                     >
                       Voltar e Continuar

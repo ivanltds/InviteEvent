@@ -638,6 +638,57 @@
   font-weight: 500;
 }
 
+.adminColetivoBadge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #b45309;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.15);
+  z-index: 5;
+}
+
+.adminCotaToggleBox {
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8fafc;
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: 1px solid #f1f5f9;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.adminCotaToggleBox:hover {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  transform: translateY(-1px);
+}
+
+.adminProgressBarContainer {
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  margin: 0.5rem 0 1rem 0;
+  position: relative;
+}
+
+.adminProgressBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--admin-accent) 0%, #b5942e 100%);
+  border-radius: 10px;
+  transition: width 0.4s ease-out;
+}
+
 /* --- NOVO: MODAL DE DETALHE & VIEW --- */
 .detailGrid {
   display: grid;

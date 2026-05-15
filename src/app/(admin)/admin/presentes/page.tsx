@@ -542,6 +542,11 @@ export default function AdminPresentes() {
                   animate={{ opacity: 1, y: 0 }}
                 >
                   <div className={styles.cardImageWrapper}>
+                    {/* PRD-014: Badge Coletivo Flutuante Premium */}
+                    {item.permite_cotas && (
+                      <span className={styles.adminColetivoBadge}>COLETIVO 🤝</span>
+                    )}
+                    
                     <img src={item.imagem_url || 'https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=400&auto=format&fit=crop'} alt={item.nome} className={styles.cardImage} />
                     
                     {/* Efeito Hover Overlay Premium unificado */}
@@ -560,20 +565,14 @@ export default function AdminPresentes() {
                     </span>
                   </div>
                   <div className={styles.cardContent} onClick={() => setDetailItem(item)}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                      <h3 className={styles.cardTitle}>{item.nome}</h3>
-                      {/* 🚨 Null Safety para Produção: Se item legado sem categoria chegar, vira badge 'Geral' */}
-                      <div style={{ display: 'flex', gap: '4px' }}>
-                        {item.permite_cotas && (
-                          <span className={styles.miniBadge} style={{ background: '#e0f2fe', color: '#0369a1', fontWeight: 700 }}>Cotas ({item.cotas_compradas || 0}/{item.total_cotas})</span>
-                        )}
-                        <span className={styles.miniBadge}>{item.categoria?.nome ?? 'Geral'}</span>
-                      </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      <h3 className={styles.cardTitle} style={{ margin: 0 }}>{item.nome}</h3>
+                      <span className={styles.miniBadge}>{item.categoria?.nome ?? 'Geral'}</span>
                     </div>
                     <span className={styles.cardPrice}>{Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                     
-                    {/* PRD-014 Switch de Cotas Interativo no Card */}
-                    <div style={{ margin: '0.75rem 0 1.25rem 0', display: 'flex', alignItems: 'center', gap: '10px', background: '#f8fafc', padding: '8px 12px', borderRadius: '12px', border: '1px solid #f1f5f9' }} onClick={(e) => e.stopPropagation()}>
+                    {/* PRD-014 Switch de Cotas Premium Overhauled */}
+                    <div className={styles.adminCotaToggleBox} onClick={(e) => e.stopPropagation()}>
                       <div 
                         onClick={(e) => handleInlineQuotaToggle(item.id, !!item.permite_cotas, Number(item.preco), e)}
                         style={{ 
@@ -605,11 +604,27 @@ export default function AdminPresentes() {
                           <span style={{ fontSize: '0.65rem', color: '#6b7280' }}>{((Number(item.preco)) / (item.total_cotas || 1)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} / cota</span>
                         </div>
                       ) : (
-                        <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 550 }}>Habilitar Cotas Coletivas</span>
+                        <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>Habilitar Cotas</span>
                       )}
                     </div>
 
-                    <div className={styles.cardMeta}>
+                    {/* PRD-014: Barra de Progresso Financeiro Premium integrada */}
+                    {item.permite_cotas && (
+                      <div style={{ margin: '0 0 1rem 0' }}>
+                        <div className={styles.adminProgressBarContainer}>
+                          <div 
+                            className={styles.adminProgressBarFill}
+                            style={{ width: `${Math.min(100, ((item.cotas_compradas || 0) / (item.total_cotas || 1)) * 100)}%` }} 
+                          />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: '#64748b', fontWeight: 700, marginTop: '-6px' }}>
+                          <span>Arrecadado: {Math.round(((item.cotas_compradas || 0) / (item.total_cotas || 1)) * 100)}%</span>
+                          <span>{item.cotas_compradas || 0}/{item.total_cotas}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className={styles.cardMeta} style={{ borderTop: item.permite_cotas ? 'none' : '1px solid #f1f5f9', paddingTop: item.permite_cotas ? '0' : '1.5rem' }}>
                       {item.permite_cotas ? (
                         <span className={styles.stockLabel}>Estoque: <strong>{item.total_cotas! - (item.cotas_compradas || 0)} / {item.total_cotas} cotas</strong></span>
                       ) : (

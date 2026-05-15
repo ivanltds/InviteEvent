@@ -1,51 +1,60 @@
-# PRD-015 — Emergência de Conversão & FOMO Ativo (O Booster de 30 Dias) 🚨🔥
+# PRD-015 — Resgate de Sonhos & Sintonia dos Convidados (Aceleração Emocional) 🕊️✨
 
-> **Versão:** 1.0 | **Fase:** DESCOBERTA | **Data:** 15 de Maio de 2026  
-> **Status:** AGUARDANDO REVISÃO / ARQUITETURA  
-> **Contexto de Valor:** Resgate de receita e aceleração tática de transações para casamentos que estão na reta final (30 dias do evento) com 0 presentes adquiridos.
+> **Versão:** 2.0 | **Fase:** REDESCOBERTA ESTRATÉGICA | **Data:** 15 de Maio de 2026  
+> **Status:** REVISADO E VALIDADO (Aesthetic Upgrade)  
+> **Contexto de Valor:** Aceleração sutil e elegante de presentes baseada em prova social afetiva (Social Proof Emocional), substituindo a ansiedade fria do varejo tradicional pela celebração e realização de desejos do casal.
 
 ---
 
-## 1. Visão Geral do Negócio & Problema
-Estamos lidando com um gargalo emocional e financeiro crítico. O usuário escolheu nossa plataforma, mas conforme o casamento se aproxima, a ausência de presentes comprados gera ansiedade e insegurança no ROI do produto. 
+## 1. Visão Geral do Negócio & Resignificação do "FOMO"
+O varejo tradicional usa a urgência e a escassez ("apenas 1 no estoque", "30 pessoas vendo agora") de forma utilitária e por vezes agressiva. Em um casamento de luxo, isso soa inadequado e quebra a aura de celebração e elegância. 
 
-A psicologia do consumidor no e-commerce nos diz que o ser humano age sob **Prova Social (Social Proof)** e **Urgência (FOMO)**. Se a lista de presentes parecer abandonada, os próximos convidados também hesitarão em ser os primeiros a comprar.
+Para a nossa plataforma, o gatilho de conversão não é o "medo de perder", mas a **Vontade de Agradar** e a **Sintonia Social** (querer participar dos momentos mais importantes dos noivos). Por isso, convertemos a telemetria fria em **Mensagens de Afeto e Sonhos**.
 
-### 🎯 Meta Comercial
-*   **Destravar a inércia:** Garantir a primeira venda em casamentos estagnados em até **72 horas** pós-ativação do módulo.
-*   **Efeito manada:** Aumentar a conversão de checkout em no mínimo **35%** através de prompts de psicologia comportamental.
+### 🎯 A Nova Semântica Matrimonial (Aesthetic Lexicon)
+| Linguagem Fria (Varejo) | Nossa Linguagem (Afetiva & Luxo) | Gatilho Psicológico Ativado |
+| :--- | :--- | :--- |
+| **🔥 Mais Vendido / Favorito** | **💖 Um Grande Sonho dos Noivos** | Desejo de realização emocional direta. |
+| **⚡ 3 pessoas visualizando** | **✨ Muito visitado pelos convidados** | Validação social sutil ("Escolha querida"). |
+| **⭐ Destaque da Semana** | **💍 A Escolha Clássica da Lista** | Segurança na escolha (baixo risco de errar). |
+| **🚨 Urgência / Acabando** | **🕊️ Quase realizado! Restam [X] cotas** | Efeito de colaboração ("Vamos fechar juntos!"). |
 
 ---
 
 ## 2. Requisitos Funcionais (RF)
 
-### RF001 — Motor de Badges Pulsantes (FOMO Visual)
-*   **Descrição:** Injetar badges interativos e elegantes nos cards de presente na vitrine pública de convidados baseados na telemetria viva.
-*   **Regras de Injeção Visual:**
-    *   **Selo "Favorito dos Convidados" (🔥):** Atribuído aos 3 itens com maior soma de cliques (`gift_click`) na telemetria histórica do evento.
-    *   **Selo "Destaque da Semana" (⭐):** Para o item com mais views ou adições à cesta nas últimas 48h.
-    *   **Badge de Visualização Simultânea (⚡):** Um alerta sutil: *"X pessoas viram recentemente"*, ativado se o item tiver mais de 2 visualizações individuais distintas nas últimas 24 horas.
-*   **UX/UI:** Estética premium, com micro-animações suaves (fade in/out ou shimmer dourado) para não parecer um site de spam, e sim um clube de luxo.
+### RF001 — Selos de Simpatia & Desejos (Visual Afetivo)
+*   **Descrição:** Inserir discretamente selos estilizados com a tipografia Serif do casamento (sem cores agressivas como vermelho ou laranja vivo).
+*   **Diretrizes de Estilo:**
+    *   **Selo "Grande Sonho do Casal" (💖):** Injetado nos presentes com alta pontuação de cliques. Substitui o "Favorito" puramente comercial.
+    *   **Selo "O Clássico da Nossa Lista" (💍):** Para os presentes consistentes que geram muita interação.
+    *   **Rodapé Transparente "Sintonia" (✨):** Em vez de alertas vermelhos pulsantes, um brilho dourado suave (champagne glow) com o texto: *"✨ Este item tem atraído a atenção e o carinho dos convidados recentemente."*
 
-### RF002 — Vitrine Autônoma (Smart Sorting AI Light)
-*   **Descrição:** Reordenar a lista de presentes dinamicamente com base no engajamento real da telemetria.
-*   **Mecânica do Algoritmo:**
-    *   **Fator de Peso (Score de Interesse):**
-        *   Clique em comprar/PIX: **+5 pontos**
-        *   Adição à Cesta: **+3 pontos**
-        *   Visualização do Modal (>5 segundos): **+1 ponto**
-    *   Os itens com maior pontuação são **puxados para o topo da vitrine** automaticamente ao invés de seguir estritamente a ordem de inserção manual.
-    *   *Exceção de Resiliência:* Itens que já estão 100% comprados (ou com todas as cotas esgotadas) continuam sendo empurrados para o final da lista para não bloquear itens disponíveis.
+### RF002 — A Vitrine Autônoma de Afeto (Smart Sorting Light)
+*   **Descrição:** O algoritmo organiza os presentes puxando os itens com maior afinidade e carinho para o topo da tela, facilitando a navegação do convidado.
+*   **Mecânica:**
+    *   A priorização se mantém: itens clicados sobem, itens esgotados descem gentilmente ao final, mas o rótulo da ordenação passa a se chamar **"Recomendados pela Vitrine ✨"**.
 
-### RF003 — O Price Suggester (Advisory Admin para os Noivos)
-*   **Descrição:** Central de avisos e sugestões no dashboard do admin para ajudar os noivos a destravarem seus próprios itens estagnados.
-*   **Lógica do Consultor de IA:**
-    *   Se o casamento está a `< 45 dias` do evento AND a receita acumulada é `zero`:
-        *   O admin exibe um Card de Alerta Inteligente: *"Queremos te ajudar a ganhar seus primeiros presentes! 🎁"*.
-    *   **Gatilhos de Sugestão Específicos:**
-        *   **Ticket Alto sem Cota:** Se houver item individual com preço `> R$ 350` e `permite_cotas = false`, sugerir ativamente um botão de ação rápida: *"Que tal dividir o item [Nome] em 5 cotas de [Valor]? Isso aumenta as chances de venda em 35%!"*
-        *   **Corte de Preço:** Identificar itens visualizados, mas não convertidos (fuga) e sugerir um desconto real ou quebra em cotas menores.
-*   **Ação Rápida:** O noivo clica em "Aplicar Sugestão" e o sistema altera instantaneamente o registro no Supabase sem precisar abrir o formulário de edição de presentes.
+### RF003 — Mentor de Carinho (Advisory Admin para os Noivos)
+*   **Descrição:** Central de aconselhamento no painel do admin focada em ajudar os noivos a tornarem seus "Grandes Sonhos" mais acessíveis à família.
+*   **Lógica de Comunicação:**
+    *   Substituir o tom de alerta ("Aumente suas vendas em 35%") por um tom de assessoria cerimonial: *"Queremos te ajudar a realizar seus sonhos mais rápido! 🎁 Dividir o item [Geladeira] em cotas menores o torna muito mais acessível para que seus amigos possam presenteá-lo juntos."*
+
+---
+
+## 3. Requisitos Não-Funcionais (RNF)
+1.  **Estética e Frame-Rate:** A animação de "Glow" (Brilho) deve ser ultra-suave, usando transições de opacidade em CSS e sombras suaves ao invés de alertas piscantes de alta frequência.
+2.  **Zero Poluição:** Um card de presente só pode receber no MÁXIMO um único selo por vez para manter a elegância geométrica do grid.
+
+---
+
+## 4. O Que NÃO Entra Neste Escopo (Out of Scope)
+*   Não utilizaremos cores de alerta puro (Red #FF0000 ou Orange #FF7F00) no frontend público de convidados.
+*   Uso de timers regressivos ou relógios na vitrine de presentes.
+
+---
+
+> **Validação Requerida:** Operador, reposicionamos completamente a solução para falar a língua de um casamento real de alto padrão. Esta tradução humanizada ressoa com o tom da InviteEventAI? Se aprovado, atualizaremos o protótipo físico com esses novos termos e cores! 🕊️🥂
 
 ---
 

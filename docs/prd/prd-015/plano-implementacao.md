@@ -18,18 +18,18 @@ Para garantir impacto zero na performance e evitar conexões abusivas no banco d
         - Cliques totais por `target_id` (ID do presente).
         - Adições à cesta por `target_id`.
         - Número de `session_id` únicos nas últimas 24h por `target_id`.
-    3. Calcular o **Score de Interesse**:
+    3. Calcular o **Score de Afinidade**:
        `Score = (Cliques * 1) + (AdiçãoCesta * 5)`
-    4. Mapear os Badges:
-       - **Top 1 e 2 de Cliques:** Badge `'favorite'`.
-       - **Mais acessado nas últimas 48h:** Badge `'weekly'`.
+    4. Mapear as Categorias de Destaque:
+       - **Top 1 e 2 de Cliques:** Tipo `'dream'` (O Grande Sonho 💕).
+       - **Mais acessado nas últimas 48h:** Tipo `'classic'` (Escolha Clássica 💍).
     5. Retornar o Mapa Compacto:
        ```json
        {
          "success": true,
          "data": {
-           "PRESENT_UUID_1": { "score": 25, "badge": "favorite", "recentViewers": 4 },
-           "PRESENT_UUID_2": { "score": 12, "badge": "weekly", "recentViewers": 1 }
+           "PRESENT_UUID_1": { "score": 25, "badge": "dream", "recentViewers": 4 },
+           "PRESENT_UUID_2": { "score": 12, "badge": "classic", "recentViewers": 1 }
          }
        }
        ```
@@ -45,8 +45,8 @@ Para garantir impacto zero na performance e evitar conexões abusivas no banco d
 #### Passos de Desenvolvimento:
 1.  **Hydrate Hook:**
     No `useEffect` de montagem, disparar um `fetch` assíncrono para `/api/public/presentes/fomo?eventoId=X` e armazenar o resultado no estado:
-    `const [fomoData, setFomoData] = useState<Record<string, any>>({});`
-2.  **Mapeamento do Algoritmo de Ordenação (Smart Sorting):**
+    `const [affinityData, setAffinityData] = useState<Record<string, any>>({});`
+2.  **Mapeamento do Algoritmo de Ordenação (Vitrine de Afinidade):**
     Refatorar o `useMemo` de `filteredPresentes` para injetar a lógica de ordenação do PRD:
     ```typescript
     const orderedPresentes = useMemo(() => {
@@ -60,20 +60,20 @@ Para garantir impacto zero na performance e evitar conexões abusivas no banco d
         if (isAEsgotado && !isBEsgotado) return 1;
         if (!isAEsgotado && isBEsgotado) return -1;
 
-        // 2. Critério Principal: Score de Fomo Telemetria
-        const scoreA = fomoData[a.id]?.score ?? 0;
-        const scoreB = fomoData[b.id]?.score ?? 0;
-        if (scoreA !== scoreB) return scoreB - scoreA; // Maior score no topo!
+        // 2. Critério Principal: Score de Afinidade da Telemetria
+        const scoreA = affinityData[a.id]?.score ?? 0;
+        const scoreB = affinityData[b.id]?.score ?? 0;
+        if (scoreA !== scoreB) return scoreB - scoreA; // Maior afinidade no topo!
 
         // 3. Fallback: Ordem alfabética/inserção padrão
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
       return items;
-    }, [filteredPresentes, fomoData]);
+    }, [filteredPresentes, affinityData]);
     ```
 3.  **Injeção Visual:**
-    - Injetar os badges dentro da `div` da imagem do card usando classes de animação pulsante (CSS transition).
-    - Injetar o rodapé `⚡ X pessoas viram recentemente` se `recentViewers >= 2`.
+    - Injetar os selos com fonte Serif elegante e opacidade breathing (`.badgeDream` ou `.badgeClassic`).
+    - Injetar o rodapé translúcido `✨ Muito cogitado pelos convidados recentemente` apenas se `recentViewers >= 2`.
 
 ---
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import styles from "./Landing.module.css";
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import LegalFooter from '@/components/ui/LegalFooter';
 
 export default function LandingPage() {
   const [videoIndex, setVideoIndex] = useState(0);
@@ -157,14 +158,14 @@ export default function LandingPage() {
             </div>
             <div className={styles.previewCard} style={{ background: "linear-gradient(135deg, #FFFFFF 0%, #F5EFEB 100%)", padding: "30px", borderLeft: "4px solid #C5A059", display: "flex", flexDirection: "column", justifyContent: "center", minHeight: "200px" }}>
               <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", fontStyle: "italic", margin: "0 0 12px 0", color: "#1A1A1A" }}>
-                "Ver o brilho no olhar de vocês hoje é ter a certeza de que o amor verdadeiro é real e inabalável!"
+                &quot;Ver o brilho no olhar de vocês hoje é ter a certeza de que o amor verdadeiro é real e inabalável!&quot;
               </p>
               <span style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "#C5A059" }}>— Tio Roberto</span>
             </div>
             <div className={styles.previewCard}>
               <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=600" style={{ width: '100%', display: 'block', height: '300px', objectFit: 'cover' }} alt="Noivos" />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 70%)", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "20px", color: "#FFF" }}>
-                <p style={{ color: '#FFFFFF', fontSize: "13px", fontWeight: 500, margin: "0 0 4px 0", textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>"Os mais lindos! Que alegria imensa viver esse dia com vocês!"</p>
+                <p style={{ color: '#FFFFFF', fontSize: "13px", fontWeight: 500, margin: "0 0 4px 0", textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>&quot;Os mais lindos! Que alegria imensa viver esse dia com vocês!&quot;</p>
                 <span style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(255,255,255,0.9)", textShadow: "0 1px 2px rgba(0,0,0,0.5)" }}>— Camila & Bruno</span>
               </div>
             </div>
@@ -175,7 +176,7 @@ export default function LandingPage() {
       {/* Section 3: Parallax Photo Band */}
       <section id="galeria" className={styles.photoBand}>
         <div className={styles.photoBandContent}>
-          <h2>"O detalhe não é apenas um detalhe.<br/>Ele faz o design."</h2>
+          <h2>&quot;O detalhe não é apenas um detalhe.<br/>Ele faz o design.&quot;</h2>
           <p style={{ color: "#EAEAEA", marginTop: "15px", fontWeight: 300, letterSpacing: "0.1em", textTransform: "uppercase" }}>— Experiência Majestic</p>
         </div>
       </section>
@@ -192,6 +193,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      <LegalFooter theme="light" />
     </div>
   );
 }

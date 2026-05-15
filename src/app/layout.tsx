@@ -3,6 +3,7 @@ import { Playfair_Display, Pinyon_Script, Inter } from "next/font/google";
 import "./globals.css";
 import { Suspense } from "react";
 import DynamicStyles from "@/components/ui/DynamicStyles";
+import CookieBanner from "@/components/ui/CookieBanner";
 import { Analytics } from "@vercel/analytics/react";
 
 const playfair = Playfair_Display({
@@ -41,6 +42,7 @@ export default function RootLayout({
           <DynamicStyles />
         </Suspense>
         {children}
+        <CookieBanner />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

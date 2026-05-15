@@ -14,6 +14,7 @@ import HeroCarousel from '@/components/ui/HeroCarousel';
 import { Configuracao } from '@/lib/types/database';
 import Link from 'next/link';
 import { useTrackSection } from '@/hooks/useTrackSection';
+import LegalFooter from '@/components/ui/LegalFooter';
 
 // STORY-056 & PRD-010: Sistema Multi-Animação de Entrada
 import EnvelopeGateway from '@/components/public/EnvelopeGateway/EnvelopeGateway';
@@ -288,6 +289,12 @@ const LiveInviteView: React.FC<LiveInviteViewProps> = ({
           >
             {isPreviewMode ? 'Voltar às Configurações' : 'Finalizar e Salvar'}
           </Link>
+        </div>
+      )}
+
+      {!disableActions && (
+        <div style={{ marginTop: '40px', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)' }}>
+          <LegalFooter theme="dark" />
         </div>
       )}
     </div>

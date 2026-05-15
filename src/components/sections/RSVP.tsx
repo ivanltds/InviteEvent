@@ -34,6 +34,8 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [existingRSVP, setExistingRSVP] = useState<RSVPType | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [lgpdConsent, setLgpdConsent] = useState(false);
+
 
   useEffect(() => {
     async function init() {
@@ -140,8 +142,21 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage(null);
     
     const isRecusado = formData.confirmacao === 'nao';
+    
+    // Detecção Dinâmica de Restrições Alimentares (Dado sensível LGPD)
+    const hasRestrictions = !isRecusado && (
+      (formData.restricoes && formData.restricoes.trim().length > 0) || 
+      membros.some(m => m.confirmado && m.restricoes && m.restricoes.trim().length > 0)
+    );
+
+    if (hasRestrictions && !lgpdConsent) {
+      setErrorMessage('É necessário autorizar o tratamento de seus dados de saúde (restrições alimentares) de acordo com a LGPD para continuar.');
+      setLoading(false);
+      return;
+    }
     
     // Contagem de confirmados nominais (STORY-053 FIX)
     let countConfirmados = 0;
@@ -168,7 +183,8 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
       restricoes: formData.restricoes, // Mantemos o global para compatibilidade
       mensagem: formData.mensagem,
       telefone: formData.telefone,
-      status: status
+      status: status,
+      lgpd_consent: hasRestrictions ? true : false
     };
 
     const membersPayload = membros.map(m => ({
@@ -435,6 +451,40 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
                 </div>
               </>
             )}
+
+            {/* LGPD Explicit Consent Block */}
+            {(() => {
+              const showLgpdConsent = formData.confirmacao === 'sim' && (
+                (formData.restricoes && formData.restricoes.trim().length > 0) || 
+                membros.some(m => m.confirmado && m.restricoes && m.restricoes.trim().length > 0)
+              );
+              
+              if (!showLgpdConsent) return null;
+
+              return (
+                <div className={styles.fieldGroup} style={{ 
+                  background: 'rgba(255,255,255,0.05)', 
+                  padding: '12px', 
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  margin: '15px 0',
+                  animation: 'fadeIn 0.3s ease'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      id="lgpdConsent" 
+                      checked={lgpdConsent}
+                      onChange={(e) => setLgpdConsent(e.target.checked)}
+                      style={{ marginTop: '4px', accentColor: propConfig?.accent_color || '#D4AF37' }} 
+                    />
+                    <label htmlFor="lgpdConsent" style={{ fontSize: '0.85rem', opacity: 0.9, lineHeight: '1.4', userSelect: 'none', cursor: 'pointer' }}>
+                      Autorizo o tratamento destas informações de saúde (restrições alimentares) exclusivamente para a personalização e segurança do cardápio deste evento, nos termos da Política de Privacidade.
+                    </label>
+                  </div>
+                </div>
+              );
+            })()}
 
             <div className={styles.fieldGroup}>
               <label htmlFor="mensagem">Quer deixar um recadinho para os noivos?</label>

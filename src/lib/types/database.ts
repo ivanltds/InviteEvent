@@ -61,6 +61,9 @@ export interface RSVP {
   mensagem?: string;
   telefone?: string;
   status: RSVPStatus | string;
+  lgpd_consent?: boolean;
+  lgpd_consent_at?: string | null;
+  lgpd_ip_address?: string | null;
   created_at?: string;
   updated_at?: string;
 }

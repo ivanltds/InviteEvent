@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design System Spec — Rodapé & Políticas (PRD-013)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
+
+        :root {
+            --transition-speed: 0.6s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            transition: background 0.8s ease, color 0.8s ease;
+        }
+
+        /* THEME 1: LANDING PAGE (LIGHT INSTITUTIONAL) */
+        body.theme-lp {
+            background-color: #F9F9FB;
+            color: #1A1A1A;
+            background-image: radial-gradient(circle at top right, rgba(197, 160, 89, 0.05) 0%, transparent 60%);
+        }
+
+        /* THEME 2: DYNAMIC INVITATION (LUXURY GOLD/DARK) */
+        body.theme-invitation {
+            color: #FFFFFF;
+            background-color: #0A0A0A;
+            /* Foto de fundo simulando convite real com overlay escurecido */
+            background-image: 
+                linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.85)),
+                url('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1600');
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* VIEWPORT MOCKUP */
+        .app-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* TELA FLUTUANTE DE INTERFACE */
+        .content-preview {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .theme-lp .lp-element { display: block; }
+        .theme-lp .inv-element { display: none; }
+        .theme-invitation .lp-element { display: none; }
+        .theme-invitation .inv-element { display: block; }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .gold-text {
+            color: #C5A059;
+        }
+
+        p.tagline {
+            font-size: 1.1rem;
+            font-weight: 300;
+            max-width: 600px;
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+
+        /* FLOATING THEME SWITCHER */
+        .theme-switcher {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 6px;
+            border-radius: 50px;
+            display: flex;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            z-index: 100;
+            border: 1px solid rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px);
+            transition: all 0.5s;
+        }
+
+        .theme-invitation .theme-switcher {
+            background: rgba(26, 26, 26, 0.8);
+            border-color: rgba(212, 175, 55, 0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .switch-btn {
+            border: none;
+            padding: 10px 24px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: transparent;
+            color: #71717A;
+            letter-spacing: 0.5px;
+        }
+
+        .theme-lp .switch-btn.active {
+            background: #1A1A1A;
+            color: #FFF;
+        }
+
+        .theme-invitation .switch-btn.active {
+            background: #C5A059;
+            color: #000;
+            box-shadow: 0 4px 15px rgba(197, 160, 89, 0.3);
+        }
+
+        .theme-invitation .switch-btn:not(.active) {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* ============================================= */
+        /* DESIGN SYSTEM: FOOTER COMPARISON (CENTRAL CORE) */
+        /* ============================================= */
+        
+        .footer-demonstrator {
+            width: 100%;
+            padding: 3rem 5%;
+            transition: all 0.8s ease;
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-top: 1px solid transparent;
+        }
+
+        /* 1. Footer da Landing Page (Estruturado, Elegante) */
+        .theme-lp .footer-demonstrator {
+            background-color: #FFFFFF;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* 2. Footer do Convite Dinâmico (Translúcido, Minimalista) */
+        .theme-invitation .footer-demonstrator {
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.3) 100%);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .footer-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            transition: color 0.5s;
+        }
+
+        .theme-lp .footer-brand { color: #1A1A1A; font-weight: 700; }
+        .theme-invitation .footer-brand { color: #FFFFFF; font-style: italic; font-weight: 600; }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .legal-link {
+            font-size: 0.8rem;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Cores dos links LP */
+        .theme-lp .legal-link {
+            color: #71717A;
+            font-weight: 500;
+        }
+        .theme-lp .legal-link:hover {
+            color: #C5A059;
+        }
+
+        /* Cores dos links Convite */
+        .theme-invitation .legal-link {
+            color: rgba(255,255,255,0.5);
+            font-weight: 300;
+        }
+        .theme-invitation .legal-link:hover {
+            color: #C5A059;
+            text-shadow: 0 0 10px rgba(197, 160, 89, 0.3);
+        }
+
+        .copyright {
+            font-size: 0.75rem;
+            margin-top: 1rem;
+            opacity: 0.5;
+        }
+
+        /* ============================================= */
+        /* THEMED MODAL WINDOW (OVERLAY GLASSMORPHISM)  */
+        /* ============================================= */
+        
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-backdrop.open {
+            opacity: 1;
+            pointer-events: all;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        .legal-modal {
+            width: 90%;
+            max-width: 650px;
+            height: 70vh;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 30px 70px rgba(0,0,0,0.4);
+            transform: scale(0.9) translateY(30px);
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.6s;
+            overflow: hidden;
+        }
+
+        .modal-backdrop.open .legal-modal {
+            transform: scale(1) translateY(0);
+        }
+
+        /* Estilos do Modal baseado no Tema Ativo */
+        .theme-lp .legal-modal {
+            background: #FFFFFF;
+            border: 1px solid rgba(0,0,0,0.08);
+            color: #1A1A1A;
+        }
+
+        .theme-invitation .legal-modal {
+            background: rgba(20, 20, 20, 0.9);
+            border: 1px solid rgba(197, 160, 89, 0.25);
+            color: #FFFFFF;
+            backdrop-filter: blur(20px);
+        }
+
+        .modal-header {
+            padding: 1.8rem 2rem;
+            border-bottom: 1px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .theme-lp .modal-header {
+            border-bottom-color: #F4F4F5;
+        }
+
+        .theme-invitation .modal-header {
+            border-bottom-color: rgba(255,255,255,0.06);
+        }
+
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .theme-invitation .modal-title {
+            color: #C5A059;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s;
+        }
+
+        .theme-lp .close-btn { color: #71717A; }
+        .theme-invitation .close-btn { color: rgba(255,255,255,0.6); }
+        
+        .close-btn:hover { opacity: 0.7; }
+
+        .modal-body {
+            padding: 2.5rem 2rem;
+            overflow-y: auto;
+            flex: 1;
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .theme-lp .modal-body { color: #3F3F46; }
+        .theme-invitation .modal-body { color: rgba(255,255,255,0.7); }
+
+        .modal-body h2 {
+            font-family: 'Playfair Display', serif;
+            margin-top: 2rem;
+            margin-bottom: 0.6rem;
+            color: inherit;
+            font-size: 1.1rem;
+        }
+
+        .theme-lp .modal-body h2 { color: #18181B; border-left: 3px solid #C5A059; padding-left: 10px; }
+        .theme-invitation .modal-body h2 { color: #FFFFFF; border-left: 3px solid #C5A059; padding-left: 10px; }
+
+        .modal-body p { margin-bottom: 1.2rem; }
+        
+        .modal-body hr {
+            border: 0;
+            height: 1px;
+            margin: 2rem 0;
+        }
+        .theme-lp .modal-body hr { background: #E4E4E7; }
+        .theme-invitation .modal-body hr { background: rgba(255,255,255,0.08); }
+
+        /* ============================================= */
+        /* FLOATING HINT (HOW TO USE) */
+        /* ============================================= */
+        .demo-hint {
+            position: absolute;
+            top: 100px;
+            background: rgba(0, 0, 0, 0.05);
+            color: #71717A;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            border: 1px dashed rgba(0,0,0,0.1);
+            pointer-events: none;
+            transition: all 0.5s;
+        }
+
+        .theme-invitation .demo-hint {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255,255,255,0.5);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        /* ============================================= */
+        /* THEMED COOKIE CONSENT BANNER (UX CORE WIDGET) */
+        /* ============================================= */
+        .cookie-banner {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            width: calc(100% - 40px);
+            max-width: 600px;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+            z-index: 900;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0;
+        }
+
+        .cookie-banner.visible {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .cookie-text {
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .cookie-btn {
+            border: none;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+            transition: transform 0.2s ease, box-shadow 0.2s;
+        }
+
+        .cookie-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Estilos LP */
+        .theme-lp .cookie-banner {
+            background: #FFFFFF;
+            border: 1px solid rgba(0,0,0,0.08);
+            color: #3F3F46;
+        }
+
+        .theme-lp .cookie-btn {
+            background: #1A1A1A;
+            color: #FFFFFF;
+        }
+
+        .theme-lp .cookie-btn:hover {
+            background: #C5A059;
+        }
+
+        /* Estilos Convite (Luxo) */
+        .theme-invitation .cookie-banner {
+            background: rgba(15, 15, 15, 0.85);
+            border: 1px solid rgba(197, 160, 89, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+        }
+
+        .theme-invitation .cookie-text strong {
+            color: #C5A059;
+        }
+
+        .theme-invitation .cookie-btn {
+            background: #C5A059;
+            color: #000;
+            box-shadow: 0 4px 12px rgba(197, 160, 89, 0.2);
+        }
+
+        .theme-invitation .cookie-btn:hover {
+            box-shadow: 0 6px 20px rgba(197, 160, 89, 0.4);
+        }
+
+        /* SCROLLBAR CUSTOMS */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        
+        .theme-lp ::-webkit-scrollbar-thumb { background: #E4E4E7; border-radius: 10px; }
+        .theme-invitation ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+    </style>
+</head>
+<body class="theme-lp">
+
+    <div class="app-container">
+        
+        <!-- SELETOR DE TEMA DO DESIGN SYSTEM -->
+        <div class="theme-switcher">
+            <button class="switch-btn active" id="btnLp" onclick="setTheme('lp')">Landing Page</button>
+            <button class="switch-btn" id="btnInv" onclick="setTheme('inv')">Convite Dinâmico</button>
+        </div>
+
+        <div class="demo-hint">
+            O Rodapé e os Modais herdam as propriedades do Design System selecionado acima
+        </div>
+
+        <!-- ÁREA DE CONTEÚDO CENTRAL DA TELA -->
+        <main class="content-preview">
+            
+            <!-- MOCK DA LANDING PAGE -->
+            <div class="lp-element">
+                <h1>A Arte dos <span class="gold-text">Convites Majestosos</span></h1>
+                <p class="tagline">Uma plataforma exclusiva para transformar casamentos em momentos inesquecíveis desde o primeiro clique.</p>
+            </div>
+
+            <!-- MOCK DO CONVITE DINÂMICO -->
+            <div class="inv-element">
+                <p style="letter-spacing: 4px; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 0.5rem; color: #C5A059; font-weight: 600;">Salvem a Data</p>
+                <h1 style="font-style: italic; font-size: 3.8rem; font-weight: 400;">Helena & Ricardo</h1>
+                <p class="tagline">Convidam para celebrar a união do seu amor.<br>O evento mais esperado da temporada.</p>
+            </div>
+
+        </main>
+
+        <!-- ============================================= -->
+        /* COMPONENTE FOCO: RODAPÉ DE CONFORMIDADE (UX CORE) */
+        <!-- ============================================= -->
+        <footer class="footer-demonstrator">
+            <div class="footer-brand">InviteEvent</div>
+            
+            <div class="footer-links">
+                <a class="legal-link" onclick="openLegalModal('terms')">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Termos de Uso
+                </a>
+                <span style="opacity: 0.2;">|</span>
+                <a class="legal-link" onclick="openLegalModal('privacy')">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    Política de Privacidade
+                </a>
+            </div>
+
+            <p class="copyright">© 2026 InviteEventAI — Todos os direitos reservados.</p>
+        </footer>
+
+    </div>
+
+    <!-- ============================================= -->
+    <!-- WIDGET DE COOKIES FIXO (TEMA ADAPTATIVO)       -->
+    <!-- ============================================= -->
+    <div id="cookieBanner" class="cookie-banner">
+        <div class="cookie-text">
+            Utilizamos <strong>cookies essenciais</strong> para garantir o melhor desempenho técnico e a segurança da sua navegação.
+        </div>
+        <button class="cookie-btn" onclick="acceptCookies()">Entendi</button>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- MODAL LEGAL DE LEITURA COM TEMA HERDADO -->
+    <!-- ============================================= -->
+    <div id="modalBackdrop" class="modal-backdrop" onclick="closeLegalModal()">
+        <div class="legal-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">Documento</div>
+                <button class="close-btn" onclick="closeLegalModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalContent">
+                Carregando conteúdo...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cookieTimer = null;
+        const banner = document.getElementById('cookieBanner');
+        const demoHint = document.querySelector('.demo-hint');
+
+        // Helper centralizador de exibição com atraso configurável
+        function scheduleCookieBanner(delayMs, sourceName) {
+            // Limpa qualquer agendamento anterior pendente
+            if (cookieTimer) clearTimeout(cookieTimer);
+            
+            // Esconde o banner imediatamente para reiniciar a animação
+            banner.classList.remove('visible');
+            banner.style.display = 'flex'; // Garante que não esteja display none
+
+            if (sourceName === 'inv') {
+                demoHint.innerHTML = `<strong>Imersão Ativa:</strong> Aguardando animações de envelope... (Banner de cookies em 5s)`;
+            } else {
+                demoHint.innerText = `Aguardando carregamento da LP... (Banner em 1s)`;
+            }
+
+            cookieTimer = setTimeout(() => {
+                banner.classList.add('visible');
+                demoHint.innerText = `O Rodapé e os Modais herdam as propriedades do Design System selecionado acima`;
+            }, delayMs);
+        }
+
+        // Gatilho inicial (Landing Page)
+        scheduleCookieBanner(1000, 'lp');
+
+        function acceptCookies() {
+            if (cookieTimer) clearTimeout(cookieTimer);
+            banner.classList.remove('visible');
+            setTimeout(() => {
+                banner.style.display = 'none';
+            }, 500);
+        }
+
+        // Controle de Troca Dinâmica de Tema e Agendamento LGPD
+        function setTheme(themeName) {
+            const body = document.body;
+            const btnLp = document.getElementById('btnLp');
+            const btnInv = document.getElementById('btnInv');
+
+            if (themeName === 'lp') {
+                body.classList.remove('theme-invitation');
+                body.classList.add('theme-lp');
+                btnLp.classList.add('active');
+                btnInv.classList.remove('active');
+                
+                // Gatilho rápido para LP
+                scheduleCookieBanner(1000, 'lp');
+            } else {
+                body.classList.remove('theme-lp');
+                body.classList.add('theme-invitation');
+                btnInv.classList.add('active');
+                btnLp.classList.remove('active');
+                
+                // Regra Crítica: 5 segundos de atraso pós-animações do convite
+                scheduleCookieBanner(5000, 'inv');
+            }
+        }
+
+        // Copywriting real extraído dos arquivos .md gerados
+        const legalContent = {
+            terms: {
+                title: 'Termos de Uso e Condições',
+                body: `
+                    <p><strong>Última atualização: 14 de maio de 2026</strong></p>
+                    <p>Bem-vindo ao InviteEventAI. Estes Termos regem o acesso e a utilização da nossa plataforma de gerenciamento de convites digitais e presentes virtuais.</p>
+                    <hr/>
+                    <h2>1. Descrição do Serviço</h2>
+                    <p>O InviteEventAI é um software como serviço (SaaS) que disponibiliza ferramentas tecnológicas para criação de convites imersivos. A contratação dá direito de licenciamento temporário de uso dos recursos interativos.</p>
+                    <h2>2. Sistema de Presentes Virtuais e Afiliados</h2>
+                    <p>A plataforma disponibiliza sugestões de presentes que contêm links de afiliados de parceiros comerciais (ex: Amazon, Magalu). Não nos responsabilizamos pelas transações feitas fora de nossos domínios, fretes ou trocas nas respectivas varejistas.</p>
+                    <h2>3. Presentes via Pix</h2>
+                    <p>A plataforma facilita o gerenciamento financeiro de cotas. Os fundos são transferidos diretamente à conta informada pelo organizador. O InviteEventAI não retém custódia financeira de tais montantes.</p>
+                `
+            },
+            privacy: {
+                title: 'Política de Privacidade — LGPD',
+                body: `
+                    <p><strong>Última atualização: 14 de maio de 2026</strong></p>
+                    <p>A sua privacidade e segurança são prioridades. Esta política detalha o tratamento de informações em estrita conformidade com a Lei Geral de Proteção de Dados (LGPD).</p>
+                    <hr/>
+                    <h2>1. Mapeamento de Dados (PII)</h2>
+                    <p>Coletamos nomes de convidados para controle da lista de presença, fotos no mural compartilhado e comprovantes de pagamento enviados voluntariamente.</p>
+                    <h2>2. Restrições Alimentares (Dados Sensíveis)</h2>
+                    <p>Dados sobre restrições de saúde e alergias alimentares são coletados sob <strong>consentimento explícito</strong> e finalidade única de viabilizar a segurança no planejamento do buffet pelo casal.</p>
+                    <h2>3. Retenção e Eliminação</h2>
+                    <p>Os dados pessoais são armazenados criptografados e retidos por até <strong>90 dias</strong> após a realização do evento, após o qual são arquivados anonimizados ou permanentemente excluídos sob o Direito ao Esquecimento (Art. 18, LGPD).</p>
+                `
+            }
+        };
+
+        // Controle de Modal Overlay
+        function openLegalModal(docType) {
+            const doc = legalContent[docType];
+            document.getElementById('modalTitle').innerText = doc.title;
+            document.getElementById('modalContent').innerHTML = doc.body;
+            
+            const backdrop = document.getElementById('modalBackdrop');
+            backdrop.classList.add('open');
+        }
+
+        function closeModal() {
+            // Renomeando para manter compatibilidade interna
+            const backdrop = document.getElementById('modalBackdrop');
+            backdrop.classList.remove('open');
+        }
+
+        function closeLegalModal() {
+            const backdrop = document.getElementById('modalBackdrop');
+            backdrop.classList.remove('open');
+        }
+    </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { Presente } from '@/lib/types/database';
+import { Presente, PresenteCategoria, PresenteLock, Comprovante } from '@/lib/types/database';
 
 export interface ReserveGiftsParams {
   presentesIds: string[];
@@ -8,6 +8,61 @@ export interface ReserveGiftsParams {
   eventoId?: string;
   convidadoNome?: string;
   mensagem?: string;
+}
+
+export interface UnifiedSuggestion {
+  id: string;
+  nome: string;
+  preco: number;
+  preco_de?: number;
+  descricao?: string;
+  imagem_url?: string;
+  categoria_id: string;
+  popularity_score: number;
+  type: 'base' | 'custom';
+  link_externo?: string;
+}
+
+export interface RankedCategory {
+  categoria_id: string;
+  categoria_nome: string;
+  total_presentes: number;
+  total_arrecadado: number;
+  evento_id: string;
+}
+
+export interface AdminGift extends Presente {
+  categoria: { nome: string } | null;
+  presentes_locks: Array<PresenteLock & { convite: { nome_principal: string } | null }>;
+}
+
+export interface AdminComprovante extends Comprovante {
+  presente: {
+    nome: string;
+    preco: number;
+    evento_id: string;
+  } | null;
+  convite: {
+    nome_principal: string;
+  } | null;
+  valor?: number;
+  status?: string;
+}
+
+export interface FilaAjusteLink {
+  id: string;
+  presente_id: string | null;
+  presente_base_id: string | null;
+  link_quebrado: string;
+  motivo_quebra: string;
+  status: string;
+  link_substituto?: string | null;
+  logs_cura?: any; // Estrutura JSON arbitrária de log
+  criado_em: string;
+  atualizado_em?: string;
+  presentes_base?: {
+    nome: string;
+  } | null;
 }
 
 export const giftService = {
@@ -27,7 +82,7 @@ export const giftService = {
     return data as Presente[];
   },
 
-  async getPublicGifts(eventoId: string): Promise<any[]> {
+  async getPublicGifts(eventoId: string): Promise<Presente[]> {
     const { data, error } = await supabase
       .from('presentes')
       .select('*, presentes_locks(*)')
@@ -39,7 +94,7 @@ export const giftService = {
       console.error('Error fetching public gifts:', error);
       return [];
     }
-    return data;
+    return data as Presente[];
   },
 
   async createGift(gift: Partial<Presente>): Promise<{ success: boolean; error?: Error | null }> {
@@ -84,7 +139,7 @@ export const giftService = {
     return data as { success: boolean; message: string };
   },
 
-  async getCategories(): Promise<any[]> {
+  async getCategories(): Promise<PresenteCategoria[]> {
     const { data, error } = await supabase
       .from('presentes_categorias')
       .select('*')
@@ -94,10 +149,10 @@ export const giftService = {
       console.error('Error fetching categories:', error);
       return [];
     }
-    return data;
+    return data as PresenteCategoria[];
   },
 
-  async getUnifiedSuggestions(categoriaId?: string): Promise<any[]> {
+  async getUnifiedSuggestions(categoriaId?: string): Promise<UnifiedSuggestion[]> {
     let query = supabase
       .from('view_presentes_ranking_geral')
       .select('*');
@@ -106,19 +161,18 @@ export const giftService = {
       query = query.eq('categoria_id', categoriaId);
     }
 
-    // A view já vem ordenada por popularity_score DESC, mas garantimos aqui
     const { data, error } = await query.order('popularity_score', { ascending: false });
 
     if (error) {
       console.error('Error fetching unified suggestions:', error);
       return [];
     }
-    return data;
+    return data as UnifiedSuggestion[];
   },
 
-  async importGiftFromUnified(originId: string, type: 'base' | 'custom', eventoId: string): Promise<{ success: boolean; gift?: any; error?: Error | null }> {
+  async importGiftFromUnified(originId: string, type: 'base' | 'custom', eventoId: string): Promise<{ success: boolean; gift?: Presente; error?: Error | null }> {
     try {
-      let sourceGift: any = null;
+      let sourceGift: Partial<Presente> = {};
       
       if (type === 'base') {
         // 1. Buscar no catálogo master global SaaS
@@ -142,7 +196,7 @@ export const giftService = {
           link_externo: baseGift.link_varejo_padrao
         };
       } else {
-        // 2. Buscar presente customizado vindo de outro casamento cadastrado por um par
+        // 2. Buscar presente customizado vindo de outro casamento
         const { data: customGift, error: fetchError } = await supabase
           .from('presentes')
           .select('*')
@@ -159,7 +213,7 @@ export const giftService = {
           descricao: customGift.descricao,
           imagem_url: customGift.imagem_url,
           categoria_id: customGift.categoria_id,
-          base_id: null, // Itens manuais clonados continuam com base_id nulo
+          base_id: null,
           link_externo: customGift.link_externo
         };
       }
@@ -185,14 +239,14 @@ export const giftService = {
 
       if (insertError) throw new Error(insertError.message);
 
-      return { success: true, gift: inserted, error: null };
-    } catch (err: any) {
+      return { success: true, gift: inserted as Presente, error: null };
+    } catch (err: unknown) {
       console.error('Error importing unified gift:', err);
-      return { success: false, error: err };
+      return { success: false, error: err instanceof Error ? err : new Error(String(err)) };
     }
   },
 
-  async getRankedCategories(eventoId: string): Promise<any[]> {
+  async getRankedCategories(eventoId: string): Promise<RankedCategory[]> {
     const { data, error } = await supabase
       .from('view_presentes_categoria_ranking')
       .select('*')
@@ -202,7 +256,7 @@ export const giftService = {
       console.error('Error fetching ranked categories:', error);
       return [];
     }
-    return data;
+    return data as RankedCategory[];
   },
 
   async lockGift(presenteId: string, sessionId: string, conviteId?: string) {
@@ -225,8 +279,8 @@ export const giftService = {
     if (error) throw error;
   },
 
-  // --- NOVAS OPERAÇÕES DE ADMINISTRAÇÃO CONSOLIDADA ---
-  async getAdminGifts(eventoId: string): Promise<any[]> {
+  // --- OPERAÇÕES DE ADMINISTRAÇÃO CONSOLIDADA ---
+  async getAdminGifts(eventoId: string): Promise<AdminGift[]> {
     const { data, error } = await supabase
       .from('presentes')
       .select('*, categoria:presentes_categorias(nome), presentes_locks(*, convite:convites(nome_principal))')
@@ -237,10 +291,10 @@ export const giftService = {
       console.error('Error fetching admin gifts:', error);
       return [];
     }
-    return data;
+    return data as AdminGift[];
   },
 
-  async getAdminComprovantes(eventoId: string): Promise<any[]> {
+  async getAdminComprovantes(eventoId: string): Promise<AdminComprovante[]> {
     const { data, error } = await supabase
       .from('comprovantes')
       .select('*, presente:presentes!inner(nome, preco, evento_id), convite:convites(nome_principal)')
@@ -251,10 +305,10 @@ export const giftService = {
       console.error('Error fetching admin comprovantes:', error);
       return [];
     }
-    return data;
+    return data as AdminComprovante[];
   },
 
-  async createGiftWithReturn(gift: Partial<Presente>): Promise<{ success: boolean; data?: any; error?: Error | null }> {
+  async createGiftWithReturn(gift: Partial<Presente>): Promise<{ success: boolean; data?: Presente | null; error?: Error | null }> {
     const { data, error } = await supabase
       .from('presentes')
       .insert([gift])
@@ -262,12 +316,12 @@ export const giftService = {
 
     return {
       success: !error && !!data,
-      data: data ? data[0] : null,
+      data: data ? (data[0] as Presente) : null,
       error: error ? new Error(error.message) : null
     };
   },
 
-  async updateGiftWithReturn(id: string, gift: Partial<Presente>): Promise<{ success: boolean; data?: any; error?: Error | null }> {
+  async updateGiftWithReturn(id: string, gift: Partial<Presente>): Promise<{ success: boolean; data?: Presente | null; error?: Error | null }> {
     const { data, error } = await supabase
       .from('presentes')
       .update(gift)
@@ -276,7 +330,7 @@ export const giftService = {
 
     return {
       success: !error && !!data,
-      data: data ? data[0] : null,
+      data: data ? (data[0] as Presente) : null,
       error: error ? new Error(error.message) : null
     };
   },
@@ -290,9 +344,6 @@ export const giftService = {
     return { success: !error, error: error ? new Error(error.message) : null };
   },
 
-  /**
-   * Reserva um ou mais presentes através da RPC segura.
-   */
   async reserveGifts(params: ReserveGiftsParams) {
     const { data, error } = await supabase.rpc('reservar_multiplos_presentes_v2', {
       p_presentes_ids: params.presentesIds,
@@ -307,9 +358,6 @@ export const giftService = {
     return data;
   },
 
-  /**
-   * Obtém os KPIs financeiros para o dashboard admin.
-   */
   async getDashboardKpis(eventoId: string) {
     const { data, error } = await supabase
       .from('comprovantes')
@@ -318,16 +366,13 @@ export const giftService = {
 
     if (error) throw error;
 
-    const totalArrecadado = (data || []).reduce((acc: number, curr: any) => acc + Number(curr.valor || 0), 0);
+    const totalArrecadado = (data || []).reduce((acc: number, curr: { valor?: number }) => acc + Number(curr.valor || 0), 0);
 
     return {
       totalArrecadado,
     };
   },
 
-  /**
-   * Confirma uma transação de presente (ação do admin).
-   */
   async confirmTransaction(transactionId: string) {
     const { error } = await supabase
       .from('comprovantes')
@@ -337,10 +382,7 @@ export const giftService = {
     if (error) throw error;
   },
 
-  /**
-   * Lista todas as transações de um evento.
-   */
-  async getTransactions(eventoId: string) {
+  async getTransactions(eventoId: string): Promise<AdminComprovante[]> {
     const { data, error } = await supabase
       .from('comprovantes')
       .select(`
@@ -351,13 +393,10 @@ export const giftService = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data;
+    return data as AdminComprovante[];
   },
 
-  /**
-   * Reporta um link quebrado para a fila de auto-cura (PRD-12C)
-   */
-  async reportBrokenLink(presenteId: string, baseId: string | null, linkQuebrado: string, motivo: string) {
+  async reportBrokenLink(presenteId: string | null, baseId: string | null, linkQuebrado: string, motivo: string) {
     let checkQuery = supabase
       .from('fila_ajuste_links')
       .select('id')
@@ -372,7 +411,6 @@ export const giftService = {
     const { data: existing } = await checkQuery;
     
     if (existing && existing.length > 0) {
-      console.log(`[Deduplication] Item ${presenteId || baseId} já se encontra na fila como PENDENTE. Ignorando inserção duplicada.`);
       return existing; 
     }
 
@@ -391,10 +429,7 @@ export const giftService = {
     return data;
   },
 
-  /**
-   * Retorna todos os itens pendentes na fila de ajuste de links (Acesso Master)
-   */
-  async getFilaAjusteLinks() {
+  async getFilaAjusteLinks(): Promise<FilaAjusteLink[]> {
     const { data, error } = await supabase
       .from('fila_ajuste_links')
       .select(`
@@ -404,7 +439,6 @@ export const giftService = {
       .order('criado_em', { ascending: false });
       
     if (error) throw error;
-    return data;
+    return data as FilaAjusteLink[];
   }
 };
-

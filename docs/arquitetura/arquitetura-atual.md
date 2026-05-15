@@ -49,11 +49,15 @@ A plataforma InviteEventAI é um sistema SaaS multi-tenant para gestão de event
 - **UUID vs Serial**: Migração total para UUIDs em chaves primárias e estrangeiras para evitar IDOR (Insecure Direct Object Reference).
 - **Moderação Assíncrona**: Fotos do mural nascem com `is_approved = false` por padrão se configurado pelo noivo.
 - **PIX Direto**: Foco inicial em facilitação de transferência direta (QR Code estático) para evitar taxas de intermediários para os noivos.
+- **Governança e Auditoria LGPD (PRD-013)**: Coleta explícita de consentimento para restrições de saúde (dados sensíveis) no RSVP. O IP do usuário é gravado diretamente no PostgreSQL usando gatilhos (`BEFORE INSERT`) no Supabase para maior confiabilidade de não-repúdio, sem expor rotas no frontend.
 
 ## Riscos Técnicos
 - **Segurança de Storage**: Necessidade de políticas de RLS rigorosas nos buckets de armazenamento para evitar deleção não autorizada.
 - **Concorrência em Cotas**: Garantir que a reserva de cotas de presentes seja atômica via RPC.
+- **Vazamento de PII**: Garantir que logs de auditoria contenham apenas metadados necessários para conformidade jurídica.
 
 ## Dívidas Técnicas
 - Implementação de Webhooks para confirmação automática de PIX (atualmente manual).
 - Otimização de imagens no cliente antes do upload para economizar storage.
+- Cobertura total de tipos estritos TypeScript nos retornos da API de Afiliados (erradicação de `any`).
+

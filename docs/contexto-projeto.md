@@ -45,7 +45,8 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | 12B | Smart Gift List - Monetização    | CONCLUÍDO   | Concluído   |
 | 12C | Smart Gift List - Autônomo       | CONCLUÍDO   | Concluído   |
 | 12D | Smart Gift List - Cockpit        | CONCLUÍDO   | Concluído   |
-| 013 | Higiene, Segurança & LGPD        | EM EXECUÇÃO | ARQUITETURA |
+| 013 | Higiene, Segurança & LGPD        | CONCLUÍDO   | Concluído   |
+| 014 | Group Gifting (Cotas)            | EM DEFINIÇÃO | PRD UPDATE  |
 
 
 ## Segurança
@@ -154,11 +155,27 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | src/components/sections/__tests__/RSVP_LGPD.test.tsx | QA | Suíte de testes unitários TDD (GREEN) que garantem o fluxo e restrições |
 | src/components/ui/CookieBanner.tsx         | DEV / UX   | Widget flutuante com delay inteligente e modais integrados |
 | src/components/ui/LegalFooter.tsx          | DEV / UX   | Rodapé legal responsivo e customizável (Clear e Dark Glass) |
+| docs/prd/prd-014/prd-inicial.md            | BA          | PRD Inicial de Group Gifting (Cotas de Presentes) e Regras ACID |
+| docs/prd/prd-014/fluxo-ux.md               | UX/UI       | Mapeamento visual das barras de progresso e contadores dinâmicos |
+| docs/wireframes/cotas-presentes.html       | UX/UI       | Protótipo Interativo de multi-seleção e barras douradas premium |
+| docs/wireframes/admin-cadastro-cotas.html  | UX/UI       | Protótipo Interativo da gestão de cotas com toggle e validações |
+| docs/prd/prd-014/plano-implementacao.md    | Arquiteto   | Desenho de banco, RPC de Lock Fracionado ACID e Services |
+
 
 ## Última Atualização
 - Data    : 2026-05-15
 - Por     : Maestro / DEV / QA
 - Motivo  : PRD-013 CONCLUÍDO, TESTADO EM TDD GREEN E PUBLICADO (v0.3.6). Todas as funcionalidades de governança e conformidade LGPD foram implementadas com absoluto rigor técnico. O banco de dados recebeu segurança por triggers auditáveis invioláveis, os componentes foram codificados sob testes TDD que validam o bloqueio condicional de dados de saúde. Foi criado o controle inteligente de cookies com suporte a atrasos de animação diferenciados (Landing x Convite). Todos os testes passaram e o sistema foi validado por análise estática limpa!
+
+- Data    : 2026-05-15 (Tarde)
+- Por     : Maestro / BA
+- Motivo  : INICIADA DESCOBERTA PRD-014 (Cotas de Presentes / Group Gifting). Criada a especificação inicial detalhando a hipótese de aumento de 32% na conversão de presentes caros. Mapeadas regras financeiras ACID de integridade de cotas com lock transacional temporário (3 horas). Pronto para a fase de Experiência/UX!
+
+- Data    : 2026-05-15 (Noite)
+- Por     : Maestro / UX-UI / Arquiteto
+- Motivo  : FASES DE EXPERIÊNCIA E ARQUITETURA PRD-014 CONCLUÍDAS EM CONJUNTO. Criado o mapeamento de fluxos UX e o protótipo interativo com barras de progresso douradas premium. Desenvolvido o plano de implementação técnica com Stored Procedure SQL (RPC) para bloqueio transacional atômico via `SELECT FOR UPDATE` na reserva fracionada, mitigando race conditions. Mapeadas as extensões de tabelas de lock de 3h. Tudo pronto para a validação do Operador e início da Codificação TDD!
+
+
 
 
 

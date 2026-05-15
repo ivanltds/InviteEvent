@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protótipo de Cotas de Presentes - InviteEvent</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap');
+        
+        body, html { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: #F9F9FB; color: #1A1A1A; overflow-x: hidden; scroll-behavior: smooth; }
+        
+        /* Glass Header / Navbar */
+        .header-nav {
+            position: sticky; top: 0; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(0,0,0,0.05); z-index: 50; display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; box-sizing: border-box;
+        }
+        .logo { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 22px; color: #1A1A1A; cursor: pointer; }
+        
+        /* Cart Badge indicator */
+        .cart-indicator {
+            background: #FFFFFF; border: 1px solid rgba(0,0,0,0.1); border-radius: 20px; padding: 10px 24px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .cart-indicator:hover { border-color: #C5A059; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(197, 160, 89, 0.15); }
+        .cart-count { background: #C5A059; color: #FFFFFF; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; justify-content: center; align-items: center; font-size: 11px; font-weight: 700; }
+
+        /* Main Section */
+        header { padding: 60px 20px 40px; text-align: center; max-width: 800px; margin: 0 auto; }
+        .title { font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 600; margin: 0 0 12px 0; }
+        .subtitle { font-size: 16px; color: #71717A; margin: 0; line-height: 1.5; }
+
+        /* Gift Catalog Grid */
+        .gift-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; padding: 0 5% 80px; max-width: 1200px; margin: 0 auto; box-sizing: border-box;
+        }
+
+        /* Product Card */
+        .gift-card {
+            background: #FFFFFF; border-radius: 24px; overflow: hidden; border: 1px solid rgba(0,0,0,0.02); box-shadow: 0 15px 40px rgba(0,0,0,0.03); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; display: flex; flex-direction: column; height: 100%; position: relative;
+        }
+        .gift-card:hover { transform: translateY(-8px); box-shadow: 0 25px 50px rgba(0,0,0,0.08); border-color: rgba(197, 160, 89, 0.2); }
+        
+        .gift-img-wrapper { height: 220px; overflow: hidden; position: relative; background: #F1F5F9; }
+        .gift-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s; }
+        .gift-card:hover .gift-img { transform: scale(1.04); }
+        
+        .gift-info { padding: 24px; display: flex; flex-direction: column; flex-grow: 1; }
+        .gift-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600; margin: 0 0 8px 0; color: #1A1A1A; }
+        .gift-price { font-size: 16px; font-weight: 600; color: #C5A059; margin-bottom: 20px; display: flex; align-items: center; gap: 4px; }
+        .gift-tag { font-size: 11px; text-transform: uppercase; color: #71717A; letter-spacing: 0.05em; margin-bottom: 6px; }
+
+        /* NEW: Collective Badges and Progress inside Card */
+        .badge-coletivo {
+            position: absolute; top: 16px; right: 16px; background: rgba(197, 160, 89, 0.1); border: 1px solid #C5A059; color: #C5A059; font-size: 10px; font-weight: 600; text-transform: uppercase; padding: 4px 10px; border-radius: 12px; z-index: 5; letter-spacing: 0.02em;
+        }
+        .card-progress-container { margin-bottom: 16px; }
+        .card-progress-text { font-size: 11px; color: #71717A; display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .card-progress-bar { width: 100%; height: 5px; background: #E5E7EB; border-radius: 10px; overflow: hidden; }
+        .card-progress-fill { height: 100%; background: #C5A059; border-radius: 10px; }
+
+        /* General Buttons */
+        .btn {
+            border: none; padding: 14px 24px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box;
+        }
+        .btn-gold { background-color: #C5A059; color: #FFFFFF; box-shadow: 0 6px 15px rgba(197, 160, 89, 0.2); }
+        .btn-gold:hover { background-color: #B38F48; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(197, 160, 89, 0.3); }
+        
+        .btn-outline { background-color: transparent; color: #1A1A1A; border: 1px solid rgba(0,0,0,0.15); }
+        .btn-outline:hover { background-color: rgba(0,0,0,0.02); border-color: #C5A059; color: #C5A059; }
+
+        /* Detail Modal */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.4s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        
+        .modal-container {
+            background: rgba(255, 255, 255, 0.98); border: 1px solid rgba(255,255,255,0.4); border-radius: 32px; width: 90%; max-width: 820px; overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.15); display: grid; grid-template-columns: 1fr 1.1fr; transform: translateY(40px) scale(0.95); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modal-overlay.active .modal-container { transform: translateY(0) scale(1); }
+        
+        .modal-visual { position: relative; height: 100%; min-height: 400px; background: #F1F5F9; display: flex; align-items: center; justify-content: center; }
+        .modal-visual img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+        
+        .modal-content { padding: 48px; display: flex; flex-direction: column; justify-content: flex-start; max-height: 85vh; overflow-y: auto; }
+        .modal-close { align-self: flex-end; font-size: 24px; color: #71717A; cursor: pointer; background: none; border: none; margin-bottom: 20px; transition: color 0.2s; }
+        .modal-close:hover { color: #1A1A1A; }
+        
+        .modal-title { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 600; color: #1A1A1A; margin: 0 0 10px 0; line-height: 1.2; }
+        .modal-price { font-size: 24px; font-weight: 600; color: #C5A059; margin-bottom: 24px; }
+        
+        .modal-desc-heading { font-size: 11px; text-transform: uppercase; font-weight: 600; color: #71717A; letter-spacing: 0.1em; margin-bottom: 12px; }
+        .modal-desc-text { font-size: 15px; line-height: 1.7; color: #52525B; margin: 0 0 32px 0; }
+        
+        /* Actions grid matches production */
+        .modal-actions { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; }
+
+        /* NEW: Quota Config Section Inside Modal */
+        .quota-section-container {
+            border-top: 1px solid rgba(0,0,0,0.06); padding-top: 24px; margin-top: 24px;
+        }
+        .quota-header-title { font-size: 11px; text-transform: uppercase; font-weight: 600; color: #C5A059; letter-spacing: 0.1em; margin-bottom: 16px; }
+        
+        .cota-counter-box { text-align: center; margin-bottom: 20px; }
+        .cota-counter-title { font-size: 12px; font-weight: 600; color: #71717A; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.02em; }
+        .counter-row { display: flex; justify-content: center; align-items: center; gap: 16px; }
+        .counter-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #D1D5DB; background: #FFF; cursor: pointer; font-size: 16px; display: flex; justify-content: center; align-items: center; transition: all 0.2s; }
+        .counter-btn:hover { border-color: #C5A059; color: #C5A059; }
+        .counter-qty { font-size: 24px; font-weight: 600; min-width: 40px; }
+
+        .summary-quota-box {
+            background: rgba(197,160,89,0.03); border: 1px dashed rgba(197,160,89,0.3); border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+        }
+        .summary-quota-text { font-size: 13px; font-weight: 500; }
+        .summary-quota-val { font-size: 18px; font-weight: 700; color: #C5A059; }
+
+        @media (max-width: 768px) {
+            .modal-container { grid-template-columns: 1fr; }
+            .modal-visual { height: 240px; min-height: 240px; }
+            .modal-content { padding: 32px; }
+            .modal-actions { grid-template-columns: 1fr; }
+        }
+
+        /* Success & Cart Popup */
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(40px); background: #1A1A1A; color: #FFF; padding: 14px 28px; border-radius: 30px; font-size: 13px; font-weight: 500; z-index: 200; box-shadow: 0 10px 30px rgba(0,0,0,0.15); opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; gap: 10px;
+        }
+        .toast.active { transform: translateX(-50%) translateY(0); opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <!-- Glass Header Navbar -->
+    <div class="header-nav">
+        <div class="logo">InviteEvent</div>
+        <div class="cart-indicator" onclick="simulateCheckout()">
+            <span>🛒 Carrinho</span>
+            <span class="cart-count" id="cartCountBadge">0</span>
+        </div>
+    </div>
+
+    <!-- Title and Subtitle -->
+    <header>
+        <h1 class="title">Lista de Presentes</h1>
+        <p class="subtitle">Seu maior presente é a sua presença. Escolha como contribuir com a nossa nova história de forma clássica ou colaborativa.</p>
+    </header>
+
+    <!-- Gift Grid (Static Clone of Production with Quota Enhancements) -->
+    <div class="gift-grid">
+        <!-- Item 1: TRADICIONAL (Legacy Clone) -->
+        <div class="gift-card" onclick="openDetail(1)">
+            <div class="gift-img-wrapper">
+                <img class="gift-img" src="https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&q=80&w=600" alt="Cafeteira">
+            </div>
+            <div class="gift-info">
+                <span class="gift-tag">Cozinha</span>
+                <h3 class="gift-title">Cafeteira Expresso Automática</h3>
+                <span class="gift-price">R$ 599,00</span>
+                <button class="btn btn-gold" style="margin-top:auto; width:100%;">Ver Detalhes</button>
+            </div>
+        </div>
+
+        <!-- Item 2: COLETIVO COM PROGRESSO (40% vendido) -->
+        <div class="gift-card" onclick="openDetail(2)">
+            <div class="badge-coletivo">Coletivo</div>
+            <div class="gift-img-wrapper">
+                <img class="gift-img" src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=600" alt="Geladeira">
+            </div>
+            <div class="gift-info">
+                <span class="gift-tag">Eletrodomésticos</span>
+                <h3 class="gift-title">Geladeira French Door 554L</h3>
+                <span class="gift-price">R$ 7.500,00</span>
+                
+                <!-- Card Progress Addition -->
+                <div class="card-progress-container">
+                    <div class="card-progress-text">
+                        <span>6 de 15 cotas</span>
+                        <span style="font-weight:600;">40%</span>
+                    </div>
+                    <div class="card-progress-bar">
+                        <div class="card-progress-fill" style="width:40%;"></div>
+                    </div>
+                </div>
+
+                <button class="btn btn-gold" style="margin-top:auto; width:100%;">Ver Detalhes</button>
+            </div>
+        </div>
+
+        <!-- Item 3: COLETIVO ZERO PROGRESSO (0% vendido -> MOSTRA LOJA) -->
+        <div class="gift-card" onclick="openDetail(3)">
+            <div class="badge-coletivo">Coletivo</div>
+            <div class="gift-img-wrapper">
+                <div style="font-size:11px; text-transform:uppercase; font-weight:600; color:#A1A1AA;">Sem Imagem</div>
+            </div>
+            <div class="gift-info">
+                <span class="gift-tag">Sala de Estar</span>
+                <h3 class="gift-title">Smart TV Crystal UHD 65"</h3>
+                <span class="gift-price">R$ 4.000,00</span>
+
+                <!-- Card Progress Addition -->
+                <div class="card-progress-container">
+                    <div class="card-progress-text">
+                        <span>0 de 10 cotas</span>
+                        <span style="font-weight:600;">0%</span>
+                    </div>
+                    <div class="card-progress-bar">
+                        <div class="card-progress-fill" style="width:0%;"></div>
+                    </div>
+                </div>
+
+                <button class="btn btn-gold" style="margin-top:auto; width:100%;">Ver Detalhes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unified Detail Modal -->
+    <div class="modal-overlay" id="detailModal" onclick="closeDetail()">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <div class="modal-visual">
+                <img id="modalImg" src="" alt="Produto">
+                <div id="modalNoImg" style="font-size:12px; font-weight:600; color:#A1A1AA; text-transform:uppercase; display:none;">IMAGE</div>
+            </div>
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeDetail()">✕</button>
+                <div id="modalTag" style="font-size: 11px; text-transform: uppercase; color: #C5A059; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 8px;">LUA DE MEL</div>
+                <h2 class="modal-title" id="modalTitle">Nome do Produto</h2>
+                <div class="modal-price" id="modalPrice">R$ 0,00</div>
+                
+                <div class="modal-desc-heading">Sobre o Presente</div>
+                <p class="modal-desc-text" id="modalDesc">Descrição do produto física.</p>
+                
+                <!-- ÁREA DE AÇÕES DE PRODUÇÃO (Desabilitadas em itens com cotas conforme solicitado pelo operador) -->
+                <div class="modal-desc-heading" id="legacyHeading">Opções Individuais Clássicas</div>
+                <div class="modal-actions" id="modalActionsContainer" style="margin-bottom: 20px;">
+                    <button class="btn btn-gold" id="btnDirectGift" onclick="directGift()">✧ Presentear Virtual</button>
+                    <button class="btn btn-outline" id="btnAddToCart" onclick="addToCart()">🛒 No Carrinho</button>
+                </div>
+
+                <!-- NOVO BLOCO: PARTICIPAÇÃO COLETIVA (Cotas) -->
+                <div class="quota-section-container" id="quotaBlock" style="display: none;">
+                    <div class="quota-header-title">Participação Coletiva</div>
+                    
+                    <div class="cota-counter-box">
+                        <div class="cota-counter-title">Quantas cotas deseja assumir?</div>
+                        <div class="counter-row">
+                            <button class="counter-btn" onclick="decrement()">−</button>
+                            <div class="counter-qty" id="cotaDisplay">1</div>
+                            <button class="counter-btn" onclick="increment()">+</button>
+                        </div>
+                        <div style="font-size: 11px; color: #C5A059; font-weight:600; margin-top:6px;">
+                            Cotas livres: <span id="availQty">0</span> (<span id="valCotaText">R$ 0</span> cada)
+                        </div>
+                    </div>
+
+                    <div class="summary-quota-box">
+                        <div class="summary-quota-text" id="quotaSummaryDesc">1 cota selecionada</div>
+                        <div class="summary-quota-val" id="quotaSummaryVal">R$ 0,00</div>
+                    </div>
+
+                    <button class="btn btn-gold" style="width:100%;" onclick="confirmQuota()">Reservar Cota e Gerar PIX</button>
+                </div>
+
+                <!-- BOTÃO DE LOJA INDICADA (Com a regra condicional de 0% de cota vendida) -->
+                <button class="btn btn-outline" id="btnExternalStore" onclick="goToExternalStore()" style="grid-column: span 2; display: none; width:100%; margin-top: 16px; border-color: #C5A059; color: #C5A059; background: rgba(197,160,89,0.03); font-weight: 600;">↗ Comprar Integral na Loja Parceira</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toastMessage">
+        <span style="color:#C5A059;">✓</span> <span id="toastText">Item adicionado com sucesso!</span>
+    </div>
+
+    <script>
+        // Database Cloned & Augmented
+        const giftsData = {
+            1: {
+                title: "Cafeteira Expresso Automática",
+                tag: "COZINHA",
+                price: "R$ 599,00",
+                img: "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&q=80&w=600",
+                desc: "Cafeteira italiana compacta para dar energia aos nossos novos começos matinais. Um presente individual de enxoval clássico.",
+                externalUrl: null,
+                isQuota: false
+            },
+            2: {
+                title: "Geladeira French Door 554L",
+                tag: "ELETRODOMÉSTICOS",
+                price: "R$ 7.500,00",
+                img: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=600",
+                desc: "Nossa grande aliada para conservar momentos e banquetes saborosos que prepararemos em nossa nova vida em família.",
+                externalUrl: "https://www.fastshop.com.br",
+                isQuota: true,
+                priceRaw: 7500,
+                totalQuotas: 15,
+                quotasSold: 6,
+                pricePerQuota: 500
+            },
+            3: {
+                title: "Smart TV Crystal UHD 65\"",
+                tag: "SALA DE ESTAR",
+                price: "R$ 4.000,00",
+                img: null,
+                desc: "Aparelho moderno para nossas noites de maratona de filmes e séries com muito aconchego.",
+                externalUrl: "https://www.magazineluiza.com.br",
+                isQuota: true,
+                priceRaw: 4000,
+                totalQuotas: 10,
+                quotasSold: 0,
+                pricePerQuota: 400
+            }
+        };
+
+        let activeId = null;
+        let cartCount = 0;
+        let currentQty = 1;
+        let maxAvailable = 1;
+        let costPerQuota = 0;
+
+        const fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        function openDetail(id) {
+            activeId = id;
+            const item = giftsData[id];
+            
+            // Text Fields
+            document.getElementById('modalTag').textContent = item.tag;
+            document.getElementById('modalTitle').textContent = item.title;
+            document.getElementById('modalPrice').textContent = item.price;
+            document.getElementById('modalDesc').textContent = item.desc;
+            
+            // Image rendering
+            const imgEl = document.getElementById('modalImg');
+            const fallbackEl = document.getElementById('modalNoImg');
+            if (item.img) {
+                imgEl.src = item.img;
+                imgEl.style.display = 'block';
+                fallbackEl.style.display = 'none';
+            } else {
+                imgEl.style.display = 'none';
+                fallbackEl.style.display = 'block';
+            }
+
+            // Reset legacy controls
+            const legacyBtn1 = document.getElementById('btnDirectGift');
+            const legacyBtn2 = document.getElementById('btnAddToCart');
+            const quotaBlock = document.getElementById('quotaBlock');
+            const extBtn = document.getElementById('btnExternalStore');
+
+            legacyBtn1.disabled = false; legacyBtn1.style.opacity = "1";
+            legacyBtn2.disabled = false; legacyBtn2.style.opacity = "1";
+            quotaBlock.style.display = 'none';
+            extBtn.style.display = 'none';
+
+            if (item.isQuota) {
+                // REGRA: Desabilita ações legadas conforme o operador pediu para item fracionado
+                legacyBtn1.disabled = true; legacyBtn1.style.opacity = "0.4";
+                legacyBtn2.disabled = true; legacyBtn2.style.opacity = "0.4";
+                
+                // Habilita Módulo de Cotas
+                quotaBlock.style.display = 'block';
+                currentQty = 1;
+                maxAvailable = item.totalQuotas - item.quotasSold;
+                costPerQuota = item.pricePerQuota;
+                
+                document.getElementById('availQty').textContent = maxAvailable;
+                document.getElementById('valCotaText').textContent = fmt.format(costPerQuota);
+                updateQuotaUI();
+
+                // REGRA CONDICIONAL: Loja parceira SÓ APARECE se 0 cotas foram vendidas!
+                if (item.quotasSold === 0 && item.externalUrl) {
+                    extBtn.style.display = 'block';
+                    extBtn.setAttribute('data-url', item.externalUrl);
+                }
+            } else {
+                // Comportamento clássico 100% fiel
+                if (item.externalUrl) {
+                    extBtn.style.display = 'block';
+                    extBtn.setAttribute('data-url', item.externalUrl);
+                }
+            }
+
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        function closeDetail() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        function updateQuotaUI() {
+            document.getElementById('cotaDisplay').textContent = currentQty;
+            const total = currentQty * costPerQuota;
+            document.getElementById('quotaSummaryVal').textContent = fmt.format(total);
+            document.getElementById('quotaSummaryDesc').textContent = `${currentQty} ${currentQty > 1 ? 'cotas selecionadas' : 'cota selecionada'}`;
+        }
+
+        function increment() {
+            if (currentQty < maxAvailable) {
+                currentQty++;
+                updateQuotaUI();
+            }
+        }
+
+        function decrement() {
+            if (currentQty > 1) {
+                currentQty--;
+                updateQuotaUI();
+            }
+        }
+
+        function confirmQuota() {
+            const total = currentQty * costPerQuota;
+            closeDetail();
+            showToast(`🔒 Sucesso! ${currentQty} cotas reservadas (${fmt.format(total)}).`);
+        }
+
+        function showToast(text) {
+            const toast = document.getElementById('toastMessage');
+            document.getElementById('toastText').textContent = text;
+            toast.classList.add('active');
+            setTimeout(() => { toast.classList.remove('active'); }, 3500);
+        }
+
+        function addToCart() {
+            cartCount++;
+            document.getElementById('cartCountBadge').textContent = cartCount;
+            closeDetail();
+            showToast("Item adicionado ao carrinho!");
+        }
+
+        function directGift() {
+            closeDetail();
+            showToast("Redirecionando para o pagamento integral...");
+        }
+
+        function goToExternalStore() {
+            const url = document.getElementById('btnExternalStore').getAttribute('data-url');
+            if (url) {
+                closeDetail();
+                showToast("Abrindo loja parceira indicada...");
+                setTimeout(() => { window.open(url, '_blank'); }, 1200);
+            }
+        }
+
+        function simulateCheckout() {
+            if (cartCount === 0) {
+                showToast("Seu carrinho está vazio!");
+            } else {
+                showToast(`Iniciando contribuição de ${cartCount} presentes!`);
+                cartCount = 0;
+                document.getElementById('cartCountBadge').textContent = 0;
+            }
+        }
+    </script>
+</body>
+</html>

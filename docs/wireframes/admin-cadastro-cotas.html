@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Gestão de Cotas - InviteEventAI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #FAFAFA; }
+        .sidebar { width: 240px; height: 100vh; position: fixed; background: #FFF; border-right: 1px solid #E2E8F0; }
+        .main-content { margin-left: 240px; padding: 40px; }
+        .card { background: #FFF; border-radius: 12px; padding: 24px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .gold-button { background: #D4AF37; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        
+        /* Inline Switch / Toggle */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #D4AF37;
+            background-color: #D4AF37;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #D4AF37;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar (Clone Fiel de dashboard-admin.html) -->
+    <div class="sidebar p-6 flex flex-col gap-8">
+        <h1 class="text-2xl font-bold text-gray-800">InviteEventAI</h1>
+        <nav class="flex flex-col gap-4">
+            <a href="#" class="text-gray-500 hover:text-gray-800">Dashboard</a>
+            <a href="#" class="text-gray-500 hover:text-gray-800">Convidados</a>
+            <a href="#" class="text-yellow-600 font-semibold border-r-4 border-yellow-600 pr-2">Presentes</a>
+            <a href="#" class="text-gray-500 hover:text-gray-800">Mural</a>
+            <a href="#" class="text-gray-500 hover:text-gray-800">Configurações</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <!-- Header (Clone Fiel) -->
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-800">Gestão de Presentes</h2>
+                <p class="text-gray-500">Configure e fracione qualquer presente ativo do seu catálogo.</p>
+            </div>
+            <button class="gold-button">+ Novo Presente</button>
+        </header>
+
+        <!-- Status Cards (Clone Fiel adaptado aos presentes) -->
+        <section class="grid grid-cols-3 gap-6 mb-10">
+            <div class="card">
+                <p class="text-sm text-gray-500 uppercase tracking-wider">Itens Fracionados (Cotas)</p>
+                <h3 class="text-4xl font-bold mt-2">1 / 3</h3>
+                <div class="w-full bg-gray-200 h-2 mt-4 rounded-full">
+                    <div class="bg-yellow-600 h-2 rounded-full" style="width: 33%"></div>
+                </div>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-500 uppercase tracking-wider">Cotas Vendidas</p>
+                <h3 class="text-4xl font-bold mt-2">6 total</h3>
+                <p class="text-xs text-green-500 mt-2">↑ Valor arrecadado: R$ 3.000,00</p>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-500 uppercase tracking-wider">Itens Tradicionais</p>
+                <h3 class="text-4xl font-bold mt-2">2 itens</h3>
+                <p class="text-xs text-gray-400 mt-2">Aguardando reserva integral</p>
+            </div>
+        </section>
+
+        <!-- Main Gifts Table Card (Clone Fiel da Estrutura de Tabela) -->
+        <section class="card">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold">Seu Catálogo de Casamento</h3>
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Clique no Switch para Ativar Cotas</span>
+            </div>
+            
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="border-b text-gray-400 text-sm">
+                        <th class="pb-3 font-medium">Presente</th>
+                        <th class="pb-3 font-medium">Valor Total</th>
+                        <th class="pb-3 font-medium">Modo de Venda</th>
+                        <th class="pb-3 font-medium">Configurar Cotas</th>
+                        <th class="pb-3 font-medium text-right">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-700">
+                    
+                    <!-- ITEM 1: Geladeira (Já em cotas) -->
+                    <tr class="border-b align-top">
+                        <td class="py-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-500">IMG</div>
+                                <div>
+                                    <p class="font-semibold text-gray-900">Geladeira French Door 554L</p>
+                                    <p class="text-xs text-gray-400">Eletrodomésticos</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-6 font-medium text-gray-900">R$ 7.500,00</td>
+                        <td class="py-6">
+                            <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-bold" id="badge-1">15 Cotas (R$ 500)</span>
+                        </td>
+                        <td class="py-6">
+                            <!-- Toggle Switch -->
+                            <div class="flex items-center gap-4">
+                                <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                                    <input type="checkbox" id="toggle-1" checked onchange="handleAdminToggle(1, 7500)" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer right-0 border-yellow-600"/>
+                                    <label for="toggle-1" class="toggle-label block overflow-hidden h-6 rounded-full bg-yellow-600 cursor-pointer"></label>
+                                </div>
+                                <!-- Sub-Painel de Quantidade inline -->
+                                <div id="panel-1" class="flex flex-col gap-2 mt-1">
+                                    <div class="flex items-center gap-2 bg-gray-50 p-2 rounded border">
+                                        <label class="text-xs font-semibold text-gray-500">Cotas:</label>
+                                        <input type="number" id="qty-1" value="15" min="2" oninput="calculateCota(1, 7500)" class="w-16 p-1 text-sm border rounded text-center font-medium">
+                                    </div>
+                                    <span class="text-xs text-gray-500" id="sim-1">Simulação: R$ 500,00 / cota</span>
+                                    <span class="text-xs text-red-500 font-semibold hidden" id="err-1">Mínimo R$ 50,00</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-6 text-right">
+                            <button onclick="saveAdminItem(1, 'Geladeira')" id="btn-save-1" class="text-yellow-600 font-bold hover:text-yellow-800 text-sm bg-yellow-50 px-3 py-1 rounded border border-yellow-200">Salvar</button>
+                        </td>
+                    </tr>
+
+                    <!-- ITEM 2: Cafeteira (Tradicional) -->
+                    <tr class="border-b align-top">
+                        <td class="py-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-500">IMG</div>
+                                <div>
+                                    <p class="font-semibold text-gray-900">Cafeteira Expresso Automática</p>
+                                    <p class="text-xs text-gray-400">Cozinha</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-6 font-medium text-gray-900">R$ 599,00</td>
+                        <td class="py-6">
+                            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-bold" id="badge-2">Integral</span>
+                        </td>
+                        <td class="py-6">
+                            <!-- Toggle Switch -->
+                            <div class="flex items-center gap-4">
+                                <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                                    <input type="checkbox" id="toggle-2" onchange="handleAdminToggle(2, 599)" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300"/>
+                                    <label for="toggle-2" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                                </div>
+                                <!-- Sub-Painel de Quantidade hidden initially -->
+                                <div id="panel-2" class="hidden flex-col gap-2 mt-1">
+                                    <div class="flex items-center gap-2 bg-gray-50 p-2 rounded border">
+                                        <label class="text-xs font-semibold text-gray-500">Cotas:</label>
+                                        <input type="number" id="qty-2" value="4" min="2" oninput="calculateCota(2, 599)" class="w-16 p-1 text-sm border rounded text-center font-medium">
+                                    </div>
+                                    <span class="text-xs text-gray-500" id="sim-2">Simulação: R$ 149,75 / cota</span>
+                                    <span class="text-xs text-red-500 font-semibold hidden" id="err-2">Mínimo R$ 50,00</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-6 text-right">
+                            <button onclick="saveAdminItem(2, 'Cafeteira')" id="btn-save-2" class="hidden text-yellow-600 font-bold hover:text-yellow-800 text-sm bg-yellow-50 px-3 py-1 rounded border border-yellow-200">Salvar</button>
+                        </td>
+                    </tr>
+
+                    <!-- ITEM 3: Smart TV (Tradicional) -->
+                    <tr class="border-b align-top">
+                        <td class="py-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-500">IMG</div>
+                                <div>
+                                    <p class="font-semibold text-gray-900">Smart TV Crystal UHD 65"</p>
+                                    <p class="text-xs text-gray-400">Sala de Estar</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-6 font-medium text-gray-900">R$ 4.000,00</td>
+                        <td class="py-6">
+                            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-bold" id="badge-3">Integral</span>
+                        </td>
+                        <td class="py-6">
+                            <!-- Toggle Switch -->
+                            <div class="flex items-center gap-4">
+                                <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                                    <input type="checkbox" id="toggle-3" onchange="handleAdminToggle(3, 4000)" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300"/>
+                                    <label for="toggle-3" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                                </div>
+                                <!-- Sub-Painel de Quantidade hidden initially -->
+                                <div id="panel-3" class="hidden flex-col gap-2 mt-1">
+                                    <div class="flex items-center gap-2 bg-gray-50 p-2 rounded border">
+                                        <label class="text-xs font-semibold text-gray-500">Cotas:</label>
+                                        <input type="number" id="qty-3" value="10" min="2" oninput="calculateCota(3, 4000)" class="w-16 p-1 text-sm border rounded text-center font-medium">
+                                    </div>
+                                    <span class="text-xs text-gray-500" id="sim-3">Simulação: R$ 400,00 / cota</span>
+                                    <span class="text-xs text-red-500 font-semibold hidden" id="err-3">Mínimo R$ 50,00</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-6 text-right">
+                            <button onclick="saveAdminItem(3, 'Smart TV')" id="btn-save-3" class="hidden text-yellow-600 font-bold hover:text-yellow-800 text-sm bg-yellow-50 px-3 py-1 rounded border border-yellow-200">Salvar</button>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <script>
+        const fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        function handleAdminToggle(id, price) {
+            const chk = document.getElementById('toggle-' + id);
+            const panel = document.getElementById('panel-' + id);
+            const btnSave = document.getElementById('btn-save-' + id);
+            const label = chk.nextElementSibling;
+
+            if (chk.checked) {
+                // Visual switch activation (match Tailwind manually to avoid injecting raw class dependencies dynamically)
+                chk.classList.remove('border-gray-300');
+                chk.classList.add('right-0', 'border-yellow-600');
+                label.classList.remove('bg-gray-300');
+                label.classList.add('bg-yellow-600');
+                
+                panel.classList.remove('hidden');
+                panel.classList.add('flex');
+                btnSave.classList.remove('hidden');
+                calculateCota(id, price);
+            } else {
+                chk.classList.add('border-gray-300');
+                chk.classList.remove('right-0', 'border-yellow-600');
+                label.classList.add('bg-gray-300');
+                label.classList.remove('bg-yellow-600');
+
+                panel.classList.add('hidden');
+                panel.classList.remove('flex');
+                btnSave.classList.remove('hidden'); // Mostra botão para confirmar retorno ao Integral
+            }
+        }
+
+        function calculateCota(id, price) {
+            const qtyInput = document.getElementById('qty-' + id);
+            let qty = parseInt(qtyInput.value);
+            if (!qty || qty < 1) qty = 1;
+
+            const val = price / qty;
+            const simEl = document.getElementById('sim-' + id);
+            const errEl = document.getElementById('err-' + id);
+            const saveBtn = document.getElementById('btn-save-' + id);
+
+            simEl.textContent = `Simulação: ${fmt.format(val)} / cota`;
+
+            // Regra de Negócio ACID: Mínimo R$ 50,00
+            if (val < 50) {
+                errEl.classList.remove('hidden');
+                simEl.classList.add('text-red-500');
+                saveBtn.disabled = true;
+                saveBtn.style.opacity = "0.5";
+            } else {
+                errEl.classList.add('hidden');
+                simEl.classList.remove('text-red-500');
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = "1";
+            }
+        }
+
+        function saveAdminItem(id, name) {
+            const isChecked = document.getElementById('toggle-' + id).checked;
+            const badge = document.getElementById('badge-' + id);
+            const btnSave = document.getElementById('btn-save-' + id);
+
+            if (isChecked) {
+                const qty = document.getElementById('qty-' + id).value;
+                const simText = document.getElementById('sim-' + id).textContent;
+                const cleanVal = simText.replace('Simulação: ', '').replace(' / cota', '');
+                badge.className = "bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-bold";
+                badge.textContent = `${qty} Cotas (${cleanVal})`;
+                alert(`Configuração Salva!\n\nO item "${name}" agora será exibido como Presente Coletivo fracionado em ${qty} cotas de ${cleanVal} na lista pública.`);
+            } else {
+                badge.className = "bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-bold";
+                badge.textContent = "Integral";
+                alert(`Configuração Salva!\n\nO item "${name}" voltou para o formato de Venda Integral.`);
+            }
+            btnSave.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

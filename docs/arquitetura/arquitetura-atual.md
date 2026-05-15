@@ -50,6 +50,7 @@ A plataforma InviteEventAI é um sistema SaaS multi-tenant para gestão de event
 - **Moderação Assíncrona**: Fotos do mural nascem com `is_approved = false` por padrão se configurado pelo noivo.
 - **PIX Direto**: Foco inicial em facilitação de transferência direta (QR Code estático) para evitar taxas de intermediários para os noivos.
 - **Governança e Auditoria LGPD (PRD-013)**: Coleta explícita de consentimento para restrições de saúde (dados sensíveis) no RSVP. O IP do usuário é gravado diretamente no PostgreSQL usando gatilhos (`BEFORE INSERT`) no Supabase para maior confiabilidade de não-repúdio, sem expor rotas no frontend.
+- **Concorrência Fracionada (Cotas - PRD-014)**: Para mitigar race conditions na compra da última cota de um presente de valor alto, implementada a Stored Procedure `reservar_cotas_presente` executando bloqueio atômico (`SELECT FOR UPDATE`) na tabela `presentes` e registrando a quantidade fracionada em `presentes_locks`.
 
 ## Riscos Técnicos
 - **Segurança de Storage**: Necessidade de políticas de RLS rigorosas nos buckets de armazenamento para evitar deleção não autorizada.

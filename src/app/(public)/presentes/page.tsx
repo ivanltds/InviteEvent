@@ -74,6 +74,16 @@ export default function PresentesPage() {
     );
   }, [presentes, search]);
 
+  // PRD-014: Determina se a compra integral deve ser bloqueada
+  const isFullPurchaseDisabled = useMemo(() => {
+    if (!selectedGift) return false;
+    if (!selectedGift.permite_cotas) return false;
+    
+    // Se permite cotas, só bloqueia a compra integral se pelo menos UMA cota já tiver sido vendida
+    const soldCount = quotaProgress?.cotas_compradas ?? selectedGift.cotas_compradas ?? 0;
+    return soldCount > 0;
+  }, [selectedGift, quotaProgress]);
+
   // Computa se o presente atualmente focado em modal está reservado por mim
   const isSelectedGiftLockedByMe = useMemo(() => {
     if (!selectedGift) return false;
@@ -1044,18 +1054,18 @@ export default function PresentesPage() {
 
                   {/* CTA #1: Fast Checkout PIX (Aceleração de Funil) */}
                   <button 
-                    onClick={() => !selectedGift.permite_cotas && handleDirectPix(selectedGift)}
+                    onClick={() => !isFullPurchaseDisabled && handleDirectPix(selectedGift)}
                     className={styles.modalBtnCart}
                     style={{ 
-                      backgroundColor: selectedGift.permite_cotas ? '#e2e8f0' : '#1E293B',
-                      color: selectedGift.permite_cotas ? '#94a3b8' : '#FFF',
+                      backgroundColor: isFullPurchaseDisabled ? '#e2e8f0' : '#1E293B',
+                      color: isFullPurchaseDisabled ? '#94a3b8' : '#FFF',
                       fontWeight: 700,
-                      border: selectedGift.permite_cotas ? '2px solid #cbd5e1' : '2px solid #1E293B',
-                      cursor: selectedGift.permite_cotas ? 'not-allowed' : 'pointer',
-                      opacity: selectedGift.permite_cotas ? 0.6 : 1,
+                      border: isFullPurchaseDisabled ? '2px solid #cbd5e1' : '2px solid #1E293B',
+                      cursor: isFullPurchaseDisabled ? 'not-allowed' : 'pointer',
+                      opacity: isFullPurchaseDisabled ? 0.6 : 1,
                       width: '100%'
                     }}
-                    disabled={selectedGift.permite_cotas}
+                    disabled={isFullPurchaseDisabled}
                   >
                     ⚡ Presentear via PIX Agora (Valor Integral)
                   </button>
@@ -1063,25 +1073,25 @@ export default function PresentesPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', width: '100%' }}>
                     <button 
                       onClick={() => {
-                        if (!selectedGift.permite_cotas) {
+                        if (!isFullPurchaseDisabled) {
                           toggleToCart(selectedGift);
                           setSelectedGift(null);
                         }
                       }}
                       className={styles.modalBtnCart}
                       style={{ 
-                        backgroundColor: selectedGift.permite_cotas ? '#e2e8f0' : (cart.some(p => p.id === selectedGift.id) ? '#333' : (config?.accent_color || '#C5A059')),
-                        color: selectedGift.permite_cotas ? '#94a3b8' : '#FFF',
-                        cursor: selectedGift.permite_cotas ? 'not-allowed' : 'pointer',
-                        opacity: selectedGift.permite_cotas ? 0.6 : 1,
+                        backgroundColor: isFullPurchaseDisabled ? '#e2e8f0' : (cart.some(p => p.id === selectedGift.id) ? '#333' : (config?.accent_color || '#C5A059')),
+                        color: isFullPurchaseDisabled ? '#94a3b8' : '#FFF',
+                        cursor: isFullPurchaseDisabled ? 'not-allowed' : 'pointer',
+                        opacity: isFullPurchaseDisabled ? 0.6 : 1,
                         width: '100%'
                       }}
-                      disabled={selectedGift.permite_cotas}
+                      disabled={isFullPurchaseDisabled}
                     >
                       {cart.some(p => p.id === selectedGift.id) ? 'Remover ✓' : 'Adicionar à Cesta'}
                     </button>
                     
-                    {((!selectedGift.permite_cotas && selectedGift.link_externo) || (selectedGift.permite_cotas && quotaProgress && quotaProgress.link_externo)) && (
+                    {(!isFullPurchaseDisabled && selectedGift.link_externo) && (
                       <button 
                         onClick={() => handleAffiliateClick(selectedGift)}
                         className={styles.modalBtnExternal}

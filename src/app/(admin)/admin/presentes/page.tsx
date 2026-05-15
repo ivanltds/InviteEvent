@@ -270,9 +270,11 @@ export default function AdminPresentes() {
 
   const stats = useMemo(() => {
     const totalValorArrecadado = comprovantes.reduce((acc, comp) => acc + (Number(comp.presente?.preco) || 0), 0);
-    const itemsRestantes = presentes.reduce((acc, p) => acc + (p.quantidade_total - p.quantidade_reservada), 0);
+    const itemsRestantes = presentes.reduce((acc, p) => acc + (p.permite_cotas ? (p.total_cotas! - (p.cotas_compradas || 0)) : (p.quantidade_total - p.quantidade_reservada)), 0);
     const totalItensPresentes = presentes.length;
-    return { totalValorArrecadado, itemsRestantes, totalItensPresentes };
+    const itensCotasCount = presentes.filter(p => p.permite_cotas).length;
+    const totalCotasVendidas = presentes.reduce((acc, p) => acc + (p.permite_cotas ? (p.cotas_compradas || 0) : 0), 0);
+    return { totalValorArrecadado, itemsRestantes, totalItensPresentes, itensCotasCount, totalCotasVendidas };
   }, [presentes, comprovantes]);
 
   const startAddNew = () => {
@@ -398,6 +400,35 @@ export default function AdminPresentes() {
     }
   };
 
+  const handleInlineQuotaToggle = async (id: string, currentPermite: boolean, price: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const nextPermite = !currentPermite;
+    const nextTotalCotas = nextPermite ? 2 : null;
+
+    if (nextPermite && (price / 2) < 50) {
+      triggerToast('❌ Valor muito baixo para cotas (mínimo R$ 50,00/cota). Edite o item para ajustar.');
+      return;
+    }
+
+    const { success } = await giftService.updateGift(id, { 
+      permite_cotas: nextPermite, 
+      total_cotas: nextTotalCotas,
+      quantidade_total: nextPermite ? 1 : 1
+    });
+
+    if (success) {
+      setPresentes(presentes.map(p => p.id === id ? { 
+        ...p, 
+        permite_cotas: nextPermite, 
+        total_cotas: nextTotalCotas,
+        quantidade_total: nextPermite ? 1 : p.quantidade_total
+      } : p));
+      triggerToast(nextPermite ? '🤝 Dividido em 2 cotas! Ajuste no botão Editar.' : '🔄 Retornado para formato Integral.');
+    } else {
+      triggerToast('❌ Erro ao atualizar formato de cotas.');
+    }
+  };
+
   const openDeleteModal = (id: string, type: 'presente' | 'comprovante', e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setConfirmDeleteId(id);
@@ -446,8 +477,12 @@ export default function AdminPresentes() {
           <strong>{stats.totalItensPresentes}</strong>
         </div>
         <div className={styles.statCard}>
-          <span>Estoque Disponível</span>
-          <strong>{stats.itemsRestantes}</strong>
+          <span>Cotas Coletivas Ativas</span>
+          <strong>{stats.itensCotasCount} itens</strong>
+        </div>
+        <div className={styles.statCard}>
+          <span>Cotas Vendidas</span>
+          <strong>{stats.totalCotasVendidas} total</strong>
         </div>
       </div>
 
@@ -537,7 +572,11 @@ export default function AdminPresentes() {
                     </div>
                     <span className={styles.cardPrice}>{Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                     <div className={styles.cardMeta}>
-                      <span className={styles.stockLabel}>Estoque: <strong>{item.quantidade_total - item.quantidade_reservada} / {item.quantidade_total}</strong></span>
+                      {item.permite_cotas ? (
+                        <span className={styles.stockLabel}>Estoque: <strong>{item.total_cotas! - (item.cotas_compradas || 0)} / {item.total_cotas} cotas</strong></span>
+                      ) : (
+                        <span className={styles.stockLabel}>Estoque: <strong>{item.quantidade_total - item.quantidade_reservada} / {item.quantidade_total}</strong></span>
+                      )}
                       <div className={styles.actionsCell}>
                         <button className={styles.editBtn} onClick={(e) => { e.stopPropagation(); handleEditClick(item); }} data-tooltip="Editar">
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
@@ -573,8 +612,9 @@ export default function AdminPresentes() {
               <thead>
                 <tr>
                   <th>Item</th>
-                  <th>Preço</th>
-                  <th>Estoque</th>
+                  <th>Preço Total</th>
+                  <th>Modo de Venda</th>
+                  <th>Disponibilidade</th>
                   <th>Status</th>
                   <th>Ações</th>
                 </tr>
@@ -596,7 +636,49 @@ export default function AdminPresentes() {
                         </div>
                       </td>
                       <td style={{ fontWeight: 600 }}>{Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                      <td>{item.quantidade_total - item.quantidade_reservada} / {item.quantidade_total}</td>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div 
+                            onClick={(e) => handleInlineQuotaToggle(item.id, !!item.permite_cotas, Number(item.preco), e)}
+                            style={{ 
+                              width: '34px', 
+                              height: '18px', 
+                              background: item.permite_cotas ? 'var(--admin-accent, #c5a059)' : '#cbd5e1', 
+                              borderRadius: '20px', 
+                              position: 'relative', 
+                              cursor: 'pointer',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            <div style={{ 
+                              width: '12px', 
+                              height: '12px', 
+                              background: '#ffffff', 
+                              borderRadius: '50%', 
+                              position: 'absolute', 
+                              top: '3px', 
+                              left: item.permite_cotas ? '19px' : '3px', 
+                              transition: 'all 0.2s',
+                              boxShadow: '0 1px 2px rgba(0,0,0,0.2)'
+                            }} />
+                          </div>
+                          {item.permite_cotas ? (
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#b45309' }}>{item.total_cotas} Cotas</span>
+                              <span style={{ fontSize: '0.65rem', color: '#6b7280' }}>{((Number(item.preco)) / (item.total_cotas || 1)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} / cota</span>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Integral</span>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        {item.permite_cotas ? (
+                          <span style={{ fontWeight: 600, color: '#0f172a' }}>{item.total_cotas! - (item.cotas_compradas || 0)} / {item.total_cotas} cotas</span>
+                        ) : (
+                          <span>{item.quantidade_total - item.quantidade_reservada} / {item.quantidade_total} un.</span>
+                        )}
+                      </td>
                       <td>
                         <span 
                           className={`${styles.statusBadge} ${styles[activeLock ? 'reservado' : item.status]}`}

@@ -571,6 +571,44 @@ export default function AdminPresentes() {
                       </div>
                     </div>
                     <span className={styles.cardPrice}>{Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                    
+                    {/* PRD-014 Switch de Cotas Interativo no Card */}
+                    <div style={{ margin: '0.75rem 0 1.25rem 0', display: 'flex', alignItems: 'center', gap: '10px', background: '#f8fafc', padding: '8px 12px', borderRadius: '12px', border: '1px solid #f1f5f9' }} onClick={(e) => e.stopPropagation()}>
+                      <div 
+                        onClick={(e) => handleInlineQuotaToggle(item.id, !!item.permite_cotas, Number(item.preco), e)}
+                        style={{ 
+                          width: '34px', 
+                          height: '18px', 
+                          background: item.permite_cotas ? 'var(--admin-accent, #c5a059)' : '#cbd5e1', 
+                          borderRadius: '20px', 
+                          position: 'relative', 
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          flexShrink: 0
+                        }}
+                      >
+                        <div style={{ 
+                          width: '12px', 
+                          height: '12px', 
+                          background: '#ffffff', 
+                          borderRadius: '50%', 
+                          position: 'absolute', 
+                          top: '3px', 
+                          left: item.permite_cotas ? '19px' : '3px', 
+                          transition: 'all 0.2s',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.2)'
+                        }} />
+                      </div>
+                      {item.permite_cotas ? (
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#b45309' }}>{item.total_cotas} Cotas Ativas</span>
+                          <span style={{ fontSize: '0.65rem', color: '#6b7280' }}>{((Number(item.preco)) / (item.total_cotas || 1)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} / cota</span>
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 550 }}>Habilitar Cotas Coletivas</span>
+                      )}
+                    </div>
+
                     <div className={styles.cardMeta}>
                       {item.permite_cotas ? (
                         <span className={styles.stockLabel}>Estoque: <strong>{item.total_cotas! - (item.cotas_compradas || 0)} / {item.total_cotas} cotas</strong></span>

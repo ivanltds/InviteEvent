@@ -46,7 +46,7 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | 12C | Smart Gift List - Autônomo       | CONCLUÍDO   | Concluído   |
 | 12D | Smart Gift List - Cockpit        | CONCLUÍDO   | Concluído   |
 | 013 | Higiene, Segurança & LGPD        | CONCLUÍDO   | Concluído   |
-| 014 | Group Gifting (Cotas)            | EM DEFINIÇÃO | PRD UPDATE  |
+| 014 | Group Gifting (Cotas)            | DESENVOLVIDO| QA VALIDAÇÃO|
 
 
 ## Segurança
@@ -160,6 +160,8 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/wireframes/cotas-presentes.html       | UX/UI       | Protótipo Interativo de multi-seleção e barras douradas premium |
 | docs/wireframes/admin-cadastro-cotas.html  | UX/UI       | Protótipo Interativo da gestão de cotas com toggle e validações |
 | docs/prd/prd-014/plano-implementacao.md    | Arquiteto   | Desenho de banco, RPC de Lock Fracionado ACID e Services |
+| supabase/migrations/20260515133000_prd014_cotas_presentes.sql | DEV | Migração SQL que altera o esquema, cria triggers de cotas e RPC ACID de progresso |
+| docs/prd/prd-014/relatorio-qa-fase-1.md    | QA          | Relatório final de garantia de qualidade e verificação de critérios com veredito APROVADO |
 
 
 ## Última Atualização
@@ -174,6 +176,10 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 - Data    : 2026-05-15 (Noite)
 - Por     : Maestro / UX-UI / Arquiteto
 - Motivo  : FASES DE EXPERIÊNCIA E ARQUITETURA PRD-014 CONCLUÍDAS EM CONJUNTO. Criado o mapeamento de fluxos UX e o protótipo interativo com barras de progresso douradas premium. Desenvolvido o plano de implementação técnica com Stored Procedure SQL (RPC) para bloqueio transacional atômico via `SELECT FOR UPDATE` na reserva fracionada, mitigando race conditions. Mapeadas as extensões de tabelas de lock de 3h. Tudo pronto para a validação do Operador e início da Codificação TDD!
+
+- Data    : 2026-05-15 (Fim da Noite)
+- Por     : Maestro / DEV / QA
+- Motivo  : DESENVOLVIMENTO E VALIDAÇÃO QA PRD-014 CONCLUÍDOS. Implementamos os controles interativos de cota (Switch) em tempo real no Admin (Lista e Cards), redesenhamos a estética dos Cards do organizador com padrão SaaS premium e barra de progresso financeiro integrada, e flexibilizamos a compra integral/afiliados se nenhuma cota for vendida ainda. Executada a higienização TypeScript nas páginas. A história foi submetida à validação estrutural da esteira de testes e está com status oficial APROVADO pelo Agente de QA. Pronto para DEPLOY!
 
 
 

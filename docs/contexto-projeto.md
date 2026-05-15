@@ -165,6 +165,7 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/prd/prd-014/plano-implementacao.md    | Arquiteto   | Desenho de banco, RPC de Lock Fracionado ACID e Services |
 | supabase/migrations/20260515133000_prd014_cotas_presentes.sql | DEV | Migração SQL que altera o esquema, cria triggers de cotas e RPC ACID de progresso |
 | docs/prd/prd-014/relatorio-qa-fase-1.md    | QA          | Relatório final de garantia de qualidade e verificação de critérios com veredito APROVADO |
+| docs/prd/prd-015/prd-inicial.md            | BA          | PRD Inicial do Booster de Conversão Emergencial & FOMO Ativo |
 
 
 ## Última Atualização
@@ -187,6 +188,10 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 - Data    : 2026-05-15 (Madrugada)
 - Por     : Maestro / DevOps
 - Motivo  : DEPLOY E MERGE FINAL DO PRD-014 CONCLUÍDOS. Consolidado o merge da branch feat/prd-014-cotas-presentes para a main. Executado o ciclo de integração contínua local (Next.js build otimizada) com 100% de êxito. Aplicado o bump de versão de v0.3.6 para v0.3.7 no package.json. Story de Cotas de Presentes implantada oficialmente em produção! 🚀🌌
+
+- Data    : 2026-05-15 (Nova Manhã)
+- Por     : Maestro / BA / Value-Analyst
+- Motivo  : INÍCIO OFICIAL DO PRD-015 (Booster de Conversão & FOMO). Criado o novo agente estratégico @value-analyst, que deu o veredito positivo (WSJF / Quick Wins) para atacar o resgate emergencial de presentes para o casamento piloto em 30 dias. Elaborada a especificação inicial detalhando os algoritmos de Badges Pulsantes (Prova Social), Vitrine Autônoma baseada em Score de Telemetria e o módulo administrativo Price Suggester. Pronto para validação do Operador e fase de Design/Arquitetura!
 
 
 

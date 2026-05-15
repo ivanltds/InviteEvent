@@ -30,7 +30,7 @@ interface Presente {
     convite?: { nome_principal: string } | null;
   }[];
   permite_cotas?: boolean;
-  total_cotas?: number;
+  total_cotas?: number | null;
   cotas_compradas?: number;
 }
 
@@ -343,7 +343,7 @@ export default function AdminPresentes() {
       imagem_url: formData.imagem_url,
       status: newStatus,
       quantidade_total: formData.permite_cotas ? 1 : qtyTotal,
-      link_externo: formData.link_externo.trim() || null,
+      link_externo: formData.link_externo.trim() || undefined,
       categoria_id: formData.categoria_id || null,
       evento_id: currentEvent.id,
       permite_cotas: formData.permite_cotas,

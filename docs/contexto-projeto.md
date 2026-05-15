@@ -47,6 +47,9 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | 12D | Smart Gift List - Cockpit        | CONCLUÍDO   | Concluído   |
 | 013 | Higiene, Segurança & LGPD        | CONCLUÍDO   | Concluído   |
 | 014 | Group Gifting (Cotas)            | CONCLUÍDO   | Concluído   |
+| 015 | Emergência de Conversão & FOMO   | BACKLOG     | Descoberta  |
+| 016 | Motor Viral & Kits de Mídia      | BACKLOG     | Descoberta  |
+| 017 | Termômetro de Convidados         | BACKLOG     | Descoberta  |
 
 
 ## Segurança
@@ -67,7 +70,7 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/arquitetura/plano-implementacao-prd-001.md | Arquiteto | Plano técnico para Mural, Presentes e RSVP |
 | docs/arquitetura/plano-implementacao-prd-002.md | Arquiteto | Plano de arquitetura técnica da Nova UI|
 | docs/arquitetura/plano-implementacao-fase-estabilizacao.md | Arquiteto | Plano de correções e segurança |
-| docs/arquitetura/analise-riscos-banco-compartilhado.md | Arquiteto | Gestão de riscos para ambiente com banco único (Dev/Prod)|
+| docs/arquitetura/roadmap-estrategico-crescimento.md | Maestro | Planejamento tático das prioridades de aquisição e conversão |
 | scratch/architect-report.md                | Arquiteto   | Relatório detalhado de análise     |
 | docs/prd/prd-001/prd-inicial.md            | BA          | PRD de consolidação e backlog prioritário |
 | docs/prd/prd-001/prd-refinado.md           | BA          | PRD refinado com User Stories e critérios de aceite |

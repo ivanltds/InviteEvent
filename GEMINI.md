@@ -8,6 +8,7 @@ Qualquer pedido do Operador deve ser direcionado ao @maestro primeiro.
 | Agente    | Responsabilidade         | Quando acionar                     |
 |-----------|--------------------------|------------------------------------|
 | @maestro  | Orquestrador central     | SEMPRE — qualquer instrução        |
+| @value-analyst | Analista de Valor        | Via MAESTRO — FASE OPORTUNIDADE / PRIORIZAÇÃO |
 | @ba       | Analista de negócios     | Via MAESTRO — fase DESCOBERTA      |
 | @ux-ui    | Designer UX/UI           | Via MAESTRO — fase EXPERIÊNCIA     |
 | @architect| Arquiteto de software    | Via MAESTRO — fase ARQUITETURA     |
@@ -20,9 +21,10 @@ Qualquer pedido do Operador deve ser direcionado ao @maestro primeiro.
 
 ## Fluxo Obrigatório
 Operador → @maestro
-  1. CONTEXTO    → leitura de docs/contexto-projeto.md
-  2. DESCOBERTA  → @ba cria PRD inicial
-  3. EXPERIÊNCIA → @ux-ui cria wireframes e design system
+  1. VALOR       → @value-analyst pondera e prioriza a demanda
+  2. CONTEXTO    → leitura de docs/contexto-projeto.md
+  3. DESCOBERTA  → @ba cria PRD inicial
+  4. EXPERIÊNCIA → @ux-ui cria wireframes e design system
   4. PRD UPDATE  → @maestro atualiza PRD e quebra em entregas
   5. ARQUITETURA → @architect cria plano de implementação
   6. DEV         → @dev e @ai-eng implementam (TDD + IA)

@@ -46,7 +46,7 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | 12C | Smart Gift List - Autônomo       | CONCLUÍDO   | Concluído   |
 | 12D | Smart Gift List - Cockpit        | CONCLUÍDO   | Concluído   |
 | 013 | Higiene, Segurança & LGPD        | CONCLUÍDO   | Concluído   |
-| 014 | Group Gifting (Cotas)            | DESENVOLVIDO| QA VALIDAÇÃO|
+| 014 | Group Gifting (Cotas)            | CONCLUÍDO   | Concluído   |
 
 
 ## Segurança
@@ -180,6 +180,10 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 - Data    : 2026-05-15 (Fim da Noite)
 - Por     : Maestro / DEV / QA
 - Motivo  : DESENVOLVIMENTO E VALIDAÇÃO QA PRD-014 CONCLUÍDOS. Implementamos os controles interativos de cota (Switch) em tempo real no Admin (Lista e Cards), redesenhamos a estética dos Cards do organizador com padrão SaaS premium e barra de progresso financeiro integrada, e flexibilizamos a compra integral/afiliados se nenhuma cota for vendida ainda. Executada a higienização TypeScript nas páginas. A história foi submetida à validação estrutural da esteira de testes e está com status oficial APROVADO pelo Agente de QA. Pronto para DEPLOY!
+
+- Data    : 2026-05-15 (Madrugada)
+- Por     : Maestro / DevOps
+- Motivo  : DEPLOY E MERGE FINAL DO PRD-014 CONCLUÍDOS. Consolidado o merge da branch feat/prd-014-cotas-presentes para a main. Executado o ciclo de integração contínua local (Next.js build otimizada) com 100% de êxito. Aplicado o bump de versão de v0.3.6 para v0.3.7 no package.json. Story de Cotas de Presentes implantada oficialmente em produção! 🚀🌌
 
 
 

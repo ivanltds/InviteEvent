@@ -5,6 +5,7 @@ import Link from 'next/link';
 import styles from "./Presentes.module.css";
 import { CldUploadWidget } from 'next-cloudinary';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Heart, Award, Star, Gift, Palmtree, GlassWater, PartyPopper, Coffee, Plane, Music, Smile, Camera } from 'lucide-react';
 import { Convite, Presente } from '@/lib/types/database';
 import { generatePixPayload } from '@/lib/utils/pix';
 import { triggerCelebration, triggerSideCannons } from '@/lib/utils/confetti';
@@ -31,6 +32,7 @@ interface Config {
 export default function PresentesPage() {
   const [presentes, setPresentes] = useState<Presente[]>([]);
   const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(10);
   const [config, setConfig] = useState<Config | null>(null);
   const [cart, setCart] = useState<Presente[]>([]);
   const [selectedGift, setSelectedGift] = useState<Presente | null>(null);
@@ -64,15 +66,51 @@ export default function PresentesPage() {
   const [isQuotaFlow, setIsQuotaFlow] = useState(false);
   const [isReservingQuotaLock, setIsReservingQuotaLock] = useState(false);
   const [quotaSelectedGift, setQuotaSelectedGift] = useState<Presente | null>(null);
+  const [affinityData, setAffinityData] = useState<Record<string, any>>({});
 
-  // Busca reativa inteligente para os convidados
+  // Busca reativa inteligente para os convidados (Smart Sorting Hierarchy PRD-015)
   const filteredPresentes = useMemo(() => {
     const q = search.toLowerCase();
-    return presentes.filter(item => 
+    const items = presentes.filter(item => 
       item.nome?.toLowerCase().includes(q) || 
       item.descricao?.toLowerCase().includes(q)
     );
-  }, [presentes, search]);
+
+    // Hierarquia de Ordenação Luxo
+    items.sort((a, b) => {
+      // 1. Esgotados por último (Respeitando modalidade de Cotas PRD-014 e Locks PRD-12B)
+      const getEffectiveSoldOut = (item: Presente) => {
+        if (item.permite_cotas) {
+          const totalLocked = item.presentes_locks?.reduce((acc, l) => {
+            return new Date(l.expira_em).getTime() > Date.now() ? acc + (l.quantidade_cotas || 1) : acc;
+          }, 0) || 0;
+          return (item.cotas_compradas || 0) + totalLocked >= (item.total_cotas || 1);
+        }
+        const hasLock = item.presentes_locks?.some(l => new Date(l.expira_em).getTime() > Date.now());
+        return item.quantidade_reservada >= item.quantidade_total || item.status === 'reservado' || hasLock;
+      };
+
+      const isAUnavailable = getEffectiveSoldOut(a) || a.status === 'pausado';
+      const isBUnavailable = getEffectiveSoldOut(b) || b.status === 'pausado';
+      
+      if (isAUnavailable && !isBUnavailable) return 1;
+      if (!isAUnavailable && isBUnavailable) return -1;
+
+      // 2. Prioridade Manual "Grande Sonho"
+      if (a.is_sonho_casal && !b.is_sonho_casal) return -1;
+      if (!a.is_sonho_casal && b.is_sonho_casal) return 1;
+
+      // 3. Score de Afinidade Telemetria
+      const scoreA = affinityData[a.id]?.score ?? 0;
+      const scoreB = affinityData[b.id]?.score ?? 0;
+      if (scoreA !== scoreB) return scoreB - scoreA;
+
+      // 4. Fallback: Recentes primeiro
+      return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+    });
+
+    return items;
+  }, [presentes, search, affinityData]);
 
   // PRD-014: Determina se a compra integral deve ser bloqueada
   const isFullPurchaseDisabled = useMemo(() => {
@@ -232,6 +270,16 @@ export default function PresentesPage() {
       
       setLoading(false);
 
+      // PRD-015: Busca dados de afinidade em background (cache distribuído)
+      if (targetEventId && !previewMode) {
+        fetch(`/api/public/presentes/fomo?eventoId=${targetEventId}`)
+          .then(res => res.json())
+          .then(res => {
+            if (res.success) setAffinityData(res.data);
+          })
+          .catch(() => {});
+      }
+
       // Mostrar intro emocional apenas uma vez por sessão
       const introSeen = sessionStorage.getItem('gift_intro_seen');
       if (!introSeen) {
@@ -251,10 +299,21 @@ export default function PresentesPage() {
   }, [cart, isQuotaFlow, quotaSelectedGift, selectedQuotas]);
 
   const toggleToCart = (item: Presente) => {
-    if (cart.find(p => p.id === item.id)) {
+    const isAdding = !cart.find(p => p.id === item.id);
+    if (!isAdding) {
       setCart(prev => prev.filter(p => p.id !== item.id));
     } else {
       setCart(prev => [...prev, item]);
+      // Telemetria: Adição ao carrinho para alimentar o FOMO
+      if (eventoId && !isPreview) {
+        Telemetry.track({
+          eventoId,
+          categoria: 'gift',
+          eventType: 'add_to_cart',
+          targetId: item.id,
+          metadata: { item_name: item.nome, item_price: item.preco }
+        });
+      }
     }
   };
 
@@ -719,24 +778,39 @@ export default function PresentesPage() {
           </div>
 
           <section className={styles.grid}>
-            {filteredPresentes.map(item => {
+            {filteredPresentes.slice(0, visibleCount).map((item, index) => {
               const inCart = cart.some(p => p.id === item.id);
-              const isSoldOut = item.quantidade_reservada >= item.quantidade_total;
+              const isSoldOut = item.permite_cotas 
+                ? (item.cotas_compradas || 0) >= (item.total_cotas || 1)
+                : (item.quantidade_reservada >= item.quantidade_total || item.status === 'reservado');
 
-              // REGRAS DE LOCK PRD-12B: Reagir dinamicamente ao tempo atual
-              const isLockedByOther = item.presentes_locks?.some(lock => 
-                lock.session_id !== guestSessionId && new Date(lock.expira_em).getTime() > currentTime
-              );
+              // REGRAS DE LOCK PRD-12B / PRD-014: Reagir dinamicamente à modalidade do item
+              const totalLockedOthers = item.presentes_locks?.reduce((acc, lock) => {
+                const isValid = new Date(lock.expira_em).getTime() > currentTime;
+                const isOther = lock.session_id !== guestSessionId;
+                return (isValid && isOther) ? acc + (lock.quantidade_cotas || 1) : acc;
+              }, 0) || 0;
+
               const isLockedByMe = item.presentes_locks?.some(lock => 
                 lock.session_id === guestSessionId && new Date(lock.expira_em).getTime() > currentTime
               );
 
-              // O item está indisponível para terceiros se vendido, pausado ou travado temporariamente
-              const isReserved = isSoldOut || item.status === 'pausado' || isLockedByOther;
+              // Para itens exclusivos, qualquer lock de terceiro reserva o item.
+              // Para cotas, só reserva se não houver mais saldo disponível (total - compradas - locks_terceiros).
+              const isLockedByOther = item.permite_cotas 
+                ? ((item.cotas_compradas || 0) + totalLockedOthers >= (item.total_cotas || 1))
+                : item.presentes_locks?.some(lock => lock.session_id !== guestSessionId && new Date(lock.expira_em).getTime() > currentTime);
+
+              // Correção de Integridade: Se for cotas, o status 'reservado' é ignorado em favor do saldo de cotas
+              const effectiveStatus = (item.permite_cotas && item.status === 'reservado') ? 'disponivel' : item.status;
+              const isReserved = isSoldOut || effectiveStatus === 'pausado' || isLockedByOther || (effectiveStatus === 'reservado' && !item.permite_cotas);
               
               return (
                 <motion.div 
                   key={item.id} 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: (index % 10) * 0.08 }}
                   layout
                   className={`${styles.card} ${isReserved ? styles.reserved : ''} ${inCart ? styles.cardSelected : ''}`}
                   style={inCart ? { borderColor: config?.accent_color || '#C5A059' } : { cursor: (isReserved && !isLockedByMe) ? 'not-allowed' : 'pointer' }}
@@ -764,11 +838,6 @@ export default function PresentesPage() {
                         Selecionado ✓
                       </span>
                     )}
-                    {item.permite_cotas && !inCart && (
-                      <span className={styles.selectedBadge} style={{ background: '#0284c7', fontWeight: 700 }}>
-                        COLETIVO 🤝
-                      </span>
-                    )}
                     {isLockedByMe && !inCart && (
                       <span className={styles.selectedBadge} style={{ background: '#10b981', fontWeight: 700, border: '1px solid rgba(255,255,255,0.4)' }}>
                         SUA RESERVA ⏳
@@ -779,6 +848,67 @@ export default function PresentesPage() {
                         RESERVADO 🔒
                       </span>
                     )}
+                    {/* PRD-015: Badges de Luxo (Dream, Classic, Hot & Custom) */}
+                    {!inCart && !isReserved && (
+                      <>
+                        {/* 1. Destaque Personalizado (Prioridade 1) */}
+                        {item.highlight_label && (
+                          <div className={styles.luxeBadgeDream} style={{ background: item.highlight_icon === 'classic' ? 'rgba(243, 229, 216, 0.9)' : undefined }}>
+                            {(() => {
+                              const Icon = {
+                                heart: Heart,
+                                award: Award,
+                                star: Star,
+                                gift: Gift,
+                                palmtree: Palmtree,
+                                glass: GlassWater,
+                                party: PartyPopper,
+                                coffee: Coffee,
+                                plane: Plane,
+                                music: Music,
+                                smile: Smile,
+                                camera: Camera
+                              }[item.highlight_icon || 'star'] || Star;
+                              return <Icon className={styles.luxeIcon} size={12} strokeWidth={2.5} />;
+                            })()}
+                            {item.highlight_label}
+                          </div>
+                        )}
+
+                        {/* 2. Grande Sonho (Prioridade 2 se não houver custom) */}
+                        {!item.highlight_label && (item.is_sonho_casal || affinityData[item.id]?.badge === 'dream') && (
+                          <div className={styles.luxeBadgeDream}>
+                            <Heart className={styles.luxeIcon} size={12} strokeWidth={2.5} />
+                            Grande Sonho do Casal
+                          </div>
+                        )}
+
+                        {/* 3. O Mais Amado (Fogo/Hot - Inteligência de Dados) */}
+                        {!item.highlight_label && !item.is_sonho_casal && affinityData[item.id]?.badge === 'hot' && (
+                          <div className={styles.luxeBadgeDream} style={{ background: 'rgba(255, 237, 213, 0.95)', border: '1px solid #fdba74' }}>
+                            <Star className={styles.luxeIcon} size={12} strokeWidth={2.5} style={{ color: '#ea580c' }} />
+                            O Mais Amado 🔥
+                          </div>
+                        )}
+
+                        {/* 4. Escolha Clássica (Prioridade 4) */}
+                        {!item.highlight_label && !item.is_sonho_casal && affinityData[item.id]?.badge === 'classic' && (
+                          <div className={styles.luxeBadgeClassic}>
+                            <Award className={styles.luxeIcon} size={12} strokeWidth={2.5} />
+                            Escolha Clássica
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {/* PRD-015: Discrete Sparkle for Views (Hover Only via CSS) */}
+                    {!inCart && !isReserved && affinityData[item.id]?.viewers >= 2 && (
+                      <div className={styles.sparkleContainer}>
+                        <svg className={styles.sparkleIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                        <div className={styles.sparkleTooltip}>Muito cogitado recentemente ✨</div>
+                      </div>
+                    )}
+
                     {item.imagem_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={item.imagem_url} alt={item.nome} className={styles.itemImage} />
@@ -799,11 +929,17 @@ export default function PresentesPage() {
                     <div className={styles.price} style={{ color: config?.accent_color || '#C5A059' }}>
                       {item.preco_de && Number(item.preco_de) > Number(item.preco) && (
                         <span style={{ textDecoration: 'line-through', opacity: 0.6, marginRight: 8, fontSize: '0.85em' }}>
-                          R$ {Number(item.preco_de).toFixed(2).replace('.', ',')}
+                          {Number(item.preco_de).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                         </span>
                       )}
-                      R$ {Number(item.preco).toFixed(2).replace('.', ',')}
+                      {Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </div>
+                    
+                    {item.permite_cotas && (
+                      <div className={styles.cotaValueBadge}>
+                        Cotas de <strong>{(Number(item.preco) / (item.total_cotas || 1)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+                      </div>
+                    )}
 
                     {item.permite_cotas && (
                       <div style={{ margin: '12px 0', fontSize: '0.75rem' }}>
@@ -837,9 +973,31 @@ export default function PresentesPage() {
                     </div>
                   </div>
                 </motion.div>
-              );
+              )
             })}
           </section>
+
+          {filteredPresentes.length > visibleCount && (
+            <div style={{ display: 'flex', justifyContent: 'center', margin: '3rem 0 5rem' }}>
+              <button 
+                className={styles.giftBtn} 
+                style={{ 
+                  width: 'auto', 
+                  padding: '16px 48px', 
+                  backgroundColor: 'white', 
+                  color: config?.accent_color || '#C5A059',
+                  border: `2px solid ${config?.accent_color || '#C5A059'}`,
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.05)',
+                  fontWeight: 800,
+                  fontSize: '1rem',
+                  letterSpacing: '0.05em'
+                }}
+                onClick={() => setVisibleCount(prev => prev + 10)}
+              >
+                VER MAIS PRESENTES
+              </button>
+            </div>
+          )}
 
           {filteredPresentes.length === 0 && (
             <div style={{ textAlign: 'center', padding: '4rem 20px', color: '#71717A', fontSize: '1.1rem' }}>
@@ -1268,15 +1426,15 @@ export default function PresentesPage() {
                 // TELA DE CONTINGÊNCIA: LINK QUEBRADO DETECTADO EM FLIGHT (PRD-12C)
                 <>
                   <div style={{ 
-                    width: '72px', 
-                    height: '72px', 
-                    background: '#FEF3C7', 
-                    borderRadius: '50%', 
+                    width: '80px', 
+                    height: '80px', 
+                    background: 'rgba(197, 160, 89, 0.1)', 
+                    borderRadius: '24px', 
                     display: 'flex', 
                     justifyContent: 'center', 
                     alignItems: 'center',
-                    border: '2px solid #F59E0B',
-                    color: '#D97706'
+                    border: '1px solid rgba(197, 160, 89, 0.3)',
+                    color: '#C5A059'
                   }}>
                     <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
@@ -1285,22 +1443,23 @@ export default function PresentesPage() {
 
                   <h2 style={{ 
                     fontFamily: config?.font_serif || 'inherit',
-                    color: '#92400E',
-                    fontSize: '1.75rem',
+                    color: '#1c1a17',
+                    fontSize: '1.85rem',
+                    fontWeight: 700,
                     margin: 0 
                   }}>
                     Ajuste de Rota Inteligente
                   </h2>
                   
                   <p style={{ 
-                    color: '#451A03', 
+                    color: '#8c8375', 
                     fontSize: '1rem', 
                     lineHeight: '1.7', 
                     margin: 0, 
-                    background: '#FFFBEB', 
-                    padding: '20px', 
-                    borderRadius: '12px', 
-                    border: '1px solid #FEF3C7' 
+                    background: '#FCFBF9', 
+                    padding: '24px', 
+                    borderRadius: '20px', 
+                    border: '1px solid rgba(197, 160, 89, 0.2)' 
                   }}>
                     Detectamos que o link deste parceiro está temporariamente indisponível. 
                     O alerta automático do portal foi acionado e o link será restaurado o quanto antes. 
@@ -1318,15 +1477,15 @@ export default function PresentesPage() {
                       style={{
                         width: '100%',
                         padding: '16px',
-                        background: '#1E293B',
+                        background: '#1c1a17',
                         color: '#FFFFFF',
                         border: 'none',
-                        borderRadius: '30px',
+                        borderRadius: '40px',
                         fontWeight: 700,
                         fontSize: '1rem',
                         cursor: 'pointer',
-                        boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-                        transition: 'transform 0.2s'
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                       }}
                       onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
                       onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}

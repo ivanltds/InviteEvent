@@ -47,7 +47,7 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | 12D | Smart Gift List - Cockpit        | CONCLUÍDO   | Concluído   |
 | 013 | Higiene, Segurança & LGPD        | CONCLUÍDO   | Concluído   |
 | 014 | Group Gifting (Cotas)            | CONCLUÍDO   | Concluído   |
-| 015 | Emergência de Conversão & FOMO   | BACKLOG     | Descoberta  |
+| 015 | Estabilização & Conversão (FOMO) | CONCLUÍDO   | Concluído   |
 | 016 | Motor Viral & Kits de Mídia      | BACKLOG     | Descoberta  |
 | 017 | Termômetro de Convidados         | BACKLOG     | Descoberta  |
 
@@ -168,6 +168,9 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/prd/prd-015/fluxo-ux.md               | UX/UI       | Mapeamento detalhado das micro-animações de radar e badges |
 | docs/wireframes/booster-conversao-fomo.html| UX/UI       | Protótipo Interativo com Smart Sorting e Price Suggester |
 | docs/prd/prd-015/plano-implementacao.md    | Arquiteto   | Desenho da API de telemetria cacheada e algoritmos front |
+| supabase/migrations/20260516000000_stabilization_and_auto_curation.sql | DEV | Correção de RLS Recursivo, Persistência de Varejo e Índices |
+| tests/e2e/prd_015_stabilization_ux.spec.ts| QA          | Testes E2E de UX (Paginação 10 em 10) e Estabilização Admin |
+| src/lib/types/database.ts                  | DEV         | Atualizado com campo parceiro_nome para persistência de cura |
 
 
 ## Última Atualização
@@ -193,7 +196,14 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 
 - Data    : 2026-05-15 (Nova Manhã)
 - Por     : Maestro / BA / Value-Analyst
-- Motivo  : INÍCIO OFICIAL DO PRD-015 (Booster de Conversão & FOMO). Criado o novo agente estratégico @value-analyst, que deu o veredito positivo (WSJF / Quick Wins) para atacar o resgate emergencial de presentes para o casamento piloto em 30 dias. Elaborada a especificação inicial detalhando os algoritmos de Badges Pulsantes (Prova Social), Vitrine Autônoma baseada em Score de Telemetria e o módulo administrativo Price Suggester. Pronto para validação do Operador e fase de Design/Arquitetura!
+
+- Data    : 2026-05-16
+- Por     : Maestro / DEV / QA
+- Motivo  : ESTABILIZAÇÃO CRÍTICA E GO-LIVE PRD-015 CONCLUÍDOS. Resolvido erro de estouro de pilha (stack depth) via ajuste de NO FORCE RLS na tabela perfis. Implementada persistência do nome da loja na autocura. Refinado design system (Champagne/Gold) em modais de contingência e assistentes. Implementada paginação progressiva 10 em 10 com animações Framer Motion. Criada migração consolidada e nova suíte de testes E2E para garantir estabilidade de produção. App v0.3.8 pronto para escala!
+
+- Data    : 2026-05-16 (Correção de Build)
+- Por     : Maestro / DEV
+- Motivo  : ESTABILIZAÇÃO v0.3.9 CONCLUÍDA. Resolvidos erros críticos de sintaxe JSX em `presentes/page.tsx` e `catalogo/page.tsx` que impediam o build de produção. Consolidada a infraestrutura de rastreabilidade com a coluna `parceiro_nome` e RPC `apply_healed_link`. Build de produção validado com sucesso (Exit 0). Sistema estabilizado para o Go-Live final.
 
 
 

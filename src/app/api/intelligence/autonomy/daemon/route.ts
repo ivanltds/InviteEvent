@@ -554,7 +554,8 @@ Retorne rigorosamente este JSON estruturado:
           p_status: 'CURADO',
           p_new_title: melhorOferta.nome,
           p_new_image: melhorOferta.imagem_url,
-          p_new_desc: melhorOferta.descricao
+          p_new_desc: melhorOferta.descricao,
+          p_new_store: melhorOferta.loja
         });
 
         if (rpcErr) {
@@ -582,7 +583,8 @@ Retorne rigorosamente este JSON estruturado:
           p_new_link: `Falha na cura automática por IA: O endereço de destino sugerido pela IA falhou no teste de ping (404).`,
           p_logs: errorLogs,
           p_new_price: null,
-          p_status: 'FALHA_MANUAL'
+          p_status: 'FALHA_MANUAL',
+          p_new_store: null
         });
       }
     }

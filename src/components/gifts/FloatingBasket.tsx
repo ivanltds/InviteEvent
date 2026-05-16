@@ -41,7 +41,7 @@ export default function FloatingBasket({ count, total, onClick, accentColor }: F
         </div>
         <div className={styles.text}>
           <span className={styles.label}>Ver Cesta</span>
-          <span className={styles.amount}>R$ {total.toLocaleString('pt-BR')}</span>
+          <span className={styles.amount}>{total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
         </div>
       </motion.div>
     </div>

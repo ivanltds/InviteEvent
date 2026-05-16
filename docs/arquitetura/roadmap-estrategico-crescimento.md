@@ -16,11 +16,13 @@ gantt
     title Cronograma Tático de Implementação
     dateFormat  YYYY-MM-DD
     section FASE 1 (Emergência)
-    PRD-015: Conversão & FOMO           :active, 2026-05-15, 7d
+    PRD-015: Conversão & FOMO           :active, 2026-05-15, 5d
+    section FASE 1.5 (Segurança)
+    PRD-018: Blindagem de QA & Stress    :2026-05-20, 5d
     section FASE 2 (Aquisição)
-    PRD-016: Kits de Mídia Virais        :2026-05-22, 7d
+    PRD-016: Kits de Mídia Virais        :2026-05-25, 7d
     section FASE 3 (Retenção)
-    PRD-017: Termômetro de Convidados    :2026-05-29, 10d
+    PRD-017: Termômetro de Convidados    :2026-06-01, 10d
 ```
 
 ---
@@ -33,6 +35,17 @@ gantt
   2. **Opção 7 (Vitrine Autônoma Light):** Algoritmo simples que empurra itens com mais cliques/interesses para o topo da lista automaticamente.
   3. **Opção A.2 (Sugestor de Acessibilidade):** Feedback instantâneo no Admin recomendando dividir itens estagnados em cotas ou reajustar para faixas de maior giro na região.
 * **🔑 Meta de Impacto:** Destravar a primeira compra em casamentos zerados em até 72 horas após deploy.
+
+---
+
+## 🛡️ FASE 1.5: Blindagem de QA (Enterprise Hardening)
+* **Foco:** Garantir que o sucesso não quebre a máquina. Segurança absoluta em transações e picos de tráfego.
+* **PRD Correspondente:** `PRD-018`
+* **Ações Práticas:**
+  1. **Stress Testing (100x Scenarios):** Expansão da suíte E2E para cobrir 100+ cenários, incluindo falhas de rede, timeouts de pagamento e concorrência massiva de estoque.
+  2. **Negative Flow Certification:** Testes automatizados para todos os estados de erro (404s, 500s controlados, validações de formulários).
+  3. **Mobile Swipe & Interaction Audit:** Auditoria completa de usabilidade e gestos em dispositivos reais via Playwright Mobile Emulation.
+* **🔑 Meta de Impacto:** Reduzir a taxa de bugs reportados em produção para < 1% e garantir 99.9% de uptime em fluxos transacionais.
 
 ---
 

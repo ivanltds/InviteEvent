@@ -18,8 +18,30 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'É necessário enviar um array com pelo menos um item para enfileirar.' }, { status: 400 });
     }
 
-    // Prepara payloads de inserção
-    const records = items.map(item => ({
+    const baseIds = items.map(i => i.id).filter(id => id && id.length === 36);
+
+    // 1. Busca itens que já estão na fila com status PENDENTE para evitar duplicidade
+    const { data: existingPending } = await supabase
+      .from('fila_ajuste_links')
+      .select('presente_base_id')
+      .in('presente_base_id', baseIds)
+      .eq('status', 'PENDENTE');
+
+    const pendingIds = new Set(existingPending?.map(p => p.presente_base_id) || []);
+    
+    // 2. Filtra os itens que NÃO estão na fila
+    const itemsToInsert = items.filter(item => !pendingIds.has(item.id));
+
+    if (itemsToInsert.length === 0) {
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Os itens selecionados já estão na Fila de Cura aguardando o processamento do Daemon.',
+        count: 0
+      });
+    }
+
+    // 3. Prepara payloads de inserção
+    const records = itemsToInsert.map(item => ({
       presente_base_id: item.id,
       link_quebrado: item.link || 'Link desconhecido/não cadastrado',
       motivo_quebra: 'SOLICITAÇÃO MANUAL - OPERADOR MASTER',
@@ -27,17 +49,16 @@ export async function POST(req: Request) {
       logs_cura: [{ timestamp: new Date().toISOString(), log: 'Item enfileirado manualmente via Console Administrativo.' }]
     }));
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('fila_ajuste_links')
-      .insert(records)
-      .select();
+      .insert(records);
 
     if (error) throw error;
 
     return NextResponse.json({ 
       success: true, 
-      message: `${data?.length || 0} itens adicionados com sucesso na Fila de Cura. O Daemon Autônomo iniciará o processamento no próximo ciclo.`,
-      count: data?.length || 0
+      message: `${records.length} novos itens adicionados à Fila de Cura. O Daemon Autônomo iniciará o processamento no próximo ciclo.`,
+      count: records.length
     });
 
   } catch (error: any) {

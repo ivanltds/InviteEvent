@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Catálogo — InviteEvent Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #FDFCFB;
+            --admin-accent: #C5A059;
+            --admin-text-primary: #1E293B;
+            --text-main-safe: #334155;
+            --font-serif: 'Playfair Display', serif;
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --admin-muted: #64748B;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-primary);
+            color: var(--text-main-safe);
+            padding: 2.5rem;
+        }
+
+        .adminHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 3rem;
+        }
+
+        .adminHeader h1 {
+            font-family: var(--font-serif);
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--admin-text-primary);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            background: rgba(0, 0, 0, 0.03);
+            padding: 0.5rem;
+            border-radius: 14px;
+            width: fit-content;
+        }
+
+        .tabBtn {
+            background: none;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-radius: 10px;
+        }
+
+        .activeTab { background: white; color: var(--admin-accent); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); }
+
+        /* MENTOR BANNER (PRD-015) */
+        .mentor-banner {
+            background: #1e293b;
+            border-radius: 20px;
+            padding: 24px 32px;
+            margin-bottom: 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            border: 1px solid rgba(197, 160, 89, 0.3);
+        }
+
+        .mentor-title { font-family: var(--font-serif); font-size: 1.4rem; margin-bottom: 4px; }
+        .mentor-text { opacity: 0.8; font-size: 0.85rem; }
+        .btn-mentor { background: var(--admin-accent); color: white; border: none; padding: 10px 20px; border-radius: 30px; font-weight: 700; cursor: pointer; font-size: 0.85rem; }
+
+        /* TABELA EXISTENTE COM NOVOS CAMPOS */
+        .tableContainer { background: white; border-radius: 20px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.04); border: 1px solid rgba(0, 0, 0, 0.03); overflow: hidden; }
+        .table { width: 100%; border-collapse: collapse; text-align: left; }
+        .table th { background-color: #f8fafc; padding: 1.2rem 2rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b; border-bottom: 1px solid #f1f5f9; }
+        .table td { padding: 1.2rem 2rem; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+
+        .itemCell { display: flex; align-items: center; gap: 1rem; }
+        .miniThumb { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; }
+        
+        /* Novas Badges de Curadoria na Tabela */
+        /* PRD-015: Seção Destacar Presente (Novo Grupo) */
+        .highlight-group {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 2px solid #f1f5f9;
+        }
+
+        .highlight-group h3 {
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--admin-muted);
+            margin-bottom: 20px;
+            letter-spacing: 0.05em;
+        }
+
+        .sonho-toggle-card {
+            background: #fdfaf3;
+            border: 1px dashed var(--admin-accent);
+            padding: 20px 25px;
+            border-radius: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .sonho-info b { font-size: 1rem; color: #1e293b; display: block; margin-bottom: 4px; }
+        .sonho-info span { font-size: 0.85rem; color: #64748b; }
+
+        .custom-highlights {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .add-custom-btn {
+            background: transparent;
+            border: 1px dashed #cbd5e1;
+            color: #64748b;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .add-custom-btn:hover {
+            border-color: var(--admin-accent);
+            color: var(--admin-accent);
+            background: #fefaf3;
+        }
+
+        .icon-selector {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .icon-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #64748b;
+        }
+
+        .icon-option:hover, .icon-option.active {
+            border-color: var(--admin-accent);
+            color: var(--admin-accent);
+            background: #fdfaf3;
+        }
+
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--admin-accent); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .btn-save { width: 100%; background: var(--admin-accent); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="adminHeader">
+        <div>
+            <h1>Meus Presentes</h1>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tabBtn activeTab">Lista Atual</button>
+        <button class="tabBtn">Sugestões</button>
+        <button class="tabBtn">Comprovantes</button>
+    </div>
+
+    <!-- APLICAÇÃO: Mentor Banner na Lista Atual -->
+    <div class="mentor-banner">
+        <div>
+            <h3 class="mentor-title">O Robô Aspirador é o favorito dos convidados!</h3>
+            <p class="mentor-text">Notamos alta interação. Que tal ativarmos a divisão por cotas para facilitar?</p>
+        </div>
+        <button class="btn-mentor">Ativar Cotas</button>
+    </div>
+
+    <div class="tableContainer">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Presente</th>
+                    <th>Curadoria</th>
+                    <th>Valor</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="itemCell">
+                            <img src="https://images.unsplash.com/photo-1517914309067-b2c5e04f0a36?auto=format&fit=crop&w=150&q=80" class="miniThumb">
+                            <b>Cafeteira Nespresso</b>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="curadoria-badge dream-badge">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.84-8.84 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                            Grande Sonho
+                        </span>
+                    </td>
+                    <td>R$ 890,00</td>
+                    <td><button style="border:none; background:none; color:var(--admin-accent); font-weight:700;">Editar</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- APLICAÇÃO: Flag no Modal de Cadastro/Edição -->
+    <div class="modal-overlay">
+        <div class="modal">
+            <h2>Editar Presente</h2>
+            <div class="field-group">
+                <label>Nome do Presente</label>
+                <input type="text" value="Robô Aspirador">
+            </div>
+            
+            <!-- PRD-015: NOVO GRUPO DESTACAR PRESENTE -->
+            <div class="highlight-group">
+                <h3>Destacar Presente</h3>
+                
+                <div class="sonho-toggle-card">
+                    <div class="sonho-info">
+                        <b>Grande Sonho do Casal</b>
+                        <span>Destaque este item no topo da sua lista</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="custom-highlights">
+                    <div class="field-group" style="margin-bottom: 10px; position: relative;">
+                        <label>Destaque Personalizado (Opcional)</label>
+                        <input type="text" placeholder="Ex: Escolha da Madrinha..." maxlength="20">
+                        <span style="position: absolute; right: 0; top: 0; font-size: 0.65rem; color: #94a3b8; font-weight: 700;">0/20</span>
+                    </div>
+                    
+                    <div class="field-group">
+                        <label>Escolha o Ícone</label>
+                        <div class="icon-selector">
+                            <div class="icon-option active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.84-8.84 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></div>
+                            <div class="icon-option"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg></div>
+                            <div class="icon-option"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></div>
+                            <div class="icon-option"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H4v4M12 20V8M20 12h2v4a2 2 0 0 1-2 2h-2v-2a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H4a2 2 0 0 1-2-2v-4h2M12 20l-2-5h4l-2 5z"></path></svg></div>
+                        </div>
+                    </div>
+
+                    <button class="add-custom-btn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Adicionar outro tipo de destaque
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn-save">Salvar Alterações</button>
+            <p style="text-align:center; margin-top:15px; font-size:0.8rem; color:#64748b; cursor:pointer;">Cancelar</p>
+        </div>
+    </div>
+
+</body>
+</html>

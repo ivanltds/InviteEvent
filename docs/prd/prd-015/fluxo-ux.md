@@ -16,17 +16,18 @@ A experiência agora é guiada pelo conceito de **"Curadoria Afetiva"**:
 ## 📲 2. A Jornada do Convidado (Vitrine de Presentes)
 
 ### A. Selos de Simpatia (Emotional Social Proof)
-Os selos são desenhados com a paleta de luxo e utilizam fontes Serif elegantes, evitando fundos opacos agressivos:
-*   **Selo 💖 Grande Sonho do Casal:** Para o topo histórico de engajamento.
-    *   *Estilo:* Fundo Rose Gold translúcido (`rgba(229, 193, 197, 0.85)`) com borda fina dourada.
-    *   *Animação:* Efeito "Breathing" (respiro) de opacidade ultra-lento simétrico aos batimentos cardíacos.
-*   **Selo 💍 Escolha Clássica da Família:** Para itens com tráfego perene e seguro.
-    *   *Estilo:* Fundo Champagne / Nude translúcido com brilho dourado fino.
+Os selos são desenhados para serem consistentes com a UI de botões do site, utilizando tipografia Sans-Serif em caixa alta, maior peso visual e ícones vetoriais:
+*   **Selo "Grande Sonho do Casal":** Prioridade máxima. Pode ser definido manualmente pelo organizador ou via inteligência.
+    *   *Estilo:* Fundo Rose Gold translúcido (`rgba(229, 193, 197, 0.9)`) com borda fina branca, texto em **Uppercase** e ícone de **Coração** (Lucide `Heart`).
+    *   *Animação:* Efeito "Breathing" (respiro) de opacidade ultra-lento.
+*   **Selo "Escolha Clássica":** Para itens com tráfego perene.
+    *   *Estilo:* Fundo Champagne translúcido com texto em **Uppercase** e ícone de **Medalha/Honra** (Lucide `Award`).
 
-### B. Rodapé de Sintonia e Atenção (✨ Champagne Glow)
-Um rodapé minimalista que desliza suavemente sob a foto se houver visitas recentes:
-*   *Mensagem:* *"✨ Muito cogitado pelos convidados recentemente"* (reforça a sensação de que o presente é uma excelente e prestigiada escolha).
-*   *Estilo:* Degradê sutil de dourado champagne transparente para o branco, sem pontos vermelhos ou bipes visuais agressivos.
+### B. Rodapé de Sintonia e Atenção (Discreto + Hover)
+Em vez de um banner fixo com texto, utilizamos um elemento minimalista:
+*   **Visual:** Apenas um ícone discreto de Brilho (Sparkle) ou Estrela no canto do card ou rodapé.
+*   **Interação:** O texto *"Muito cogitado pelos convidados recentemente"* aparece apenas quando o usuário passa o mouse (Hover/Tooltip), mantendo a vitrine limpa e sofisticada.
+*   **Regra:** Uso obrigatório de Ícones (Lucide/SVG), proibido emojis padrão.
 
 ### C. Vitrine de Afinidade (Smart Sorting)
 *   O reordenamento mantém itens cobiçados no topo, sob a marcação do filtro **"Mais Desejados ✨"** (substituindo a palavra "Popularidade" ou "Smart AI" no frontend).
@@ -46,4 +47,5 @@ Um rodapé minimalista que desliza suavemente sob a foto se houver visitas recen
 ## 🛠️ 4. Protótipo Físico de Validação
 
 O protótipo foi totalmente remodelado com o novo Lexicon de Luxo, fontes Playfair Display sofisticadas, e animação de brilho dourado suave:
-👉 **[booster-conversao-fomo.html](file:///c:/Users/ivanl/Downloads/casamento/InviteEventAI/docs/wireframes/booster-conversao-fomo.html)**
+👉 **[booster-conversao-fomo.html](file:///c:/Users/ivanl/Downloads/casamento/InviteEventAI/docs/wireframes/booster-conversao-fomo.html)** (Convidado)  
+👉 **[admin-booster-config.html](file:///c:/Users/ivanl/Downloads/casamento/InviteEventAI/docs/wireframes/admin-booster-config.html)** (Organizador)

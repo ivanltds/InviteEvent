@@ -117,7 +117,8 @@ describe('Direct Sourcing Self-Healing Daemon API Route - Engine Amazon & Magalu
       p_status: 'CURADO',
       p_new_price: 80,
       p_new_link: 'https://www.magazineluiza.com.br/p/2345678/ud/pan/',
-      p_new_title: 'Panela Inox Premium'
+      p_new_title: 'Panela Inox Premium',
+      p_new_store: 'Magalu'
     }));
   });
 
@@ -142,7 +143,8 @@ describe('Direct Sourcing Self-Healing Daemon API Route - Engine Amazon & Magalu
     expect(mockSupabaseClient.rpc).toHaveBeenLastCalledWith('apply_healed_link', expect.objectContaining({
       p_id: 'item-falha',
       p_status: 'FALHA_MANUAL',
-      p_new_price: null
+      p_new_price: null,
+      p_new_store: null
     }));
   });
 
@@ -188,7 +190,8 @@ describe('Direct Sourcing Self-Healing Daemon API Route - Engine Amazon & Magalu
     expect(mockSupabaseClient.rpc).toHaveBeenLastCalledWith('apply_healed_link', expect.objectContaining({
       p_id: 'item-direto',
       p_status: 'CURADO',
-      p_new_link: 'https://www.amazon.com.br/dp/B0123456?tag=ivanltds-20'
+      p_new_link: 'https://www.amazon.com.br/dp/B0123456?tag=ivanltds-20',
+      p_new_store: 'Amazon Brasil'
     }));
   });
 
@@ -234,7 +237,8 @@ describe('Direct Sourcing Self-Healing Daemon API Route - Engine Amazon & Magalu
     expect(mockSupabaseClient.rpc).toHaveBeenLastCalledWith('apply_healed_link', expect.objectContaining({
       p_id: 'item-magalu',
       p_status: 'CURADO',
-      p_new_link: 'https://www.magazinevoce.com.br/magazineivanltdsloja/p/9876543/'
+      p_new_link: 'https://www.magazinevoce.com.br/magazineivanltdsloja/p/9876543/',
+      p_new_store: 'Magalu'
     }));
 
     delete process.env.MAGALU_STORE_NAME;

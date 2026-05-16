@@ -424,7 +424,7 @@ export default function MasterIntelligencePage() {
               <span className={styles.cardTitle}>Receita Monitorada</span>
             </div>
             <div className={styles.kpiMain}>
-              R$ {data?.revenue?.total ? data.revenue.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '0,00'}
+              {data?.revenue?.total ? data.revenue.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 0,00'}
             </div>
             <div>
               <span className={styles.badgeTrend}>Live Tracking</span>
@@ -774,7 +774,12 @@ export default function MasterIntelligencePage() {
                     <tr key={item.id}>
                       <td style={{ display: 'flex', alignItems: 'center' }}>
                         <div className={styles.thumb} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059', fontSize: '0.8rem' }}>🏷️</div>
-                        {item.presentes_base?.nome || 'Produto Independente'}
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span>{item.presentes_base?.nome || 'Produto Independente'}</span>
+                          <span className={styles.cotaValueBadge}>
+                            {Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                          </span>
+                        </div>
                       </td>
                       <td>{item.motivo_quebra}</td>
                       <td>

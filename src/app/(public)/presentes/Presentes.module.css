@@ -175,6 +175,14 @@
   align-items: center;
 }
 
+.cotaValueBadge {
+  font-size: 11px;
+  color: #71717A;
+  margin-top: -15px;
+  margin-bottom: 15px;
+  display: block;
+}
+
 .description {
   font-size: 11px;
   text-transform: uppercase;
@@ -305,9 +313,11 @@
 /* Checkout Specific inside modal */
 .cartSummary {
   margin-bottom: 2rem;
-  background: #f9f9f9;
-  padding: 1.5rem;
-  border-radius: 16px;
+  background: #FCFBF9;
+  padding: 2rem;
+  border-radius: 24px;
+  border: 1px solid rgba(197, 160, 89, 0.15);
+  box-shadow: 0 10px 30px rgba(197, 160, 89, 0.05);
 }
 
 .cartItem {
@@ -543,3 +553,105 @@
 }
 
 
+/* PRD-015: Selos de Luxo */
+.luxeBadgeDream {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  z-index: 20;
+  padding: 8px 16px;
+  background: rgba(229, 193, 197, 0.9); /* Rose Gold Soft */
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 40px;
+  color: #1a1a1a;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  animation: breatheOpacity 4s ease-in-out infinite;
+}
+
+.luxeBadgeClassic {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  z-index: 20;
+  padding: 8px 16px;
+  background: rgba(243, 229, 216, 0.9); /* Champagne Soft */
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 40px;
+  color: #1a1a1a;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+@keyframes breatheOpacity {
+  0% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.03); }
+  100% { opacity: 0.85; transform: scale(1); }
+}
+
+.luxeIcon {
+  color: #c5a059;
+}
+
+/* PRD-015: Sparkle Discreto e Tooltip */
+.sparkleContainer {
+  position: absolute;
+  bottom: 12px;
+  right: 15px;
+  z-index: 20;
+  cursor: help;
+}
+
+.sparkleIcon {
+  color: #c5a059;
+  opacity: 0.5;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.sparkleContainer:hover .sparkleIcon {
+  opacity: 1;
+  transform: scale(1.3) rotate(15deg);
+}
+
+.sparkleTooltip {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: #1a1a1a;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  margin-bottom: 8px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.sparkleContainer:hover .sparkleTooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}

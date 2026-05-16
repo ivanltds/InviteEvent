@@ -471,7 +471,7 @@ export default function DashboardPage() {
         </div>
         <div className={styles.statCard}>
           <span>Presentes Recebidos</span>
-          <strong>R$ {stats.valorPresentes.toLocaleString('pt-BR')}</strong>
+          <strong>{stats.valorPresentes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
         </div>
         <div className={styles.statCard}>
           <span>Dias Restantes</span>

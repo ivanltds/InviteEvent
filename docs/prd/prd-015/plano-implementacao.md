@@ -1,40 +1,24 @@
-# Plano de Implementação Técnica — PRD-015 🏛️⚙️
+### A. Extensão do Banco de Dados (Supabase Migration)
+```sql
+-- Adiciona a flag de curadoria manual do casal
+ALTER TABLE public.presentes 
+ADD COLUMN is_sonho_casal BOOLEAN DEFAULT false;
 
-> **Fase:** ARQUITETURA | **Responsável:** @architect | **Data:** 15 de Maio de 2026  
-> **Objetivo:** Viabilizar o cálculo de Score de Interesse, entrega de cache distribuído para badges pulsantes (FOMO) e lógica do Consultor Administrativo de Performance.
+COMMENT ON COLUMN public.presentes.is_sonho_casal IS 'Sinaliza se o presente é um destaque manual (Grande Sonho) definido pelos noivos.';
+```
 
----
-
-## 📊 1. Arquitetura do Motor de Fomo & Analytics
-
-Para garantir impacto zero na performance e evitar conexões abusivas no banco de dados, usaremos uma rota de API isolada servida com cabeçalhos HTTP de Cache.
-
-### A. Nova Rota da API: `/api/public/presentes/fomo/route.ts`
+### B. Nova Rota da API: `/api/public/presentes/fomo/route.ts`
 *   **Método:** `GET`
 *   **Parâmetros:** `eventoId` (UUID)
 *   **Lógica Interna:**
-    1. Buscar todos os `analytics_events` do evento nas últimas 48h pertencentes à categoria `'gift'`.
-    2. Agrupar em memória:
-        - Cliques totais por `target_id` (ID do presente).
-        - Adições à cesta por `target_id`.
-        - Número de `session_id` únicos nas últimas 24h por `target_id`.
-    3. Calcular o **Score de Afinidade**:
-       `Score = (Cliques * 1) + (AdiçãoCesta * 5)`
-    4. Mapear as Categorias de Destaque:
-       - **Top 1 e 2 de Cliques:** Tipo `'dream'` (O Grande Sonho 💕).
-       - **Mais acessado nas últimas 48h:** Tipo `'classic'` (Escolha Clássica 💍).
-    5. Retornar o Mapa Compacto:
-       ```json
-       {
-         "success": true,
-         "data": {
-           "PRESENT_UUID_1": { "score": 25, "badge": "dream", "recentViewers": 4 },
-           "PRESENT_UUID_2": { "score": 12, "badge": "classic", "recentViewers": 1 }
-         }
-       }
-       ```
-*   **⚡ Cache-Control (RNF-01):**
-    A resposta conterá o cabeçalho `s-maxage=60, stale-while-revalidate=30`, garantindo que o Next.js utilize cache de borda (Vercel Edge) sem onerar o banco por acessos subsequentes no mesmo minuto.
+    1. Buscar todos os `presentes` do evento que possuem `is_sonho_casal = true`.
+    2. Buscar `analytics_events` (categoria `'gift'`) das últimas 48h.
+    3. Agrupar afinidade (cliques/cesta).
+    4. **Hierarquia de Badges:**
+       - Se `is_sonho_casal` manual existe -> Badge `'dream'`.
+       - Se não existir manual -> Top Afinidade -> Badge `'dream'`.
+       - Próximos Afinidade -> Badge `'classic'`.
+    5. Retornar dados consolidados.
 
 ---
 
@@ -43,37 +27,21 @@ Para garantir impacto zero na performance e evitar conexões abusivas no banco d
 ### Local: `src/app/(public)/presentes/page.tsx`
 
 #### Passos de Desenvolvimento:
-1.  **Hydrate Hook:**
-    No `useEffect` de montagem, disparar um `fetch` assíncrono para `/api/public/presentes/fomo?eventoId=X` e armazenar o resultado no estado:
-    `const [affinityData, setAffinityData] = useState<Record<string, any>>({});`
-2.  **Mapeamento do Algoritmo de Ordenação (Vitrine de Afinidade):**
-    Refatorar o `useMemo` de `filteredPresentes` para injetar a lógica de ordenação do PRD:
+1.  **Hydrate Hook:** Busca dados de afinidade e flags manuais.
+2.  **Smart Sorting Hierarchy:**
     ```typescript
-    const orderedPresentes = useMemo(() => {
-      let items = [...filteredPresentes];
-      
-      // Ordenação Padrão do Sistema:
-      items.sort((a, b) => {
-        // 1. Exceção: Itens 100% comprados SEMPRE no final
-        const isAEsgotado = a.status === 'reservado' || (a.permite_cotas && (a.cotas_compradas ?? 0) >= (a.total_cotas ?? 999));
-        const isBEsgotado = b.status === 'reservado' || (b.permite_cotas && (b.cotas_compradas ?? 0) >= (b.total_cotas ?? 999));
-        if (isAEsgotado && !isBEsgotado) return 1;
-        if (!isAEsgotado && isBEsgotado) return -1;
-
-        // 2. Critério Principal: Score de Afinidade da Telemetria
-        const scoreA = affinityData[a.id]?.score ?? 0;
-        const scoreB = affinityData[b.id]?.score ?? 0;
-        if (scoreA !== scoreB) return scoreB - scoreA; // Maior afinidade no topo!
-
-        // 3. Fallback: Ordem alfabética/inserção padrão
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      });
-      return items;
-    }, [filteredPresentes, affinityData]);
+    items.sort((a, b) => {
+      // 1. Esgotados por último
+      // 2. 'is_sonho_casal' manual primeiro
+      if (a.is_sonho_casal && !b.is_sonho_casal) return -1;
+      if (!a.is_sonho_casal && b.is_sonho_casal) return 1;
+      // 3. Score de Afinidade Telemetria
+      // 4. Fallback Data
+    });
     ```
-3.  **Injeção Visual:**
-    - Injetar os selos com fonte Serif elegante e opacidade breathing (`.badgeDream` ou `.badgeClassic`).
-    - Injetar o rodapé translúcido `✨ Muito cogitado pelos convidados recentemente` apenas se `recentViewers >= 2`.
+3.  **Componentes de UI:**
+    - **Tooltip "Muito Cogitado":** Implementar componente de hover sobre ícone SVG de sparkle.
+    - **Ícones:** Substituir emojis por componentes Lucide-React.
 
 ---
 

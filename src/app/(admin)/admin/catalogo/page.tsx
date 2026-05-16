@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useEvent } from '@/lib/contexts/EventContext';
+import { motion, AnimatePresence } from 'framer-motion';
 import styles from './CatalogoGlobal.module.css';
 
 export default function CatalogoGlobalPage() {
@@ -29,6 +30,10 @@ export default function CatalogoGlobalPage() {
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid'); // Default to Cards/Grid per request
   const [toasts, setToasts] = useState<{ id: string; type: 'success' | 'error'; text: string }[]>([]);
+
+  // --- PAGINAÇÃO PROGRESSIVA ---
+  const [visibleCatalogo, setVisibleCatalogo] = useState(10);
+  const [visibleCandidatos, setVisibleCandidatos] = useState(10);
 
   // Modals State
   const [activeModal, setActiveModal] = useState<'view' | 'form' | 'delete' | null>(null);
@@ -210,10 +215,13 @@ export default function CatalogoGlobalPage() {
   const handleTriggerBulkCuration = async () => {
     // Identifica quais itens estão "quebrados" no dataset filtrado ou de exemplo
     // Em cenários reais, o administrador pode forçar curar toda a fila.
-    const quebrados = presentes.filter(p => !p.link_varejo_padrao || p.parceiro_nome === 'DESCONHECIDO' || p.id === 'simular-roto');
+    // Filtra itens simulados ou sem ID válido para evitar erro de UUID no banco
+    const quebrados = presentes.filter(p => 
+      (p.id && p.id.length === 36) && // UUID check básico
+      (!p.link_varejo_padrao || p.parceiro_nome === 'DESCONHECIDO')
+    );
     
-    // Se vazio no banco real, enviamos os selecionáveis
-    const targetItems = quebrados.length > 0 ? quebrados : presentes.slice(0, 2); 
+    const targetItems = quebrados.length > 0 ? quebrados : presentes.filter(p => p.id && p.id.length === 36).slice(0, 2); 
     
     if (targetItems.length === 0) {
       showToast('error', 'Nenhum link no catálogo para realizar enfileiramento.');
@@ -241,13 +249,18 @@ export default function CatalogoGlobalPage() {
       } else {
         showToast('error', json.error || 'Erro ao registrar fila.');
       }
-    } catch (err) {
-      showToast('error', 'Falha de conexão ao registrar fila.');
+    } catch (err: any) {
+      console.error('Erro ao registrar fila:', err);
+      showToast('error', `Falha de conexão: ${err.message || 'Erro desconhecido'}`);
     }
   };
 
   // Enfileiramento individual de um único item para cura
   const handleSingleCurate = async (item: any) => {
+    if (!item.id || item.id.length !== 36) {
+      showToast('error', 'Este item é uma simulação e não pode ser enfileirado no banco real.');
+      return;
+    }
     try {
       const payload = [{
         id: item.id,
@@ -269,8 +282,9 @@ export default function CatalogoGlobalPage() {
       } else {
         showToast('error', json.error || 'Erro ao enfileirar item.');
       }
-    } catch (err) {
-      showToast('error', 'Falha de conexão ao enfileirar.');
+    } catch (err: any) {
+      console.error('Erro ao enfileirar:', err);
+      showToast('error', `Falha de conexão: ${err.message || 'Erro desconhecido'}`);
     }
   };
 
@@ -426,11 +440,18 @@ export default function CatalogoGlobalPage() {
         /* =======================================
            🃏 RENDER CARDS GRID (DARK MODE PRESET)
            ======================================= */
+        <>
         <div className={styles.gridContainer}>
-          {filteredPresentes.map(item => {
+          {filteredPresentes.slice(0, visibleCatalogo).map((item, index) => {
             const isBroken = !item.link_varejo_padrao || item.link_varejo_padrao.includes('roto');
             return (
-              <div key={item.id} className={styles.giftCard}>
+              <motion.div 
+                key={item.id} 
+                className={styles.giftCard}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: (index % 10) * 0.05 }}
+              >
                 <div className={styles.cardImgWrap}>
                   {/* Floating badges */}
                   <div className={styles.badgeOriginFloat}>
@@ -464,7 +485,7 @@ export default function CatalogoGlobalPage() {
                 <div className={styles.cardContent}>
                   <div className={styles.cardTitle}>{item.nome}</div>
                   <div className={styles.cardPrice}>
-                    R$ {Number(item.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    {Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </div>
                   
                   <div style={{ fontSize: '0.7rem', color: '#777', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
@@ -512,31 +533,49 @@ export default function CatalogoGlobalPage() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
-      ) : (
-        /* =======================================
-           📊 RENDER TABLE ROW (COMPACT VISUAL)
-           ======================================= */
-        <div className={styles.tableCard}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Produto Base</th>
-                <th>Status</th>
-                <th>Valor</th>
-                <th>Parceiro</th>
-                <th>Casamentos Ativos</th>
-                <th style={{ textAlign: 'right' }}>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPresentes.map(item => {
-                const isBroken = !item.link_varejo_padrao || item.link_varejo_padrao.includes('roto');
-                return (
-                  <tr key={item.id}>
+        
+        {filteredPresentes.length > visibleCatalogo && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '3rem', paddingBottom: '3rem' }}>
+            <button 
+              className={styles.btnGold} 
+              style={{ padding: '12px 40px' }}
+              onClick={() => setVisibleCatalogo(prev => prev + 10)}
+            >
+              Ver Mais 10 Itens
+            </button>
+          </div>
+        )}
+      </>
+    ) : (
+      /* =======================================
+         📊 RENDER TABLE ROW (COMPACT VISUAL)
+         ======================================= */
+      <div className={styles.tableCard}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Produto Base</th>
+              <th>Status</th>
+              <th>Valor</th>
+              <th>Parceiro</th>
+              <th>Casamentos Ativos</th>
+              <th style={{ textAlign: 'right' }}>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredPresentes.slice(0, visibleCatalogo).map((item, index) => {
+              const isBroken = !item.link_varejo_padrao || item.link_varejo_padrao.includes('roto');
+              return (
+                <motion.tr 
+                  key={item.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: (index % 10) * 0.03 }}
+                >
                     <td>
                       <div className={styles.itemCell}>
                         <img 
@@ -557,7 +596,7 @@ export default function CatalogoGlobalPage() {
                       </span>
                     </td>
                     <td>
-                      <span className={styles.priceText}>R$ {Number(item.preco).toFixed(2)}</span>
+                      <span className={styles.priceText}>{Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                     </td>
                     <td>
                       <span style={{ textTransform: 'uppercase', fontSize: '0.75rem', fontWeight: 600, color: '#888' }}>
@@ -612,11 +651,22 @@ export default function CatalogoGlobalPage() {
                         </button>
                       </div>
                     </td>
-                  </tr>
-                );
-              })}
+                </motion.tr>
+              );
+            })}
             </tbody>
           </table>
+          
+          {filteredPresentes.length > visibleCatalogo && (
+            <div style={{ padding: '2rem', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+              <button 
+                className={styles.btnOutline} 
+                onClick={() => setVisibleCatalogo(prev => prev + 10)}
+              >
+                Carregar mais 10 resultados
+              </button>
+            </div>
+          )}
         </div>
       )}
         </>
@@ -646,10 +696,16 @@ export default function CatalogoGlobalPage() {
               Nenhum presente candidato localizado para os termos pesquisados.
             </div>
           ) : (
-            /* RENDER CANDIDATE CARDS (SAME LUXURY DESIGN BUT WITH APPROVAL CONSOLE) */
+            <>
             <div className={styles.gridContainer}>
-              {filteredCandidatos.map(item => (
-                <div key={item.id} className={styles.giftCard}>
+          {filteredCandidatos.slice(0, visibleCandidatos).map((item, index) => (
+            <motion.div 
+              key={item.id} 
+              className={styles.giftCard}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, delay: (index % 10) * 0.05 }}
+            >
                   <div className={styles.cardImgWrap}>
                     {/* Floating Origin & Candidate Badges matching main system */}
                     <div className={styles.badgeOriginFloat} title={`Casamento: ${item.evento?.nome || 'Desconhecido'}`}>
@@ -689,7 +745,7 @@ export default function CatalogoGlobalPage() {
                   <div className={styles.cardContent}>
                     <div className={styles.cardTitle}>{item.nome}</div>
                     <div className={styles.cardPrice}>
-                      R$ {Number(item.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </div>
                     
                     <div style={{ fontSize: '0.7rem', color: '#777', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, marginBottom: '0.75rem' }}>
@@ -713,13 +769,24 @@ export default function CatalogoGlobalPage() {
                       </button>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
-      )}
-
+              </motion.div>
+          ))}
+        </div>
+        
+        {filteredCandidatos.length > visibleCandidatos && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem', paddingBottom: '3rem' }}>
+            <button 
+              className={styles.btnGold} 
+              onClick={() => setVisibleCandidatos(prev => prev + 10)}
+            >
+              Ver mais Candidatos
+            </button>
+          </div>
+        )}
+      </>
+    )}
+  </>
+)}
 
       {/* =======================================
          📢 MODAL SYSTEM RENDERING
@@ -742,7 +809,7 @@ export default function CatalogoGlobalPage() {
               <div>
                 <h3 style={{ fontFamily: 'var(--font-serif)', color: '#fff', fontSize: '1.4rem', marginBottom: '0.5rem' }}>{selectedItem.nome}</h3>
                 <div className={styles.detailPrice}>
-                  R$ {Number(selectedItem.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  {Number(selectedItem.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </div>
                 <p style={{ color: '#888', fontSize: '0.8rem', minHeight: '60px' }}>{selectedItem.descricao || 'Sem descrição cadastrada.'}</p>
               </div>
@@ -833,7 +900,7 @@ export default function CatalogoGlobalPage() {
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label>Preço "De" (R$) - Opcional</label>
+                  <label>Preço &quot;De&quot; (R$) - Opcional</label>
                   <input
                     type="number"
                     step="0.01"
@@ -918,7 +985,7 @@ export default function CatalogoGlobalPage() {
         <div className={styles.modalOverlay} onClick={() => setActiveModal(null)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <h2 style={{ color: '#fca5a5' }}>Atenção: Exclusão Global</h2>
-            <p>Você está prestes a remover o produto <strong>"{selectedItem.nome}"</strong> permanentemente de toda a plataforma InviteEvent.</p>
+            <p>Você está prestes a remover o produto <strong>&quot;{selectedItem.nome}&quot;</strong> permanentemente de toda a plataforma InviteEvent.</p>
             
             <div style={{ background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.15)', padding: '1.2rem', borderRadius: '12px', marginBottom: '1.5rem' }}>
               <p style={{ color: '#fca5a5', margin: 0, fontSize: '0.8rem', fontWeight: 600 }}>🛡️ MECANISMO DE AUDITORIA E SEGURANÇA DE DADOS ATIVO:</p>

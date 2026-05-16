@@ -89,6 +89,10 @@ export interface Presente {
   permite_cotas?: boolean;
   total_cotas?: number | null;
   cotas_compradas?: number;
+  is_sonho_casal?: boolean;
+  highlight_label?: string;
+  highlight_icon?: string;
+  parceiro_nome?: string;
   // Relacionamento mapeado para joins no Supabase client
   categoria?: PresenteCategoria | null;
   presentes_locks?: PresenteLock[];

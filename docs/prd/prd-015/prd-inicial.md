@@ -24,21 +24,29 @@ Para a nossa plataforma, o gatilho de conversão não é o "medo de perder", mas
 ## 2. Requisitos Funcionais (RF)
 
 ### RF001 — Selos de Simpatia & Desejos (Visual Afetivo)
-*   **Descrição:** Inserir discretamente selos estilizados com a tipografia Serif do casamento (sem cores agressivas como vermelho ou laranja vivo).
-*   **Diretrizes de Estilo:**
-    *   **Selo "Grande Sonho do Casal" (💖):** Injetado nos presentes com alta pontuação de cliques. Substitui o "Favorito" puramente comercial.
-    *   **Selo "O Clássico da Nossa Lista" (💍):** Para os presentes consistentes que geram muita interação.
-    *   **Rodapé Transparente "Sintonia" (✨):** Em vez de alertas vermelhos pulsantes, um brilho dourado suave (champagne glow) com o texto: *"✨ Este item tem atraído a atenção e o carinho dos convidados recentemente."*
+*   **Descrição:** Inserir discretamente selos estilizados com a tipografia Serif do casamento e ícones elegantes.
+*   **Regras de Exibição:**
+    *   **Selo "Grande Sonho do Casal" (Manual + Inteligência):**
+        *   **Flag Manual:** O administrador pode marcar presentes específicos com a flag `is_sonho_casal`. Estes itens ganham prioridade absoluta na vitrine e o selo permanente.
+        *   **Inteligência:** Caso nenhum item seja marcado manualmente, a inteligência atribui ao item com maior desejo histórico.
+    *   **Selo "O Clássico da Nossa Lista" (Inteligência):** Atribuído automaticamente pela telemetria.
+    *   **Rodapé de Sintonia "Muito Cogitado" (Discreto):**
+        *   Exibido apenas como um ícone minimalista (ex: brilho ou estrela).
+        *   O texto explicativo ("Este item tem atraído a atenção...") deve aparecer apenas ao passar o mouse (Tooltip).
+        *   **Proibido o uso de Emojis padrão do sistema; utilizar biblioteca de ícones (Lucide/SVG).**
 
 ### RF002 — A Vitrine Autônoma de Afeto (Smart Sorting Light)
-*   **Descrição:** O algoritmo organiza os presentes puxando os itens com maior afinidade e carinho para o topo da tela, facilitando a navegação do convidado.
-*   **Mecânica:**
-    *   A priorização se mantém: itens clicados sobem, itens esgotados descem gentilmente ao final, mas o rótulo da ordenação passa a se chamar **"Recomendados pela Vitrine ✨"**.
+*   **Descrição:** O algoritmo organiza os presentes puxando os itens com maior afinidade e carinho para o topo da tela.
+*   **Hierarquia de Ordenação:**
+    1.  Itens marcados manualmente como **"Sonho do Casal"** (ordem de inserção entre eles).
+    2.  Itens com maior **Score de Afinidade** (cliques/cesta).
+    3.  Itens esgotados (sempre ao final).
 
 ### RF003 — Mentor de Carinho (Advisory Admin para os Noivos)
-*   **Descrição:** Central de aconselhamento no painel do admin focada em ajudar os noivos a tornarem seus "Grandes Sonhos" mais acessíveis à família.
-*   **Lógica de Comunicação:**
-    *   Substituir o tom de alerta ("Aumente suas vendas em 35%") por um tom de assessoria cerimonial: *"Queremos te ajudar a realizar seus sonhos mais rápido! 🎁 Dividir o item [Geladeira] em cotas menores o torna muito mais acessível para que seus amigos possam presenteá-lo juntos."*
+*   **Descrição:** Central de aconselhamento no painel do admin.
+*   **Novas Ações de Controle:**
+    *   **Campo "Sonho do Casal":** Checkbox no cadastro/edição de presentes para marcar a flag `is_sonho_casal`.
+    *   **Destaque Sugerido:** O mentor pode sugerir: *"Notamos que você ainda não definiu um 'Grande Sonho'. Que tal marcar este item para ganhar destaque especial?"*
 
 ---
 

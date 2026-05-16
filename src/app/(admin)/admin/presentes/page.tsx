@@ -2,6 +2,13 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Heart, Award, Star, Gift, 
+  Trash2, Edit, ExternalLink, 
+  ChevronRight, Sparkles, Filter, 
+  Plus, Check, Copy, Share2, Search, X,
+  Palmtree, GlassWater, PartyPopper, Coffee, Plane, Music, Smile, Camera
+} from 'lucide-react';
 import styles from './AdminPresentes.module.css';
 import { CldUploadWidget } from 'next-cloudinary';
 import { useEvent } from '@/lib/contexts/EventContext';
@@ -32,6 +39,9 @@ interface Presente {
   permite_cotas?: boolean;
   total_cotas?: number | null;
   cotas_compradas?: number;
+  is_sonho_casal?: boolean;
+  highlight_label?: string | null;
+  highlight_icon?: string | null;
 }
 
 interface UnifiedSuggestion {
@@ -76,6 +86,48 @@ export default function AdminPresentes() {
   const [detailBaseItem, setDetailBaseItem] = useState<UnifiedSuggestion | null>(null);
   const [loadingBase, setLoadingBase] = useState(false);
   const [search, setSearch] = useState('');
+  const [showMentor, setShowMentor] = useState(true);
+  
+  // --- PAGINAÇÃO PROGRESSIVA (10 em 10) ---
+  const [visibleCatalogo, setVisibleCatalogo] = useState(10);
+  const [visibleSugestoes, setVisibleSugestoes] = useState(10);
+  const [visibleRecebidos, setVisibleRecebidos] = useState(10);
+
+  // --- MENTOR DE CARINHO LOGIC (PRD-015) ---
+  const mentorSuggestions = useMemo(() => {
+    if (!showMentor) return [];
+    return presentes.filter(p => 
+      p.preco >= 500 && 
+      !p.permite_cotas && 
+      p.status === 'disponivel' &&
+      p.id !== 'simular-roto' // Evita mock
+    );
+  }, [presentes, showMentor]);
+
+  const handleApplyMentor = async () => {
+    if (mentorSuggestions.length === 0) return;
+    
+    setLoading(true);
+    let successCount = 0;
+    
+    for (const item of mentorSuggestions) {
+      // Sugerimos dividir em cotas de ~R$ 100 - R$ 250
+      const suggestedCotas = Math.max(2, Math.floor(item.preco / 150));
+      const { success } = await giftService.updateGift(item.id, {
+        permite_cotas: true,
+        total_cotas: suggestedCotas,
+        quantidade_total: 1
+      });
+      if (success) successCount++;
+    }
+    
+    if (successCount > 0) {
+      triggerToast(`✨ Sucesso! ${successCount} presentes foram fracionados para facilitar a compra pelos convidados.`);
+      fetchPresentes();
+    }
+    setShowMentor(false);
+    setLoading(false);
+  };
 
   // Filtros de Busca Dinâmicos (UX Reativa)
   const filteredPresentes = useMemo(() => {
@@ -125,7 +177,10 @@ export default function AdminPresentes() {
     link_externo: '',
     categoria_id: '',
     permite_cotas: false,
-    total_cotas: 1
+    total_cotas: 2,
+    is_sonho_casal: false,
+    highlight_label: '',
+    highlight_icon: ''
   });
   const [originalDataStr, setOriginalDataStr] = useState<string>('');
   const [pendingNavUrl, setPendingNavUrl] = useState<string | null>(null);
@@ -288,7 +343,10 @@ export default function AdminPresentes() {
       link_externo: '',
       categoria_id: '',
       permite_cotas: false,
-      total_cotas: 2
+      total_cotas: 2,
+      is_sonho_casal: false,
+      highlight_label: '',
+      highlight_icon: ''
     };
     setFormData(init);
     setOriginalDataStr(JSON.stringify(init));
@@ -309,7 +367,10 @@ export default function AdminPresentes() {
       link_externo: item.link_externo || '',
       categoria_id: item.categoria_id || '',
       permite_cotas: item.permite_cotas || false,
-      total_cotas: item.total_cotas || 2
+      total_cotas: item.total_cotas || 2,
+      is_sonho_casal: item.is_sonho_casal || false,
+      highlight_label: item.highlight_label || '',
+      highlight_icon: item.highlight_icon || ''
     };
     setFormData(init);
     setOriginalDataStr(JSON.stringify(init));
@@ -347,7 +408,10 @@ export default function AdminPresentes() {
       categoria_id: formData.categoria_id || null,
       evento_id: currentEvent.id,
       permite_cotas: formData.permite_cotas,
-      total_cotas: formData.permite_cotas ? Number(formData.total_cotas) : null
+      total_cotas: formData.permite_cotas ? Number(formData.total_cotas) : null,
+      is_sonho_casal: formData.is_sonho_casal,
+      highlight_label: formData.highlight_label || null,
+      highlight_icon: formData.highlight_icon || null
     };
 
     if (editingItem) {
@@ -493,6 +557,35 @@ export default function AdminPresentes() {
         <button className={`${styles.tabBtn} ${activeTab === 'recebidos' ? styles.activeTab : ''}`} onClick={() => setActiveTab('recebidos')}>Presentes Recebidos</button>
       </div>
 
+      {/* PRD-015: Mentor de Carinho Banner */}
+      <AnimatePresence>
+        {activeTab === 'catalogo' && mentorSuggestions.length > 0 && (
+          <motion.div 
+            className={styles.mentorBanner}
+            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+            animate={{ opacity: 1, height: 'auto', marginBottom: '2.5rem' }}
+            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+          >
+            <div className={styles.mentorContent}>
+              <div className={styles.mentorIcon}>
+                <Sparkles size={28} />
+              </div>
+              <div className={styles.mentorText}>
+                <h3>Mentor de Carinho <span style={{ fontSize: '0.7rem', background: 'rgba(197, 160, 89, 0.1)', color: '#C5A059', padding: '4px 10px', borderRadius: '40px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>SUGESTÃO SMART</span></h3>
+                <p>
+                  Identificamos <strong>{mentorSuggestions.length} presentes</strong> de alto valor que ainda não estão divididos em cotas. 
+                  Fracionar esses itens facilita a participação dos convidados e aumenta suas chances de ganhar!
+                </p>
+              </div>
+            </div>
+            <div className={styles.mentorActions}>
+              <button className={styles.mentorDismissBtn} onClick={() => setShowMentor(false)}>Agora não</button>
+              <button className={styles.mentorApplyBtn} onClick={handleApplyMentor}>Fracionar Itens</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Controles de Grid Unificados (Derivados do Catálogo Global) */}
       <SearchControl
         placeholder={
@@ -528,11 +621,31 @@ export default function AdminPresentes() {
       ) : activeTab === 'catalogo' ? (
         viewType === 'grid' ? (
           // CARD VIEW
+          <>
           <div className={styles.gridContainer}>
-            {filteredPresentes.map(item => {
+            {filteredPresentes.slice(0, visibleCatalogo).map(item => {
+              const totalLocked = item.presentes_locks?.reduce((acc, lock) => {
+                return new Date(lock.expira_em).getTime() > Date.now() ? acc + (lock.quantidade_cotas || 1) : acc;
+              }, 0) || 0;
+              
+              const isFullyLocked = item.permite_cotas 
+                ? ((item.cotas_compradas || 0) + totalLocked >= (item.total_cotas || 1))
+                : item.presentes_locks?.some(lock => new Date(lock.expira_em).getTime() > Date.now());
+
               const activeLock = item.presentes_locks?.find(lock => new Date(lock.expira_em).getTime() > Date.now());
-              const statusText = activeLock ? '🔒 Sob Reserva' : (item.status === 'reservado' && item.quantidade_reservada < item.quantidade_total ? 'Pausado' : item.status);
-              const statusClass = activeLock ? 'reservado' : item.status;
+
+              const statusText = isFullyLocked 
+                ? '🔒 Sob Reserva' 
+                : (item.permite_cotas 
+                    ? ((item.cotas_compradas || 0) >= (item.total_cotas || 1) ? 'esgotado' : (item.status === 'reservado' ? 'disponivel' : item.status))
+                    : (item.status === 'reservado' && item.quantidade_reservada < item.quantidade_total ? 'Pausado' : item.status)
+                  );
+              const statusClass = isFullyLocked 
+                ? 'reservado' 
+                : (item.permite_cotas 
+                    ? ((item.cotas_compradas || 0) >= (item.total_cotas || 1) ? 'esgotado' : (item.status === 'reservado' ? 'disponivel' : item.status))
+                    : item.status
+                  );
 
               return (
                 <motion.div 
@@ -542,10 +655,64 @@ export default function AdminPresentes() {
                   animate={{ opacity: 1, y: 0 }}
                 >
                   <div className={styles.cardImageWrapper}>
-                    {/* PRD-014: Badge Coletivo Flutuante Premium */}
-                    {item.permite_cotas && (
-                      <span className={styles.adminColetivoBadge}>COLETIVO 🤝</span>
-                    )}
+                    {/* PRD-015: Badges de Curadoria no Admin (Grid - Topo Esquerdo) */}
+                    <div style={{ position: 'absolute', top: '0.8rem', left: '0.8rem', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start', zIndex: 10 }}>
+                      {item.highlight_label && (
+                        <div style={{ 
+                          padding: '6px 12px', 
+                          background: 'rgba(255,255,255,0.95)', 
+                          borderRadius: '20px', 
+                          fontSize: '0.65rem', 
+                          fontWeight: 800, 
+                          textTransform: 'uppercase', 
+                          color: '#C5A059', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '6px',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                          backdropFilter: 'blur(4px)'
+                        }}>
+                          {(() => {
+                            const Icon = {
+                              heart: Heart,
+                              award: Award,
+                              star: Star,
+                              gift: Gift,
+                              palmtree: Palmtree,
+                              glass: GlassWater,
+                              party: PartyPopper,
+                              coffee: Coffee,
+                              plane: Plane,
+                              music: Music,
+                              smile: Smile,
+                              camera: Camera
+                            }[item.highlight_icon || 'star'] || Star;
+                            return <Icon size={12} strokeWidth={3} />;
+                          })()}
+                          {item.highlight_label}
+                        </div>
+                      )}
+                      {item.is_sonho_casal && !item.highlight_label && (
+                        <div style={{ 
+                          padding: '6px 12px', 
+                          background: 'rgba(253, 250, 243, 0.95)', 
+                          borderRadius: '20px', 
+                          fontSize: '0.65rem', 
+                          fontWeight: 800, 
+                          textTransform: 'uppercase', 
+                          color: '#C5A059', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '6px',
+                          border: '1px solid #C5A059',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                          backdropFilter: 'blur(4px)'
+                        }}>
+                          <Heart size={12} strokeWidth={3} />
+                          Grande Sonho
+                        </div>
+                      )}
+                    </div>
                     
                     <img src={item.imagem_url || 'https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=400&auto=format&fit=crop'} alt={item.nome} className={styles.cardImage} />
                     
@@ -658,6 +825,18 @@ export default function AdminPresentes() {
             })}
             {filteredPresentes.length === 0 && <div className={styles.empty}>Nenhum presente encontrado para a busca.</div>}
           </div>
+          {filteredPresentes.length > visibleCatalogo && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem', paddingBottom: '3rem' }}>
+              <button 
+                className={styles.addBtn} 
+                style={{ background: 'white', color: '#1e293b', border: '1px solid #e2e8f0', boxShadow: 'none' }}
+                onClick={() => setVisibleCatalogo(prev => prev + 10)}
+              >
+                Carregar Mais 10 Itens
+              </button>
+            </div>
+          )}
+          </>
         ) : (
           // LIST VIEW
           <section className={styles.tableContainer}>
@@ -673,9 +852,22 @@ export default function AdminPresentes() {
                 </tr>
               </thead>
               <tbody>
-                {filteredPresentes.map((item) => {
+                {filteredPresentes.slice(0, visibleCatalogo).map((item) => {
+                  const totalLocked = item.presentes_locks?.reduce((acc, lock) => {
+                    return new Date(lock.expira_em).getTime() > Date.now() ? acc + (lock.quantidade_cotas || 1) : acc;
+                  }, 0) || 0;
+                  
+                  const isFullyLocked = item.permite_cotas 
+                    ? ((item.cotas_compradas || 0) + totalLocked >= (item.total_cotas || 1))
+                    : item.presentes_locks?.some(lock => new Date(lock.expira_em).getTime() > Date.now());
+
                   const activeLock = item.presentes_locks?.find(lock => new Date(lock.expira_em).getTime() > Date.now());
-                  const statusText = activeLock ? 'sob reserva' : item.status;
+                  const statusText = isFullyLocked 
+                    ? 'sob reserva' 
+                    : (item.permite_cotas 
+                        ? ((item.cotas_compradas || 0) >= (item.total_cotas || 1) ? 'esgotado' : (item.status === 'reservado' ? 'disponivel' : item.status))
+                        : item.status
+                      );
 
                   return (
                     <tr key={item.id} onClick={() => setDetailItem(item)} style={{ cursor: 'pointer' }}>
@@ -751,10 +943,21 @@ export default function AdminPresentes() {
                         <button className={styles.deleteBtn} onClick={(e) => openDeleteModal(item.id, 'presente', e)} data-tooltip="Remover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                       </td>
                     </tr>
-                  );
+                  )
                 })}
               </tbody>
             </table>
+            {filteredPresentes.length > visibleCatalogo && (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem', borderTop: '1px solid #f1f5f9' }}>
+                <button 
+                  className={styles.addBtn} 
+                  style={{ background: 'transparent', color: '#64748b', border: '1px solid #e2e8f0', boxShadow: 'none' }}
+                  onClick={() => setVisibleCatalogo(prev => prev + 10)}
+                >
+                  Ver mais 10 resultados
+                </button>
+              </div>
+            )}
           </section>
         )
       ) : activeTab === 'sugestoes' ? (
@@ -807,8 +1010,9 @@ export default function AdminPresentes() {
           {loadingBase ? (
             <div className={styles.loading}>Buscando catálogo de luxo...</div>
           ) : (
+            <>
             <div className={styles.vitrineGrid}>
-              {filteredBaseGifts.map(baseItem => {
+              {filteredBaseGifts.slice(0, visibleSugestoes).map(baseItem => {
                 const isAlreadyCloned = clonedBaseIds.has(baseItem.origin_id) || 
                                        activeGiftNames.has(baseItem.nome?.trim().toLowerCase());
                 return (
@@ -862,8 +1066,13 @@ export default function AdminPresentes() {
                   </motion.div>
                 );
               })}
-              {filteredBaseGifts.length === 0 && <div className={styles.empty}>Nenhum item de catálogo localizado.</div>}
             </div>
+            {filteredBaseGifts.length > visibleSugestoes && (
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
+                <button className={styles.addBtn} onClick={() => setVisibleSugestoes(prev => prev + 10)}>Carregar mais sugestões</button>
+              </div>
+            )}
+            </>
           )}
         </div>
       ) : (
@@ -872,7 +1081,7 @@ export default function AdminPresentes() {
           <table className={styles.table}>
             <thead><tr><th>Data</th><th>Item</th><th>Convidado</th><th>Comprovante</th><th>Ações</th></tr></thead>
             <tbody>
-              {filteredComprovantes.map((comp) => (
+              {filteredComprovantes.slice(0, visibleRecebidos).map((comp) => (
                 <tr key={comp.id}>
                   <td>{new Date(comp.created_at).toLocaleDateString('pt-BR')}</td>
                   <td style={{ fontWeight: 600 }}>{comp.presente?.nome}</td>
@@ -883,6 +1092,11 @@ export default function AdminPresentes() {
               ))}
             </tbody>
           </table>
+          {filteredComprovantes.length > visibleRecebidos && (
+            <div style={{ padding: '2rem', textAlign: 'center' }}>
+              <button className={styles.addBtn} onClick={() => setVisibleRecebidos(prev => prev + 10)}>Ver mais comprovantes</button>
+            </div>
+          )}
         </section>
       )}
 
@@ -1007,11 +1221,15 @@ export default function AdminPresentes() {
       {/* Modal: ADD / EDIT FORM */}
       <AnimatePresence>
         {isAdding && (
-          <div className={styles.modalOverlay}>
+          <div className={styles.modalOverlay} onClick={discardChanges}>
             <motion.div 
               initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }}
               className={styles.modal}
+              onClick={(e) => e.stopPropagation()}
             >
+              <button className={styles.modalCloseBtn} onClick={discardChanges}>
+                <X size={20} />
+              </button>
               <h2>{editingItem ? 'Ajustar Presente' : 'Novo Presente'}</h2>
               <div className={styles.formGrid}>
                 <div className={`${styles.fieldGroup} ${styles.fullWidth}`}>
@@ -1033,56 +1251,129 @@ export default function AdminPresentes() {
                     style={formData.permite_cotas ? { background: '#f1f5f9', cursor: 'not-allowed' } : {}}
                   />
                 </div>
-                <div className={`${styles.fieldGroup} ${styles.fullWidth}`} style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-                    <input 
-                      type="checkbox" 
-                      checked={formData.permite_cotas} 
-                      onChange={(e) => {
-                        const checked = e.target.checked;
-                        setFormData({
-                          ...formData, 
-                          permite_cotas: checked,
-                          quantidade_total: checked ? 1 : formData.quantidade_total,
-                          total_cotas: checked ? 2 : formData.total_cotas
-                        });
-                      }}
-                      style={{ width: '18px', height: '18px' }}
-                    />
-                    <div>
-                      <div style={{ fontWeight: 600, color: '#1e293b' }}>Dividir em Cotas Coletivas 🤝</div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 400 }}>Múltiplos convidados presenteiam com cotas através de Pix.</div>
-                    </div>
-                  </label>
+                <div className={styles.specialGroupsGrid}>
+                  <div className={styles.highlightSection}>
+                    <label className={styles.sectionLabel}>Destacar Presente</label>
 
-                  {formData.permite_cotas && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingTop: '12px', borderTop: '1px solid #e2e8f0', marginTop: '12px' }}>
-                      <div style={{ flex: 1 }}>
-                        <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Nº de Divisões (Cotas)</label>
-                        <input 
-                          type="number" 
-                          min="2" 
-                          max="200"
-                          value={formData.total_cotas} 
-                          onChange={(e) => setFormData({...formData, total_cotas: parseInt(e.target.value) || 2})}
-                          style={{ marginTop: '6px' }}
-                        />
+                    <div className={styles.premiumToggleCard}>
+                      <div className={styles.toggleInfo}>
+                        <b>Grande Sonho</b>
+                        <span>Exibir no topo</span>
                       </div>
-                      <div style={{ flex: 1, background: '#ffffff', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
-                        <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>VALOR POR COTA</div>
-                        <div style={{ 
-                          fontSize: '1.1rem', 
-                          fontWeight: 700, 
-                          color: (Number(formData.preco) / (Number(formData.total_cotas) || 1)) < 50 ? '#e11d48' : '#059669' 
+                      <label className={styles.switch}>
+                        <input 
+                          type="checkbox" 
+                          checked={formData.is_sonho_casal} 
+                          onChange={(e) => setFormData({...formData, is_sonho_casal: e.target.checked})}
+                        />
+                        <span className={styles.slider}></span>
+                      </label>
+                    </div>
+
+                    <div className={styles.customHighlightGroup}>
+                      <div style={{ position: 'relative' }}>
+                        <label style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px', display: 'block' }}>
+                          Legenda (Opcional)
+                        </label>
+                        <input 
+                          type="text" 
+                          placeholder="Ex: Escolha da Madrinha..." 
+                          maxLength={20}
+                          value={formData.highlight_label || ''}
+                          onChange={(e) => setFormData({...formData, highlight_label: e.target.value})}
+                        />
+                        <span style={{ 
+                          position: 'absolute', 
+                          right: '0', 
+                          top: '0', 
+                          fontSize: '0.6rem', 
+                          color: (formData.highlight_label?.length || 0) >= 20 ? '#e11d48' : '#94a3b8', 
+                          fontWeight: 700 
                         }}>
-                          {(Number(formData.preco) / (Number(formData.total_cotas) || 1)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                          {formData.highlight_label?.length || 0}/20
+                        </span>
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>
+                          Ícone
+                        </label>
+                        <div className={styles.iconGrid}>
+                          {[
+                            { id: 'heart', icon: Heart },
+                            { id: 'award', icon: Award },
+                            { id: 'star', icon: Star },
+                            { id: 'gift', icon: Gift },
+                            { id: 'palmtree', icon: Palmtree },
+                            { id: 'glass', icon: GlassWater },
+                            { id: 'party', icon: PartyPopper },
+                            { id: 'coffee', icon: Coffee }
+                          ].map(({ id, icon: Icon }) => (
+                            <button
+                              key={id}
+                              type="button"
+                              onClick={() => setFormData({...formData, highlight_icon: id})}
+                              className={`${styles.iconBtn} ${formData.highlight_icon === id ? styles.iconBtnActive : ''}`}
+                            >
+                              <Icon size={18} strokeWidth={formData.highlight_icon === id ? 3 : 2} />
+                            </button>
+                          ))}
                         </div>
-                        {(Number(formData.preco) / (Number(formData.total_cotas) || 1)) < 50 && (
-                          <div style={{ fontSize: '0.65rem', color: '#e11d48', marginTop: '2px', fontWeight: 600 }}>Mínimo de R$ 50,00</div>
-                        )}
                       </div>
                     </div>
-                  )}
+                  </div>
+
+                  <div className={styles.cotasSection}>
+                    <label className={styles.sectionLabel}>Cotas Coletivas</label>
+                    
+                    <div className={styles.cotaCard}>
+                      <div className={styles.cotaInfo}>
+                        <b>Dividir em Cotas 🤝</b>
+                        <span>Múltiplos convidados</span>
+                      </div>
+                      <label className={styles.switch}>
+                        <input 
+                          type="checkbox" 
+                          checked={formData.permite_cotas} 
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setFormData({
+                              ...formData, 
+                              permite_cotas: checked,
+                              quantidade_total: checked ? 1 : formData.quantidade_total,
+                              total_cotas: checked ? 2 : formData.total_cotas
+                            });
+                          }}
+                        />
+                        <span className={styles.slider}></span>
+                      </label>
+                    </div>
+
+                    {formData.permite_cotas && (
+                      <div className={styles.cotaDetails}>
+                        <div>
+                          <label style={{ fontSize: '0.7rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', marginBottom: '6px', display: 'block' }}>Nº de Divisões</label>
+                          <input 
+                            type="number" 
+                            min="2" 
+                            max="200"
+                            value={formData.total_cotas} 
+                            onChange={(e) => setFormData({...formData, total_cotas: parseInt(e.target.value) || 2})}
+                          />
+                        </div>
+                        <div style={{ background: '#ffffff', padding: '10px 14px', borderRadius: '12px', border: '1px solid #cbd5e1', textAlign: 'center' }}>
+                          <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>VALOR POR COTA</div>
+                          <div style={{ 
+                            fontSize: '1.1rem', 
+                            fontWeight: 800, 
+                            color: (Number(formData.preco) / (Number(formData.total_cotas) || 1)) < 50 ? '#e11d48' : '#059669' 
+                          }}>
+                            {(Number(formData.preco) / (Number(formData.total_cotas) || 1)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className={`${styles.fieldGroup} ${styles.fullWidth}`}>
                   <label>Categoria do Presente</label>

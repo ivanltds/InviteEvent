@@ -205,7 +205,6 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 - Por     : Maestro / DEV
 - Motivo  : ESTABILIZAÇÃO v0.3.9 CONCLUÍDA. Resolvidos erros críticos de sintaxe JSX em `presentes/page.tsx` e `catalogo/page.tsx` que impediam o build de produção. Consolidada a infraestrutura de rastreabilidade com a coluna `parceiro_nome` e RPC `apply_healed_link`. Build de produção validado com sucesso (Exit 0). Sistema estabilizado para o Go-Live final.
 
-
-
-
-
+- Data    : 2026-05-16 (Fix Exclusão)
+- Por     : Maestro / DEV / QA
+- Motivo  : CORREÇÃO DEFINITIVA DA EXCLUSÃO NO COCKPIT GLOBAL (Story-014). Resolvido o erro 403/Forbidden em produção através da injeção manual de tokens JWT nas chamadas de API administrativa e refatoração do helper `getSupabaseServerClient` para suportar cabeçalhos de autorização. Corrigida a lógica de deleção física/lógica no backend para garantir integridade financeira. Adicionada camada de validação `typecheck` ao pipeline. v0.3.10 estável e resiliente!

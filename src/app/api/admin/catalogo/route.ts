@@ -1,22 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Helper centralizado para criar um cliente administrativo robusto
-function getSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-  // Para fins de segurança do cockpit de prod, usamos a chave de serviço se disponível, senão anon (que roda sob as RLS criadas)
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey;
-  
-  return createClient(supabaseUrl, supabaseServiceKey, {
-    auth: { persistSession: false }
-  });
-}
+import { getSupabaseServerClient } from '@/lib/supabase-server';
+
+// Alias para manter compatibilidade com o código abaixo sem mudar todas as chamadas novamente
+const getSupabaseClient = getSupabaseServerClient;
 
 // GET: Retorna o inventário de presentes usando a View de Métricas + Resumo KPI + Categorias para cadastros
 export async function GET(req: Request) {
   try {
-    const supabase = getSupabaseClient();
+    const supabase = await getSupabaseClient();
 
     // 1. Busca Lista Agregada do Catálogo (via view_presentes_base_metricas)
     // Ordenado pelos criados mais recentemente por padrão
@@ -95,7 +88,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const supabase = getSupabaseClient();
+    const supabase = await getSupabaseClient();
 
     // Validação mínima
     if (!body.nome || !body.preco) {
@@ -134,7 +127,7 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const body = await req.json();
-    const supabase = getSupabaseClient();
+    const supabase = await getSupabaseClient();
 
     if (!body.id) {
       return NextResponse.json({ success: false, error: 'ID do item base é obrigatório.' }, { status: 400 });
@@ -172,81 +165,64 @@ export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
-    const supabase = getSupabaseClient();
+    const supabase = await getSupabaseClient();
 
     if (!id) {
       return NextResponse.json({ success: false, error: 'ID do item base é obrigatório.' }, { status: 400 });
     }
 
-    // 1. Auditoria Preventiva: Verificar se existem registros na tabela presentes associados a esse base_id
-    const { data: presentesListados, error: lookupError } = await supabase
-      .from('presentes')
-      .select('id')
-      .eq('base_id', id);
-
-    if (lookupError) throw lookupError;
-
-    const idsDasListas = presentesListados?.map((p: any) => p.id) || [];
-
-    // 2. Se o item está em alguma lista, verificar se já recebeu algum COMPROVANTE financeiro
-    let jaRecebeuComprovante = false;
+    // 1. Auditoria Preventiva: Verificar se existem registros financeiros (comprovantes)
+    // Coleta IDs locais para verificação financeira
+    const { data: listagemLocal } = await supabase.from('presentes').select('id').eq('base_id', id);
+    const idsLocais = listagemLocal?.map(l => l.id) || [];
     
-    if (idsDasListas.length > 0) {
+    let jaRecebeuComprovante = false;
+    if (idsLocais.length > 0) {
       const { count, error: countError } = await supabase
         .from('comprovantes')
         .select('*', { count: 'exact', head: true })
-        .in('presente_id', idsDasListas);
+        .in('presente_id', idsLocais);
         
       if (countError) throw countError;
-      if (count && count > 0) {
-        jaRecebeuComprovante = true;
-      }
+      if (count && count > 0) jaRecebeuComprovante = true;
     }
 
-    // 3. Ramificação de Fluxo baseada no histórico financeiro do item
+    // 2. Ramificação de Fluxo: Arquivamento vs Exclusão Física
     if (jaRecebeuComprovante) {
-      // FLUXO A: SOFT ARCHIVE (Possui rastro financeiro de convidados, impossível apagar para manter histórico de recebimentos)
-      const { error: archiveError } = await supabase
+      // SOFT ARCHIVE
+      const { data, error: archiveError } = await supabase
         .from('presentes_base')
         .update({ is_archived: true })
-        .eq('id', id);
+        .eq('id', id)
+        .select();
 
       if (archiveError) throw archiveError;
+      if (!data || data.length === 0) {
+        return NextResponse.json({ success: false, error: 'Acesso negado ou item não localizado para arquivamento.' }, { status: 403 });
+      }
 
       return NextResponse.json({
         success: true,
         action: 'archived',
-        message: 'O item possuía vínculos financeiros com convidados e foi arquivado com segurança (Soft-Delete) para preservar relatórios e extratos de casamentos passados.'
+        message: 'O item possui vínculos financeiros e foi arquivado com segurança.'
       });
     } else {
-      // FLUXO B: HARD DELETE (Item virgem de pagamentos, limpa com segurança)
-      
-      // 1º. Remove instâncias associadas em filas de ajuste de links para não quebrar a constraint
-      await supabase.from('fila_ajuste_links').delete().eq('presente_base_id', id);
-      
-      // 2º. Remove instâncias em watchlist de preços
-      await supabase.from('watchlist_itens').delete().eq('presente_base_id', id);
-
-      // 3º. Remove instâncias duplicadas no catálogo dos organizadores que ainda NÃO foram pagas
-      if (idsDasListas.length > 0) {
-        // Primeiro apaga locks ativos que seguram esse presente
-        await supabase.from('presentes_locks').delete().in('presente_id', idsDasListas);
-        // Apaga as referências físicas na tabela presentes
-        await supabase.from('presentes').delete().in('id', idsDasListas);
-      }
-
-      // 4º. Remove finalmente o item do catálogo mestre
-      const { error: hardDeleteError } = await supabase
+      // HARD DELETE (O CASCADE do banco cuidará das dependências)
+      const { data, error: hardDeleteError } = await supabase
         .from('presentes_base')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .select();
 
       if (hardDeleteError) throw hardDeleteError;
+      if (!data || data.length === 0) {
+        return NextResponse.json({ success: false, error: 'Falha na exclusão. O item não existe ou você não tem permissão MASTER.' }, { status: 403 });
+      }
 
       return NextResponse.json({
         success: true,
         action: 'deleted',
-        message: 'Item removido permanentemente do catálogo global e de todas as vitrines ativas com sucesso.'
+        message: 'Item removido permanentemente do catálogo global com sucesso.'
       });
     }
 

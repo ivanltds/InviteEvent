@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEvent } from '@/lib/contexts/EventContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './CatalogoGlobal.module.css';
+import { supabase } from '@/lib/supabase';
 
 export default function CatalogoGlobalPage() {
   const { userProfile, loading: contextLoading } = useEvent();
@@ -65,7 +66,20 @@ export default function CatalogoGlobalPage() {
   const fetchInventory = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/catalogo');
+      const { data: authData, error: authError } = await supabase.auth.getSession();
+      
+      if (authError) {
+        console.error('[Catalogo] Erro ao obter sessão:', authError);
+      }
+
+      const token = authData?.session?.access_token;
+
+      const res = await fetch('/api/admin/catalogo', {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      });
+      
       const json = await res.json();
       if (json.success) {
         setPresentes(json.data.presentes);
@@ -75,7 +89,8 @@ export default function CatalogoGlobalPage() {
       } else {
         showToast('error', json.error || 'Falha ao carregar inventário.');
       }
-    } catch (err) {
+    } catch (err: any) {
+      console.error('[Catalogo] Erro de conexão:', err);
       showToast('error', 'Erro de rede ao conectar ao catálogo.');
     } finally {
       setLoading(false);
@@ -144,9 +159,15 @@ export default function CatalogoGlobalPage() {
       const payload = { ...formState };
       if (!isEdit) delete (payload as any).id;
 
+      const { data: authData } = await supabase.auth.getSession();
+      const token = authData?.session?.access_token;
+
       const res = await fetch('/api/admin/catalogo', {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
         body: JSON.stringify(payload)
       });
       
@@ -167,9 +188,15 @@ export default function CatalogoGlobalPage() {
   const handleTogglePause = async (item: any) => {
     try {
       const newPausedState = !item.is_paused;
+      const { data: authData } = await supabase.auth.getSession();
+      const token = authData?.session?.access_token;
+
       const res = await fetch('/api/admin/catalogo', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
         body: JSON.stringify({ id: item.id, is_paused: newPausedState })
       });
       const json = await res.json();
@@ -187,8 +214,14 @@ export default function CatalogoGlobalPage() {
   const handleDeleteConfirm = async () => {
     if (!selectedItem) return;
     try {
+      const { data: authData } = await supabase.auth.getSession();
+      const token = authData?.session?.access_token;
+
       const res = await fetch(`/api/admin/catalogo?id=${selectedItem.id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
       });
       const json = await res.json();
       if (json.success) {
@@ -235,9 +268,15 @@ export default function CatalogoGlobalPage() {
         nome: t.nome
       }));
 
+      const { data: authData } = await supabase.auth.getSession();
+      const token = authData?.session?.access_token;
+
       const res = await fetch('/api/admin/catalogo/bulk-curate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
         body: JSON.stringify({ items: payload })
       });
       
@@ -268,9 +307,15 @@ export default function CatalogoGlobalPage() {
         nome: item.nome
       }];
 
+      const { data: authData } = await supabase.auth.getSession();
+      const token = authData?.session?.access_token;
+
       const res = await fetch('/api/admin/catalogo/bulk-curate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
         body: JSON.stringify({ items: payload })
       });
       
@@ -292,9 +337,15 @@ export default function CatalogoGlobalPage() {
   const handleApproveCandidate = async (presenteId: string) => {
     if (!confirm('Deseja realmente aprovar e promover este presente ao catálogo global?')) return;
     try {
+      const { data: authData } = await supabase.auth.getSession();
+      const token = authData?.session?.access_token;
+
       const res = await fetch('/api/admin/catalogo/approve', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
         body: JSON.stringify({ presenteId })
       });
       const json = await res.json();

@@ -1,12 +1,13 @@
 {
   "name": "invite-app",
-  "version": "0.3.9",
+  "version": "0.3.10",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:e2e": "playwright test",
     "test:e2e:local": "playwright test",

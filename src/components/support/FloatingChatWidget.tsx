@@ -89,7 +89,7 @@ export default function FloatingChatWidget({ usuarioId = 'test-user-id', eventoI
           table: 'suporte_mensagens', 
           filter: `ticket_id=eq.${ticket.id}` 
         }, 
-        (payload) => {
+        (payload: any) => {
           // Adiciona a mensagem nova à lista local apenas se ela não for do usuário atual 
           // (pois a do usuário já adicionamos localmente pra ser mais rápido)
           const newMsg = payload.new as Message;

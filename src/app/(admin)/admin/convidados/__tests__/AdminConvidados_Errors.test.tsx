@@ -54,7 +54,11 @@ describe('AdminConvidados Error Paths', () => {
     // Esperar sair do loading
     await waitFor(() => expect(screen.queryByText(/Carregando convidados/i)).not.toBeInTheDocument());
     
-    const editBtn = await screen.findByText('Editar');
+    await waitFor(() => {
+      const btn = document.querySelector('button[data-tooltip="Editar Convite"]');
+      expect(btn).not.toBeNull();
+    });
+    const editBtn = document.querySelector('button[data-tooltip="Editar Convite"]') as HTMLElement;
     fireEvent.click(editBtn);
     const saveBtn = await screen.findByRole('button', { name: /Salvar Alterações/i });
     fireEvent.click(saveBtn);
@@ -71,11 +75,18 @@ describe('AdminConvidados Error Paths', () => {
     // Esperar sair do loading
     await waitFor(() => expect(screen.queryByText(/Carregando convidados/i)).not.toBeInTheDocument());
     
-    const deleteBtn = await screen.findByText('Excluir');
+    await waitFor(() => {
+      const btn = document.querySelector('button[data-tooltip="Excluir"]');
+      expect(btn).not.toBeNull();
+    });
+    const deleteBtn = document.querySelector('button[data-tooltip="Excluir"]') as HTMLElement;
     fireEvent.click(deleteBtn);
     
+    const confirmBtn = await screen.findByRole('button', { name: /Confirmar/i });
+    fireEvent.click(confirmBtn);
+    
     await waitFor(() => {
-      expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('Delete Error'));
+      expect(screen.getByText(/Erro ao excluir: Delete Error/i)).toBeInTheDocument();
     });
   });
 });

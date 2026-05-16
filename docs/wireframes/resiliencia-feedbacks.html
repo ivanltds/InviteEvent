@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wireframe de Resiliência - PRD-018</title>
+    <style>
+        :root {
+            --gold-primary: #D4AF37;
+            --gold-light: #F4E4BC;
+            --dark-bg: #0A0A0A;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(212, 175, 55, 0.3);
+        }
+
+        /* Temas */
+        body.theme-luxo {
+            --gold-primary: #C5A059;
+            --dark-bg: #0A0A0A;
+            --font-main: 'Playfair Display', serif;
+        }
+
+        body.theme-admin {
+            --gold-primary: #1A1A1A;
+            --dark-bg: #F9F9FB;
+            --font-main: 'Inter', sans-serif;
+            color: #1A1A1A;
+        }
+
+        body.theme-admin .modal {
+            background: white;
+            border-color: rgba(0,0,0,0.1);
+            color: #1A1A1A;
+        }
+        
+        body.theme-admin .card {
+            background: white;
+            border-color: rgba(0,0,0,0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-main, 'Inter', sans-serif);
+            background-color: var(--dark-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            transition: background 0.5s ease;
+        }
+
+        /* Simulação do fundo da aplicação */
+        .app-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 40px;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            height: 200px;
+            border-radius: 12px;
+        }
+
+        /* Overlay de Resiliência (Blur Intenso) */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        body.theme-admin .overlay {
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Modal de Erro Empático */
+        .modal {
+            background: rgba(15, 15, 15, 0.9);
+            border: 1px solid var(--glass-border);
+            padding: 40px;
+            border-radius: 24px;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.1);
+        }
+
+        .icon-minimalist {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 24px;
+            border: 2px solid var(--gold-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .icon-minimalist::after {
+            content: '';
+            width: 2px;
+            height: 20px;
+            background: var(--gold-primary);
+            position: absolute;
+            top: 15px;
+            border-radius: 2px;
+        }
+
+        .icon-minimalist::before {
+            content: '';
+            width: 4px;
+            height: 4px;
+            background: var(--gold-primary);
+            position: absolute;
+            bottom: 15px;
+            border-radius: 50%;
+        }
+
+        h2 {
+            color: var(--gold-primary);
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+            font-weight: 300;
+        }
+
+        p {
+            line-height: 1.6;
+            color: inherit;
+            opacity: 0.8;
+            margin-bottom: 32px;
+        }
+
+        .btn-retry {
+            background: var(--gold-primary);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            animation: pulse-gold 2s infinite;
+        }
+
+        body.theme-luxo .btn-retry {
+            color: black;
+        }
+
+        @keyframes pulse-gold {
+            0% { box-shadow: 0 0 0 0 rgba(197, 160, 89, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(197, 160, 89, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(197, 160, 89, 0); }
+        }
+
+        /* Toast de Conflito */
+        .toast {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            background: rgba(20, 20, 20, 0.95);
+            border-left: 4px solid var(--gold-primary);
+            padding: 16px 24px;
+            border-radius: 8px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            color: white;
+        }
+
+        body.theme-admin .toast {
+            background: white;
+            color: #1A1A1A;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .toast.active {
+            transform: translateX(0);
+        }
+
+        /* Controles de demonstração */
+        .controls {
+            position: fixed;
+            bottom: 40px;
+            display: flex;
+            gap: 16px;
+            z-index: 100;
+        }
+
+        .btn-demo {
+            background: rgba(128, 128, 128, 0.1);
+            color: inherit;
+            border: 1px solid rgba(128, 128, 128, 0.3);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .btn-demo:hover {
+            background: rgba(128, 128, 128, 0.2);
+        }
+
+        .theme-switcher {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            display: flex;
+            gap: 8px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body class="theme-luxo">
+
+    <div class="theme-switcher">
+        <button class="btn-demo" onclick="setTheme('luxo')">✨ Tema Luxo (Lista)</button>
+        <button class="btn-demo" onclick="setTheme('admin')">🖥️ Tema Admin (Dashboard)</button>
+    </div>
+
+    <div class="app-bg">
+        <div class="card"></div>
+        <div class="card"></div>
+        <div class="card"></div>
+        <div class="card"></div>
+        <div class="card"></div>
+        <div class="card"></div>
+    </div>
+
+    <!-- Modal de Erro Empático -->
+    <div id="errorOverlay" class="overlay">
+        <div class="modal">
+            <div class="icon-minimalist"></div>
+            <h2>Tivemos um pequeno tropeço...</h2>
+            <p>
+                O sistema está recebendo muitos acessos no momento. 
+                Não se preocupe, seus dados estão seguros! <br>
+                Vamos tentar processar sua solicitação novamente?
+            </p>
+            <button class="btn-retry" onclick="closeError()">Tentar de Novo</button>
+        </div>
+    </div>
+
+    <!-- Toast de Conflito -->
+    <div id="conflictToast" class="toast">
+        <span style="color: var(--gold-primary);">⚡</span>
+        <span>Este item acabou de ser escolhido por outro convidado!</span>
+    </div>
+
+    <div class="controls">
+        <button class="btn-demo" onclick="showError()">Demo: Erro Empático</button>
+        <button class="btn-demo" onclick="showToast()">Demo: Conflito (Toast)</button>
+    </div>
+
+    <script>
+        function setTheme(theme) {
+            document.body.className = 'theme-' + theme;
+        }
+
+        function showError() {
+            document.getElementById('errorOverlay').classList.add('active');
+        }
+
+        function closeError() {
+            document.getElementById('errorOverlay').classList.remove('active');
+        }
+
+        function showToast() {
+            const toast = document.getElementById('conflictToast');
+            toast.classList.add('active');
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
+    </script>
+</body>
+</html>

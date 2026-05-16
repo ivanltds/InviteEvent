@@ -468,6 +468,11 @@ export default function PresentesPage() {
             }
             return p;
           }));
+        } else {
+          // Feedback empático de conflito (PRD-018)
+          alert('Tivemos um pequeno tropeço... Este item acabou de ser escolhido por outro convidado.');
+          setIsRedirecting(false); // Interrompe o countdown
+          setRedirectGift(null);
         }
       }
     } catch (err) {

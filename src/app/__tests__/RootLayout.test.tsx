@@ -8,22 +8,22 @@ jest.mock('next/font/google', () => ({
   Inter: () => ({ variable: 'font-inter' }),
 }));
 
-// Mock do Navbar para evitar erros de dependência
-jest.mock('@/components/ui/Navbar', () => {
-  return function MockNavbar() {
-    return <nav data-testid="navbar">Mock Navbar</nav>;
+// Mock do CookieBanner
+jest.mock('@/components/ui/CookieBanner', () => {
+  return function MockCookieBanner() {
+    return <div data-testid="cookie-banner">Mock CookieBanner</div>;
   };
 });
 
 describe('RootLayout', () => {
-  test('deve renderizar o Navbar e o conteúdo children', () => {
+  test('deve renderizar o conteúdo children e componentes base', () => {
     render(
       <RootLayout>
         <div data-testid="child">Conteúdo de Teste</div>
       </RootLayout>
     );
 
-    expect(screen.getByTestId('navbar')).toBeInTheDocument();
     expect(screen.getByTestId('child')).toBeInTheDocument();
+    expect(screen.getByTestId('cookie-banner')).toBeInTheDocument();
   });
 });

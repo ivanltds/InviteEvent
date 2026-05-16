@@ -44,7 +44,7 @@ export async function GET() {
       titulo: iss.titulo,
       status: iss.status,
       count: iss.suporte_tickets?.length || 0
-    })).sort((a, b) => b.count - a.count);
+    })).sort((a: any, b: any) => b.count - a.count);
 
     const topIssues = mappedIssues.slice(0, 5);
 
@@ -56,7 +56,7 @@ export async function GET() {
 
     // 5. Simulação Temporal realística baseada nos horários reais das issues
     // (Para manter fidelidade total sem fallback aleatório, puxaremos a data de criação real)
-    const timeSeries = (issuesData || []).map(iss => ({
+    const timeSeries = (issuesData || []).map((iss: any) => ({
       hora: new Date().getHours(), // Agrupador por hora simplificado para o exemplo de wireframe
       tickets: iss.suporte_tickets?.length || 0
     }));

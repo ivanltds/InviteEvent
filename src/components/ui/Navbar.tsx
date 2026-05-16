@@ -44,7 +44,7 @@ export default function Navbar() {
   const isInvitation = pathname?.startsWith('/inv/') || pathname?.startsWith('/presentes');
 
   return (
-    <nav className={styles.navbar}>
+    <nav className={styles.navbar} data-testid="navbar">
       <div className={styles.container}>
         <Link href="/" className={styles.logo} onClick={closeMenu}>
           {isLanding ? 'InviteEventAI' : initials}

@@ -68,17 +68,22 @@ describe('Admin Presentes - Full Lifecycle (TDD)', () => {
 
     render(<AdminPresentes />);
     
-    const openBtn = screen.getByText(/Novo Item/i);
+    const openBtn = await screen.findByText(/Novo Presente/i);
     fireEvent.click(openBtn);
 
-    fireEvent.change(screen.getByLabelText(/Nome do Item/i), { target: { value: 'Novo Presente' } });
-    fireEvent.change(screen.getByLabelText(/Preço/i), { target: { value: '250' } });
-    fireEvent.change(screen.getByLabelText(/Quantidade Total/i), { target: { value: '5' } });
+    const nameInput = screen.getByText(/Nome do Presente/i).nextElementSibling as HTMLInputElement;
+    fireEvent.change(nameInput, { target: { value: 'Novo Presente' } });
+
+    const priceInput = screen.getByText(/Preço Estimado/i).nextElementSibling as HTMLInputElement;
+    fireEvent.change(priceInput, { target: { value: '250' } });
+
+    const qtyInput = screen.getByText(/Quantidade Total/i).nextElementSibling as HTMLInputElement;
+    fireEvent.change(qtyInput, { target: { value: '5' } });
 
     // Simula Upload (O mock clica e já chama o onSuccess)
-    fireEvent.click(screen.getByText(/Subir Foto|Alterar Foto/i));
+    fireEvent.click(screen.getByText(/Subir Nova Foto/i));
     
-    fireEvent.click(screen.getByText(/Criar Presente|Salvar Presente/i));
+    fireEvent.click(screen.getByText(/Salvar Agora/i));
     
     await waitFor(() => {
       expect(mockInsert).toHaveBeenCalledWith([expect.objectContaining({
@@ -96,7 +101,7 @@ describe('Admin Presentes - Full Lifecycle (TDD)', () => {
     render(<AdminPresentes />);
     await waitFor(() => expect(screen.getByText('disponivel')).toBeInTheDocument());
     
-    const toggleBtn = screen.getByText(/Pausar\/Ativar|Alternar Status/i);
+    const toggleBtn = document.querySelector('button[data-tooltip="Pausar/Ativar"]') as HTMLElement;
     fireEvent.click(toggleBtn);
     
     await waitFor(() => {

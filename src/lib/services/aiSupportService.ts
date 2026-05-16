@@ -58,7 +58,7 @@ export const AISupportService = {
         .limit(15);
 
       // Mapeia e inverte para restaurar a ordem cronológica
-      let chatHistory = (history || []).map(msg => ({
+      let chatHistory = (history || []).map((msg: any) => ({
         role: msg.remetente_id === '00000000-0000-0000-0000-000000000000' ? 'assistant' as const : 'user' as const,
         content: msg.conteudo
       })).reverse();
@@ -109,7 +109,7 @@ export const AISupportService = {
 
         // 🔥 NOVO PADRÃO: Caso a IA chame o Tool Call
         if (assistantMsg.tool_calls && assistantMsg.tool_calls.length > 0) {
-          const toolCall = assistantMsg.tool_calls[0];
+          const toolCall = assistantMsg.tool_calls[0] as any;
           if (toolCall.function.name === 'create_issue') {
             const args = JSON.parse(toolCall.function.arguments || '{}');
             await this.triggerIssueAndLockBot(ticketId, args.title, args.description);
@@ -151,7 +151,7 @@ export const AISupportService = {
         console.log(`[AI ENGINE] ${activeIssues.length} Issues ativas encontradas. Consultando Cérebro para Matching...`);
         
         const issueListString = activeIssues
-          .map(iss => `[ID: ${iss.id}] Título: ${iss.titulo} | Descrição: ${iss.descricao}`)
+          .map((iss: any) => `[ID: ${iss.id}] Título: ${iss.titulo} | Descrição: ${iss.descricao}`)
           .join('\n\n');
 
         const matchResponse = await openai.chat.completions.create({
@@ -179,7 +179,7 @@ export const AISupportService = {
         console.log('[AI ENGINE] Decisão do Classificador:', decision);
 
         // Verificar se a resposta é um UUID válido presente na nossa lista
-        const matchedIssue = activeIssues.find(iss => decision.includes(iss.id));
+        const matchedIssue = activeIssues.find((iss: any) => decision.includes(iss.id));
         if (matchedIssue) {
           console.log('[AI ENGINE] Smart Match IDENTIFICADO! Mesclando com:', matchedIssue.id);
           targetIssueId = matchedIssue.id;

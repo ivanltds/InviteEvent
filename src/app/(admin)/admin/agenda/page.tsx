@@ -191,11 +191,11 @@ export default function AdminAgenda() {
             transition={{ delay: i * 0.05 }}
           >
             <div className={styles.cardIconWrapper}>
-              {getIcon(event.icone)}
+              {getIcon(event.icone || 'church')}
             </div>
             <div className={styles.cardContent}>
               <div className={styles.cardHeader}>
-                <span className={styles.time}>{event.horario.substring(0, 5)}</span>
+                <span className={styles.time}>{(event.horario || '').substring(0, 5)}</span>
                 <h3>{event.titulo}</h3>
               </div>
               <p className={styles.locationName}>{event.local_nome}</p>

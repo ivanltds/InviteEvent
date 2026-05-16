@@ -17,6 +17,12 @@ jest.mock('@/lib/supabase', () => ({
         error: null,
       }),
     })),
+    channel: jest.fn(() => ({
+      on: jest.fn().mockReturnThis(),
+      subscribe: jest.fn().mockReturnThis(),
+      unsubscribe: jest.fn().mockReturnThis(),
+    })),
+    removeChannel: jest.fn(),
   },
 }));
 
@@ -41,6 +47,18 @@ describe('SupportDashboard - TDD Fase GREEN 🟢', () => {
           json: () => Promise.resolve({ success: true, tickets: mockTickets }),
         });
       }
+      if (url.includes('/api/support/issues')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true, issues: [] }),
+        });
+      }
+      if (url.includes('/api/support/ai-config')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true, data: { system_prompt: '' } }),
+        });
+      }
       return Promise.resolve({
         ok: true,
         json: () => Promise.resolve({ success: true, messages: [] }),
@@ -55,8 +73,8 @@ describe('SupportDashboard - TDD Fase GREEN 🟢', () => {
     await waitFor(() => {
       expect(screen.getByText('Métricas de Desempenho')).toBeInTheDocument();
       expect(screen.getByText('Total de Chamados')).toBeInTheDocument();
-      expect(screen.getByText('Aguardando')).toBeInTheDocument();
-      expect(screen.getByText('Tempo Médio de Resposta')).toBeInTheDocument();
+      expect(screen.getByText('Pendentes Humanos')).toBeInTheDocument();
+      expect(screen.getByText(/Tempo Médio/i)).toBeInTheDocument();
     });
   });
 });

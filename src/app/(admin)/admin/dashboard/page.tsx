@@ -62,7 +62,7 @@ export default function DashboardPage() {
       
       if (data) {
         const map: Record<string, string> = {};
-        data.forEach(item => {
+        data.forEach((item: any) => {
           map[item.evento_id] = item.role;
         });
         setUserRolesMap(map);

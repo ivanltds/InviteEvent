@@ -41,6 +41,7 @@ const mockSupabase = {
     subscribe: jest.fn().mockReturnThis(),
     unsubscribe: jest.fn(),
   })),
+  removeChannel: jest.fn().mockResolvedValue(true),
   auth: {
     onAuthStateChange: jest.fn(() => ({
       data: { subscription: { unsubscribe: jest.fn() } },
@@ -79,6 +80,14 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
+
+// Mock do IntersectionObserver
+global.IntersectionObserver = class IntersectionObserver {
+  constructor() {}
+  observe() { return null; }
+  unobserve() { return null; }
+  disconnect() { return null; }
+};
 
 // Mock Vercel Analytics
 jest.mock('@vercel/analytics/react', () => ({

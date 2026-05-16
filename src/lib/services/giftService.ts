@@ -39,7 +39,7 @@ export interface RankedCategory {
   evento_id: string;
 }
 
-export interface AdminGift extends Presente {
+export interface AdminGift extends Omit<Presente, 'categoria'> {
   categoria: { nome: string } | null;
   presentes_locks: Array<PresenteLock & { convite: { nome_principal: string } | null }>;
 }
@@ -75,19 +75,24 @@ export interface FilaAjusteLink {
 
 export const giftService = {
   async getAllGifts(eventoId?: string): Promise<Presente[]> {
-    let query = supabase.from('presentes').select('*');
-    
-    if (eventoId) {
-      query = query.eq('evento_id', eventoId);
-    }
+    try {
+      let query = supabase.from('presentes').select('*');
+      
+      if (eventoId) {
+        query = query.eq('evento_id', eventoId);
+      }
 
-    const { data, error } = await query.order('preco', { ascending: true });
+      const { data, error } = await query.order('preco', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching gifts:', error);
+      if (error) {
+        console.error('Error fetching gifts:', error);
+        return [];
+      }
+      return data as Presente[];
+    } catch (e) {
+      console.error('Crash in getAllGifts:', e);
       return [];
     }
-    return data as Presente[];
   },
 
   async getPublicGifts(eventoId: string): Promise<Presente[]> {
@@ -132,19 +137,24 @@ export const giftService = {
   },
 
   async reserveGift(presenteId: string, comprovanteUrl: string, convidadoNome: string, conviteId?: string): Promise<{ success: boolean; message: string }> {
-    const { data, error } = await supabase.rpc('reservar_presente_v1', {
-      p_presente_id: presenteId,
-      p_url_comprovante: comprovanteUrl,
-      p_convidado_nome: convidadoNome,
-      p_convite_id: conviteId
-    });
+    try {
+      const { data, error } = await supabase.rpc('reservar_presente_v1', {
+        p_presente_id: presenteId,
+        p_url_comprovante: comprovanteUrl,
+        p_convidado_nome: convidadoNome,
+        p_convite_id: conviteId
+      });
 
-    if (error) {
-      console.error('Error reserving gift:', error);
-      return { success: false, message: 'Erro ao reservar presente.' };
+      if (error) {
+        console.error('Error reserving gift:', error);
+        return { success: false, message: 'Erro ao reservar presente.' };
+      }
+
+      return data as { success: boolean; message: string };
+    } catch (e) {
+      console.error('Crash in reserveGift:', e);
+      return { success: false, message: 'Falha crítica na reserva.' };
     }
-
-    return data as { success: boolean; message: string };
   },
 
   async getCategories(): Promise<PresenteCategoria[]> {
@@ -268,14 +278,15 @@ export const giftService = {
   },
 
   async lockGift(presenteId: string, sessionId: string, conviteId?: string) {
-    const { data, error } = await supabase.rpc('adquirir_lock_presente_v1', {
+    const { data, error } = await supabase.rpc('reservar_cotas_presente_v2', {
       p_presente_id: presenteId,
       p_session_id: sessionId,
       p_convite_id: conviteId || null,
+      p_quantidade_solicitada: 1
     });
 
     if (error) throw error;
-    return data as { sucesso: boolean; mensagem: string };
+    return { sucesso: !!data, mensagem: data ? 'Sucesso' : 'Este item já foi escolhido por outro convidado.' };
   },
 
   async unlockGift(presenteId: string, sessionId: string) {
@@ -310,7 +321,7 @@ export const giftService = {
       return null;
     }
 
-    const cotas_bloqueadas = (locks || []).reduce((acc, curr) => acc + (Number(curr.quantidade_cotas) || 0), 0);
+    const cotas_bloqueadas = (locks || []).reduce((acc: number, curr: any) => acc + (Number(curr.quantidade_cotas) || 0), 0);
     const total_cotas = Number(gift.total_cotas) || 0;
     const cotas_compradas = Number(gift.cotas_compradas) || 0;
     const disponivel = total_cotas - (cotas_compradas + cotas_bloqueadas);
@@ -329,19 +340,24 @@ export const giftService = {
   },
 
   async reserveGiftFraction(presenteId: string, quantidadeSolicitada: number, conviteId: string, sessionId: string): Promise<boolean> {
-    const { data, error } = await supabase.rpc('reservar_cotas_presente', {
-      p_presente_id: presenteId,
-      p_convite_id: conviteId,
-      p_session_id: sessionId,
-      p_quantidade_solicitada: quantidadeSolicitada
-    });
+    try {
+      const { data, error } = await supabase.rpc('reservar_cotas_presente_v2', {
+        p_presente_id: presenteId,
+        p_convite_id: conviteId,
+        p_session_id: sessionId,
+        p_quantidade_solicitada: quantidadeSolicitada
+      });
 
-    if (error) {
-      console.error('Erro transacional ao reservar fração de cotas:', error);
+      if (error) {
+        console.error('Erro transacional ao reservar fração de cotas:', error);
+        return false;
+      }
+
+      return !!data;
+    } catch (e) {
+      console.error('Crash in reserveGiftFraction:', e);
       return false;
     }
-
-    return !!data;
   },
 
   async updateGiftQuotaConfiguration(presenteId: string, permiteCotas: boolean, totalCotas?: number | null): Promise<{ success: boolean; error?: Error | null }> {
@@ -494,7 +510,8 @@ export const giftService = {
 
     if (error) throw error;
 
-    const totalArrecadado = (data || []).reduce((acc: number, curr: { valor?: number }) => acc + Number(curr.valor || 0), 0);
+    const safeData = Array.isArray(data) ? data : [];
+    const totalArrecadado = safeData.reduce((acc: number, curr: { valor?: number }) => acc + Number(curr.valor || 0), 0);
 
     return {
       totalArrecadado,

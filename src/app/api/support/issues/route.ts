@@ -60,7 +60,7 @@ export async function PATCH(request: Request) {
 
       if (tickets && tickets.length > 0) {
         // 2. Preparar mensagens automáticas
-        const messagesToInsert = tickets.map(tk => ({
+        const messagesToInsert = tickets.map((tk: any) => ({
           ticket_id: tk.id,
           remetente_id: '00000000-0000-0000-0000-000000000000',
           conteudo: `✅ **BOAS NOTÍCIAS!** 🛠️\n\nNossa equipe técnica acaba de disponibilizar uma nova versão do sistema que **corrige o problema** relatado por você neste atendimento!\n\nPor favor, recarregue a página e verifique se voltou ao normal. Ficou tudo certo?`

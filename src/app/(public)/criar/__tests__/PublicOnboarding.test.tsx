@@ -1,11 +1,19 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import PublicOnboarding from '../page';
 import { useRouter } from 'next/navigation';
+const mockPush = jest.fn();
+
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(),
+}));
 
 describe('Public Onboarding UI Flow', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
+    (useRouter as jest.Mock).mockReturnValue({
+      push: mockPush,
+    });
   });
 
   test('deve avançar pelos passos preenchendo os dados', async () => {
@@ -36,7 +44,7 @@ describe('Public Onboarding UI Flow', () => {
     fireEvent.click(screen.getByText('Gerar meu convite ✨'));
 
     await waitFor(() => {
-      expect(useRouter().push).toHaveBeenCalledWith('/inv/preview');
+      expect(mockPush).toHaveBeenCalledWith('/inv/preview');
     });
   });
 });

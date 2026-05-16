@@ -37,7 +37,7 @@ describe('OnboardingWizard Component', () => {
 
     // Passo 3: Preview
     expect(await screen.findByText(/WOW! Veja como ficou/i)).toBeInTheDocument();
-    fireEvent.click(screen.getByText(/Pronto! Ir para o Painel 🎉/i));
+    fireEvent.click(screen.getByText(/Pronto! Ir para o Painel/i));
 
     await waitFor(() => {
       expect(mockOnComplete).toHaveBeenCalled();

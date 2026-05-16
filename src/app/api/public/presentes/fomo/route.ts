@@ -36,7 +36,7 @@ export async function GET(request: Request) {
     // 3. Processar afinidade por presente (Interest Score)
     // Usamos session_id para evitar inflação por um único usuário
     const interestMap: Record<string, Set<string>> = {};
-    analytics?.forEach(event => {
+    analytics?.forEach((event: any) => {
       if (event.target_id) {
         if (!interestMap[event.target_id]) {
           interestMap[event.target_id] = new Set();
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
     const affinityData: Record<string, any> = {};
     
     // Marcar destaques manuais
-    manualHighlights?.forEach(h => {
+    manualHighlights?.forEach((h: any) => {
       affinityData[h.id] = {
         badge: 'dream',
         score: 1000 // Score arbitrário alto para garantir ordenação no topo

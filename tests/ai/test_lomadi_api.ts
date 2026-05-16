@@ -15,6 +15,7 @@ async function tryEndpoint(name: string, url: string) {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
       agent,
+      // @ts-ignore
       timeout: 5000
     });
     console.log(`Status: ${res.status} ${res.statusText}`);

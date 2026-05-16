@@ -54,7 +54,11 @@ describe('AdminConvidados CRUD Paths', () => {
     // Esperar sair do loading
     await waitFor(() => expect(screen.queryByText(/Carregando convidados/i)).not.toBeInTheDocument());
     
-    const editBtn = await screen.findByText('Editar');
+    await waitFor(() => {
+      const btn = document.querySelector('button[data-tooltip="Editar Convite"]');
+      expect(btn).not.toBeNull();
+    });
+    const editBtn = document.querySelector('button[data-tooltip="Editar Convite"]') as HTMLElement;
     fireEvent.click(editBtn);
     
     expect(await screen.findByRole('heading', { name: /Editar Convite/i })).toBeInTheDocument();
@@ -72,9 +76,13 @@ describe('AdminConvidados CRUD Paths', () => {
     render(<AdminConvidados />);
     
     await waitFor(() => screen.getByText('João'));
-    fireEvent.click(screen.getByText('Excluir'));
     
-    expect(window.confirm).toHaveBeenCalled();
+    const deleteBtn = document.querySelector('button[data-tooltip="Excluir"]') as HTMLElement;
+    fireEvent.click(deleteBtn);
+    
+    const confirmBtn = await screen.findByRole('button', { name: /Confirmar/i });
+    fireEvent.click(confirmBtn);
+    
     await waitFor(() => {
       expect(inviteService.deleteInvite).toHaveBeenCalledWith('1');
     });
@@ -85,7 +93,11 @@ describe('AdminConvidados CRUD Paths', () => {
     // Esperar sair do loading
     await waitFor(() => expect(screen.queryByText(/Carregando convidados/i)).not.toBeInTheDocument());
     
-    const editBtn = await screen.findByText('Editar');
+    await waitFor(() => {
+      const btn = document.querySelector('button[data-tooltip="Editar Convite"]');
+      expect(btn).not.toBeNull();
+    });
+    const editBtn = document.querySelector('button[data-tooltip="Editar Convite"]') as HTMLElement;
     fireEvent.click(editBtn);
     
     const cancelBtn = await screen.findByRole('button', { name: /Cancelar/i });

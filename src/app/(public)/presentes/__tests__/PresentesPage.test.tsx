@@ -29,23 +29,23 @@ describe('PresentesPage', () => {
         maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
         then: jest.fn().mockImplementation(fn => Promise.resolve(fn({ data: [], error: null })))
       };
-      const chain = mockChain;if (table === 'convites') {
-        mockChain.maybeSingle.mockResolvedValue({ data: { id: 'c1' }, error: null });
+      if (table === 'convites') {
+        mockChain.maybeSingle.mockResolvedValue({ 
+          data: { id: 'c1', slug: 'test-slug', nome_principal: 'Test', evento_id: 'e1' }, 
+          error: null 
+        });
       } else if (table === 'presentes') {
-        mockChain.then = (fn: any) => Promise.resolve(fn({
-          data: [{ id: '1', nome: 'Liquidificador', preco: 250, imagem_url: '/img1.jpg', descricao: 'Desc 1' }],
+        mockChain.then = jest.fn().mockImplementation((fn: any) => Promise.resolve(fn({
+          data: [{ id: '1', nome: 'Liquidificador', preco: 250, imagem_url: '/img1.jpg', descricao: 'Desc 1', quantidade_total: 1, quantidade_reservada: 0, status: 'disponivel' }],
           error: null
-        }));
+        })));
       } else if (table === 'configuracoes') {
-        mockChain.maybeSingle.mockResolvedValue({ data: { pix_chave: 'key', pix_banco: 'Bank', pix_nome: 'Me' }, error: null });
+        mockChain.maybeSingle.mockResolvedValue({ data: { pix_chave: 'key', pix_banco: 'Bank', pix_nome: 'Me', pix_tipo: 'email' }, error: null });
       }
       return mockChain;
     });
 
-    Object.defineProperty(window, 'location', {
-      value: { search: '?inv=test-slug' },
-      writable: true
-    });
+    window.history.pushState({}, '', '?invite=test-slug');
   });
 
   it('deve renderizar o presente e o preço', async () => {
@@ -60,9 +60,14 @@ describe('PresentesPage', () => {
     render(<PresentesPage />);
     await waitFor(() => screen.getByText('Liquidificador'));
     
+    // Abre o modal
+    const verDetalhes = screen.getByText(/Ver Detalhes/i);
+    fireEvent.click(verDetalhes);
+
+    await waitFor(() => screen.getByText(/Presentear via PIX/i));
     const btn = screen.getByText(/Presentear via PIX/i);
     fireEvent.click(btn);
     
-    expect(screen.getByText(/Quase lá!/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sua Cesta de Carinho/i)).toBeInTheDocument();
   });
 });

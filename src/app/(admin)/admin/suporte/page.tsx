@@ -37,6 +37,7 @@ interface Issue {
   descricao: string;
   status: 'aberta' | 'visualizada' | 'em_correcao' | 'corrigida';
   ticket_id?: string;
+  suporte_tickets?: any[];
 }
 
 export default function MasterSupportPanel() {
@@ -111,10 +112,10 @@ export default function MasterSupportPanel() {
     // Set up Realtime for tickets to grab bot switches
     const ticketChannel = supabase
       .channel('ticket-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'suporte_tickets' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'suporte_tickets' }, (payload: any) => {
         if (payload.eventType === 'INSERT') {
           // Buscar dados do perfil para não vir em branco
-          supabase.from('perfis').select('email, nome').eq('id', payload.new.usuario_id).single().then(({ data: perfil }) => {
+          supabase.from('perfis').select('email, nome').eq('id', payload.new.usuario_id).single().then(({ data: perfil }: any) => {
             const ticketComPerfil = {
               ...payload.new,
               email_usuario: perfil?.email || 'Novo Cliente',
@@ -137,7 +138,7 @@ export default function MasterSupportPanel() {
 
     const issuesChannel = supabase
       .channel('issues-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'issues' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'issues' }, (payload: any) => {
         if (payload.eventType === 'INSERT') {
           setIssues(prev => {
             if (prev.some(iss => iss.id === payload.new.id)) return prev;
@@ -174,7 +175,7 @@ export default function MasterSupportPanel() {
           table: 'suporte_mensagens', 
           filter: `ticket_id=eq.${selectedTicket.id}` 
         }, 
-        (payload) => {
+        (payload: any) => {
           const newMsg = payload.new as Message;
           setMessages((prev) => {
             // Proteção contra duplicidade na rede

@@ -53,7 +53,7 @@ describe('AdminConfig Page Exhaustive', () => {
     jest.clearAllMocks();
 
     (configService.getConfig as jest.Mock).mockResolvedValue(mockConfig);
-    window.alert = jest.fn();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   test('deve permitir alterar todos os campos de texto e bio', async () => {
@@ -91,11 +91,12 @@ describe('AdminConfig Page Exhaustive', () => {
     render(<AdminConfig />);
     await waitFor(() => expect(screen.queryByText(/Carregando configurações/i)).not.toBeInTheDocument());
     
-    const saveBtn = await screen.findByRole('button', { name: /Salvar Todas as Alterações/i });
-    fireEvent.click(saveBtn);
+    const form = document.querySelector('form');
+    expect(form).not.toBeNull();
+    fireEvent.submit(form as HTMLFormElement);
 
     await waitFor(() => {
-      expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('Erro ao salvar'));
+      expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Erro ao salvar'), expect.any(Error));
     });
   });
 });

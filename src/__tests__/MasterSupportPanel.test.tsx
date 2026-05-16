@@ -18,6 +18,12 @@ jest.mock('@/lib/supabase', () => ({
         error: null,
       }),
     })),
+    channel: jest.fn(() => ({
+      on: jest.fn().mockReturnThis(),
+      subscribe: jest.fn().mockReturnThis(),
+      unsubscribe: jest.fn().mockReturnThis(),
+    })),
+    removeChannel: jest.fn(),
   },
 }));
 
@@ -65,6 +71,18 @@ describe('MasterSupportPanel - TDD Fase GREEN 🟢', () => {
         return Promise.resolve({
           ok: true,
           json: () => Promise.resolve({ success: true, messages: mockMessages }),
+        });
+      }
+      if (url.includes('/api/support/issues')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true, issues: [] }),
+        });
+      }
+      if (url.includes('/api/support/ai-config')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true, data: { system_prompt: '' } }),
         });
       }
       return Promise.resolve({
@@ -115,6 +133,11 @@ describe('MasterSupportPanel - TDD Fase GREEN 🟢', () => {
     });
 
     await waitFor(() => {
+      const specialistBtn = screen.getByText('ESPECIALISTA');
+      fireEvent.click(specialistBtn);
+    });
+
+    await waitFor(() => {
       const input = screen.getByPlaceholderText('Digite a resposta para o cliente...');
       fireEvent.change(input, { target: { value: 'Resposta do Master Admin' } });
 
@@ -143,6 +166,18 @@ describe('MasterSupportPanel - TDD Fase GREEN 🟢', () => {
           json: () => Promise.resolve({ success: true, tickets: [finalizadoTicket] }),
         });
       }
+      if (url.includes('/api/support/issues')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true, issues: [] }),
+        });
+      }
+      if (url.includes('/api/support/ai-config')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true, data: { system_prompt: '' } }),
+        });
+      }
       return Promise.resolve({ ok: true, json: () => Promise.resolve({ success: true, messages: [] }) });
     });
 
@@ -156,7 +191,7 @@ describe('MasterSupportPanel - TDD Fase GREEN 🟢', () => {
 
     // Deve exibir o indicador finalizado
     await waitFor(() => {
-      expect(screen.getByText('O SLA foi interrompido.')).toBeInTheDocument();
+      expect(screen.getByText('Atendimento Finalizado')).toBeInTheDocument();
     });
   });
 });

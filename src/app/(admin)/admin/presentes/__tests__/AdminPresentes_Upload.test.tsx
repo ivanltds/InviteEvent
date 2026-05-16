@@ -45,11 +45,11 @@ describe('Admin Presentes - Upload Integration (TDD)', () => {
     render(<AdminPresentes />);
     
     // Abre o modal de novo item
-    const addBtn = screen.getByText(/Novo Item/i);
+    const addBtn = await screen.findByText(/Novo Presente/i);
     addBtn.click();
     
     await waitFor(() => {
-      const uploadBtn = screen.getByText(/Subir Foto/i);
+      const uploadBtn = screen.getByText(/Subir Nova Foto/i);
       expect(uploadBtn).toBeInTheDocument();
     });
   });

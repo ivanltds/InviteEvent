@@ -27,7 +27,7 @@ jest.mock('@/components/admin/ConfigPreview', () => () => <div data-testid="prev
 describe('AdminConfig Saving Errors', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    window.alert = jest.fn();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   test('deve lidar com erro ao salvar configurações', async () => {
@@ -37,10 +37,11 @@ describe('AdminConfig Saving Errors', () => {
     render(<AdminConfig />);
     await waitFor(() => screen.getByLabelText(/Nome da Noiva/i));
 
-    fireEvent.click(screen.getByRole('button', { name: /Salvar Todas as Alterações/i }));
+    const form = document.querySelector('form');
+    fireEvent.submit(form as HTMLFormElement);
 
     await waitFor(() => {
-      expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('Erro ao salvar'));
+      expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Erro ao salvar'), expect.any(Error));
     });
   });
 });

@@ -7,8 +7,8 @@ async function runTest() {
   console.log('=== DIAGNOSTICO FINAL END-TO-END ===');
   
   try {
-    const { supabase } = await import('./src/lib/supabase');
-    const { AISupportService } = await import('./src/lib/services/aiSupportService');
+    const { supabase } = await import('../../src/lib/supabase');
+    const { AISupportService } = await import('../../src/lib/services/aiSupportService');
 
     console.log('[1] Consultando Perfil para isMaster...');
     const { data: perfil, error: errPerfil } = await supabase.from('perfis').select('is_master').eq('id', REMETENTE_ID).single();

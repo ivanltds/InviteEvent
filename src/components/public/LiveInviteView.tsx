@@ -62,12 +62,12 @@ const LiveInviteView: React.FC<LiveInviteViewProps> = ({
 }) => {
 
   // Telemetria: Refs de Rastreamento de Tempo de Visualização por Seção
-  const refHero = useRef<HTMLElement>(null);
-  const refHistoria = useRef<HTMLElement>(null);
-  const refNoivos = useRef<HTMLElement>(null);
-  const refAgenda = useRef<HTMLElement>(null);
-  const refRSVP = useRef<HTMLElement>(null);
-  const refFAQ = useRef<HTMLElement>(null);
+  const refHero = useRef<any>(null);
+  const refHistoria = useRef<any>(null);
+  const refNoivos = useRef<any>(null);
+  const refAgenda = useRef<any>(null);
+  const refRSVP = useRef<any>(null);
+  const refFAQ = useRef<any>(null);
 
   // Sensores de Visibilidade (PRD-008 Sprint 3)
   const trackOptions = { eventoId: config.evento_id };

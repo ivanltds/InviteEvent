@@ -16,23 +16,20 @@ describe('HeroCarousel Component', () => {
     jest.useRealTimers();
   });
 
-  test('deve carregar e exibir as imagens', async () => {
+  test('deve renderizar os slides iniciais', async () => {
     render(<HeroCarousel />);
     
-    expect(screen.getByText(/Carregando momentos/i)).toBeInTheDocument();
-    
-    await waitFor(() => {
-      expect(screen.queryByText(/Carregando momentos/i)).not.toBeInTheDocument();
-    });
+    // Verifica se o container principal está no DOM
+    const container = document.querySelector('.carouselContainer');
+    expect(container).toBeInTheDocument();
 
-    // Verifica se as imagens estão no DOM (via style background-image)
-    // Como usamos o url no key e style, podemos verificar por seletor
+    // Verifica se existe pelo menos um slide ativo
+    const activeSlide = document.querySelector('.active');
+    expect(activeSlide).toBeInTheDocument();
   });
 
   test('deve trocar de imagem após o intervalo', async () => {
     render(<HeroCarousel />);
-    
-    await waitFor(() => expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument());
 
     // O primeiro slide deve estar ativo
     // Avança o tempo

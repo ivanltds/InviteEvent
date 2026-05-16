@@ -58,7 +58,7 @@ function TvMuralContent() {
 
     async function fetchInitialItems() {
       try {
-        const data = await muralService.getApprovedItems(eventId);
+        const data = await muralService.getApprovedItems(eventId!);
         if (data.length > 0) {
           // Embaralha inicialmente para ficar dinâmico
           const shuffled = [...data].sort(() => Math.random() - 0.5);
@@ -112,7 +112,7 @@ function TvMuralContent() {
           table: 'mural_itens',
           filter: `evento_id=eq.${eventId}`
         },
-        (payload) => {
+        (payload: any) => {
           const newItem = payload.new as MuralItem;
           if (newItem.aprovado) {
             injectNewItem(newItem);
@@ -127,7 +127,7 @@ function TvMuralContent() {
           table: 'mural_itens',
           filter: `evento_id=eq.${eventId}`
         },
-        (payload) => {
+        (payload: any) => {
           const updated = payload.new as MuralItem;
           if (updated.aprovado) {
             injectNewItem(updated);
@@ -143,7 +143,7 @@ function TvMuralContent() {
           table: 'mural_mensagens',
           filter: `evento_id=eq.${eventId}`
         },
-        (payload) => {
+        (payload: any) => {
           const newMsg = payload.new;
           if (newMsg.status === 'aprovado') {
             injectNewItem({
@@ -166,7 +166,7 @@ function TvMuralContent() {
           table: 'mural_mensagens',
           filter: `evento_id=eq.${eventId}`
         },
-        (payload) => {
+        (payload: any) => {
           const updated = payload.new;
           if (updated.status === 'aprovado') {
             injectNewItem({

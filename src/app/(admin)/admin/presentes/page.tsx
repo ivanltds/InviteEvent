@@ -35,6 +35,7 @@ interface Presente {
     session_id: string;
     convite_id?: string;
     convite?: { nome_principal: string } | null;
+    quantidade_cotas?: number;
   }[];
   permite_cotas?: boolean;
   total_cotas?: number | null;
@@ -245,7 +246,7 @@ export default function AdminPresentes() {
       
       // 2. Carregar Itens Unificados da categoria (SaaS + Customizados Populares)
       const items = await giftService.getUnifiedSuggestions(catId === 'todos' ? undefined : catId);
-      setBaseGifts(items);
+      setBaseGifts(items as any);
     } catch (err) {
       console.error("Erro no carregamento da vitrine unificada", err);
     } finally {
@@ -271,7 +272,7 @@ export default function AdminPresentes() {
     if (result.success && result.gift) {
       // Injetar localmente para atualizar visualmente o grid e contadores na hora
       const newGift: Presente = {
-        ...result.gift,
+        ...(result.gift as any),
         // Mapeia a categoria no formato esperado pela listagem original
         categoria: { nome: baseGifts.find(b => b.origin_id === originId)?.categoria_nome || 'Geral' }
       };
@@ -410,8 +411,8 @@ export default function AdminPresentes() {
       permite_cotas: formData.permite_cotas,
       total_cotas: formData.permite_cotas ? Number(formData.total_cotas) : null,
       is_sonho_casal: formData.is_sonho_casal,
-      highlight_label: formData.highlight_label || null,
-      highlight_icon: formData.highlight_icon || null
+      highlight_label: formData.highlight_label || undefined,
+      highlight_icon: formData.highlight_icon || undefined
     };
 
     if (editingItem) {

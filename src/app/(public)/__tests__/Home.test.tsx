@@ -11,12 +11,12 @@ describe('Landing Page (Marketing)', () => {
   test('deve renderizar os elementos principais de venda', () => {
     render(<LandingPage />);
     
-    expect(screen.getByText(/InviteEventAI - Edição Casamentos/i)).toBeInTheDocument();
-    expect(screen.getByText(/Crie uma experiência digital inesquecível/i)).toBeInTheDocument();
+    expect(screen.getByText(/O Convite do Seu Casamento/i)).toBeInTheDocument();
+    expect(screen.getByText(/Experiência cinematográfica incomparável/i)).toBeInTheDocument();
     
     // Busca específica para evitar conflito com o texto de descrição no Hero
     expect(screen.getByRole('heading', { name: /Lista de Presentes/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Presença Confirmada/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /RSVP Inteligente/i })).toBeInTheDocument();
   });
 
   test('deve conter o CTA para o admin', () => {

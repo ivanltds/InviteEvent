@@ -42,7 +42,8 @@ describe('AdminConvidados Cancel Delete', () => {
     render(<AdminConvidados />);
     await waitFor(() => screen.getByText('J'));
     
-    fireEvent.click(screen.getByText('Excluir'));
+    const deleteBtn = document.querySelector('button[data-tooltip="Excluir"]') as HTMLElement;
+    fireEvent.click(deleteBtn);
     expect(inviteService.deleteInvite).not.toHaveBeenCalled();
   });
 });

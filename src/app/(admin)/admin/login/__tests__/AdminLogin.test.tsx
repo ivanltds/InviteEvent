@@ -42,6 +42,10 @@ describe('Admin Login Page', () => {
       push: mockPush,
       refresh: mockRefresh,
     });
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true }),
+    });
   });
 
   test('deve exibir o formulário de login inicialmente', () => {
@@ -52,7 +56,7 @@ describe('Admin Login Page', () => {
   });
 
   test('deve exibir erro se as credenciais estiverem incorretas', async () => {
-    (authService.login as jest.Mock).mockResolvedValue(false);
+    (authService.login as jest.Mock).mockRejectedValue(new Error('Invalid login credentials'));
     
     render(<LoginPage />);
     const emailInput = screen.getByPlaceholderText(/E-mail/i);

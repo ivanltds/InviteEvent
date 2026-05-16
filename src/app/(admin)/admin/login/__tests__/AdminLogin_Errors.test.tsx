@@ -33,10 +33,14 @@ jest.mock('@/lib/services/authService', () => ({
 describe('LoginPage Error Branch', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true }),
+    });
   });
 
   test('deve limpar erro ao digitar novamente', async () => {
-    (authService.login as jest.Mock).mockResolvedValue(false);
+    (authService.login as jest.Mock).mockRejectedValue(new Error('Invalid login credentials'));
     
     render(<LoginPage />);
     const emailInput = screen.getByPlaceholderText(/E-mail/i);

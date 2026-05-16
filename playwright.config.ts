@@ -8,7 +8,7 @@ const envPath = process.env.ENV_FILE || '.env.test.local';
 dotenv.config({ path: path.resolve(__dirname, envPath) });
 
 // Use a custom isolated port for local E2E test server to avoid collision with dev (3000)
-const PORT = process.env.PORT || '3005';
+const PORT = process.env.PORT || '3000';
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -22,7 +22,7 @@ export default defineConfig({
   /* Retry on CI only */
   retries: 2,
   /* Opt out of parallel tests to avoid memory issues (Next.js server crash) */
-  workers: 1,
+  // workers: 1, (Removido da raiz para permitir paralelismo por projeto)
   
   /* Total timeout for each test */
   timeout: 180 * 1000,
@@ -56,15 +56,29 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         storageState: { cookies: [], origins: [] },
       },
+      workers: 1,
     },
 
     {
       name: 'chromium',
-      testIgnore: /onboarding_resilience\.spec\.ts/,
+      testIgnore: [/onboarding_resilience\.spec\.ts/, /stress\//],
       use: { 
         ...devices['Desktop Chrome'],
         storageState: 'tests/.auth/user.json',
       },
+      workers: 1,
+      dependencies: ['setup'],
+    },
+
+    {
+      name: 'stress',
+      testMatch: /stress\/.*\.spec\.ts/,
+      use: { 
+        ...devices['Desktop Chrome'],
+        storageState: 'tests/.auth/user.json',
+      },
+      workers: 15,
+      fullyParallel: true,
       dependencies: ['setup'],
     },
   ],

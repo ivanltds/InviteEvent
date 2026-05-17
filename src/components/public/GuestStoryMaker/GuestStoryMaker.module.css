@@ -253,11 +253,18 @@
 .preview_polaroid :global(.guestPhotoContainer) { inset: 25px 25px 135px 25px; border: 1px solid rgba(0,0,0,0.06); }
 .preview_polaroid :global(.overlayContainer) { 
   justify-content: flex-end; 
-  padding-bottom: 30px; 
+  padding-bottom: 35px; 
   align-items: center; 
+  background: transparent !important;
+}
+.preview_polaroid :global(.overlayContainer)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
   border: 25px solid #FFF;
   border-bottom: 135px solid #FFF;
-  background: transparent !important;
+  z-index: -1;
+  pointer-events: none;
   box-shadow: inset 0 0 40px rgba(0,0,0,0.05);
 }
 .preview_polaroid h3 { font-family: 'Great Vibes', cursive; font-size: calc(clamp(22px, 10cqw, 38px) * var(--names-scale, 1)); line-height: 1.1; color: #222; margin: 0; text-align: center; width: 100%; padding: 0 10px; }
@@ -281,7 +288,9 @@
 .post.preview_polaroid { padding: 0 !important; }
 .post.preview_polaroid :global(.guestPhotoContainer) { inset: 15px 15px 75px 15px; }
 .post.preview_polaroid :global(.overlayContainer) { 
-  padding-bottom: 15px; 
+  padding-bottom: 18px; 
+}
+.post.preview_polaroid :global(.overlayContainer)::after { 
   border: 15px solid #FFF;
   border-bottom: 75px solid #FFF;
 }

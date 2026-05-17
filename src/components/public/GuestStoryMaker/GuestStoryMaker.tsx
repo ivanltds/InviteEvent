@@ -42,10 +42,11 @@ export function GuestStoryMaker({ coupleNames, eventDate, accentColor = '#C5A059
   const getNamesScale = (names: string) => {
     const len = names.length;
     if (len <= 10) return 1.1;
-    if (len <= 15) return 0.95;
-    if (len <= 20) return 0.8;
-    if (len <= 25) return 0.7;
-    return 0.55;
+    if (len <= 14) return 0.9;
+    if (len <= 18) return 0.74; // Lala & Marquinhos (17 chars) gets 0.74 for safe fit
+    if (len <= 22) return 0.62;
+    if (len <= 26) return 0.52;
+    return 0.4;
   };
   
   const previewRef = useRef<HTMLDivElement>(null);

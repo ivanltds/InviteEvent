@@ -238,8 +238,8 @@
 
 /* Common template typography constraints to prevent overflow */
 .storyPreview h3, .storyPreview h2, .storyPreview p {
-  word-break: break-word;
-  overflow-wrap: break-word;
+  word-break: keep-all;
+  overflow-wrap: normal;
   max-width: 100%;
 }
 
@@ -506,11 +506,11 @@
 /* 18. Sunset */
 .preview_sunset :global(.guestPhoto) { filter: brightness(0.75) sepia(0.3) hue-rotate(-30deg); }
 .preview_sunset :global(.overlayContainer) { justify-content: flex-end; padding: 60px; background: linear-gradient(to top, rgba(255, 69, 0, 0.45) 0%, rgba(0,0,0,0.2) 60%, transparent 100%); }
-.preview_sunset h3 { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400; font-size: clamp(20px, 8cqw, 32px); line-height: 1.2; letter-spacing: 2px; color: #FFF; text-align: center; width: 100%; padding: 0 25px; text-shadow: 0 2px 12px rgba(0,0,0,0.7); }
+.preview_sunset h3 { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400; font-size: calc(clamp(20px, 8cqw, 32px) * var(--names-scale, 1)); line-height: 1.2; letter-spacing: 2px; color: #FFF; text-align: center; width: 100%; padding: 0 25px; text-shadow: 0 2px 12px rgba(0,0,0,0.7); }
 
 .preview_sunset .brandSubtle { top: 20px; right: 20px; }
 .post.preview_sunset :global(.overlayContainer) { padding: 35px; }
-.post.preview_sunset h3 { font-size: clamp(14px, 6.8cqw, 24px); }
+.post.preview_sunset h3 { font-size: calc(clamp(14px, 6.8cqw, 24px) * var(--names-scale, 1)); }
 
 /* 19. Vineyard */
 .preview_vineyard :global(.overlayContainer) { justify-content: center; align-items: center; padding: 40px; background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.5) 90%); }
@@ -532,10 +532,10 @@
 
 /* 21. Champagne */
 .preview_champagne :global(.overlayContainer) { justify-content: center; align-items: center; background: radial-gradient(circle, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.65) 90%); }
-.preview_champagne h3 { font-family: 'Great Vibes', cursive; font-size: clamp(28px, 15cqw, 64px); line-height: 1.1; color: #C5A059; text-shadow: 0 0 35px rgba(197, 160, 89, 0.7), 0 2px 8px rgba(0,0,0,0.8); text-align: center; margin: 0; }
+.preview_champagne h3 { font-family: 'Great Vibes', cursive; font-size: calc(clamp(28px, 15cqw, 64px) * var(--names-scale, 1)); line-height: 1.1; color: #C5A059; text-shadow: 0 0 35px rgba(197, 160, 89, 0.7), 0 2px 8px rgba(0,0,0,0.8); text-align: center; margin: 0; }
 
 .preview_champagne .brandSubtle { top: 20px; right: 20px; }
-.post.preview_champagne h3 { font-size: clamp(20px, 12cqw, 48px); }
+.post.preview_champagne h3 { font-size: calc(clamp(20px, 12cqw, 48px) * var(--names-scale, 1)); }
 
 /* 22. Lace */
 .preview_lace :global(.overlayContainer) { justify-content: center; align-items: center; background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.5) 90%); }

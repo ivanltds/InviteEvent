@@ -251,5 +251,9 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 - Por     : Maestro / DEV
 - Motivo  : CORREÇÃO DEFINITIVA DE FONTES E ESPAÇAMENTOS MOBILE NO STORY MAKER. Solucionada a falha de renderização que causava quebras de linhas inesperadas (ex. "MARQUINHOS" para "MARQUINH" e "OS") e distorções de escala no celular. A correção implementa transferência de estilos computados em tempo real (`window.getComputedStyle`) no callback `onclone` do html2canvas. Todos os tamanhos de fonte, alturas de linha, espaçamentos e dimensões dos overlays são capturados e congelados em pixels absolutos diretamente nas tags inline do clone, imunizando o motor gráfico contra a falta de suporte a unidades de container query (`cqw`) e `clamp` nos navegadores mobile Safari e Chrome. v0.3.14 estável e idêntico em todas as plataformas!
 
+- Data    : 2026-05-17 (Anti-Word-Splitting Hotfix)
+- Por     : Maestro / DEV
+- Motivo  : BLINDAGEM CONTRA QUEBRA DE PALAVRAS E ESCALA DINÂMICA ADAPTATIVA. Adicionada regra definitiva `word-break: keep-all; overflow-wrap: normal;` global para impedir que o navegador hifenize ou quebre qualquer nome de noivo no meio das palavras em todos os 24 templates. Refinada a escala de nomes no helper `getNamesScale` para encolher fontes grandes de forma agressiva e segura (ex. "Lala & Marquinhos" escala para 0.74x e nomes maiores de 26 caracteres reduzem para 0.40x). Corrigidos os templates Sunset e Champagne que estavam ignorando a escala de nomes no CSS. Versão v0.3.15 blindada e impecável!
+
 
 

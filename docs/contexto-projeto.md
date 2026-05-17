@@ -255,5 +255,9 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 - Por     : Maestro / DEV
 - Motivo  : BLINDAGEM CONTRA QUEBRA DE PALAVRAS E ESCALA DINÂMICA ADAPTATIVA. Adicionada regra definitiva `word-break: keep-all; overflow-wrap: normal;` global para impedir que o navegador hifenize ou quebre qualquer nome de noivo no meio das palavras em todos os 24 templates. Refinada a escala de nomes no helper `getNamesScale` para encolher fontes grandes de forma agressiva e segura (ex. "Lala & Marquinhos" escala para 0.74x e nomes maiores de 26 caracteres reduzem para 0.40x). Corrigidos os templates Sunset e Champagne que estavam ignorando a escala de nomes no CSS. Versão v0.3.15 blindada e impecável!
 
+- Data    : 2026-05-17 (Início Descoberta FASE 3)
+- Por     : Maestro / BA
+- Motivo  : CRIAÇÃO DO PRD-017 DO MOTOR PSICOLÓGICO. Iniciamos oficialmente o ciclo de Descoberta para a Fase 3 (Retenção & CS de Elite), detalhando as três principais abordagens arquiteturais (Opção A - Cliente Local, Opção B - Supabase Telemetria + Smart Nudge Web, e Opção C - Automação Direct SaaS API) com tabela comparativa de esforço, custos e riscos no arquivo docs/prd/prd-017-observador-psicologico.md. Próximo passo aguarda parecer do operador.
+
 
 

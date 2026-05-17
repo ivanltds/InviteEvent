@@ -380,3 +380,12 @@
 .span3 {
   grid-row: span 24;
 }
+
+.outlineBtn {
+  background: transparent !important;
+  border: 2px solid;
+}
+
+.outlineBtn:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+}

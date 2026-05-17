@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CldUploadWidget } from 'next-cloudinary';
+import { GuestStoryMaker } from '@/components/public/GuestStoryMaker';
 import styles from './Mural.module.css';
 import { muralService } from '@/lib/services/muralService';
 import { MuralItem, Configuracao } from '@/lib/types/database';
@@ -17,6 +18,7 @@ export default function MuralSection({ eventoId, config, isPreviewMode = false }
   const [items, setItems] = useState<MuralItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [showStoryMaker, setShowStoryMaker] = useState(false);
   const [formType, setFormType] = useState<'MENSAGEM' | 'MIDIA'>('MENSAGEM');
   
   const [uploads, setUploads] = useState<{url: string, type: string}[]>([]);
@@ -45,11 +47,13 @@ export default function MuralSection({ eventoId, config, isPreviewMode = false }
     load();
   }, [eventoId]);
 
-  const handleUploadSuccess = (result: any) => {
-    const url = result?.info?.secure_url;
-    const resourceType = result?.info?.resource_type;
-    if (url) {
-      setUploads(prev => [...prev, { url, type: resourceType === 'video' ? 'VIDEO' : 'FOTO' }]);
+  const handleUploadSuccess = (result: { info?: string | { secure_url?: string; resource_type?: string } }) => {
+    if (result && result.info && typeof result.info === 'object') {
+      const url = result.info.secure_url;
+      const resourceType = result.info.resource_type;
+      if (url) {
+        setUploads(prev => [...prev, { url, type: resourceType === 'video' ? 'VIDEO' : 'FOTO' }]);
+      }
     }
   };
 
@@ -139,6 +143,20 @@ export default function MuralSection({ eventoId, config, isPreviewMode = false }
               Compartilhar Lembrança
             </span>
           </button>
+
+          <button 
+            className={`${styles.addBtn} ${styles.outlineBtn}`} 
+            onClick={() => setShowStoryMaker(true)}
+            style={{ borderColor: config?.accent_color, color: config?.accent_color }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="2" y="2" width="20" height="20" rx="4"></rect>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              Criar Story
+            </span>
+          </button>
         </div>
 
         <div className={styles.masonryGrid}>
@@ -159,7 +177,7 @@ export default function MuralSection({ eventoId, config, isPreviewMode = false }
               >
                 {item.tipo === 'MENSAGEM' && (
                   <div className={styles.textOnlyCard}>
-                    <p className={styles.text}>"{item.mensagem}"</p>
+                    <p className={styles.text}>&quot;{item.mensagem}&quot;</p>
                     <span className={styles.textAuthor}>— {item.autor || 'Anônimo'}</span>
                   </div>
                 )}
@@ -168,7 +186,7 @@ export default function MuralSection({ eventoId, config, isPreviewMode = false }
                   <div className={styles.overlayMediaWrapper}>
                     <img src={item.url_midia} alt="Lembrança" loading="lazy" />
                     <div className={styles.overlayContent}>
-                      <p className={styles.overlayText}>"{item.mensagem}"</p>
+                      <p className={styles.overlayText}>&quot;{item.mensagem}&quot;</p>
                       <span className={styles.overlayAuthor}>— {item.autor || 'Anônimo'}</span>
                     </div>
                   </div>
@@ -180,7 +198,7 @@ export default function MuralSection({ eventoId, config, isPreviewMode = false }
                       <img src={item.url_midia} alt="Lembrança" loading="lazy" />
                     </div>
                     {item.mensagem && (
-                      <p className={styles.hybridText}>"{item.mensagem}"</p>
+                      <p className={styles.hybridText}>&quot;{item.mensagem}&quot;</p>
                     )}
                     <div className={styles.footer}>
                       <span className={styles.author}>{item.autor || 'Anônimo'}</span>
@@ -194,7 +212,7 @@ export default function MuralSection({ eventoId, config, isPreviewMode = false }
                       <video src={item.url_midia} muted loop autoPlay playsInline />
                     </div>
                     {item.mensagem && (
-                      <p className={styles.hybridText}>"{item.mensagem}"</p>
+                      <p className={styles.hybridText}>&quot;{item.mensagem}&quot;</p>
                     )}
                     <div className={styles.footer}>
                       <span className={styles.author}>{item.autor || 'Anônimo'}</span>
@@ -206,6 +224,20 @@ export default function MuralSection({ eventoId, config, isPreviewMode = false }
           )}
         </div>
       </div>
+
+      <AnimatePresence>
+        {showStoryMaker && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 100000, background: '#000', overflow: 'auto' }}>
+            <GuestStoryMaker 
+              coupleNames={config?.noiva_nome && config?.noivo_nome ? `${config.noiva_nome} & ${config.noivo_nome}` : 'A & P'}
+              eventDate={config?.data_casamento ? new Date(config.data_casamento).toLocaleDateString('pt-BR') : ''}
+              accentColor={config?.accent_color || '#C5A059'}
+              bgPrimary={config?.bg_primary || '#FFFFFF'}
+              onClose={() => setShowStoryMaker(false)}
+            />
+          </div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showForm && (

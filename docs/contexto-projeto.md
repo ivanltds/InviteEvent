@@ -48,8 +48,8 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | 013 | Higiene, Segurança & LGPD        | CONCLUÍDO   | Concluído   |
 | 014 | Group Gifting (Cotas)            | CONCLUÍDO   | Concluído   |
 | 015 | Estabilização & Conversão (FOMO) | CONCLUÍDO   | Concluído   |
-| 018 | Blindagem de QA & Stress         | ATIVO       | DEV         |
-| 016 | Motor Viral & Kits de Mídia      | BACKLOG     | Descoberta  |
+| 018 | Blindagem de QA & Stress         | CONCLUÍDO   | Concluído   |
+| 016 | Motor Viral & Kits de Mídia      | CONCLUÍDO   | Concluído   |
 | 017 | Termômetro de Convidados         | BACKLOG     | Descoberta  |
 
 
@@ -176,6 +176,13 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 | docs/prd/prd-018/fluxo-ux.md               | UX/UI       | Mapeamento de fluxos e estados de erro Context-Aware |
 | docs/wireframes/resiliencia-feedbacks.html  | UX/UI       | Protótipo Interativo com alternância de Temas (Luxo/Admin) |
 | docs/arquitetura/plano-implementacao-prd-018.md | Arquiteto | Plano técnico de RPCs Atômicas, ErrorBoundaries e Stress |
+| docs/prd/prd-016/prd-inicial.md | BA | PRD Inicial de Motor Viral e Kits de Mídia |
+| docs/prd/prd-016/prd-refinado.md | BA | PRD Refinado com User Stories e Critérios |
+| docs/prd/prd-016/fluxo-ux.md | UX/UI | Mapeamento de fluxos e jornada do Motor Viral |
+| docs/wireframes/viral-kits-stories.html | UX/UI | Protótipo Interativo do Gerador de Stories |
+| docs/stories/story-016-media-viral-templates.md | DEV / QA | Especificação e Validação do Motor Viral & Kits de Mídia |
+| src/components/public/GuestStoryMaker/GuestStoryMaker.tsx | DEV | Componente Shell Mobile do Gerador de Stories & Postagens |
+| src/components/public/GuestStoryMaker/templates.tsx | DEV | Coleção de Overlays Premium dos 24 Templates Elegantes |
 | src/lib/services/test-utils/mockFactory.ts | QA | Mock Factory inteligente V9.0 para Supabase (Unified Queue) |
 | src/lib/services/__tests__/telemetry.test.ts | QA | Suíte de testes de telemetria, rage-clicks e JSDOM resilience |
 | src/lib/services/__tests__/ultimate_coverage_v2.test.ts | QA | Suíte definitiva de cobertura enterprise (Surgical Error Injection) |
@@ -224,4 +231,14 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 - Data    : 2026-05-16 (Late Night)
 - Por     : Maestro / QA / DEV
 - Motivo  : HARDENING DE COBERTURA ENTERPRISE (PRD-018). Alcançada estabilidade de produção com 236 testes passando (100% sucesso). Implementada a suite `ultimate_coverage_v2` que elevou a cobertura da camada de serviços para ~87% global (Lines), com 100% em RSVP e Gallery. Estabilizada a infraestrutura de mocks (MockFactory V9.0) e resolvidos conflitos de JSDOM em navegação e telemetria. v0.3.11 pronto para escala com segurança técnica certificada!
+
+- Data    : 2026-05-16 (Madrugada)
+- Por     : Maestro / BA / UX-UI
+- Motivo  : FASES DE DESCOBERTA E EXPERIÊNCIA PRD-016 CONCLUÍDAS. Criado o PRD Refinado com foco em aquisição orgânica (Motor Viral). Desenvolvido o mapeamento de fluxos UX e o protótipo interativo do Gerador de Stories 9:16 com 3 templates premium (Champagne, Modern e Romantic). Definida a jornada de "auto-serviço criativo" para os noivos. Pronto para a fase de Arquitetura!
+
+- Data    : 2026-05-17 (Tarde)
+- Por     : Maestro / DEV / QA
+- Motivo  : ESTABILIZAÇÃO V2 DO MOTOR VIRAL (PRD-016). Implementamos correções definitivas para os problemas de renderização e download no Guest Story Maker. Garantimos transparência absoluta no overlay do Cloudinary via `onclone` callback e `backgroundColor: null`, resolvendo a "casca de fundo branco" sobreposta ao vídeo. Elevamos a resolução das fotos locais a alta definição cristalina através de escala de viewport dinâmica. Eliminamos falhas de CORS no carregamento de tipografia externa via injeção dinâmica de folhas de estilos com `@import` no documento clonado e suporte a fontes em cache. Todos os 240 testes unitários integrados continuam em 100% de sucesso e o compilador Next.js/TypeScript concluiu sem alertas.
+
+
 

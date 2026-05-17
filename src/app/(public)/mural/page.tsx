@@ -14,7 +14,7 @@ export default function MuralPage() {
   const [isInvited, setIsInvited] = useState<boolean | null>(null);
   const [invite, setInvite] = useState<Convite | null>(null);
   const [isPreview, setIsPreview] = useState(false);
-  const sessionStartRef = useRef<number>(Date.now());
+  const sessionStartRef = useRef<number>(0);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function MuralPage() {
       
       setIsPreview(previewMode);
 
-      if (!inviteSlug && !previewMode) {
+      if (!inviteSlug && !previewMode && !queryEventId) {
         setIsInvited(false);
         setLoading(false);
         return;
@@ -44,7 +44,7 @@ export default function MuralPage() {
         inviteData = data;
       }
 
-      if (!inviteData && !previewMode) {
+      if (!inviteData && !previewMode && !queryEventId) {
         setIsInvited(false);
         setLoading(false);
         return;

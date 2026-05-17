@@ -1,0 +1,588 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Montserrat:wght@300;400;700;900&family=Great+Vibes&family=Cinzel:wght@400;700&family=Outfit:wght@200;300;400;600;800&display=swap');
+
+.mobileShell {
+  width: 100%;
+  max-width: 420px;
+  height: 100dvh;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  margin: 0 auto;
+}
+
+/* Em telas maiores, simula o formato mobile */
+@media (min-width: 768px) {
+  .mobileShell {
+    height: 812px;
+    border-radius: 45px;
+    border: 12px solid #1a1a1a;
+    background-color: #1a1a1a !important; /* Force black border */
+    box-shadow: 0 50px 150px rgba(0,0,0,0.9);
+    margin: 40px auto;
+    padding: 0;
+  }
+}
+
+.iphoneNotch {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .iphoneNotch {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 140px;
+    height: 25px;
+    background: #1a1a1a;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+    z-index: 1000000;
+  }
+}
+
+.innerScreen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  border-radius: inherit; /* inherit from mobileShell on desktop */
+}
+
+.topBar {
+  padding: 25px 20px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+}
+
+.closeBtn {
+  width: 35px;
+  height: 35px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  border: none;
+  color: white;
+}
+
+.stepIndicator {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: #C5A059;
+  font-weight: 800;
+}
+
+.storyPreview {
+  flex: 1;
+  position: relative;
+  margin: 15px;
+  border-radius: 25px;
+  overflow: hidden;
+  background: #111;
+  display: flex;
+  flex-direction: column;
+  transition: 0.3s;
+  container-type: inline-size;
+}
+
+:global(.guestPhotoContainer) {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+:global(.guestPhoto) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: 0.5s;
+}
+
+:global(.overlayContainer) {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+/* Watermark */
+.brandSubtle {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: clamp(5.5px, 2.2cqw, 9px);
+  letter-spacing: 2px;
+  z-index: 100;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6), 0 0 2px rgba(0,0,0,0.4);
+  pointer-events: none;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Controls */
+.bottomPanel {
+  padding: 10px 20px 40px;
+  z-index: 200;
+}
+
+.templateSelector {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 15px 0 25px;
+  scrollbar-width: none;
+}
+.templateSelector::-webkit-scrollbar { display: none; }
+
+.templateItem {
+  min-width: 85px;
+  height: 110px;
+  border-radius: 20px;
+  border: 2px solid #222;
+  background: #111;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  gap: 12px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: 0.3s;
+  color: #555;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.templateItemActive {
+  border-color: #C5A059;
+  background: rgba(197, 160, 89, 0.1);
+  color: #C5A059;
+  transform: translateY(-5px);
+}
+
+.templateItem svg {
+  width: 28px;
+  height: 28px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.2;
+}
+
+.actionBtns {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.btnMain {
+  flex: 1;
+  background-color: #C5A059;
+  color: white;
+  padding: 22px;
+  border-radius: 20px;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+.btnMain:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btnCapture {
+  width: 70px;
+  background: transparent;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #444;
+  cursor: pointer;
+  color: white;
+}
+.btnCapture svg {
+  width: 30px;
+  height: 30px;
+}
+
+
+/* GLOBAL CSS SCOPED TRICKS FOR TEMPLATES */
+.storyPreview :global(.shd) { text-shadow: 0 4px 15px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.8); }
+
+/* --- 24 HIGH FIDELITY TEMPLATES CSS --- */
+
+/* Common template typography constraints to prevent overflow */
+.storyPreview h3, .storyPreview h2, .storyPreview p {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+/* 1. Classic */
+.preview_classic :global(.overlayContainer) { justify-content: flex-end; align-items: center; padding-bottom: 60px; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, transparent 100%); }
+.preview_classic h3 { font-family: 'Playfair Display', serif; font-size: calc(clamp(20px, 8.5cqw, 32px) * var(--names-scale, 1)); line-height: 1.15; margin: 0; color: #F5F1ED; text-align: center; padding: 0 20px; }
+.preview_classic p { font-family: 'Montserrat', sans-serif; font-size: clamp(8px, 2.8cqw, 12px); letter-spacing: clamp(2px, 1.2cqw, 5px); color: #C5A059; margin-top: 8px; text-transform: uppercase; text-align: center; }
+
+/* 2. Polaroid */
+.preview_polaroid { background: transparent !important; padding: 0 !important; box-shadow: none !important; }
+.preview_polaroid :global(.guestPhotoContainer) { inset: 25px 25px 135px 25px; border: 1px solid rgba(0,0,0,0.06); }
+.preview_polaroid :global(.overlayContainer) { 
+  justify-content: flex-end; 
+  padding-bottom: 30px; 
+  align-items: center; 
+  border: 25px solid #FFF;
+  border-bottom: 135px solid #FFF;
+  background: transparent !important;
+  box-shadow: inset 0 0 40px rgba(0,0,0,0.05);
+}
+.preview_polaroid h3 { font-family: 'Great Vibes', cursive; font-size: calc(clamp(22px, 10cqw, 38px) * var(--names-scale, 1)); line-height: 1.1; color: #222; margin: 0; text-align: center; width: 100%; padding: 0 10px; }
+.preview_polaroid p { font-family: 'Outfit', sans-serif; font-size: clamp(8px, 3cqw, 12px); color: #888; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; text-align: center; }
+
+/* Polaroid watermark repositioned inside the white bottom margin */
+.preview_polaroid .brandSubtle {
+  top: auto;
+  bottom: 12px;
+  right: 25px;
+  font-size: clamp(6px, 2cqw, 8px);
+  color: #aaa;
+  background: transparent;
+  border: none;
+  backdrop-filter: none;
+  box-shadow: none;
+  letter-spacing: 2px;
+}
+
+/* Polaroid Post Format Adaptive */
+.post.preview_polaroid { padding: 0 !important; }
+.post.preview_polaroid :global(.guestPhotoContainer) { inset: 15px 15px 75px 15px; }
+.post.preview_polaroid :global(.overlayContainer) { 
+  padding-bottom: 15px; 
+  border: 15px solid #FFF;
+  border-bottom: 75px solid #FFF;
+}
+.post.preview_polaroid h3 { font-size: calc(clamp(16px, 9cqw, 28px) * var(--names-scale, 1)); }
+.post.preview_polaroid p { font-size: clamp(7px, 2.5cqw, 10px); }
+.post.preview_polaroid .brandSubtle { bottom: 6px; right: 15px; }
+
+/* 3. Golden */
+.preview_golden :global(.overlayContainer) { justify-content: center; align-items: center; background: radial-gradient(circle, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.75) 80%); padding: 12%; }
+.preview_golden h3 { font-family: 'Playfair Display', serif; font-size: calc(clamp(24px, 11cqw, 42px) * var(--names-scale, 1)); line-height: 1.15; font-style: italic; color: #C5A059; margin: 0; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.9)); text-align: center; padding: 0 15px; width: 100%; }
+.preview_golden p { border-top: 1px solid #C5A059; padding-top: 15px; margin-top: 15px; font-size: clamp(9px, 3.2cqw, 12px); color: #C5A059; letter-spacing: clamp(2px, 1.2cqw, 4px); text-shadow: 0 2px 8px rgba(0,0,0,0.9); text-transform: uppercase; text-align: center; }
+
+.preview_golden .brandSubtle {
+  top: auto;
+  bottom: 20px;
+  right: 20px;
+  color: rgba(197, 160, 89, 0.6);
+  background: transparent;
+  border: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+.post.preview_golden h3 { font-size: calc(clamp(18px, 9.5cqw, 32px) * var(--names-scale, 1)); }
+.post.preview_golden p { padding-top: 10px; margin-top: 10px; font-size: clamp(8px, 2.8cqw, 10px); }
+
+/* 4. Minimal */
+.preview_minimal :global(.overlayContainer) { justify-content: flex-end; padding: 60px 40px; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, transparent 100%); }
+.preview_minimal h3 { font-family: 'Outfit', sans-serif; font-weight: 300; font-size: calc(clamp(18px, 7cqw, 26px) * var(--names-scale, 1)); line-height: 1.2; letter-spacing: 3px; color: white; margin: 0; text-align: left; width: 100%; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+.preview_minimal p { font-size: clamp(8px, 3cqw, 12px); color: #C5A059; letter-spacing: 2px; font-weight: 600; margin-top: 10px; text-align: left; width: 100%; text-transform: uppercase; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+
+.preview_minimal .brandSubtle { top: 20px; right: 20px; }
+.post.preview_minimal :global(.overlayContainer) { padding: 30px 25px; }
+.post.preview_minimal h3 { font-size: calc(clamp(14px, 6cqw, 20px) * var(--names-scale, 1)); }
+.post.preview_minimal p { font-size: clamp(7px, 2.5cqw, 10px); margin-top: 6px; }
+
+/* 5. Magazine */
+.preview_magazine :global(.overlayContainer) { justify-content: space-between; align-items: flex-start; }
+.preview_magazine :global(.mag-header) { width: 100%; border-bottom: 2px solid white; padding: 40px 20px 15px 20px; background: linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, transparent 100%); }
+.preview_magazine :global(.mag-header) h2 { font-family: 'Cinzel', serif; font-size: clamp(18px, 8.5cqw, 30px); letter-spacing: clamp(4px, 2.2cqw, 8px); margin: 0; text-align: center; color: white; text-shadow: 0 4px 10px rgba(0,0,0,0.8); }
+.preview_magazine :global(.mag-footer) { width: 100%; margin-top: auto; display: flex; flex-direction: column; align-items: flex-start; padding: 20px 30px 40px 30px; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%); }
+.preview_magazine h3 { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: calc(clamp(16px, 7cqw, 24px) * var(--names-scale, 1)); line-height: 1.15; color: white; margin: 0; text-shadow: 0 4px 15px rgba(0,0,0,0.9); text-align: left; }
+.preview_magazine p { font-size: clamp(9px, 3cqw, 12px); color: #C5A059; text-transform: uppercase; font-weight: 700; margin-top: 5px; text-shadow: 0 2px 10px rgba(0,0,0,0.9); text-align: left; }
+
+.preview_magazine .brandSubtle {
+  top: 20px;
+  right: 20px;
+}
+.post.preview_magazine :global(.mag-header) { padding: 25px 15px 10px 15px; }
+.post.preview_magazine :global(.mag-header) h2 { font-size: clamp(14px, 7.5cqw, 24px); letter-spacing: clamp(3px, 1.8cqw, 6px); }
+.post.preview_magazine :global(.mag-footer) { padding: 15px 20px 25px 20px; }
+.post.preview_magazine h3 { font-size: calc(clamp(14px, 6.2cqw, 18px) * var(--names-scale, 1)); }
+.post.preview_magazine p { font-size: clamp(8px, 2.5cqw, 10px); }
+
+/* 6. Floral */
+.preview_floral :global(.overlayContainer) { justify-content: center; align-items: center; text-align: center; padding: 10%; background: radial-gradient(circle, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.7) 90%); }
+.preview_floral :global(.floral-icon) { position: absolute; font-size: clamp(40px, 18cqw, 75px); color: #C5A059; opacity: 0.9; filter: drop-shadow(0 4px 15px rgba(0,0,0,0.9)); }
+.preview_floral :global(.f-top) { top: 5cqw; left: 5cqw; }
+.preview_floral :global(.f-bottom) { bottom: 5cqw; right: 5cqw; transform: rotate(180deg); }
+.preview_floral h3 { font-family: 'Great Vibes', cursive; font-size: calc(clamp(24px, 12cqw, 46px) * var(--names-scale, 1)); line-height: 1.1; color: white; text-shadow: 0 4px 20px rgba(0,0,0,0.9); margin: 0; width: 100%; padding: 0 35px; }
+.preview_floral p { font-size: clamp(8px, 3.2cqw, 12px); color: #C5A059; letter-spacing: 2px; margin-top: 6px; text-shadow: 0 2px 10px rgba(0,0,0,0.9); text-transform: uppercase; }
+
+.preview_floral .brandSubtle {
+  top: auto;
+  bottom: 25px;
+  right: 25px;
+  color: rgba(197, 160, 89, 0.6);
+  background: transparent;
+  border: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+.post.preview_floral :global(.f-top) { top: 4cqw; left: 4cqw; }
+.post.preview_floral :global(.f-bottom) { bottom: 4cqw; right: 4cqw; }
+.post.preview_floral h3 { font-size: calc(clamp(20px, 10cqw, 36px) * var(--names-scale, 1)); }
+
+/* 7. Gatsby */
+.preview_gatsby::before { content: ''; position: absolute; inset: 25px; border: 2px solid #C5A059; outline: 8px solid #C5A059; outline-offset: -14px; z-index: 5; pointer-events: none; }
+.preview_gatsby :global(.overlayContainer) { justify-content: center; align-items: center; background: rgba(0,0,0,0.5); padding: 45px; }
+.preview_gatsby h3 { font-family: 'Cinzel', serif; font-size: calc(clamp(20px, 9.5cqw, 36px) * var(--names-scale, 1)); line-height: 1.3; color: #C5A059; letter-spacing: clamp(3px, 2.5cqw, 8px); text-align: center; margin: 0; text-shadow: 0 0 25px rgba(0,0,0,0.95); width: 100%; }
+.preview_gatsby p { font-size: clamp(8px, 3cqw, 12px); color: white; letter-spacing: 3px; margin-top: clamp(8px, 3cqw, 16px); text-transform: uppercase; text-shadow: 0 2px 5px rgba(0,0,0,0.9); text-align: center; }
+
+/* Gatsby watermark placed safely inside the Art Deco frame */
+.preview_gatsby .brandSubtle {
+  top: auto;
+  bottom: 25px;
+  right: 25px;
+  color: rgba(197, 160, 89, 0.6);
+  background: transparent;
+  border: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+.post.preview_gatsby::before { inset: 18px; outline-offset: -8px; }
+.post.preview_gatsby :global(.overlayContainer) { padding: 30px; }
+.post.preview_gatsby h3 { font-size: calc(clamp(15px, 7cqw, 24px) * var(--names-scale, 1)); letter-spacing: clamp(2px, 2cqw, 5px); }
+.post.preview_gatsby p { font-size: clamp(7px, 2.5cqw, 10px); margin-top: 10px; }
+.post.preview_gatsby .brandSubtle { bottom: 25px; right: 25px; }
+
+/* 8. Neon */
+.preview_party :global(.overlayContainer) { justify-content: flex-end; align-items: flex-start; padding: 60px 40px; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 60%, transparent 100%); }
+.preview_party h3 { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: calc(clamp(20px, 9.5cqw, 38px) * var(--names-scale, 1)); line-height: 1.1; color: white; text-shadow: 0 0 10px #C5A059, 0 0 25px #C5A059; margin: 0; text-align: left; }
+.preview_party p { font-size: clamp(9px, 3.5cqw, 14px); font-weight: 600; color: white; letter-spacing: 2px; opacity: 0.8; margin-top: 10px; text-transform: uppercase; text-align: left; }
+
+.preview_party .brandSubtle { top: 20px; right: 20px; }
+.post.preview_party :global(.overlayContainer) { padding: 30px 25px; }
+.post.preview_party h3 { font-size: calc(clamp(16px, 8cqw, 28px) * var(--names-scale, 1)); }
+.post.preview_party p { font-size: clamp(8px, 2.8cqw, 11px); margin-top: 6px; }
+
+/* 9. Retro */
+.preview_retro :global(.guestPhoto) { filter: sepia(0.4) contrast(1.2); }
+.preview_retro :global(.overlayContainer) { justify-content: space-between; padding: 40px; background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 30%); }
+.preview_retro :global(.stamp) { font-family: 'Courier New', monospace; font-size: clamp(12px, 5.5cqw, 22px); color: #FF8C00; font-weight: 900; background: rgba(0,0,0,0.6); padding: 5px 15px; align-self: flex-start; border: 1.5px solid #FF8C00; text-shadow: none; }
+.preview_retro :global(.info) { align-self: flex-end; text-align: right; width: 100%; }
+.preview_retro h3 { font-family: 'Outfit', sans-serif; font-size: calc(clamp(10px, 4cqw, 16px) * var(--names-scale, 1)); color: white; margin: 0; text-shadow: 0 2px 5px rgba(0,0,0,0.9); text-transform: uppercase; letter-spacing: 1px; }
+
+.preview_retro .brandSubtle { top: 20px; right: 20px; }
+.post.preview_retro :global(.overlayContainer) { padding: 25px; }
+.post.preview_retro :global(.stamp) { font-size: clamp(10px, 5cqw, 17px); padding: 4px 10px; }
+.post.preview_retro h3 { font-size: calc(clamp(9px, 3.5cqw, 13px) * var(--names-scale, 1)); }
+
+/* 10. Initials */
+.preview_initials :global(.overlayContainer) { justify-content: center; align-items: center; padding: 10%; background: radial-gradient(circle, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 90%); }
+.preview_initials :global(.big-char) { position: absolute; font-size: clamp(120px, 65cqw, 240px); font-family: 'Playfair Display', serif; color: white; opacity: 0.15; z-index: -1; font-weight: 900; line-height: 1; pointer-events: none; text-shadow: 0 4px 10px rgba(0,0,0,0.4); }
+.preview_initials h3 { font-family: 'Montserrat', sans-serif; font-weight: 300; font-size: calc(clamp(14px, 5cqw, 20px) * var(--names-scale, 1)); letter-spacing: clamp(3px, 1.8cqw, 6px); color: white; text-shadow: 0 4px 15px rgba(0,0,0,0.9); text-align: center; line-height: 1.25; }
+
+.preview_initials .brandSubtle { top: 20px; right: 20px; }
+.post.preview_initials :global(.big-char) { font-size: clamp(90px, 50cqw, 160px); }
+.post.preview_initials h3 { font-size: calc(clamp(11px, 4.5cqw, 16px) * var(--names-scale, 1)); letter-spacing: clamp(2px, 1.5cqw, 5px); }
+
+/* 11. Frame */
+.preview_frame { padding: 40px !important; }
+.preview_frame::before { content: ''; position: absolute; inset: 20px; border: 2px solid #C5A059; z-index: 5; pointer-events: none; }
+.preview_frame::after { content: ''; position: absolute; inset: 30px; border: 1px solid #C5A059; z-index: 5; pointer-events: none; }
+.preview_frame :global(.overlayContainer) { justify-content: flex-end; align-items: center; padding-bottom: 35px; background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 40%); }
+.preview_frame :global(.tag) { background: #C5A059; color: #000; padding: 8px 20px; font-weight: 800; font-size: calc(clamp(10px, 3.8cqw, 14px) * var(--names-scale, 1)); font-family: 'Playfair Display', serif; letter-spacing: 1px; text-align: center; max-width: 80%; }
+
+/* Frame watermark positioned inside the frame borders */
+.preview_frame .brandSubtle {
+  top: auto;
+  bottom: 25px;
+  right: 35px;
+  color: rgba(197, 160, 89, 0.6);
+  background: transparent;
+  border: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+.post.preview_frame { padding: 25px !important; }
+.post.preview_frame::before { inset: 12px; }
+.post.preview_frame::after { inset: 18px; }
+.post.preview_frame :global(.overlayContainer) { padding-bottom: 25px; }
+.post.preview_frame :global(.tag) { padding: 6px 15px; font-size: calc(clamp(8px, 3.5cqw, 11px) * var(--names-scale, 1)); }
+.post.preview_frame .brandSubtle { top: 22px; right: 22px; }
+
+/* 12. Split */
+.preview_split :global(.guestPhotoContainer) { width: 45%; left: 0; border-right: 2px solid #C5A059; }
+.preview_split :global(.overlayContainer) { left: 45%; width: 55%; background: #1A1A1A; justify-content: center; padding: 30px; align-items: flex-start; }
+.preview_split h3 { font-family: 'Playfair Display', serif; font-size: calc(clamp(14px, 6.2cqw, 22px) * var(--names-scale, 1)); line-height: 1.4; color: #C5A059; margin: 0; text-align: left; padding: 0 15px; }
+.preview_split p { font-size: clamp(8px, 2.8cqw, 11px); color: #a0a0a0; margin-top: clamp(12px, 5cqw, 24px); letter-spacing: 2px; text-transform: uppercase; text-align: left; padding: 0 15px; line-height: 1.6; }
+
+.preview_split .brandSubtle {
+  top: auto;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0,0,0,0.3);
+}
+.post.preview_split :global(.overlayContainer) { padding: 15px; }
+.post.preview_split h3 { font-size: calc(clamp(11px, 5.5cqw, 17px) * var(--names-scale, 1)); }
+.post.preview_split p { font-size: clamp(7px, 2.5cqw, 9px); margin-top: clamp(10px, 4cqw, 20px); }
+
+/* 13. Diamond */
+.preview_diamond :global(.overlayContainer) { justify-content: center; align-items: center; background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.55) 90%); }
+.preview_diamond :global(.d-box) { width: clamp(160px, 65cqw, 250px); height: clamp(160px, 65cqw, 250px); border: 2px solid #C5A059; transform: rotate(45deg); display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.45); box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
+.preview_diamond h3 { transform: rotate(-45deg); font-family: 'Playfair Display', serif; font-size: calc(clamp(12px, 5.5cqw, 22px) * var(--names-scale, 1)); line-height: 1.25; color: white; text-align: center; margin: 0; padding: 15px; }
+
+.preview_diamond .brandSubtle { top: 20px; right: 20px; }
+.post.preview_diamond :global(.d-box) { width: clamp(120px, 50cqw, 170px); height: clamp(120px, 50cqw, 170px); }
+.post.preview_diamond h3 { font-size: calc(clamp(10px, 4.5cqw, 16px) * var(--names-scale, 1)); padding: 8px; }
+
+/* 14. Zen */
+.preview_zen :global(.overlayContainer) { justify-content: center; align-items: center; background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.5) 90%); }
+.preview_zen :global(.z-circle) { width: clamp(180px, 75cqw, 280px); height: clamp(180px, 75cqw, 280px); border: 1.5px solid rgba(255,255,255,0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); background: rgba(0,0,0,0.3); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+.preview_zen h3 { font-family: 'Outfit', sans-serif; font-weight: 200; font-size: calc(clamp(12px, 5cqw, 18px) * var(--names-scale, 1)); letter-spacing: clamp(2px, 1.2cqw, 5px); color: white; text-align: center; margin: 0; text-transform: uppercase; line-height: 1.2; padding: 20px; }
+
+.preview_zen .brandSubtle { top: 20px; right: 20px; }
+.post.preview_zen :global(.z-circle) { width: clamp(130px, 55cqw, 190px); height: clamp(130px, 55cqw, 190px); }
+.post.preview_zen h3 { font-size: calc(clamp(10px, 4cqw, 14px) * var(--names-scale, 1)); letter-spacing: clamp(1px, 1cqw, 3px); padding: 10px; }
+
+/* 15. Chateau */
+.preview_chateau :global(.overlayContainer) { padding: 60px 40px; justify-content: flex-start; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 60%); }
+.preview_chateau :global(.arch) { width: 80%; border: 2px solid #C5A059; border-bottom: none; height: clamp(50px, 20cqw, 90px); border-radius: 100px 100px 0 0; margin-bottom: clamp(10px, 4cqw, 20px); }
+.preview_chateau h3 { font-family: 'Cinzel', serif; font-size: calc(clamp(12px, 5cqw, 18px) * var(--names-scale, 1)); letter-spacing: clamp(1px, 1.2cqw, 3px); color: #C5A059; text-shadow: 0 2px 10px rgba(0,0,0,0.9); text-align: center; text-transform: uppercase; line-height: 1.2; padding: 0 20px; }
+
+.preview_chateau .brandSubtle { top: 20px; right: 20px; }
+.post.preview_chateau :global(.overlayContainer) { padding: 35px 25px; }
+.post.preview_chateau h3 { font-size: calc(clamp(10px, 4.5cqw, 14px) * var(--names-scale, 1)); }
+
+/* 16. Stardust */
+.preview_stardust::after { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle, white 1px, transparent 1px); background-size: 20px 20px; opacity: 0.25; z-index: 5; pointer-events: none; }
+.preview_stardust :global(.overlayContainer) { justify-content: center; align-items: center; background: rgba(0,0,0,0.3); }
+.preview_stardust h3 { font-family: 'Great Vibes', cursive; font-size: calc(clamp(24px, 12cqw, 52px) * var(--names-scale, 1)); line-height: 1.1; color: white; text-shadow: 0 0 30px #C5A059, 0 2px 10px rgba(0,0,0,0.6); text-align: center; margin: 0; width: 100%; padding: 0 20px; }
+
+.preview_stardust .brandSubtle { top: 20px; right: 20px; }
+.post.preview_stardust h3 { font-size: calc(clamp(18px, 10cqw, 38px) * var(--names-scale, 1)); }
+
+/* 17. Mono */
+.preview_mono :global(.overlayContainer) { justify-content: center; align-items: center; background: rgba(0,0,0,0.55); }
+.preview_mono h3 { font-family: 'Playfair Display', serif; font-size: calc(clamp(28px, 15cqw, 64px) * var(--names-scale, 1)); font-weight: 900; color: white; opacity: 0.9; margin: 0; text-align: center; letter-spacing: -2px; }
+
+.preview_mono .brandSubtle { top: 20px; right: 20px; }
+.post.preview_mono h3 { font-size: calc(clamp(20px, 12cqw, 48px) * var(--names-scale, 1)); }
+
+/* 18. Sunset */
+.preview_sunset :global(.guestPhoto) { filter: brightness(0.75) sepia(0.3) hue-rotate(-30deg); }
+.preview_sunset :global(.overlayContainer) { justify-content: flex-end; padding: 60px; background: linear-gradient(to top, rgba(255, 69, 0, 0.45) 0%, rgba(0,0,0,0.2) 60%, transparent 100%); }
+.preview_sunset h3 { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400; font-size: clamp(20px, 8cqw, 32px); line-height: 1.2; letter-spacing: 2px; color: #FFF; text-align: center; width: 100%; padding: 0 25px; text-shadow: 0 2px 12px rgba(0,0,0,0.7); }
+
+.preview_sunset .brandSubtle { top: 20px; right: 20px; }
+.post.preview_sunset :global(.overlayContainer) { padding: 35px; }
+.post.preview_sunset h3 { font-size: clamp(14px, 6.8cqw, 24px); }
+
+/* 19. Vineyard */
+.preview_vineyard :global(.overlayContainer) { justify-content: center; align-items: center; padding: 40px; background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.5) 90%); }
+.preview_vineyard :global(.v-frame) { border: 1.5px solid rgba(255,255,255,0.3); padding: clamp(15px, 6cqw, 35px); width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.3); box-shadow: inset 0 0 20px rgba(0,0,0,0.3); }
+.preview_vineyard h3 { font-family: 'Playfair Display', serif; font-style: italic; font-size: calc(clamp(16px, 6.5cqw, 28px) * var(--names-scale, 1)); line-height: 1.2; color: #F5F1ED; text-align: center; margin: 0; text-shadow: 0 2px 8px rgba(0,0,0,0.9); padding: 10px; }
+
+.preview_vineyard .brandSubtle { top: 25px; right: 25px; }
+.post.preview_vineyard :global(.overlayContainer) { padding: 25px; }
+.post.preview_vineyard h3 { font-size: calc(clamp(13px, 6.2cqw, 20px) * var(--names-scale, 1)); }
+
+/* 20. Symphony */
+.preview_symphony :global(.overlayContainer) { justify-content: center; padding: 60px; align-items: center; background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.5) 100%); }
+.preview_symphony :global(.line) { width: 100%; height: 2px; background: #C5A059; margin: 15px 0; box-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+.preview_symphony h3 { font-family: 'Cinzel', serif; font-size: calc(clamp(11px, 4.5cqw, 18px) * var(--names-scale, 1)); letter-spacing: clamp(4px, 2cqw, 8px); color: white; text-align: center; margin: 0; text-transform: uppercase; text-shadow: 0 2px 8px rgba(0,0,0,0.9); line-height: 1.25; }
+
+.preview_symphony .brandSubtle { top: 20px; right: 20px; }
+.post.preview_symphony :global(.overlayContainer) { padding: 35px; }
+.post.preview_symphony h3 { font-size: calc(clamp(9px, 4cqw, 14px) * var(--names-scale, 1)); letter-spacing: clamp(2px, 1.5cqw, 5px); }
+
+/* 21. Champagne */
+.preview_champagne :global(.overlayContainer) { justify-content: center; align-items: center; background: radial-gradient(circle, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.65) 90%); }
+.preview_champagne h3 { font-family: 'Great Vibes', cursive; font-size: clamp(28px, 15cqw, 64px); line-height: 1.1; color: #C5A059; text-shadow: 0 0 35px rgba(197, 160, 89, 0.7), 0 2px 8px rgba(0,0,0,0.8); text-align: center; margin: 0; }
+
+.preview_champagne .brandSubtle { top: 20px; right: 20px; }
+.post.preview_champagne h3 { font-size: clamp(20px, 12cqw, 48px); }
+
+/* 22. Lace */
+.preview_lace :global(.overlayContainer) { justify-content: center; align-items: center; background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.5) 90%); }
+.preview_lace :global(.inner-frame) {
+  border: clamp(4px, 2cqw, 8px) double #C5A059;
+  padding: clamp(15px, 6cqw, 35px);
+  width: clamp(150px, 60cqw, 220px);
+  height: clamp(220px, 80cqw, 310px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.4);
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.6), 0 10px 30px rgba(0,0,0,0.7);
+  backdrop-filter: blur(1px);
+}
+.preview_lace h3 { font-family: 'Playfair Display', serif; font-size: calc(clamp(14px, 6cqw, 24px) * var(--names-scale, 1)); line-height: 1.3; color: white; text-align: center; margin: 0; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+
+/* Lace watermark positioned elegantly outside the frame borders */
+.preview_lace .brandSubtle {
+  top: auto;
+  bottom: 25px;
+  right: 25px;
+}
+.post.preview_lace :global(.inner-frame) { width: clamp(110px, 45cqw, 160px); height: clamp(170px, 65cqw, 210px); padding: 15px; }
+.post.preview_lace h3 { font-size: calc(clamp(11px, 5cqw, 18px) * var(--names-scale, 1)); }
+.post.preview_lace .brandSubtle { bottom: 15px; right: 15px; }
+
+/* 23. Minimal Alt */
+.preview_minimal-alt :global(.overlayContainer) { justify-content: flex-start; padding: 80px 40px; background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 40%); }
+.preview_minimal-alt h3 { font-family: 'Montserrat', sans-serif; font-weight: 300; font-size: calc(clamp(12px, 5cqw, 18px) * var(--names-scale, 1)); letter-spacing: clamp(3px, 2cqw, 8px); border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: clamp(10px, 4cqw, 20px); width: 80%; text-align: left; text-transform: uppercase; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.8); margin: 0; line-height: 1.25; }
+
+.preview_minimal-alt .brandSubtle { top: 20px; right: 20px; }
+.post.preview_minimal-alt :global(.overlayContainer) { padding: 40px 25px; }
+.post.preview_minimal-alt h3 { font-size: calc(clamp(10px, 4cqw, 15px) * var(--names-scale, 1)); letter-spacing: clamp(2px, 1.5cqw, 6px); padding-bottom: 12px; }
+
+/* 24. Luxury */
+.preview_luxury :global(.overlayContainer) { justify-content: center; align-items: center; padding: 10%; background: radial-gradient(circle, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.65) 90%); }
+.preview_luxury h3 { font-family: 'Cinzel', serif; font-size: calc(clamp(18px, 8cqw, 32px) * var(--names-scale, 1)); color: #C5A059; font-weight: 700; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.9)); text-align: center; margin: 0; text-transform: uppercase; letter-spacing: 2px; line-height: 1.25; padding: 0 20px; }
+
+.preview_luxury .brandSubtle { top: 20px; right: 20px; }
+.post.preview_luxury h3 { font-size: calc(clamp(14px, 7.5cqw, 26px) * var(--names-scale, 1)); }
+
+
+.formatSelector {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.5rem;
+}
+
+.formatSelector button {
+  padding: 0.5rem 1.5rem;
+  border-radius: 20px;
+  border: 1px solid;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}

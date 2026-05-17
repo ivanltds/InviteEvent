@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any, @typescript-eslint/ban-ts-comment, @typescript-eslint/no-unused-vars */
 import { supabase } from '@/lib/supabase';
 import { setupSupabaseMock } from '../test-utils/mockFactory';
 import { OpenAI } from 'openai';
@@ -248,6 +249,7 @@ describe('InviteEventAI ULTIMATE Coverage Suite V37.0', () => {
     // @ts-ignore
     window.location = { href: '' };
     try { await authService.logout(); } catch(e){}
+    // @ts-ignore
     window.location = originalLocation;
 
     // -- INVITE SERVICE SURGICAL --

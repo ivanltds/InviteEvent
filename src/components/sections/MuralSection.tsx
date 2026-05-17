@@ -230,7 +230,10 @@ export default function MuralSection({ eventoId, config, isPreviewMode = false }
           <div style={{ position: 'fixed', inset: 0, zIndex: 100000, background: '#000', overflow: 'auto' }}>
             <GuestStoryMaker 
               coupleNames={config?.noiva_nome && config?.noivo_nome ? `${config.noiva_nome} & ${config.noivo_nome}` : 'A & P'}
-              eventDate={config?.data_casamento ? new Date(config.data_casamento).toLocaleDateString('pt-BR') : ''}
+              eventDate={config?.data_casamento ? (() => {
+                const [year, month, day] = config.data_casamento.split('-').map(Number);
+                return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+              })() : ''}
               accentColor={config?.accent_color || '#C5A059'}
               bgPrimary={config?.bg_primary || '#FFFFFF'}
               onClose={() => setShowStoryMaker(false)}

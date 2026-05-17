@@ -88,7 +88,7 @@ export function GuestStoryMaker({ coupleNames, eventDate, accentColor = '#C5A059
       }
 
       const node = previewRef.current;
-      const scaleFactor = node.offsetWidth ? Math.max(3, 1080 / node.offsetWidth) : 3;
+      const scaleFactor = node.offsetWidth ? Math.max(6, 2160 / node.offsetWidth) : 6;
 
       if (isVideo && selectedFile) {
         // --- FLUXO DE VÍDEO (CLOUDINARY) ---

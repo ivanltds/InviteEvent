@@ -2,11 +2,16 @@ import { Configuracao } from "@/lib/types/database";
 import styles from "./Detalhes.module.css";
 
 export default function Detalhes({ config }: { config?: Configuracao }) {
-  const dateStr = config ? new Date(config.data_casamento).toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric'
-  }) : '13 de Junho de 2026';
+  let dateStr = '13 de Junho de 2026';
+  if (config?.data_casamento) {
+    const [year, month, day] = config.data_casamento.split('-').map(Number);
+    const dateObj = new Date(year, month - 1, day);
+    dateStr = dateObj.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
 
   return (
     <section className={styles.section} id="detalhes">

@@ -247,5 +247,9 @@ Oferecer uma solução completa e elegante para noivos e organizadores gerenciar
 - Por     : Maestro / DEV
 - Motivo  : RESOLVIDOS DESVIOS DE FUSO HORÁRIO E MELHORIA DE RESOLUÇÃO DO MOTOR VIRAL. Corrigidos desvios de fuso horário (Timezone Offset Shift) nos componentes Detalhes e MuralSection, que exibiam erroneamente o dia do casamento como dia 12 ao invés do dia 13 para convidados no fuso de Brasília (GMT-3). Elevada a resolução dos stories e posts do Guest Story Maker para 4K/Ultra-HD (2160px de largura alvo no html2canvas com supersampling de 6x) garantindo fotos com definição cristalina e máximo engajamento nas redes sociais sem sofrer com a compressão severa do Instagram.
 
+- Data    : 2026-05-17 (Hotfix Render Mobile)
+- Por     : Maestro / DEV
+- Motivo  : CORREÇÃO DEFINITIVA DE FONTES E ESPAÇAMENTOS MOBILE NO STORY MAKER. Solucionada a falha de renderização que causava quebras de linhas inesperadas (ex. "MARQUINHOS" para "MARQUINH" e "OS") e distorções de escala no celular. A correção implementa transferência de estilos computados em tempo real (`window.getComputedStyle`) no callback `onclone` do html2canvas. Todos os tamanhos de fonte, alturas de linha, espaçamentos e dimensões dos overlays são capturados e congelados em pixels absolutos diretamente nas tags inline do clone, imunizando o motor gráfico contra a falta de suporte a unidades de container query (`cqw`) e `clamp` nos navegadores mobile Safari e Chrome. v0.3.14 estável e idêntico em todas as plataformas!
+
 
 

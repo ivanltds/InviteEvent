@@ -81,6 +81,40 @@ export function GuestStoryMaker({ coupleNames, eventDate, accentColor = '#C5A059
     if (!previewRef.current) return;
     setSavingStatus('saving');
     
+    // Auxiliar para transferir estilos computados em pixels reais do mobile/desktop para o clone do html2canvas
+    const copyComputedStyles = (origNode: HTMLElement, cloneNode: HTMLElement) => {
+      const computedRoot = window.getComputedStyle(origNode);
+      cloneNode.style.width = computedRoot.width;
+      cloneNode.style.height = computedRoot.height;
+
+      const originalElements = origNode.querySelectorAll('*');
+      const clonedElements = cloneNode.querySelectorAll('*');
+      
+      originalElements.forEach((origEl, idx) => {
+        const cloneEl = clonedElements[idx] as HTMLElement;
+        if (cloneEl && origEl instanceof HTMLElement) {
+          const computed = window.getComputedStyle(origEl);
+          cloneEl.style.fontSize = computed.fontSize;
+          cloneEl.style.lineHeight = computed.lineHeight;
+          cloneEl.style.letterSpacing = computed.letterSpacing;
+          cloneEl.style.fontFamily = computed.fontFamily;
+          cloneEl.style.fontWeight = computed.fontWeight;
+          cloneEl.style.fontStyle = computed.fontStyle;
+          cloneEl.style.textTransform = computed.textTransform;
+          cloneEl.style.textAlign = computed.textAlign;
+          cloneEl.style.padding = computed.padding;
+          cloneEl.style.margin = computed.margin;
+
+          if (['H2', 'H3', 'P', 'SPAN', 'DIV'].includes(origEl.tagName)) {
+            if (origEl.closest('.overlayContainer') || origEl.classList.contains('overlayContainer')) {
+              cloneEl.style.width = computed.width;
+              cloneEl.style.height = computed.height;
+            }
+          }
+        }
+      });
+    };
+
     try {
       // Garantir que todas as fontes estejam 100% carregadas e prontas no navegador antes de capturar
       if (typeof document !== 'undefined' && document.fonts) {
@@ -111,6 +145,10 @@ export function GuestStoryMaker({ coupleNames, eventDate, accentColor = '#C5A059
             // 2. Forçar transparência absoluta no container clonado e esconder imagem/vídeo original
             const clonedNode = clonedDoc.querySelector('[data-testid="story-preview-container"]') as HTMLElement;
             if (clonedNode) {
+              // Copiar os estilos computados reais do elemento original para o clonado
+              // Isso resolve o problema de renderização de 'cqw' e 'clamp' no mobile
+              copyComputedStyles(node, clonedNode);
+
               clonedNode.style.borderRadius = '0px';
               clonedNode.style.setProperty('background', 'transparent', 'important');
               clonedNode.style.setProperty('background-color', 'transparent', 'important');
@@ -173,6 +211,7 @@ export function GuestStoryMaker({ coupleNames, eventDate, accentColor = '#C5A059
             // 2. Prevenir bordas arredondadas na imagem gerada
             const clonedNode = clonedDoc.querySelector('[data-testid="story-preview-container"]') as HTMLElement;
             if (clonedNode) {
+              copyComputedStyles(node, clonedNode);
               clonedNode.style.borderRadius = '0px';
             }
           }

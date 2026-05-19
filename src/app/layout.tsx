@@ -4,7 +4,7 @@ import "./globals.css";
 import { Suspense } from "react";
 import DynamicStyles from "@/components/ui/DynamicStyles";
 import CookieBanner from "@/components/ui/CookieBanner";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercel/analytics/next";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",

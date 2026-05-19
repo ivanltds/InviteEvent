@@ -90,7 +90,7 @@ global.IntersectionObserver = class IntersectionObserver {
 };
 
 // Mock Vercel Analytics
-jest.mock('@vercel/analytics/react', () => ({
+jest.mock('@vercel/analytics/next', () => ({
   Analytics: () => null,
 }));
 

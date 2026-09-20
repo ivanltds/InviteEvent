@@ -25,6 +25,22 @@ jobs:
       continue-on-error: true
     - name: Typecheck
       run: npm run typecheck
+    # next/jest carrega .env.test.local automaticamente (mesma convenção
+    # de env do Next.js). Sem isso, testes que renderizam CldUploadWidget
+    # falham por falta de NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME — eram as 16
+    # falhas pré-existentes documentadas em docs/analise/03-testes.md.
+    # Só placeholders, nada de segredo real: o Jest não faz upload de
+    # verdade, só precisa da variável existir para o componente não
+    # quebrar ao renderizar.
+    - name: Configure test environment variables (Jest)
+      run: |
+        echo "NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321" > .env.test.local
+        echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_placeholder_for_jest" >> .env.test.local
+        echo "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=test-cloud" >> .env.test.local
+        echo "CLOUDINARY_API_KEY=test-key" >> .env.test.local
+        echo "CLOUDINARY_API_SECRET=test-secret" >> .env.test.local
+        echo "NEXT_PUBLIC_ADMIN_PASSWORD=test-admin-password" >> .env.test.local
+        echo "OPENAI_API_KEY=sk-mock-key-for-jest" >> .env.test.local
     - name: Unit/integration tests (Jest, com cobertura)
       run: npm test -- --coverage
     - name: Dependency audit (falhas altas/críticas quebram o build)

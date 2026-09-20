@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import styles from './AdminConfig.module.css';
 import { configService } from '@/lib/services/configService';
-import { Configuracao, ModoArrecadacao } from '@/lib/types/database';
+import { Configuracao, ModoArrecadacao, ModoConvite } from '@/lib/types/database';
 import { GRAVATA_LABEL_TEXT, GRAVATA_LABEL_OPTIONS } from '@/lib/constants/gravata';
 import FAQManager from '@/components/admin/FAQManager';
 import ConfigPreview from '@/components/admin/ConfigPreview';
@@ -40,6 +40,7 @@ const DEFAULT_CONFIG: Omit<Configuracao, 'id' | 'evento_id'> = {
   modo_arrecadacao: 'presentes',
   gravata_label: 'quero_colaborar',
   gravata_recado: 'Sua presença já é o nosso maior presente, mas se quiser nos ajudar a começar essa nova fase, ficaremos muito felizes com sua contribuição.',
+  modo_convite: 'individual',
   pix_chave: '',
   pix_banco: '',
   pix_nome: '',
@@ -451,6 +452,52 @@ export default function AdminConfig() {
                       </div>
                     )}
                   </>
+                )}
+              </div>
+            </section>
+
+            <section className={styles.section}>
+              <h2>Como você vai gerenciar a lista de convidados?</h2>
+              <div className={styles.grid}>
+                <div className={styles.fieldFull}>
+                  <div className={styles.checkboxField}>
+                    <input
+                      id="modo_convite_individual"
+                      type="radio"
+                      name="modo_convite"
+                      checked={(config.modo_convite ?? 'individual') === 'individual'}
+                      onChange={() => setConfig({ ...config, modo_convite: 'individual' as ModoConvite })}
+                    />
+                    <label htmlFor="modo_convite_individual">
+                      Convites Individuais — você cadastra cada convidado, com nome e limite de acompanhantes.
+                    </label>
+                  </div>
+                  <div className={styles.checkboxField}>
+                    <input
+                      id="modo_convite_link_unico"
+                      type="radio"
+                      name="modo_convite"
+                      checked={config.modo_convite === 'link_unico'}
+                      onChange={() => setConfig({ ...config, modo_convite: 'link_unico' as ModoConvite })}
+                    />
+                    <label htmlFor="modo_convite_link_unico">
+                      Link Único — você manda um link só, e cada pessoa se identifica ao confirmar.
+                    </label>
+                  </div>
+                </div>
+
+                {config.modo_convite === 'link_unico' && (
+                  <div className={styles.fieldFull}>
+                    <div className={styles.helpText} style={{ background: '#fff3cd', padding: '0.8rem 1rem', borderRadius: '8px', borderLeft: '4px solid #f0ad4e' }}>
+                      <p><strong>ⓘ Como funciona na prática</strong></p>
+                      <p style={{ marginTop: '0.4rem' }}>
+                        Cada confirmação vira um registro na sua lista, com o nome que a própria pessoa digitou.
+                        Se alguém confirmar de dois aparelhos diferentes (ex: celular e depois pelo computador),
+                        pode aparecer duas vezes — é só apagar um na hora de fechar a lista final. Não dá pra
+                        saber quem foi convidado e ainda não respondeu, porque não existe lista prévia.
+                      </p>
+                    </div>
+                  </div>
                 )}
               </div>
             </section>

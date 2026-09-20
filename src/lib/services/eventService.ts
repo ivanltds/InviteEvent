@@ -2,6 +2,18 @@ import { supabase } from '@/lib/supabase';
 import { Evento, EventoOrganizador, Perfil } from '@/lib/types/database';
 
 export const eventService = {
+  /** Leitura pública por slug do evento — usada pela "portaria" do Link Único (/inv/evento/[eventoSlug]). */
+  async getEventoBySlug(slug: string): Promise<Evento | null> {
+    const { data } = await supabase
+      .from('eventos')
+      .select('*')
+      .eq('slug', slug)
+      .is('deleted_at', null)
+      .maybeSingle();
+
+    return data;
+  },
+
   async getMyEvents(): Promise<Evento[]> {
     const { data: userResponse } = await supabase.auth.getUser();
     const user = userResponse.user;

@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { Convite, RSVP, ConviteMembro } from '@/lib/types/database';
+import { Convite, RSVP, ConviteMembro, InviteType } from '@/lib/types/database';
 
 export interface InviteWithRSVP extends Convite {
   rsvp: RSVP[];
@@ -65,6 +65,64 @@ export const inviteService = {
       .insert([invite]);
 
     return { success: !error, error: error ? new Error(error.message) : null };
+  },
+
+  /**
+   * Cria um convite auto-cadastrado pelo próprio convidado no modo "Link
+   * Único" (docs/analise/04b-guia-de-extensao.md e migration
+   * 20260920140000_add_modo_convite.sql) — o convidado se identifica e
+   * nomeia os acompanhantes, sem nenhum cadastro prévio pelos noivos.
+   * Reaproveita as mesmas tabelas/tipos do convite tradicional; só muda
+   * quem cria o registro.
+   */
+  async criarConviteAutoCadastro(
+    eventoId: string,
+    nome: string,
+    acompanhantes: string[]
+  ): Promise<{ success: boolean; slug?: string; error?: Error | null }> {
+    const nomePrincipal = nome.trim();
+    if (!nomePrincipal) {
+      return { success: false, error: new Error('Nome é obrigatório.') };
+    }
+
+    const nomesAcompanhantes = acompanhantes.map(a => a.trim()).filter(Boolean);
+    const totalPessoas = 1 + nomesAcompanhantes.length;
+    const tipo: InviteType = totalPessoas === 1 ? 'individual' : totalPessoas === 2 ? 'casal' : 'familia';
+    const slug = this.generateObfuscatedSlug(nomePrincipal);
+
+    const { data: novoConvite, error: conviteError } = await supabase
+      .from('convites')
+      .insert([{
+        evento_id: eventoId,
+        nome_principal: nomePrincipal,
+        tipo,
+        slug,
+        limite_pessoas: totalPessoas,
+      }])
+      .select()
+      .single();
+
+    if (conviteError || !novoConvite) {
+      console.error('Erro ao criar convite auto-cadastrado:', conviteError);
+      return { success: false, error: conviteError ? new Error(conviteError.message) : new Error('Falha ao criar convite.') };
+    }
+
+    const membros = [nomePrincipal, ...nomesAcompanhantes].map(nomeMembro => ({
+      convite_id: novoConvite.id,
+      evento_id: eventoId,
+      nome: nomeMembro,
+      confirmado: null,
+    }));
+
+    const { error: membrosError } = await supabase.from('convite_membros').insert(membros);
+
+    if (membrosError) {
+      // O convite já foi criado; não desfazemos (o convidado pode tentar de
+      // novo e o admin consegue editar os membros manualmente depois).
+      console.error('Erro ao criar membros do auto-cadastro:', membrosError);
+    }
+
+    return { success: true, slug: novoConvite.slug };
   },
 
   async updateInvite(id: string, invite: Partial<Convite>): Promise<{ success: boolean; error?: Error | null }> {

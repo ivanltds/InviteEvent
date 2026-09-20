@@ -147,6 +147,9 @@ export type ModoArrecadacao = 'presentes' | 'gravata' | 'nenhum';
 /** Preset fechado do texto do botão de Gravata dos Noivos no convite. */
 export type GravataLabel = 'quero_presentear' | 'quero_colaborar';
 
+/** Modo de convite do evento: cadastro individual pelos noivos ou auto-cadastro por link único. */
+export type ModoConvite = 'individual' | 'link_unico';
+
 export interface Configuracao {
   id: number;
   evento_id: string;
@@ -166,6 +169,8 @@ export interface Configuracao {
   modo_arrecadacao?: ModoArrecadacao;
   gravata_label?: GravataLabel;
   gravata_recado?: string;
+  /** individual: noivos cadastram cada convite. link_unico: convidados se auto-cadastram. */
+  modo_convite?: ModoConvite;
   pix_chave?: string;
   pix_banco?: string;
   pix_nome?: string;

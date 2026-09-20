@@ -189,6 +189,13 @@ export default function AdminConvidados() {
     triggerToast('Link copiado para o clipboard!');
   };
 
+  const copyEventLinkUnico = () => {
+    if (!currentEvent?.slug) return;
+    const url = `${window.location.origin}/inv/evento/${currentEvent.slug}`;
+    navigator.clipboard.writeText(url);
+    triggerToast('Link único copiado! Envie para todos os convidados.');
+  };
+
   const getStats = () => {
     const calculated = inviteService.calculateDashboardStats(invites);
     return { 
@@ -379,6 +386,22 @@ export default function AdminConvidados() {
         </section>
       )}
 
+      {config?.modo_convite === 'link_unico' && currentEvent?.slug && (
+        <section className={styles.statsGrid} style={{ marginBottom: '1rem' }}>
+          <div className={styles.statCard} style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+            <div>
+              <h3>Link Único ativo</h3>
+              <p style={{ margin: 0, fontSize: '0.85rem', opacity: 0.8 }}>
+                Cada linha abaixo é um auto-cadastro de convidado — não existe lista prévia neste modo.
+              </p>
+            </div>
+            <button type="button" onClick={copyEventLinkUnico} className={styles.addBtn}>
+              Copiar link para enviar
+            </button>
+          </div>
+        </section>
+      )}
+
       <section className={styles.statsGrid}>
         <div className={styles.statCard}>
           <h3>Confirmados (Pessoas)</h3>
@@ -425,7 +448,26 @@ export default function AdminConvidados() {
                   <tr key={invite.id}>
                     <td>
                       <div className={styles.guestInfo}>
-                        <span className={styles.guestName}>{invite.nome_principal}</span>
+                        <span className={styles.guestName}>
+                          {invite.nome_principal}
+                          {config?.modo_convite === 'link_unico' && (
+                            <span
+                              title="Criado pelo próprio convidado via Link Único"
+                              style={{
+                                marginLeft: '0.4rem',
+                                fontSize: '0.7rem',
+                                padding: '0.1rem 0.4rem',
+                                borderRadius: '4px',
+                                background: 'rgba(0,0,0,0.06)',
+                                color: 'inherit',
+                                opacity: 0.7,
+                                fontWeight: 500,
+                              }}
+                            >
+                              ⓘ auto
+                            </span>
+                          )}
+                        </span>
                         <span className={styles.guestDate}>
                           Cadastrado em: {invite.created_at ? new Date(invite.created_at).toLocaleDateString() : 'N/A'}
                         </span>

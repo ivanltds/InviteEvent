@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { requireMaster } from '@/lib/auth/requireMaster';
 
 /**
  * Issue Tracker Engine: Reads all registered tracking cards.
  */
 export async function GET() {
   try {
+    const guard = await requireMaster();
+    if (!guard.authorized) return guard.response;
+
     // Buscar issues trazendo os tickets vinculados E os dados de perfil do usuário em um único tiro!
     const { data: issues, error } = await supabase
       .from('issues')
@@ -36,6 +40,9 @@ export async function GET() {
  */
 export async function PATCH(request: Request) {
   try {
+    const guard = await requireMaster();
+    if (!guard.authorized) return guard.response;
+
     const { id, status } = await request.json();
     if (!id || !status) return NextResponse.json({ success: false, error: 'Faltam campos' }, { status: 400 });
 

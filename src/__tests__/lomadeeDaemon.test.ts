@@ -19,6 +19,13 @@ jest.mock('next/server', () => ({
   }
 }));
 
+// A rota agora exige master (docs/analise/01-seguranca.md, SEG-09) — estes
+// testes cobrem a lógica do daemon em si, então simulamos um chamador já
+// autorizado. A autorização em si é testada em requireMaster.test.ts.
+jest.mock('@/lib/auth/requireMaster', () => ({
+  requireMaster: jest.fn().mockResolvedValue({ authorized: true, supabase: {}, userId: 'master-user-id' }),
+}));
+
 const originalEnv = process.env;
 const originalFetch = global.fetch;
 

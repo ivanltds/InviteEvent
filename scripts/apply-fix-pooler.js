@@ -12,7 +12,7 @@ async function applyFixViaPooler() {
   // Credenciais do Pooler (Porta 6543)
   const client = new Client({
     user: 'postgres.runyitdsxlctoahikkxe',
-    password: process.env.SUPABASE_DB_PASSWORD || '37812567Ivt@',
+    password: process.env.SUPABASE_DB_PASSWORD,
     host: 'aws-0-sa-east-1.pooler.supabase.com',
     port: 6543,
     database: 'postgres',

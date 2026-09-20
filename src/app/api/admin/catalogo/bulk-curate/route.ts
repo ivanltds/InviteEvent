@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-import { getSupabaseServerClient } from '@/lib/supabase-server';
-
-const getSupabaseClient = getSupabaseServerClient;
+import { requireMaster } from '@/lib/auth/requireMaster';
 
 // POST: Adiciona um item base ou múltiplos itens na fila de cura de links quebrados
 export async function POST(req: Request) {
   try {
+    const guard = await requireMaster();
+    if (!guard.authorized) return guard.response;
+    const supabase = guard.supabase;
+
     const body = await req.json();
     const { items } = body; // Array de { id, link, nome } ou payload direto
-    const supabase = await getSupabaseClient();
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ success: false, error: 'É necessário enviar um array com pelo menos um item para enfileirar.' }, { status: 400 });

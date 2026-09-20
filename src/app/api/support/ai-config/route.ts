@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { requireMaster } from '@/lib/auth/requireMaster';
 
 /**
  * Manages the system neural core prompt for AI master control.
  */
 export async function GET() {
   try {
+    const guard = await requireMaster();
+    if (!guard.authorized) return guard.response;
+
     const { data, error } = await supabase
       .from('ai_config')
       .select('*')
@@ -24,6 +28,9 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
+    const guard = await requireMaster();
+    if (!guard.authorized) return guard.response;
+
     const { system_prompt } = await request.json();
     if (!system_prompt) {
       return NextResponse.json({ success: false, error: 'Prompt vazio' }, { status: 400 });

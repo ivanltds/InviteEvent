@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-import { getSupabaseServerClient } from '@/lib/supabase-server';
-
-// Alias para manter compatibilidade com o código abaixo sem mudar todas as chamadas novamente
-const getSupabaseClient = getSupabaseServerClient;
+import { requireMaster } from '@/lib/auth/requireMaster';
 
 // GET: Retorna o inventário de presentes usando a View de Métricas + Resumo KPI + Categorias para cadastros
 export async function GET(req: Request) {
   try {
-    const supabase = await getSupabaseClient();
+    const guard = await requireMaster();
+    if (!guard.authorized) return guard.response;
+    const supabase = guard.supabase;
 
     // 1. Busca Lista Agregada do Catálogo (via view_presentes_base_metricas)
     // Ordenado pelos criados mais recentemente por padrão
@@ -88,7 +87,9 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const supabase = await getSupabaseClient();
+    const guard = await requireMaster();
+    if (!guard.authorized) return guard.response;
+    const supabase = guard.supabase;
 
     // Validação mínima
     if (!body.nome || !body.preco) {
@@ -127,7 +128,9 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const body = await req.json();
-    const supabase = await getSupabaseClient();
+    const guard = await requireMaster();
+    if (!guard.authorized) return guard.response;
+    const supabase = guard.supabase;
 
     if (!body.id) {
       return NextResponse.json({ success: false, error: 'ID do item base é obrigatório.' }, { status: 400 });
@@ -165,7 +168,9 @@ export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
-    const supabase = await getSupabaseClient();
+    const guard = await requireMaster();
+    if (!guard.authorized) return guard.response;
+    const supabase = guard.supabase;
 
     if (!id) {
       return NextResponse.json({ success: false, error: 'ID do item base é obrigatório.' }, { status: 400 });

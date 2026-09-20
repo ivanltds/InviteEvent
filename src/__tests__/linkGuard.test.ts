@@ -7,7 +7,19 @@ jest.mock('next/server', () => ({
   }
 }));
 
+// A rota agora resolve o hostname antes de buscar (bloqueio de SSRF —
+// docs/analise/01-seguranca.md, SEG-08). Mockamos a resolução de DNS para
+// que os domínios fictícios dos testes se comportem como um host público
+// normal, sem depender de rede real no ambiente de CI.
+jest.mock('dns', () => ({
+  promises: { lookup: jest.fn() }
+}));
+
+import dns from 'dns';
 import { GET } from '../app/api/intelligence/autonomy/validate/route';
+
+const mockLookup = dns.promises.lookup as jest.Mock;
+const PUBLIC_IP = '93.184.216.34'; // IP público de exemplo (example.com)
 
 // Salva referência original do fetch
 const originalFetch = global.fetch;
@@ -16,6 +28,8 @@ describe('Pre-Flight Link Guard API', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     global.fetch = jest.fn();
+    // Por padrão, todo hostname resolve para um IP público válido.
+    mockLookup.mockResolvedValue([{ address: PUBLIC_IP, family: 4 }]);
   });
 
   afterAll(() => {
@@ -76,7 +90,10 @@ describe('Pre-Flight Link Guard API', () => {
   });
 
   it('deve tratar erro de DNS (ENOTFOUND) declarando o link como INVALIDO', async () => {
-    (global.fetch as jest.Mock).mockRejectedValue(new Error('fetch failed (ENOTFOUND)'));
+    // Agora a resolução de DNS falha ANTES do fetch (checagem de SSRF),
+    // então o motivo vira BLOCKED_HOST em vez de chegar ao fetch mockado —
+    // o resultado para o convidado continua sendo "link inválido".
+    mockLookup.mockRejectedValue(Object.assign(new Error('getaddrinfo ENOTFOUND'), { code: 'ENOTFOUND' }));
 
     const req = createMockRequest('https://dominio-que-nao-existe.com');
     const response = await GET(req);
@@ -84,7 +101,20 @@ describe('Pre-Flight Link Guard API', () => {
 
     expect(response.status).toBe(200);
     expect(data.valid).toBe(false);
-    expect(data.status).toBe('DNS_OR_TIMEOUT');
+    expect(data.status).toBe('BLOCKED_HOST');
+  });
+
+  it('deve bloquear (SSRF) um link que resolve para um IP privado/interno', async () => {
+    mockLookup.mockResolvedValue([{ address: '169.254.169.254', family: 4 }]); // metadata de nuvem
+
+    const req = createMockRequest('https://link-malicioso.com');
+    const response = await GET(req);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.valid).toBe(false);
+    expect(data.status).toBe('BLOCKED_HOST');
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 
   it('deve tratar erros genericos (fail-safe) declarando o link como VALIDO para nao barrar o usuario', async () => {

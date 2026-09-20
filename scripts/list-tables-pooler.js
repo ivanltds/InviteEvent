@@ -6,7 +6,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 async function list() {
   const client = new Client({
     user: 'postgres.runyitdsxlctoahikkxe',
-    password: '37812567Ivt@',
+    password: process.env.SUPABASE_DB_PASSWORD,
     host: 'aws-1-sa-east-1.pooler.supabase.com',
     port: 5432,
     database: 'postgres',

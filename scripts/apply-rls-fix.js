@@ -12,7 +12,7 @@ async function applyFix() {
   // Usar valores decompostos para evitar problemas de parsing de URL
   const client = new Client({
     user: 'postgres.runyitdsxlctoahikkxe',
-    password: process.env.SUPABASE_DB_PASSWORD || '37812567Ivt@',
+    password: process.env.SUPABASE_DB_PASSWORD,
     host: 'aws-0-sa-east-1.pooler.supabase.com',
     port: 6543,
     database: 'postgres',
@@ -32,7 +32,7 @@ async function applyFix() {
     console.log('Tentando conexão direta...');
     const clientDirect = new Client({
       user: 'postgres',
-      password: process.env.SUPABASE_DB_PASSWORD || '37812567Ivt@',
+      password: process.env.SUPABASE_DB_PASSWORD,
       host: 'db.runyitdsxlctoahikkxe.supabase.co',
       port: 5432,
       database: 'postgres',

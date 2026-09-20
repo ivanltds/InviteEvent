@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { requireMaster } from '@/lib/auth/requireMaster';
 
 /**
  * Direct workflow switch override for specific ticket.
@@ -10,6 +11,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const guard = await requireMaster();
+    if (!guard.authorized) return guard.response;
+
     const { id } = await params;
     const { mode } = await request.json();
 

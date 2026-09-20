@@ -1,10 +1,27 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { getSupabaseServerClient } from '@/lib/supabase-server';
 
+// Correção de 20/09/2026 (docs/analise/01-seguranca.md, SEG-06): esta rota
+// listava e criava tickets de suporte de QUALQUER usuário sem exigir login,
+// bastava adivinhar/informar um usuarioId. Agora exige sessão válida e, para
+// quem não é master, só permite ver/criar os próprios tickets — nunca os de
+// outra pessoa, mesmo que o usuarioId do corpo/query seja diferente.
 export async function GET(request: Request) {
   try {
+    const supabaseAuth = await getSupabaseServerClient();
+    const { data: { user } } = await supabaseAuth.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ success: false, error: 'Não autenticado.' }, { status: 401 });
+    }
+
+    const { data: isMaster } = await supabaseAuth.rpc('check_is_master');
+
     const { searchParams } = new URL(request.url);
-    const usuarioId = searchParams.get('usuarioId');
+    const requestedUsuarioId = searchParams.get('usuarioId');
+    // Master pode filtrar por qualquer usuarioId (ou ver todos, sem filtro);
+    // qualquer outra pessoa só enxerga os próprios tickets.
+    const usuarioId = isMaster ? requestedUsuarioId : user.id;
 
     let query = supabase
       .from('suporte_tickets')
@@ -29,11 +46,17 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { usuario_id, evento_id } = await request.json();
-
-    if (!usuario_id) {
-      return NextResponse.json({ success: false, error: 'usuario_id é obrigatório' }, { status: 400 });
+    const supabaseAuth = await getSupabaseServerClient();
+    const { data: { user } } = await supabaseAuth.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ success: false, error: 'Não autenticado.' }, { status: 401 });
     }
+
+    const body = await request.json();
+    const { evento_id } = body;
+    // Ignora qualquer usuario_id vindo do corpo — o ticket é sempre criado
+    // em nome de quem está autenticado, nunca de quem o body diz que é.
+    const usuario_id = user.id;
 
     const insertData: any = { usuario_id, status: 'aguardando_atendimento' };
     if (evento_id && typeof evento_id === 'string' && evento_id.trim() !== '') {

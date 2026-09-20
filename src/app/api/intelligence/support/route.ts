@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { requireMaster } from '@/lib/auth/requireMaster';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    const guard = await requireMaster();
+    if (!guard.authorized) return guard.response;
+
     // 1. Contagem de Autonomia (needs_human_attention=false significa que a IA lidou com tudo)
     const { count: totalTickets } = await supabase
       .from('suporte_tickets')

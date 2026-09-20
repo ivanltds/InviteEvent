@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { OpenAI } from 'openai';
 import fs from 'fs';
 import path from 'path';
+import { requireMaster } from '@/lib/auth/requireMaster';
 
 // Interface para tipar e ranquear as ofertas
 interface OfertaCandidata {
@@ -228,6 +229,9 @@ async function fetchOfficialAmazonItems(keyword: string): Promise<any[]> {
 
 export async function POST() {
   try {
+    const guard = await requireMaster();
+    if (!guard.authorized) return guard.response;
+
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
     const openaiApiKey = process.env.OPENAI_API_KEY;

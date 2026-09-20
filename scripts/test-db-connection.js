@@ -6,7 +6,14 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 async function run() {
     const projectRef = 'runyitdsxlctoahikkxe';
-    const passwords = ['378125Ivt@', '37812567Ivt', '37812567Ivt@'];
+    // Antes deste script tinha 3 senhas reais em texto puro (variantes de
+    // adivinhação). Removidas em 20/09/2026 — defina SUPABASE_DB_PASSWORD
+    // no .env local (docs/analise/05-privacidade-e-higiene-repo.md, HIG-01).
+    if (!process.env.SUPABASE_DB_PASSWORD) {
+        console.error('Defina SUPABASE_DB_PASSWORD no .env antes de rodar este script.');
+        process.exit(1);
+    }
+    const passwords = [process.env.SUPABASE_DB_PASSWORD];
     const hosts = [
         'aws-1-sa-east-1.pooler.supabase.com',
         'aws-0-sa-east-1.pooler.supabase.com',

@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-import { getSupabaseServerClient } from '@/lib/supabase-server';
-
-const getSupabaseClient = getSupabaseServerClient;
+import { requireMaster } from '@/lib/auth/requireMaster';
 
 // POST: Promove um presente local de um casamento específico para o catálogo SaaS Global (presentes_base)
 export async function POST(req: Request) {
   try {
+    const guard = await requireMaster();
+    if (!guard.authorized) return guard.response;
+    const supabase = guard.supabase;
+
     const body = await req.json();
     const { presenteId } = body;
-    const supabase = await getSupabaseClient();
 
     if (!presenteId) {
       return NextResponse.json({ success: false, error: 'ID do presente candidato é obrigatório.' }, { status: 400 });

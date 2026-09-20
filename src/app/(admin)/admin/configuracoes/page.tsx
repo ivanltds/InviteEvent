@@ -14,7 +14,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import styles from './AdminConfig.module.css';
 import { configService } from '@/lib/services/configService';
-import { Configuracao } from '@/lib/types/database';
+import { Configuracao, ModoArrecadacao } from '@/lib/types/database';
+import { GRAVATA_LABEL_TEXT, GRAVATA_LABEL_OPTIONS } from '@/lib/constants/gravata';
 import FAQManager from '@/components/admin/FAQManager';
 import ConfigPreview from '@/components/admin/ConfigPreview';
 import TeamManagement from '@/components/admin/TeamManagement';
@@ -36,6 +37,9 @@ const DEFAULT_CONFIG: Omit<Configuracao, 'id' | 'evento_id'> = {
   mostrar_noivos: true,
   mostrar_faq: true,
   mostrar_presentes: true,
+  modo_arrecadacao: 'presentes',
+  gravata_label: 'quero_colaborar',
+  gravata_recado: 'Sua presença já é o nosso maior presente, mas se quiser nos ajudar a começar essa nova fase, ficaremos muito felizes com sua contribuição.',
   pix_chave: '',
   pix_banco: '',
   pix_nome: '',
@@ -365,15 +369,89 @@ export default function AdminConfig() {
                   />
                   <label htmlFor="mostrar_faq">FAQ (Perguntas Frequentes)</label>
                 </div>
-                <div className={styles.checkboxField}>
-                  <input
-                    id="mostrar_presentes"
-                    type="checkbox"
-                    checked={config.mostrar_presentes !== false}
-                    onChange={(e) => setConfig({...config, mostrar_presentes: e.target.checked})}
-                  />
-                  <label htmlFor="mostrar_presentes">Lista de Presentes (PIX)</label>
+              </div>
+            </section>
+
+            <section className={styles.section}>
+              <h2>Como os convidados vão contribuir?</h2>
+              <div className={styles.grid}>
+                <div className={styles.fieldFull}>
+                  <div className={styles.checkboxField}>
+                    <input
+                      id="modo_arrecadacao_presentes"
+                      type="radio"
+                      name="modo_arrecadacao"
+                      checked={(config.modo_arrecadacao ?? 'presentes') === 'presentes'}
+                      onChange={() => setConfig({ ...config, modo_arrecadacao: 'presentes' as ModoArrecadacao })}
+                    />
+                    <label htmlFor="modo_arrecadacao_presentes">Lista de Presentes</label>
+                  </div>
+                  <div className={styles.checkboxField}>
+                    <input
+                      id="modo_arrecadacao_gravata"
+                      type="radio"
+                      name="modo_arrecadacao"
+                      checked={config.modo_arrecadacao === 'gravata'}
+                      onChange={() => setConfig({ ...config, modo_arrecadacao: 'gravata' as ModoArrecadacao })}
+                    />
+                    <label htmlFor="modo_arrecadacao_gravata">Gravata dos Noivos</label>
+                  </div>
+                  <div className={styles.checkboxField}>
+                    <input
+                      id="modo_arrecadacao_nenhum"
+                      type="radio"
+                      name="modo_arrecadacao"
+                      checked={config.modo_arrecadacao === 'nenhum'}
+                      onChange={() => setConfig({ ...config, modo_arrecadacao: 'nenhum' as ModoArrecadacao })}
+                    />
+                    <label htmlFor="modo_arrecadacao_nenhum">Nenhum</label>
+                  </div>
                 </div>
+
+                {config.modo_arrecadacao === 'gravata' && (
+                  <>
+                    <div className={styles.fieldFull}>
+                      <label>Texto do botão no convite</label>
+                      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                        {GRAVATA_LABEL_OPTIONS.map((option) => (
+                          <div className={styles.checkboxField} key={option}>
+                            <input
+                              id={`gravata_label_${option}`}
+                              type="radio"
+                              name="gravata_label"
+                              checked={(config.gravata_label ?? 'quero_colaborar') === option}
+                              onChange={() => setConfig({ ...config, gravata_label: option })}
+                            />
+                            <label htmlFor={`gravata_label_${option}`}>{GRAVATA_LABEL_TEXT[option]}</label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className={styles.field} style={{ gridColumn: '1 / -1' }}>
+                      <label htmlFor="gravata_recado">Recado para os convidados</label>
+                      <textarea
+                        id="gravata_recado"
+                        rows={4}
+                        value={config.gravata_recado || ''}
+                        onChange={(e) => setConfig({ ...config, gravata_recado: e.target.value })}
+                        placeholder="Sua presença já é o nosso maior presente, mas se quiser nos ajudar..."
+                        className={styles.whatsappField}
+                      />
+                    </div>
+
+                    {!config.pix_chave && (
+                      <div className={styles.fieldFull}>
+                        <div className={styles.helpText} style={{ background: '#fff3cd', padding: '0.8rem 1rem', borderRadius: '8px', borderLeft: '4px solid #f0ad4e' }}>
+                          <p>
+                            ⚠ Chave PIX não cadastrada. A tela da Gravata não vai funcionar para os convidados até você
+                            preencher a chave PIX na seção <strong>Pagamentos PIX</strong>, logo abaixo.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </section>
 
@@ -563,7 +641,7 @@ export default function AdminConfig() {
             </section>
 
             <section className={styles.section}>
-              <h2>Pagamentos PIX (Presentes)</h2>
+              <h2>Pagamentos PIX</h2>
               <div className={styles.grid}>
                 <div className={styles.field}>
                   <label htmlFor="pix_tipo">Tipo de Chave</label>

@@ -12,6 +12,7 @@ import AgendaSection from '@/components/sections/AgendaSection';
 import Countdown from '@/components/sections/Countdown';
 import HeroCarousel from '@/components/ui/HeroCarousel';
 import { Configuracao } from '@/lib/types/database';
+import { GRAVATA_LABEL_TEXT } from '@/lib/constants/gravata';
 import Link from 'next/link';
 import { useTrackSection } from '@/hooks/useTrackSection';
 import LegalFooter from '@/components/ui/LegalFooter';
@@ -238,13 +239,25 @@ const LiveInviteView: React.FC<LiveInviteViewProps> = ({
           <p className={styles.tagline}>O nosso grande dia está chegando!</p>
           <div className={styles.cta}>
             <a href={disableActions ? "#" : "#rsvp"} className={styles.primaryBtn} onClick={ctaClick}>Confirmar Presença</a>
-            {visibility.presentes && (
-              <Link 
-                href={disableActions ? "#" : `/presentes?invite=${slug}${isPreviewMode ? `&preview=true&eventId=${config.evento_id}` : ''}`} 
-                className={styles.secondaryBtn} 
+            {/* Correção de 20/09/2026 (Gravata dos Noivos): o botão de
+                arrecadação agora é decidido por config.modo_arrecadacao,
+                não mais só pelo booleano mostrar_presentes/visibility. */}
+            {(config.modo_arrecadacao ?? 'presentes') === 'presentes' && visibility.presentes && (
+              <Link
+                href={disableActions ? "#" : `/presentes?invite=${slug}${isPreviewMode ? `&preview=true&eventId=${config.evento_id}` : ''}`}
+                className={styles.secondaryBtn}
                 onClick={ctaClick}
               >
                 Lista de Presentes
+              </Link>
+            )}
+            {config.modo_arrecadacao === 'gravata' && (
+              <Link
+                href={disableActions ? "#" : `/inv/${slug}/gravata`}
+                className={styles.secondaryBtn}
+                onClick={ctaClick}
+              >
+                {GRAVATA_LABEL_TEXT[config.gravata_label ?? 'quero_colaborar']}
               </Link>
             )}
             <Link 

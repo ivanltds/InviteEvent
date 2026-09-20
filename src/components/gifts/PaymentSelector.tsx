@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import styles from './PaymentSelector.module.css';
 import { motion } from 'framer-motion';
+import PixPanel from '@/components/shared/PixPanel';
 
 interface PaymentSelectorProps {
   total: number;
@@ -46,33 +47,13 @@ export default function PaymentSelector({
 
       <div className={styles.content}>
         {method === 'pix' ? (
-          <div className={styles.pixArea}>
-            <div className={styles.qrCodeContainer}>
-              {pixPayload ? (
-                <img 
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(pixPayload)}`} 
-                  alt="QR Code PIX" 
-                  className={styles.qrCode}
-                />
-              ) : (
-                <div className={styles.qrPlaceholder}>Gerando QR Code...</div>
-              )}
-            </div>
-            
-            <div className={styles.pixInstructions}>
-              <p>1. Abra o app do seu banco</p>
-              <p>2. Escolha pagar via PIX (Copia e Cola ou QR Code)</p>
-              <p>3. Confirme o valor de <strong>{total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></p>
-            </div>
-
-            <button 
-              className={styles.copyBtn}
-              onClick={onPixCopy}
-              style={{ backgroundColor: accentColor }}
-            >
-              {pixCopyStatus === 'copied' ? '✓ Código Copiado' : 'Copiar Código PIX'}
-            </button>
-          </div>
+          <PixPanel
+            pixPayload={pixPayload}
+            onCopy={onPixCopy}
+            copyStatus={pixCopyStatus}
+            accentColor={accentColor}
+            total={total}
+          />
         ) : (
           <div className={styles.stripeArea}>
             <p>Integração com Stripe em breve...</p>

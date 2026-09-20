@@ -1,0 +1,100 @@
+'use client';
+
+import { useState, useEffect, useMemo } from 'react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
+import { rsvpService } from '@/lib/services/rsvpService';
+import { configService } from '@/lib/services/configService';
+import { generatePixPayload } from '@/lib/utils/pix';
+import { Configuracao } from '@/lib/types/database';
+import PixPanel from '@/components/shared/PixPanel';
+import styles from './PublicGravata.module.css';
+
+export default function PublicGravataPage() {
+  const params = useParams();
+  const slug = params.slug as string;
+
+  const [eventoNome, setEventoNome] = useState('');
+  const [config, setConfig] = useState<Configuracao | null>(null);
+  const [notFound, setNotFound] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+
+  useEffect(() => {
+    async function init() {
+      try {
+        const invite = await rsvpService.getInviteBySlug(slug);
+        if (!invite) {
+          setNotFound(true);
+          return;
+        }
+        const configData = await configService.getConfig(invite.evento_id);
+        setConfig(configData);
+        setEventoNome(configData ? `${configData.noiva_nome} & ${configData.noivo_nome}` : '');
+      } catch (err) {
+        console.error('[Gravata] Erro ao carregar:', err);
+        setNotFound(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+    init();
+  }, [slug]);
+
+  // Correção de 20/09/2026: NÃO cair para uma chave PIX hardcoded de
+  // fallback como o fluxo de presentes fazia (docs/analise/05-privacidade-e-higiene-repo.md).
+  // Sem chave cadastrada, simplesmente não gera payload — a tela mostra
+  // "em breve" em vez de cobrar de um PIX que não é do casal.
+  const pixPayload = useMemo(() => {
+    if (!config?.pix_chave) return '';
+    return generatePixPayload(config.pix_chave, config.pix_nome || eventoNome || 'CASAMENTO', config.pix_tipo || 'aleatoria', 'SAO PAULO');
+  }, [config, eventoNome]);
+
+  const copyPixCode = () => {
+    if (!pixPayload) return;
+    navigator.clipboard.writeText(pixPayload);
+    setCopyStatus('copied');
+    setTimeout(() => setCopyStatus('idle'), 3000);
+  };
+
+  if (loading) return <div className={styles.loading}>Carregando...</div>;
+
+  if (notFound || !config) {
+    return (
+      <main className={styles.container}>
+        <p className={styles.empty}>Convite não encontrado.</p>
+      </main>
+    );
+  }
+
+  const accentColor = config.accent_color || undefined;
+
+  return (
+    <main className={styles.container}>
+      <header className={styles.header}>
+        <Link href={`/inv/${slug}`} className={styles.backBtn} style={{ color: accentColor }}>
+          ← Voltar ao Convite
+        </Link>
+        <h1 className="cursive">{eventoNome}</h1>
+      </header>
+
+      <div className={styles.recado}>
+        {config.gravata_recado || 'Sua presença já é o nosso maior presente!'}
+      </div>
+
+      {pixPayload ? (
+        <PixPanel
+          pixPayload={pixPayload}
+          onCopy={copyPixCode}
+          copyStatus={copyStatus}
+          accentColor={accentColor}
+          qrAltLabel={eventoNome}
+        />
+      ) : (
+        <div className={styles.emComBreve}>
+          <p>Em breve os noivos disponibilizarão os dados para contribuição.</p>
+        </div>
+      )}
+    </main>
+  );
+}

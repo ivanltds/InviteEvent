@@ -25,12 +25,14 @@ const inter = Inter({
 // Correção de 20/09/2026: o título/descrição aqui eram de um casal
 // específico de dados de demonstração, hardcoded como padrão do app
 // inteiro (aba do navegador mostrava "Layslla & Marcus" em qualquer
-// página, inclusive admin). As páginas de convite (`/inv/[slug]`) são
-// Client Components e por isso não podem sobrescrever isso com
-// `generateMetadata` sem um refactor maior — fica registrado como
-// oportunidade futura (título dinâmico por casal). Por enquanto, o
-// título do app é genérico e correto em qualquer tela.
+// página, inclusive admin). Esse título genérico agora é só o FALLBACK:
+// `/inv/[slug]/page.tsx` e `/inv/evento/[eventoSlug]/page.tsx` viraram
+// Server Components finos que exportam seu próprio `generateMetadata`
+// por casal (ver src/lib/metadata/inviteMetadata.ts), então o link de
+// cada convite mostra um cartão de preview (WhatsApp etc.) com o nome do
+// casal e a foto, em vez deste texto genérico do app.
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://invite-event-beryl.vercel.app'),
   title: "InviteEventAI",
   description: "Convites de casamento digitais, RSVP e lista de presentes inteligente.",
   other: {

@@ -1,3 +1,17 @@
+/** Usado quando o evento não tem um template de mensagem configurado nas Configurações. */
+export const DEFAULT_WHATSAPP_TEMPLATE =
+  'Você foi convidado(a) para o nosso casamento! 💍 Confirme sua presença por aqui: {link}';
+
+/**
+ * Substitui as variáveis {nome} e {link} num template de mensagem, sem
+ * gerar nenhum link — usado tanto pelo `generateWhatsappLink` (link wa.me)
+ * quanto por telas que precisam só do texto puro, ex: copiar a mensagem
+ * completa para a área de transferência em vez de copiar só o link.
+ */
+export function renderWhatsappTemplate(template: string, vars: { nome: string; link: string }): string {
+  return template.replace(/{nome}/g, vars.nome).replace(/{link}/g, vars.link);
+}
+
 /**
  * Gera um link direto para o WhatsApp (wa.me)
  * @param telefone Telefone do destinatário
@@ -21,9 +35,7 @@ export function generateWhatsappLink(
   }
 
   // 2. Processar template
-  let message = template
-    .replace(/{nome}/g, vars.nome)
-    .replace(/{link}/g, vars.link);
+  const message = renderWhatsappTemplate(template, vars);
 
   // 3. Gerar URL
   const baseUrl = finalPhone ? `https://wa.me/${finalPhone}` : `https://wa.me/`;

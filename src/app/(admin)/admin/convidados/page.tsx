@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import styles from './AdminConvidados.module.css';
 import { inviteService, InviteWithRSVP } from '@/lib/services/inviteService';
 import { InviteType, Configuracao } from '@/lib/types/database';
-import { generateWhatsappLink } from '@/lib/utils/whatsapp';
+import { generateWhatsappLink, renderWhatsappTemplate, DEFAULT_WHATSAPP_TEMPLATE } from '@/lib/utils/whatsapp';
 import { configService } from '@/lib/services/configService';
 import { useEvent } from '@/lib/contexts/EventContext';
 import { SearchControl } from '@/components/ui/SearchControl';
@@ -192,8 +192,13 @@ export default function AdminConvidados() {
   const copyEventLinkUnico = () => {
     if (!currentEvent?.slug) return;
     const url = `${window.location.origin}/inv/evento/${currentEvent.slug}`;
-    navigator.clipboard.writeText(url);
-    triggerToast('Link único copiado! Envie para todos os convidados.');
+    // Copia a mensagem completa (template configurado em Configurações,
+    // com {nome}/{link} já preenchidos), não só o link cru — pedido do
+    // usuário em 20/09/2026: "não copie apenas o link".
+    const template = config?.whatsapp_template?.trim() || DEFAULT_WHATSAPP_TEMPLATE;
+    const message = renderWhatsappTemplate(template, { nome: 'pessoal', link: url });
+    navigator.clipboard.writeText(message);
+    triggerToast('Mensagem copiada! Cole no grupo do WhatsApp para enviar aos convidados.');
   };
 
   const getStats = () => {

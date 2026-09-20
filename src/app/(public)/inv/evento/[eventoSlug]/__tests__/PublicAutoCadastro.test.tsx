@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { useParams, useRouter } from 'next/navigation';
-import PublicAutoCadastroPage from '../page';
+import { useRouter } from 'next/navigation';
+import PublicAutoCadastroClient from '../PublicAutoCadastroClient';
 import { eventService } from '@/lib/services/eventService';
 import { supabase } from '@/lib/supabase';
 
@@ -11,6 +11,11 @@ import { supabase } from '@/lib/supabase';
  * completo de /inv/[slug] (via <LiveInviteView>), e é o próprio <RSVP>
  * (prop `autoCadastro`) quem pede "quem é você" na hora de confirmar
  * presença. Ver src/components/sections/RSVP.tsx.
+ *
+ * Correção de 20/09/2026 (cartão de preview no WhatsApp): `page.tsx`
+ * virou um Server Component fino (generateMetadata), então quem é
+ * testado aqui é o `PublicAutoCadastroClient`, que recebe `eventoSlug`
+ * como prop em vez de ler via `useParams()`.
  */
 jest.mock('@/lib/services/eventService', () => ({
   eventService: { getEventoBySlug: jest.fn() },
@@ -58,7 +63,6 @@ describe('PublicAutoCadastroPage (Link Único)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
-    (useParams as jest.Mock).mockReturnValue({ eventoSlug: 'casamento-ana-carlos' });
     (useRouter as jest.Mock).mockReturnValue({ replace: mockReplace, push: jest.fn(), prefetch: jest.fn() });
   });
 
@@ -66,7 +70,7 @@ describe('PublicAutoCadastroPage (Link Único)', () => {
     (eventService.getEventoBySlug as jest.Mock).mockResolvedValue(null);
     mockSupabaseTables(null);
 
-    render(<PublicAutoCadastroPage />);
+    render(<PublicAutoCadastroClient eventoSlug="casamento-ana-carlos" />);
 
     await waitFor(() => expect(screen.getByText(/Convite não encontrado/i)).toBeInTheDocument());
   });
@@ -75,7 +79,7 @@ describe('PublicAutoCadastroPage (Link Único)', () => {
     (eventService.getEventoBySlug as jest.Mock).mockResolvedValue(baseEvento);
     mockSupabaseTables({ ...linkUnicoConfig, modo_convite: 'individual' });
 
-    render(<PublicAutoCadastroPage />);
+    render(<PublicAutoCadastroClient eventoSlug="casamento-ana-carlos" />);
 
     await waitFor(() => expect(screen.getByText(/Convite não encontrado/i)).toBeInTheDocument());
   });
@@ -85,7 +89,7 @@ describe('PublicAutoCadastroPage (Link Único)', () => {
     (eventService.getEventoBySlug as jest.Mock).mockResolvedValue(baseEvento);
     mockSupabaseTables(linkUnicoConfig);
 
-    render(<PublicAutoCadastroPage />);
+    render(<PublicAutoCadastroClient eventoSlug="casamento-ana-carlos" />);
 
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/inv/joao-silva-a1b2'));
   });
@@ -94,7 +98,7 @@ describe('PublicAutoCadastroPage (Link Único)', () => {
     (eventService.getEventoBySlug as jest.Mock).mockResolvedValue(baseEvento);
     mockSupabaseTables(linkUnicoConfig);
 
-    render(<PublicAutoCadastroPage />);
+    render(<PublicAutoCadastroClient eventoSlug="casamento-ana-carlos" />);
 
     await waitFor(() => expect(screen.getByTestId('live-invite-view')).toBeInTheDocument());
     expect(screen.getByTestId('couple')).toHaveTextContent('Ana & Carlos');

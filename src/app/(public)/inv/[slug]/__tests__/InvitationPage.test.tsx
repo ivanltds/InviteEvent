@@ -1,7 +1,14 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import InvitationPage from '../page';
+import InvitationPageClient from '../InvitationPageClient';
 import { supabase } from '@/lib/supabase';
-import { useParams } from 'next/navigation';
+
+/**
+ * Correção de 20/09/2026: `page.tsx` virou um Server Component fino (só
+ * resolve `params` e exporta `generateMetadata` — ver
+ * src/lib/metadata/inviteMetadata.ts), então quem é testado aqui é o
+ * `InvitationPageClient`, que recebe `slug` como prop em vez de ler via
+ * `useParams()`.
+ */
 
 // Mock de componentes pesados
 jest.mock('@/components/ui/HeroCarousel', () => () => <div data-testid="carousel">Carousel</div>);
@@ -11,9 +18,6 @@ jest.mock('@/components/sections/Countdown', () => () => <div data-testid="count
 describe('Invitation Page (/inv/[slug])', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    // Configura o mock global para este teste específico
-    (useParams as jest.Mock).mockReturnValue({ slug: 'convidado-teste' });
 
     (supabase.from as jest.Mock).mockImplementation((table: string) => {
        const mockChain = {
@@ -63,7 +67,7 @@ describe('Invitation Page (/inv/[slug])', () => {
   });
 
   test('deve carregar nomes e data do casal do banco de dados', async () => {
-    render(<InvitationPage />);
+    render(<InvitationPageClient slug="convidado-teste" />);
 
     await waitFor(() => {
       expect(screen.getByText(/Layslla & Marcus/i)).toBeInTheDocument();

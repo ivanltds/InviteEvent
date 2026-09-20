@@ -82,4 +82,35 @@ describe('AdminConvidados — modo Link Único', () => {
       expect.stringContaining('/inv/evento/casamento-ana-carlos')
     );
   });
+
+  // Pedido do usuário em 20/09/2026: "quero tbm que venha o texto
+  // configurado para mensagem no whats app e não copie apenas o link" —
+  // copiar deve trazer a mensagem completa, não só a URL crua.
+  test('copia a mensagem completa com o template configurado, não só o link cru', async () => {
+    (configService.getConfig as jest.Mock).mockResolvedValue({
+      modo_convite: 'link_unico',
+      whatsapp_template: 'Oi {nome}! Vem celebrar com a gente: {link} 💛',
+    });
+    render(<AdminConvidados />);
+
+    await waitFor(() => expect(screen.getByText(/Link Único ativo/i)).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /Copiar link para enviar/i }));
+
+    const copiedText = (navigator.clipboard.writeText as jest.Mock).mock.calls[0][0];
+    expect(copiedText).toContain('Vem celebrar com a gente:');
+    expect(copiedText).toContain('/inv/evento/casamento-ana-carlos');
+    expect(copiedText).not.toBe(expect.stringMatching(/^https?:\/\//)); // não é só a URL crua
+  });
+
+  test('sem template configurado, cai para uma mensagem padrão (não copia só o link)', async () => {
+    (configService.getConfig as jest.Mock).mockResolvedValue({ modo_convite: 'link_unico' });
+    render(<AdminConvidados />);
+
+    await waitFor(() => expect(screen.getByText(/Link Único ativo/i)).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /Copiar link para enviar/i }));
+
+    const copiedText = (navigator.clipboard.writeText as jest.Mock).mock.calls[0][0];
+    expect(copiedText.startsWith('http')).toBe(false);
+    expect(copiedText).toContain('convidado');
+  });
 });

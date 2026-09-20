@@ -141,6 +141,12 @@ export interface Comprovante {
   cotas_pagas?: number; // PRD-014
 }
 
+/** Modo de arrecadação do evento: Lista de Presentes, Gravata dos Noivos ou nenhum. */
+export type ModoArrecadacao = 'presentes' | 'gravata' | 'nenhum';
+
+/** Preset fechado do texto do botão de Gravata dos Noivos no convite. */
+export type GravataLabel = 'quero_presentear' | 'quero_colaborar';
+
 export interface Configuracao {
   id: number;
   evento_id: string;
@@ -156,6 +162,10 @@ export interface Configuracao {
   mostrar_historia?: boolean;
   mostrar_noivos?: boolean;
   mostrar_presentes?: boolean;
+  /** Fonte de verdade para o botão de arrecadação no convite (substitui mostrar_presentes). */
+  modo_arrecadacao?: ModoArrecadacao;
+  gravata_label?: GravataLabel;
+  gravata_recado?: string;
   pix_chave?: string;
   pix_banco?: string;
   pix_nome?: string;

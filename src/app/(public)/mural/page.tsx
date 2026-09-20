@@ -157,10 +157,17 @@ export default function MuralPage() {
            <h2 className="cursive">Acesso Reservado</h2>
            <p>Por favor, use o link enviado no seu convite para acessar o mural.</p>
         </div>
+      ) : config?.mostrar_mural === false && !isPreview ? (
+        // Mural desativado pelos noivos nas configurações — não aparece o
+        // botão no convite, e o acesso direto pela URL também é bloqueado.
+        <div className={styles.restricted}>
+           <h2 className="cursive">Mural Indisponível</h2>
+           <p>O mural de lembranças não está disponível para este evento.</p>
+        </div>
       ) : (
-        <MuralSection 
-          eventoId={invite?.evento_id || ''} 
-          config={config!} 
+        <MuralSection
+          eventoId={invite?.evento_id || ''}
+          config={config!}
           isPreviewMode={isPreview}
         />
       )}

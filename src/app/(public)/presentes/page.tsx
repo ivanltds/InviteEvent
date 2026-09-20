@@ -27,6 +27,7 @@ interface Config {
   allow_stripe?: boolean;
   font_serif?: string;
   font_cursive?: string;
+  mostrar_mural?: boolean;
 }
 
 export default function PresentesPage() {
@@ -1017,9 +1018,11 @@ export default function PresentesPage() {
             accentColor={config?.accent_color}
           />
 
-          <div style={{ marginTop: '4rem' }}>
-            <MuralSection eventoId={invite?.evento_id || ''} />
-          </div>
+          {config?.mostrar_mural !== false && (
+            <div style={{ marginTop: '4rem' }}>
+              <MuralSection eventoId={invite?.evento_id || ''} />
+            </div>
+          )}
         </>
       )}
 

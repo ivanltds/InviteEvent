@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import styles from './Agenda.module.css';
 import { AgendaEvent, Configuracao } from '@/lib/types/database';
+import { resolveGoogleMapsUrl, resolveWazeUrl } from '@/lib/utils/maps';
 
 interface AgendaSectionProps {
   events: AgendaEvent[];
@@ -80,8 +81,16 @@ export default function AgendaSection({ events, config }: AgendaSectionProps) {
         <p className={styles.subtitle}>Acompanhe cada momento do nosso grande dia</p>
 
         <div className={styles.timeline}>
-          {sortedEvents.map((item, index) => (
-            <motion.div 
+          {sortedEvents.map((item, index) => {
+            // Endereço marcado (texto livre) ou nome do local viram link de
+            // navegação automaticamente quando não há link manual cadastrado
+            // — todo marco com localização deve ajudar o convidado a chegar.
+            const enderecoParaNavegar = item.endereco || item.local_nome;
+            const googleMapsUrl = resolveGoogleMapsUrl(enderecoParaNavegar, item.link_google_maps);
+            const wazeUrl = resolveWazeUrl(enderecoParaNavegar, item.link_waze);
+
+            return (
+            <motion.div
               key={item.id}
               className={styles.eventCard}
               initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
@@ -92,23 +101,23 @@ export default function AgendaSection({ events, config }: AgendaSectionProps) {
               <div className={styles.timeBadge} style={{ background: config?.accent_color }}>
                 {formatTime(item.horario)}
               </div>
-              
+
               <div className={styles.content}>
                 <div className={styles.header}>
                   <span className={styles.icon}>{getIcon(item.icone)}</span>
                   <h3>{item.titulo}</h3>
                 </div>
-                
+
                 <div className={styles.locationInfo}>
                   <p className={styles.localName}>{item.local_nome}</p>
                   <p className={styles.address}>{item.endereco}</p>
                 </div>
 
                 <div className={styles.actions}>
-                  {item.link_google_maps && (
-                    <a 
-                      href={item.link_google_maps} 
-                      target="_blank" 
+                  {googleMapsUrl && (
+                    <a
+                      href={googleMapsUrl}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className={styles.gpsBtn}
                       style={{ '--btn-color': config?.accent_color || '#4285F4' } as any}
@@ -117,10 +126,10 @@ export default function AgendaSection({ events, config }: AgendaSectionProps) {
                       Google Maps
                     </a>
                   )}
-                  {item.link_waze && (
-                    <a 
-                      href={item.link_waze} 
-                      target="_blank" 
+                  {wazeUrl && (
+                    <a
+                      href={wazeUrl}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className={styles.gpsBtn}
                       style={{ '--btn-color': '#33CCFF' } as any}
@@ -132,7 +141,8 @@ export default function AgendaSection({ events, config }: AgendaSectionProps) {
                 </div>
               </div>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

@@ -13,6 +13,7 @@ import Countdown from '@/components/sections/Countdown';
 import HeroCarousel from '@/components/ui/HeroCarousel';
 import { Configuracao } from '@/lib/types/database';
 import { GRAVATA_LABEL_TEXT } from '@/lib/constants/gravata';
+import { resolveSecoesOrdem, SecaoConvite } from '@/lib/constants/secoes';
 import Link from 'next/link';
 import { useTrackSection } from '@/hooks/useTrackSection';
 import LegalFooter from '@/components/ui/LegalFooter';
@@ -263,35 +264,56 @@ const LiveInviteView: React.FC<LiveInviteViewProps> = ({
                 {GRAVATA_LABEL_TEXT[config.gravata_label ?? 'quero_colaborar']}
               </Link>
             )}
-            <Link 
-              href={disableActions ? "#" : `/mural?invite=${slug}${isPreviewMode ? `&preview=true&eventId=${config.evento_id}` : ''}`} 
-              className={styles.secondaryBtn} 
-              onClick={ctaClick}
-            >
-              Mural de Lembranças
-            </Link>
+            {config.mostrar_mural !== false && (
+              <Link
+                href={disableActions ? "#" : `/mural?invite=${slug}${isPreviewMode ? `&preview=true&eventId=${config.evento_id}` : ''}`}
+                className={styles.secondaryBtn}
+                onClick={ctaClick}
+              >
+                Mural de Lembranças
+              </Link>
+            )}
           </div>
         </section>
       </main>
 
-      {visibility.historia && <section ref={refHistoria}><Historia config={config} /></section>}
-      {visibility.noivos && <section ref={refNoivos}><OsNoivos config={config} /></section>}
-      <section ref={refAgenda}><AgendaSection events={agenda} config={config} /></section>
-      
-      <section ref={refRSVP}>
-        {/* Evitar renderizar o RSVP formulário real se for disableActions para não conflitar requisições */}
-        {/* Renderiza formulário interativo se não estiver com ações bloqueadas OU estiver no modo Simulação */}
-        {!disableActions && (slug !== 'preview' || isPreviewMode) ? (
-          <RSVP inviteSlug={slug} config={config} isPreviewMode={isPreviewMode} autoCadastro={autoCadastro} />
-        ) : (
-          <div style={{ padding: '4rem 2rem', textAlign: 'center', opacity: 0.8 }}>
-            <h2 style={{ fontFamily: 'var(--font-cursive)', fontSize: '3rem', color: 'var(--accent)' }}>RSVP</h2>
-            <p style={{ color: 'var(--text-main)' }}>O formulário de confirmação aparecerá aqui para os convidados.</p>
-          </div>
-        )}
-      </section>
-
-      {visibility.faq && <section ref={refFAQ}><FAQ eventoId={config.evento_id} /></section>}
+      {resolveSecoesOrdem(config.secoes_ordem).map((secao: SecaoConvite) => {
+        switch (secao) {
+          case 'historia':
+            return visibility.historia ? (
+              <section key="historia" ref={refHistoria}><Historia config={config} /></section>
+            ) : null;
+          case 'noivos':
+            return visibility.noivos ? (
+              <section key="noivos" ref={refNoivos}><OsNoivos config={config} /></section>
+            ) : null;
+          case 'agenda':
+            return (
+              <section key="agenda" ref={refAgenda}><AgendaSection events={agenda} config={config} /></section>
+            );
+          case 'rsvp':
+            return (
+              <section key="rsvp" ref={refRSVP}>
+                {/* Evitar renderizar o RSVP formulário real se for disableActions para não conflitar requisições */}
+                {/* Renderiza formulário interativo se não estiver com ações bloqueadas OU estiver no modo Simulação */}
+                {!disableActions && (slug !== 'preview' || isPreviewMode) ? (
+                  <RSVP inviteSlug={slug} config={config} isPreviewMode={isPreviewMode} autoCadastro={autoCadastro} />
+                ) : (
+                  <div style={{ padding: '4rem 2rem', textAlign: 'center', opacity: 0.8 }}>
+                    <h2 style={{ fontFamily: 'var(--font-cursive)', fontSize: '3rem', color: 'var(--accent)' }}>RSVP</h2>
+                    <p style={{ color: 'var(--text-main)' }}>O formulário de confirmação aparecerá aqui para os convidados.</p>
+                  </div>
+                )}
+              </section>
+            );
+          case 'faq':
+            return visibility.faq ? (
+              <section key="faq" ref={refFAQ}><FAQ eventoId={config.evento_id} /></section>
+            ) : null;
+          default:
+            return null;
+        }
+      })}
 
       {(slug === 'preview' || isPreviewMode) && !disableActions && (
         <div className={styles.previewBar}>

@@ -165,6 +165,10 @@ export interface Configuracao {
   mostrar_historia?: boolean;
   mostrar_noivos?: boolean;
   mostrar_presentes?: boolean;
+  /** Mural de Lembranças é opcional: pode ser removido do convite (botão + rota /mural) nas configurações. */
+  mostrar_mural?: boolean;
+  /** Ordem de exibição das seções do convite, reordenável nas configurações. Ver SECOES_CONVITE_ORDEM_PADRAO. */
+  secoes_ordem?: string[];
   /** Fonte de verdade para o botão de arrecadação no convite (substitui mostrar_presentes). */
   modo_arrecadacao?: ModoArrecadacao;
   gravata_label?: GravataLabel;

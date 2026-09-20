@@ -16,6 +16,7 @@ import styles from './AdminConfig.module.css';
 import { configService } from '@/lib/services/configService';
 import { Configuracao, ModoArrecadacao, ModoConvite } from '@/lib/types/database';
 import { GRAVATA_LABEL_TEXT, GRAVATA_LABEL_OPTIONS } from '@/lib/constants/gravata';
+import { SECOES_CONVITE_LABELS, resolveSecoesOrdem, SecaoConvite } from '@/lib/constants/secoes';
 import FAQManager from '@/components/admin/FAQManager';
 import ConfigPreview from '@/components/admin/ConfigPreview';
 import TeamManagement from '@/components/admin/TeamManagement';
@@ -37,6 +38,8 @@ const DEFAULT_CONFIG: Omit<Configuracao, 'id' | 'evento_id'> = {
   mostrar_noivos: true,
   mostrar_faq: true,
   mostrar_presentes: true,
+  mostrar_mural: true,
+  secoes_ordem: ['historia', 'noivos', 'agenda', 'rsvp', 'faq'],
   modo_arrecadacao: 'presentes',
   gravata_label: 'quero_colaborar',
   gravata_recado: 'Sua presença já é o nosso maior presente, mas se quiser nos ajudar a começar essa nova fase, ficaremos muito felizes com sua contribuição.',
@@ -418,6 +421,66 @@ export default function AdminConfig() {
                   />
                   <label htmlFor="mostrar_faq">FAQ (Perguntas Frequentes)</label>
                 </div>
+                <div className={styles.checkboxField}>
+                  <input
+                    id="mostrar_mural"
+                    type="checkbox"
+                    checked={config.mostrar_mural !== false}
+                    onChange={(e) => setConfig({...config, mostrar_mural: e.target.checked})}
+                  />
+                  <label htmlFor="mostrar_mural">Mural de Lembranças</label>
+                </div>
+              </div>
+            </section>
+
+            <section className={styles.section}>
+              <h2>Ordem das Seções do Convite</h2>
+              <p className={styles.helpText}>Defina em que ordem cada seção aparece para o convidado. Seções desativadas acima não aparecem, mas mantêm seu lugar na ordem.</p>
+              <div className={styles.fieldFull}>
+                <ol style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {resolveSecoesOrdem(config.secoes_ordem).map((secao: SecaoConvite, index: number, arr: SecaoConvite[]) => (
+                    <li
+                      key={secao}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '1rem',
+                        padding: '0.6rem 1rem',
+                        border: '1px solid rgba(0,0,0,0.1)',
+                        borderRadius: '8px',
+                      }}
+                    >
+                      <span>{index + 1}. {SECOES_CONVITE_LABELS[secao]}</span>
+                      <div style={{ display: 'flex', gap: '0.4rem' }}>
+                        <button
+                          type="button"
+                          aria-label={`Mover ${SECOES_CONVITE_LABELS[secao]} para cima`}
+                          disabled={index === 0}
+                          onClick={() => {
+                            const nova = [...arr];
+                            [nova[index - 1], nova[index]] = [nova[index], nova[index - 1]];
+                            setConfig({ ...config, secoes_ordem: nova });
+                          }}
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`Mover ${SECOES_CONVITE_LABELS[secao]} para baixo`}
+                          disabled={index === arr.length - 1}
+                          onClick={() => {
+                            const nova = [...arr];
+                            [nova[index], nova[index + 1]] = [nova[index + 1], nova[index]];
+                            setConfig({ ...config, secoes_ordem: nova });
+                          }}
+                        >
+                          ↓
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
               </div>
             </section>
 

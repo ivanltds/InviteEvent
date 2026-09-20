@@ -22,9 +22,17 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+// Correção de 20/09/2026: o título/descrição aqui eram de um casal
+// específico de dados de demonstração, hardcoded como padrão do app
+// inteiro (aba do navegador mostrava "Layslla & Marcus" em qualquer
+// página, inclusive admin). As páginas de convite (`/inv/[slug]`) são
+// Client Components e por isso não podem sobrescrever isso com
+// `generateMetadata` sem um refactor maior — fica registrado como
+// oportunidade futura (título dinâmico por casal). Por enquanto, o
+// título do app é genérico e correto em qualquer tela.
 export const metadata: Metadata = {
-  title: "Layslla & Marcus | 13.06.2026",
-  description: "Nosso grande dia está chegando! Venha celebrar conosco o início do nosso namoro que agora se torna o nosso casamento.",
+  title: "InviteEventAI",
+  description: "Convites de casamento digitais, RSVP e lista de presentes inteligente.",
   other: {
     lomadee: "2324685",
   },

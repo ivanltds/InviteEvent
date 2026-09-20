@@ -94,13 +94,22 @@ setup('authenticate as master admin', async ({ page }) => {
         await expect(inputNome).toBeVisible();
         await inputNome.fill('Casamento de Teste E2E');
         
-        await page.locator('button:has-text("Criar")').click();
+        // Correção de 20/09/2026: o seletor por texto parcial ("Criar")
+        // batia tanto no botão "+ Criar Novo" (ainda no DOM atrás do
+        // modal) quanto no botão de submit do formulário, quebrando com
+        // "strict mode violation" e derrubando o setup — e com ele, toda
+        // a suíte que depende dele (65 testes nem chegavam a rodar).
+        await page.getByRole('button', { name: 'Criar', exact: true }).click();
         console.log('[AuthSetup] Comando de criação enviado. Aguardando...');
         
-        // Aguarda o reload e renderização do novo card
+        // Aguarda o reload e renderização do novo card. Timeout alongado
+        // em 20/09/2026: no servidor `next dev` local, a primeira
+        // requisição a uma rota ainda não compilada pode levar bem mais
+        // que 4s (compilação sob demanda do Turbopack/Next), o que
+        // derrubava este passo antes mesmo da rota compilar.
         await page.waitForTimeout(4000);
         const newCard = page.locator('div[class*="card"]').first();
-        await expect(newCard).toBeVisible({ timeout: 10000 });
+        await expect(newCard).toBeVisible({ timeout: 25000 });
         await newCard.click();
         await page.waitForTimeout(2000);
       }

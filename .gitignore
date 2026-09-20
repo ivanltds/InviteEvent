@@ -50,4 +50,5 @@ Thumbs.db
 test_results*.txt
 *.sql
 !supabase/migrations/*.sql
+!supabase/seed.sql
 build-log.txt

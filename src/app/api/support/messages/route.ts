@@ -1,5 +1,36 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { getSupabaseServerClient } from '@/lib/supabase-server';
+
+// Correção de 20/09/2026 (docs/analise/01-seguranca.md, SEG-06): esta rota
+// deixava ler e enviar mensagens de QUALQUER ticket sem login, e o
+// remetente_id do envio vinha do corpo da requisição sem checagem —
+// qualquer um podia se passar por outra pessoa (inclusive fingir ser
+// master). Agora exige sessão e só permite acesso ao dono do ticket ou a
+// um master.
+async function authorizeTicketAccess(ticketId: string) {
+  const supabaseAuth = await getSupabaseServerClient();
+  const { data: { user } } = await supabaseAuth.auth.getUser();
+  if (!user) {
+    return { ok: false as const, response: NextResponse.json({ success: false, error: 'Não autenticado.' }, { status: 401 }) };
+  }
+
+  const { data: isMaster } = await supabaseAuth.rpc('check_is_master');
+
+  if (!isMaster) {
+    const { data: ticket } = await supabase
+      .from('suporte_tickets')
+      .select('usuario_id')
+      .eq('id', ticketId)
+      .single();
+
+    if (!ticket || ticket.usuario_id !== user.id) {
+      return { ok: false as const, response: NextResponse.json({ success: false, error: 'Acesso negado a este ticket.' }, { status: 403 }) };
+    }
+  }
+
+  return { ok: true as const, userId: user.id, isMaster: !!isMaster };
+}
 
 export async function GET(request: Request) {
   try {
@@ -9,6 +40,9 @@ export async function GET(request: Request) {
     if (!ticketId) {
       return NextResponse.json({ success: false, error: 'ticketId é obrigatório' }, { status: 400 });
     }
+
+    const auth = await authorizeTicketAccess(ticketId);
+    if (!auth.ok) return auth.response;
 
     const { data: messages, error } = await supabase
       .from('suporte_mensagens')
@@ -28,11 +62,17 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { ticket_id, remetente_id, conteudo } = await request.json();
+    const { ticket_id, conteudo } = await request.json();
 
-    if (!ticket_id || !remetente_id || !conteudo) {
+    if (!ticket_id || !conteudo) {
       return NextResponse.json({ success: false, error: 'Campos obrigatórios ausentes' }, { status: 400 });
     }
+
+    const auth = await authorizeTicketAccess(ticket_id);
+    if (!auth.ok) return auth.response;
+    // remetente_id nunca vem do corpo da requisição — é sempre quem está autenticado.
+    const remetente_id = auth.userId;
+    const isMaster = auth.isMaster;
 
     const { data: message, error } = await supabase
       .from('suporte_mensagens')
@@ -43,16 +83,6 @@ export async function POST(request: Request) {
     if (error) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
-
-    // Phase 2: Integrazione Intelligente Híbrida (PRD-009)
-    // 1. Verificar se o remetente é Master ou Usuário
-    const { data: perfil } = await supabase
-      .from('perfis')
-      .select('is_master')
-      .eq('id', remetente_id)
-      .single();
-
-    const isMaster = perfil?.is_master || false;
 
     console.log('--- BOT DEBUG START ---');
     console.log('[MESSAGES API] isMaster:', isMaster, 'ticket_id:', ticket_id);

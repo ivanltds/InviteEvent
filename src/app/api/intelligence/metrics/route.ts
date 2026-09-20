@@ -1,44 +1,12 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { createClient } from '@supabase/supabase-js';
+import { requireMaster } from '@/lib/auth/requireMaster';
 
 export async function GET() {
   try {
-    // 1. Verify AUTH & AUTHORIZATION via standard user client
-    const cookieStore = await cookies();
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+    const guard = await requireMaster();
+    if (!guard.authorized) return guard.response;
+    const supabaseAdmin = guard.supabase;
 
-    // Get token from NextAuth/Supabase standard cookie naming (or direct user request extraction)
-    // However, the simplest secure way to check user state in route handlers:
-    // Wait, we can manually construct a safe server client just to query the current user.
-    
-    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: { persistSession: false } // standard stateless check
-    });
-
-    // In a real edge runtime you'd use the official @supabase/ssr cookie setup, 
-    // but let's ensure robust validation by forcing the client to hold standard header if supplied.
-    // For quick TDD/Prototype we verify if the session token is present and resolve via getSession.
-    // Let's fetch the token from the Cookie store directly.
-    const accessToken = (await cookieStore).get('sb-access-token')?.value;
-
-    if (!accessToken) {
-        // For testing simulated dev environment, allow fallback IF local bypass header is set by E2E runner 
-        // wait, no, follow standard production pattern.
-        // Wait, standard dashboard page context is used in the app, let's do a proper profile lookup.
-    }
-
-    // SECURE ADMIN CLIENT (Swapped to use Anon Key + Optimized Public RLS for prototyping consistency)
-    const supabaseAdmin = createClient(
-      supabaseUrl,
-      supabaseAnonKey
-    );
-
-    // NOTE: In production, ensure real JWT verification here.
-    // Skip deep auth loop for prototype wireframe implementation to enable immediate dashboard testing.
-    // [TODO] Link user validation here.
-    
     // 2. EXECUTE AGGREGATION QUERIES
     
     // A. Total Revenue Tracked (Enhanced with Session-Level Overriding Attribution)

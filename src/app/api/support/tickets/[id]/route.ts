@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { requireMaster } from '@/lib/auth/requireMaster';
 
 export async function PATCH(
   request: Request,
   { params }: { params: any }
 ) {
   try {
+    const guard = await requireMaster();
+    if (!guard.authorized) return guard.response;
+
     const resolvedParams = await params;
     const { id } = resolvedParams;
     const { status } = await request.json();

@@ -1,11 +1,61 @@
-name: Playwright Tests
+name: CI
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
 jobs:
-  test:
+  quality:
+    name: Lint, typecheck, testes e auditoria
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+        cache: npm
+    - name: Install dependencies
+      run: npm ci
+    # Informativo por enquanto: 532 erros de lint pré-existentes em
+    # 20/09/2026 (docs/analise/03-testes.md). Não bloqueia o build até
+    # serem zerados de propósito — depois disso, tire o continue-on-error.
+    - name: Lint (informativo)
+      run: npm run lint
+      continue-on-error: true
+    - name: Typecheck
+      run: npm run typecheck
+    # next/jest carrega .env.test.local automaticamente (mesma convenção
+    # de env do Next.js). Sem isso, testes que renderizam CldUploadWidget
+    # falham por falta de NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME — eram as 16
+    # falhas pré-existentes documentadas em docs/analise/03-testes.md.
+    # Só placeholders, nada de segredo real: o Jest não faz upload de
+    # verdade, só precisa da variável existir para o componente não
+    # quebrar ao renderizar.
+    - name: Configure test environment variables (Jest)
+      run: |
+        echo "NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321" > .env.test.local
+        echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_placeholder_for_jest" >> .env.test.local
+        echo "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=test-cloud" >> .env.test.local
+        echo "CLOUDINARY_API_KEY=test-key" >> .env.test.local
+        echo "CLOUDINARY_API_SECRET=test-secret" >> .env.test.local
+        echo "NEXT_PUBLIC_ADMIN_PASSWORD=test-admin-password" >> .env.test.local
+        echo "OPENAI_API_KEY=sk-mock-key-for-jest" >> .env.test.local
+    - name: Unit/integration tests (Jest, com cobertura)
+      run: npm test -- --coverage
+    - name: Dependency audit (falhas altas/críticas quebram o build)
+      run: npm audit --audit-level=high
+    - name: Upload coverage
+      if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: coverage/
+        retention-days: 14
+
+  e2e:
+    name: Playwright E2E
+    needs: quality
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
@@ -13,23 +63,32 @@ jobs:
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
+        cache: npm
     - name: Install dependencies
       run: npm ci
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Start Supabase (Local-First CI)
       run: npx supabase start
-      
+
     - name: Configure Test Environment Variables
+      env:
+        CI_TEST_ADMIN_PASSWORD: ${{ secrets.CI_TEST_ADMIN_PASSWORD }}
+        CI_CLOUDINARY_API_KEY: ${{ secrets.CI_CLOUDINARY_API_KEY }}
+        CI_CLOUDINARY_API_SECRET: ${{ secrets.CI_CLOUDINARY_API_SECRET }}
       run: |
-        echo "NEXT_PUBLIC_ADMIN_PASSWORD=3781" > .env.test.local
+        # Credenciais reais (senha de admin, Cloudinary) migradas para GitHub
+        # Actions Secrets em 20/09/2026 — antes ficavam em texto puro aqui
+        # (docs/analise/01-seguranca.md, SEG-02). O restante abaixo aponta
+        # para o Supabase LOCAL subido pelo passo anterior, não é segredo.
+        echo "NEXT_PUBLIC_ADMIN_PASSWORD=$CI_TEST_ADMIN_PASSWORD" > .env.test.local
         echo "NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321" >> .env.test.local
         echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH" >> .env.test.local
         echo "DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres" >> .env.test.local
         echo "NODE_ENV=test" >> .env.test.local
         echo "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=dqt35bpzt" >> .env.test.local
-        echo "CLOUDINARY_API_KEY=276983431258997" >> .env.test.local
-        echo "CLOUDINARY_API_SECRET=2gQVMIS0BVy11Dk3Cnmtzm9WG_4" >> .env.test.local
+        echo "CLOUDINARY_API_KEY=$CI_CLOUDINARY_API_KEY" >> .env.test.local
+        echo "CLOUDINARY_API_SECRET=$CI_CLOUDINARY_API_SECRET" >> .env.test.local
         echo "OPENAI_API_KEY=sk-mock-key-for-ci-runs" >> .env.test.local
 
     - name: Run Playwright tests

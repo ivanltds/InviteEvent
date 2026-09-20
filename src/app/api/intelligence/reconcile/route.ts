@@ -1,21 +1,22 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { requireMaster } from '@/lib/auth/requireMaster';
 
 export async function POST(request: Request) {
   try {
+    const guard = await requireMaster();
+    if (!guard.authorized) return guard.response;
+    const supabase = guard.supabase;
+
     const body = await request.json();
-    
+
     // Padrão esperado do body: { vendas: [{ token: '...', valor: 100, comissao: 5 }] }
     if (!body || !Array.isArray(body.vendas)) {
       return NextResponse.json({ success: false, error: "Formato inválido. Requer array 'vendas'." }, { status: 400 });
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
     // Chama a RPC para bater os tokens e conciliar comissão de telemetria
+    // (a RPC também checa check_is_master() internamente — ver migration
+    // 20260920100000_security_hardening_rls_privilege_escalation.sql)
     const { data, error } = await supabase.rpc('conciliar_vendas_offline', {
       p_vendas: body.vendas
     });

@@ -12,7 +12,7 @@ async function applyFixViaPooler() {
   // Supabase Pooler: O host do pooler requer o formato 'postgres.ref' no USERNAME para roteamento correto.
   const client = new Client({
     user: 'postgres.runyitdsxlctoahikkxe',
-    password: '37812567Ivt@', // Senha literal para evitar erros de shell/env
+    password: process.env.SUPABASE_DB_PASSWORD, // Senha literal para evitar erros de shell/env
     host: 'aws-0-sa-east-1.pooler.supabase.com',
     port: 6543,
     database: 'postgres',
@@ -34,7 +34,7 @@ async function applyFixViaPooler() {
     console.log('Tentando host alternativo (aws-1)...');
     const clientAlt = new Client({
       user: 'postgres.runyitdsxlctoahikkxe',
-      password: '37812567Ivt@',
+      password: process.env.SUPABASE_DB_PASSWORD,
       host: 'aws-1-sa-east-1.pooler.supabase.com',
       port: 5432, // Tentando porta 5432 no host do pooler (as vezes funciona como passthrough)
       database: 'postgres',
@@ -52,7 +52,7 @@ async function applyFixViaPooler() {
       console.log('Tentando via IP direto (extraído do DNS)...');
       const clientIp = new Client({
         user: 'postgres.runyitdsxlctoahikkxe',
-        password: '37812567Ivt@',
+        password: process.env.SUPABASE_DB_PASSWORD,
         host: '54.94.90.106', // IP de aws-0-sa-east-1
         port: 6543,
         database: 'postgres',

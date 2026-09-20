@@ -41,9 +41,14 @@ Thumbs.db
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+# Sessão real de teste gerada pelo Playwright (tests/auth.setup.ts) — chegou
+# a ser commitada por engano (docs/analise/05-privacidade-e-higiene-repo.md,
+# HIG-04); nunca deve ser versionada, contém token de sessão real.
+/tests/.auth/
 
 # Temp test and backup files
 test_results*.txt
 *.sql
 !supabase/migrations/*.sql
+!supabase/seed.sql
 build-log.txt

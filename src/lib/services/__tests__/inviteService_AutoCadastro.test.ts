@@ -54,7 +54,7 @@ describe('inviteService.criarConviteAutoCadastro', () => {
     const result = await inviteService.criarConviteAutoCadastro('evt-1', 'João Silva', []);
 
     expect(result.success).toBe(true);
-    expect(result.slug).toBe('joao-silva-a1b2');
+    expect(result.convite?.slug).toBe('joao-silva-a1b2');
     expect(conviteChain.insert).toHaveBeenCalledWith([
       expect.objectContaining({ evento_id: 'evt-1', nome_principal: 'João Silva', tipo: 'individual', limite_pessoas: 1 }),
     ]);
@@ -67,6 +67,15 @@ describe('inviteService.criarConviteAutoCadastro', () => {
       error: null,
     });
     const membrosChain = supabase.from('convite_membros');
+    (membrosChain.then as jest.Mock).mockImplementation((resolve: any) =>
+      Promise.resolve(resolve({
+        data: [
+          { id: 'm1', convite_id: 'c2', nome: 'Maria Souza' },
+          { id: 'm2', convite_id: 'c2', nome: 'Pedro Souza' },
+        ],
+        error: null,
+      }))
+    );
 
     const result = await inviteService.criarConviteAutoCadastro('evt-1', 'Maria Souza', ['Pedro Souza']);
 
@@ -77,6 +86,12 @@ describe('inviteService.criarConviteAutoCadastro', () => {
     expect(membrosChain.insert).toHaveBeenCalledWith([
       expect.objectContaining({ convite_id: 'c2', nome: 'Maria Souza' }),
       expect.objectContaining({ convite_id: 'c2', nome: 'Pedro Souza' }),
+    ]);
+    // Retorna os membros criados COM id — é o que a tela de RSVP precisa
+    // pra reaproveitar submitFullRSVP sem uma segunda ida ao banco.
+    expect(result.membros).toEqual([
+      expect.objectContaining({ id: 'm1', nome: 'Maria Souza' }),
+      expect.objectContaining({ id: 'm2', nome: 'Pedro Souza' }),
     ]);
   });
 

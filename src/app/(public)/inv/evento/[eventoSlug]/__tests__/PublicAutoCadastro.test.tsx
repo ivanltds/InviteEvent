@@ -1,125 +1,107 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { useParams, useRouter } from 'next/navigation';
 import PublicAutoCadastroPage from '../page';
 import { eventService } from '@/lib/services/eventService';
-import { configService } from '@/lib/services/configService';
-import { inviteService } from '@/lib/services/inviteService';
+import { supabase } from '@/lib/supabase';
 
-const mockReplace = jest.fn();
-
-jest.mock('next/navigation', () => ({
-  useParams: () => ({ eventoSlug: 'casamento-ana-carlos' }),
-  useRouter: () => ({ replace: mockReplace }),
-}));
-
+/**
+ * Correção de 20/09/2026: esta página não mostra mais um formulário de
+ * auto-identificação bloqueante — ela agora renderiza o MESMO convite
+ * completo de /inv/[slug] (via <LiveInviteView>), e é o próprio <RSVP>
+ * (prop `autoCadastro`) quem pede "quem é você" na hora de confirmar
+ * presença. Ver src/components/sections/RSVP.tsx.
+ */
 jest.mock('@/lib/services/eventService', () => ({
   eventService: { getEventoBySlug: jest.fn() },
 }));
-jest.mock('@/lib/services/configService', () => ({
-  configService: { getConfig: jest.fn() },
-}));
-jest.mock('@/lib/services/inviteService', () => ({
-  inviteService: { criarConviteAutoCadastro: jest.fn() },
-}));
+
+jest.mock('@/components/public/LiveInviteView', () => (props: any) => (
+  <div data-testid="live-invite-view">
+    <span data-testid="autoCadastro">{JSON.stringify(props.autoCadastro)}</span>
+    <span data-testid="couple">{`${props.couple.noiva} & ${props.couple.noivo}`}</span>
+  </div>
+));
+
+const mockReplace = jest.fn();
 
 const baseEvento = { id: 'e1', slug: 'casamento-ana-carlos', nome: 'Casamento' };
 const linkUnicoConfig = {
   evento_id: 'e1',
   noiva_nome: 'Ana',
   noivo_nome: 'Carlos',
-  modo_convite: 'link_unico' as const,
+  data_casamento: '2026-10-10',
+  modo_convite: 'link_unico',
+  mostrar_historia: true,
+  mostrar_noivos: true,
+  mostrar_faq: true,
+  mostrar_presentes: true,
 };
+
+function mockSupabaseTables(configData: any) {
+  (supabase.from as jest.Mock).mockImplementation((table: string) => {
+    const chain: any = {
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+      then: jest.fn().mockImplementation((fn: any) => Promise.resolve(fn({ data: [], error: null }))),
+    };
+    if (table === 'configuracoes') {
+      chain.maybeSingle.mockResolvedValue({ data: configData, error: null });
+    }
+    return chain;
+  });
+}
 
 describe('PublicAutoCadastroPage (Link Único)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
+    (useParams as jest.Mock).mockReturnValue({ eventoSlug: 'casamento-ana-carlos' });
+    (useRouter as jest.Mock).mockReturnValue({ replace: mockReplace, push: jest.fn(), prefetch: jest.fn() });
   });
 
   it('mostra "convite não encontrado" para um slug de evento inválido', async () => {
     (eventService.getEventoBySlug as jest.Mock).mockResolvedValue(null);
+    mockSupabaseTables(null);
 
     render(<PublicAutoCadastroPage />);
 
     await waitFor(() => expect(screen.getByText(/Convite não encontrado/i)).toBeInTheDocument());
   });
 
-  it('bloqueia o acesso se o evento não estiver no modo Link Único', async () => {
+  it('mostra "convite não encontrado" se o evento não estiver mais no modo Link Único', async () => {
     (eventService.getEventoBySlug as jest.Mock).mockResolvedValue(baseEvento);
-    (configService.getConfig as jest.Mock).mockResolvedValue({ ...linkUnicoConfig, modo_convite: 'individual' });
+    mockSupabaseTables({ ...linkUnicoConfig, modo_convite: 'individual' });
 
     render(<PublicAutoCadastroPage />);
 
-    await waitFor(() => expect(screen.getByText(/utilize o link enviado pelos noivos/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Convite não encontrado/i)).toBeInTheDocument());
   });
 
-  it('redireciona direto se já existe convite salvo no navegador', async () => {
+  it('redireciona direto para /inv/[slug] se já existe convite salvo no navegador', async () => {
     localStorage.setItem('link_unico_convite_casamento-ana-carlos', JSON.stringify({ slug: 'joao-silva-a1b2' }));
     (eventService.getEventoBySlug as jest.Mock).mockResolvedValue(baseEvento);
-    (configService.getConfig as jest.Mock).mockResolvedValue(linkUnicoConfig);
+    mockSupabaseTables(linkUnicoConfig);
 
     render(<PublicAutoCadastroPage />);
 
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/inv/joao-silva-a1b2'));
   });
 
-  it('mostra o formulário de auto-identificação na primeira visita', async () => {
+  it('renderiza o convite completo (LiveInviteView) com autoCadastro na primeira visita, sem gate bloqueante', async () => {
     (eventService.getEventoBySlug as jest.Mock).mockResolvedValue(baseEvento);
-    (configService.getConfig as jest.Mock).mockResolvedValue(linkUnicoConfig);
+    mockSupabaseTables(linkUnicoConfig);
 
     render(<PublicAutoCadastroPage />);
 
-    await waitFor(() => expect(screen.getByLabelText(/Seu nome/i)).toBeInTheDocument());
-    expect(screen.getByText(/Vem mais alguém com você/i)).toBeInTheDocument();
-    expect(mockReplace).not.toHaveBeenCalled();
-  });
-
-  it('adiciona e remove campos de acompanhante', async () => {
-    (eventService.getEventoBySlug as jest.Mock).mockResolvedValue(baseEvento);
-    (configService.getConfig as jest.Mock).mockResolvedValue(linkUnicoConfig);
-
-    render(<PublicAutoCadastroPage />);
-    await waitFor(() => expect(screen.getByLabelText(/Seu nome/i)).toBeInTheDocument());
-
-    fireEvent.click(screen.getByText(/\+ Adicionar acompanhante/i));
-    expect(screen.getByPlaceholderText(/Nome do acompanhante/i)).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: /Remover acompanhante/i }));
-    expect(screen.queryByPlaceholderText(/Nome do acompanhante/i)).not.toBeInTheDocument();
-  });
-
-  it('ao confirmar, cria o convite, salva no navegador e redireciona', async () => {
-    (eventService.getEventoBySlug as jest.Mock).mockResolvedValue(baseEvento);
-    (configService.getConfig as jest.Mock).mockResolvedValue(linkUnicoConfig);
-    (inviteService.criarConviteAutoCadastro as jest.Mock).mockResolvedValue({ success: true, slug: 'joao-silva-a1b2' });
-
-    render(<PublicAutoCadastroPage />);
-    await waitFor(() => expect(screen.getByLabelText(/Seu nome/i)).toBeInTheDocument());
-
-    fireEvent.change(screen.getByLabelText(/Seu nome/i), { target: { value: 'João Silva' } });
-    fireEvent.click(screen.getByText(/\+ Adicionar acompanhante/i));
-    fireEvent.change(screen.getByPlaceholderText(/Nome do acompanhante/i), { target: { value: 'Maria Silva' } });
-    fireEvent.click(screen.getByRole('button', { name: /Continuar/i }));
-
-    await waitFor(() =>
-      expect(inviteService.criarConviteAutoCadastro).toHaveBeenCalledWith('e1', 'João Silva', ['Maria Silva'])
-    );
-    expect(mockReplace).toHaveBeenCalledWith('/inv/joao-silva-a1b2');
-    expect(JSON.parse(localStorage.getItem('link_unico_convite_casamento-ana-carlos')!)).toEqual({ slug: 'joao-silva-a1b2' });
-  });
-
-  it('mostra mensagem de erro sem travar a tela se a criação falhar', async () => {
-    (eventService.getEventoBySlug as jest.Mock).mockResolvedValue(baseEvento);
-    (configService.getConfig as jest.Mock).mockResolvedValue(linkUnicoConfig);
-    (inviteService.criarConviteAutoCadastro as jest.Mock).mockResolvedValue({ success: false, error: new Error('boom') });
-
-    render(<PublicAutoCadastroPage />);
-    await waitFor(() => expect(screen.getByLabelText(/Seu nome/i)).toBeInTheDocument());
-
-    fireEvent.change(screen.getByLabelText(/Seu nome/i), { target: { value: 'João Silva' } });
-    fireEvent.click(screen.getByRole('button', { name: /Continuar/i }));
-
-    await waitFor(() => expect(screen.getByText(/Não conseguimos confirmar/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('live-invite-view')).toBeInTheDocument());
+    expect(screen.getByTestId('couple')).toHaveTextContent('Ana & Carlos');
+    expect(JSON.parse(screen.getByTestId('autoCadastro').textContent!)).toEqual({
+      eventoId: 'e1',
+      eventoSlug: 'casamento-ana-carlos',
+    });
     expect(mockReplace).not.toHaveBeenCalled();
   });
 });

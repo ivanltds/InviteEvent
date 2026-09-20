@@ -1,0 +1,110 @@
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import RSVP from '../RSVP';
+import { rsvpService } from '@/lib/services/rsvpService';
+import { inviteService } from '@/lib/services/inviteService';
+import { saveConvite } from '@/lib/utils/linkUnico';
+
+/**
+ * Modo Link Único: a identificação ("quem é você / quem você traz") deve
+ * acontecer DENTRO do próprio formulário de confirmação de presença, sem
+ * gate bloqueante anterior — pedido explícito do usuário em 20/09/2026
+ * ("o convite deve abrir primeiro e só na hora de confirmar presença
+ * perguntar quem é a pessoa"). Ver src/components/sections/RSVP.tsx.
+ */
+jest.mock('@/lib/services/rsvpService', () => ({
+  rsvpService: {
+    getRSVPConfig: jest.fn().mockResolvedValue(null),
+    submitFullRSVP: jest.fn(),
+  },
+}));
+
+jest.mock('@/lib/services/inviteService', () => ({
+  inviteService: { criarConviteAutoCadastro: jest.fn() },
+}));
+
+jest.mock('@/lib/utils/linkUnico', () => ({
+  saveConvite: jest.fn(),
+  getSavedConvite: jest.fn(() => null),
+}));
+
+jest.mock('next/link', () => {
+  return ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  );
+});
+
+const autoCadastro = { eventoId: 'e1', eventoSlug: 'casamento-ana-carlos' };
+
+describe('RSVP — modo Link Único (autoCadastro)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (rsvpService.getRSVPConfig as jest.Mock).mockResolvedValue(null);
+  });
+
+  it('mostra direto o formulário de confirmação com os campos de identificação — sem tela separada antes', async () => {
+    render(<RSVP autoCadastro={autoCadastro} />);
+
+    await waitFor(() => expect(screen.getByLabelText(/Seu nome/i)).toBeInTheDocument());
+    expect(screen.getByText(/Vem mais alguém com você/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Confirmar Presença/i })).toBeInTheDocument();
+  });
+
+  it('exige o nome antes de enviar', async () => {
+    render(<RSVP autoCadastro={autoCadastro} />);
+    await waitFor(() => expect(screen.getByLabelText(/Seu nome/i)).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /Confirmar Presença/i }));
+
+    await waitFor(() => expect(screen.getByText(/Conta pra gente quem é você/i)).toBeInTheDocument());
+    expect(inviteService.criarConviteAutoCadastro).not.toHaveBeenCalled();
+  });
+
+  it('ao confirmar, cria o convite, envia o RSVP e salva no navegador', async () => {
+    (inviteService.criarConviteAutoCadastro as jest.Mock).mockResolvedValue({
+      success: true,
+      convite: { id: 'c1', evento_id: 'e1', slug: 'joao-silva-a1b2', tipo: 'casal', limite_pessoas: 2, nome_principal: 'João Silva' },
+      membros: [
+        { id: 'm1', nome: 'João Silva', confirmado: null },
+        { id: 'm2', nome: 'Maria Silva', confirmado: null },
+      ],
+    });
+    (rsvpService.submitFullRSVP as jest.Mock).mockResolvedValue({ success: true });
+
+    render(<RSVP autoCadastro={autoCadastro} />);
+    await waitFor(() => expect(screen.getByLabelText(/Seu nome/i)).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText(/Seu nome/i), { target: { value: 'João Silva' } });
+    fireEvent.click(screen.getByText(/\+ Adicionar acompanhante/i));
+    fireEvent.change(screen.getByPlaceholderText(/Nome do acompanhante/i), { target: { value: 'Maria Silva' } });
+    fireEvent.click(screen.getByRole('button', { name: /Confirmar Presença/i }));
+
+    await waitFor(() =>
+      expect(inviteService.criarConviteAutoCadastro).toHaveBeenCalledWith('e1', 'João Silva', ['Maria Silva'])
+    );
+    await waitFor(() => expect(rsvpService.submitFullRSVP).toHaveBeenCalled());
+    expect(saveConvite).toHaveBeenCalledWith('casamento-ana-carlos', 'joao-silva-a1b2');
+
+    const [rsvpPayload, membersPayload] = (rsvpService.submitFullRSVP as jest.Mock).mock.calls[0];
+    expect(rsvpPayload).toMatchObject({ convite_id: 'c1', evento_id: 'e1' });
+    expect(membersPayload).toEqual([
+      expect.objectContaining({ id: 'm1', nome: 'João Silva', confirmado: true }),
+      expect.objectContaining({ id: 'm2', nome: 'Maria Silva', confirmado: true }),
+    ]);
+
+    await waitFor(() => expect(screen.getByText(/Presença confirmada!/i)).toBeInTheDocument());
+  });
+
+  it('mostra mensagem de erro sem travar a tela se a criação do convite falhar', async () => {
+    (inviteService.criarConviteAutoCadastro as jest.Mock).mockResolvedValue({ success: false, error: new Error('boom') });
+
+    render(<RSVP autoCadastro={autoCadastro} />);
+    await waitFor(() => expect(screen.getByLabelText(/Seu nome/i)).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText(/Seu nome/i), { target: { value: 'João Silva' } });
+    fireEvent.click(screen.getByRole('button', { name: /Confirmar Presença/i }));
+
+    await waitFor(() => expect(screen.getByText(/Não conseguimos confirmar/i)).toBeInTheDocument());
+    expect(rsvpService.submitFullRSVP).not.toHaveBeenCalled();
+    expect(saveConvite).not.toHaveBeenCalled();
+  });
+});

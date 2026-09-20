@@ -4,17 +4,27 @@ import { useState, useEffect } from 'react';
 import styles from './RSVP.module.css';
 import Link from 'next/link';
 import { rsvpService } from '@/lib/services/rsvpService';
+import { inviteService } from '@/lib/services/inviteService';
 import { Convite, ConviteMembro, RSVP as RSVPType, Configuracao } from '@/lib/types/database';
 import { triggerCelebration, triggerSideCannons } from '@/lib/utils/confetti';
 import { Telemetry } from '@/lib/services/telemetryService';
+import { saveConvite } from '@/lib/utils/linkUnico';
 
 interface RSVPProps {
   inviteSlug?: string;
   config?: Configuracao;
   isPreviewMode?: boolean;
+  /**
+   * Modo Link Único (auto-cadastro): não existe convite pré-criado ainda.
+   * O convidado se identifica aqui mesmo, no momento de confirmar
+   * presença, em vez de numa tela separada antes do convite — pedido
+   * explícito do usuário em 20/09/2026 ("achei ruim perguntar isso
+   * antes"). O convite real só é criado ao enviar o formulário.
+   */
+  autoCadastro?: { eventoId: string; eventoSlug: string };
 }
 
-export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPreviewMode = false }: RSVPProps) {
+export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPreviewMode = false, autoCadastro }: RSVPProps) {
   const [conviteEncontrado, setConviteEncontrado] = useState<Convite | null>(null);
   const [membros, setMembros] = useState<ConviteMembro[]>([]);
   const [formData, setFormData] = useState({
@@ -36,16 +46,34 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
   const [showForm, setShowForm] = useState(false);
   const [lgpdConsent, setLgpdConsent] = useState(false);
 
+  // Estado do auto-cadastro (Link Único) — só usado quando `autoCadastro` é informado.
+  const [nomeAutoCadastro, setNomeAutoCadastro] = useState('');
+  const [acompanhantesAutoCadastro, setAcompanhantesAutoCadastro] = useState<string[]>([]);
+
+  const addAcompanhanteAutoCadastro = () => setAcompanhantesAutoCadastro(prev => [...prev, '']);
+  const removeAcompanhanteAutoCadastro = (index: number) =>
+    setAcompanhantesAutoCadastro(prev => prev.filter((_, i) => i !== index));
+  const updateAcompanhanteAutoCadastro = (index: number, value: string) =>
+    setAcompanhantesAutoCadastro(prev => prev.map((a, i) => (i === index ? value : a)));
 
   useEffect(() => {
     async function init() {
       if (typeof window !== 'undefined') {
         setLoading(true);
-        
+
         const config = await rsvpService.getRSVPConfig();
         if (config?.prazo_rsvp) {
           const date = new Date(config.prazo_rsvp);
           setDeadline(date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }));
+        }
+
+        // Link Único: sem convite pré-existente — mostra o form direto,
+        // a identificação acontece dentro dele (ver render abaixo).
+        if (autoCadastro) {
+          setShowForm(true);
+          setNoInviteFound(false);
+          setLoading(false);
+          return;
         }
 
         const params = new URLSearchParams(window.location.search);
@@ -125,7 +153,7 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
       }
     }
     init();
-  }, [propSlug]);
+  }, [propSlug, autoCadastro]);
 
   const toggleMembro = (id: string) => {
     setMembros(prev => prev.map(m => 
@@ -143,13 +171,42 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
     e.preventDefault();
     setLoading(true);
     setErrorMessage(null);
-    
+
     const isRecusado = formData.confirmacao === 'nao';
-    
+
+    // Link Único: o convite ainda não existe — cria agora, no exato
+    // momento de confirmar (pedido do usuário: identificação junto da
+    // confirmação, não antes). `conviteAtual`/`membrosAtual` são usados a
+    // partir daqui em vez do estado `conviteEncontrado`/`membros`, porque
+    // um setState não fica disponível na mesma execução da função.
+    let conviteAtual = conviteEncontrado;
+    let membrosAtual = membros;
+
+    if (autoCadastro && !conviteEncontrado) {
+      if (!nomeAutoCadastro.trim()) {
+        setErrorMessage('Conta pra gente quem é você antes de confirmar.');
+        setLoading(false);
+        return;
+      }
+
+      const nomesAcompanhantes = isRecusado ? [] : acompanhantesAutoCadastro;
+      const criado = await inviteService.criarConviteAutoCadastro(autoCadastro.eventoId, nomeAutoCadastro, nomesAcompanhantes);
+
+      if (!criado.success || !criado.convite) {
+        setErrorMessage('Não conseguimos confirmar seu cadastro agora. Tente novamente em instantes.');
+        setLoading(false);
+        return;
+      }
+
+      conviteAtual = criado.convite;
+      membrosAtual = (criado.membros || []).map(m => ({ ...m, confirmado: !isRecusado }));
+      saveConvite(autoCadastro.eventoSlug, criado.convite.slug);
+    }
+
     // Detecção Dinâmica de Restrições Alimentares (Dado sensível LGPD)
     const hasRestrictions = !isRecusado && (
-      (formData.restricoes && formData.restricoes.trim().length > 0) || 
-      membros.some(m => m.confirmado && m.restricoes && m.restricoes.trim().length > 0)
+      (formData.restricoes && formData.restricoes.trim().length > 0) ||
+      membrosAtual.some(m => m.confirmado && m.restricoes && m.restricoes.trim().length > 0)
     );
 
     if (hasRestrictions && !lgpdConsent) {
@@ -157,28 +214,28 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
       setLoading(false);
       return;
     }
-    
+
     // Contagem de confirmados nominais (STORY-053 FIX)
     let countConfirmados = 0;
     if (isRecusado) {
       countConfirmados = 0;
-    } else if (membros.length > 0) {
+    } else if (membrosAtual.length > 0) {
       // Soma membros marcados + convidados extras informados
-      countConfirmados = membros.filter(m => m.confirmado).length + formData.extraGuests;
+      countConfirmados = membrosAtual.filter(m => m.confirmado).length + formData.extraGuests;
     } else {
       countConfirmados = formData.quantidade;
     }
 
-    const isExcedente = !isRecusado && conviteEncontrado && countConfirmados > conviteEncontrado.limite_pessoas;
-    
+    const isExcedente = !isRecusado && conviteAtual && countConfirmados > conviteAtual.limite_pessoas;
+
     let status = 'confirmado';
     if (isRecusado) status = 'recusado';
     else if (isExcedente) status = 'excedente_solicitado';
 
     // STORY-053: RSVP Individual e Atômico
-    const rsvpPayload = { 
-      convite_id: conviteEncontrado?.id,
-      evento_id: conviteEncontrado?.evento_id,
+    const rsvpPayload = {
+      convite_id: conviteAtual?.id,
+      evento_id: conviteAtual?.evento_id,
       confirmados: countConfirmados,
       restricoes: formData.restricoes, // Mantemos o global para compatibilidade
       mensagem: formData.mensagem,
@@ -187,7 +244,7 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
       lgpd_consent: hasRestrictions ? true : false
     };
 
-    const membersPayload = membros.map(m => ({
+    const membersPayload = membrosAtual.map(m => ({
       id: m.id === 'virtual' ? undefined : m.id,
       nome: m.nome,
       confirmado: isRecusado ? false : !!m.confirmado,
@@ -208,16 +265,24 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
     }
 
     if (success) {
+      // Link Único: só agora "oficializa" o convite recém-criado no
+      // estado, pra tela de sucesso (e uma eventual edição de resposta
+      // depois) enxergar exatamente como no fluxo tradicional.
+      if (autoCadastro && conviteAtual && !conviteEncontrado) {
+        setConviteEncontrado(conviteAtual);
+        setMembros(membrosAtual);
+      }
+
       setAlertaExcedente(!!isExcedente);
       setEnviado(true);
 
       // Telemetria: RSVP Concluído com Sucesso!
-      if (conviteEncontrado?.evento_id && !isPreviewMode) {
+      if (conviteAtual?.evento_id && !isPreviewMode) {
         Telemetry.track({
-          eventoId: conviteEncontrado.evento_id,
+          eventoId: conviteAtual.evento_id,
           categoria: 'invite',
           eventType: 'rsvp_success',
-          targetId: conviteEncontrado.id,
+          targetId: conviteAtual.id,
           metadata: {
             is_recusado: isRecusado,
             confirmados_count: countConfirmados,
@@ -233,14 +298,14 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
       }
     } else {
       setErrorMessage('Houve um erro ao enviar sua confirmação. Tente novamente mais tarde.');
-      
+
       // Telemetria: Erro técnico no submit do RSVP
-      if (conviteEncontrado?.evento_id && !isPreviewMode) {
+      if (conviteAtual?.evento_id && !isPreviewMode) {
         Telemetry.track({
-          eventoId: conviteEncontrado.evento_id,
+          eventoId: conviteAtual.evento_id,
           categoria: 'invite',
           eventType: 'rsvp_error',
-          targetId: conviteEncontrado.id,
+          targetId: conviteAtual.id,
           metadata: { error_snippet: error ? String(error).substring(0, 100) : 'unknown' }
         });
       }
@@ -355,52 +420,114 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
               Para confirmar sua presença, utilize o link individual enviado pelos noivos.
             </p>
           </div>
-        ) : conviteEncontrado && (
+        ) : (conviteEncontrado || autoCadastro) && (() => {
+          // Link Único: enquanto o convite ainda não foi criado (antes do
+          // envio), não há `conviteEncontrado.tipo` pra basear os textos —
+          // usa uma versão neutra dos mesmos textos.
+          const isAutoCadastroPendente = !!autoCadastro && !conviteEncontrado;
+          const tipo = conviteEncontrado?.tipo;
+
+          return (
           <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={styles.conviteInfo} style={{ borderLeftColor: propConfig?.accent_color }}>
-              {conviteEncontrado.tipo === 'individual' ? (
-                <p>Olá, <strong>{conviteEncontrado.nome_principal}</strong>! Preparamos um lugar com muito carinho para você.</p>
-              ) : conviteEncontrado.tipo === 'casal' ? (
-                <p>Olá, <strong>{conviteEncontrado.nome_principal}</strong>! Ficaremos radiantes em receber vocês dois.</p>
-              ) : (
-                <p>Olá, <strong>{conviteEncontrado.nome_principal}</strong>! Reservamos um espaço especial para sua família.</p>
-              )}
-            </div>
+            {isAutoCadastroPendente ? (
+              <div className={styles.conviteInfo} style={{ borderLeftColor: propConfig?.accent_color }}>
+                <p>Antes de confirmar, conta pra gente quem é você.</p>
+              </div>
+            ) : (
+              <div className={styles.conviteInfo} style={{ borderLeftColor: propConfig?.accent_color }}>
+                {tipo === 'individual' ? (
+                  <p>Olá, <strong>{conviteEncontrado!.nome_principal}</strong>! Preparamos um lugar com muito carinho para você.</p>
+                ) : tipo === 'casal' ? (
+                  <p>Olá, <strong>{conviteEncontrado!.nome_principal}</strong>! Ficaremos radiantes em receber vocês dois.</p>
+                ) : (
+                  <p>Olá, <strong>{conviteEncontrado!.nome_principal}</strong>! Reservamos um espaço especial para sua família.</p>
+                )}
+              </div>
+            )}
 
             <div className={styles.fieldGroup}>
               <label htmlFor="confirmacao">
-                {conviteEncontrado.tipo === 'individual' ? 'Você poderá celebrar conosco?' : 
-                 conviteEncontrado.tipo === 'casal' ? 'Vocês poderão celebrar conosco?' : 
+                {isAutoCadastroPendente ? 'Você vai poder celebrar com a gente?' :
+                 tipo === 'individual' ? 'Você poderá celebrar conosco?' :
+                 tipo === 'casal' ? 'Vocês poderão celebrar conosco?' :
                  'Sua família poderá celebrar conosco?'}
               </label>
-              <select 
+              <select
                 id="confirmacao"
                 value={formData.confirmacao}
                 onChange={(e) => setFormData({...formData, confirmacao: e.target.value})}
                 className={styles.input}
               >
                 <option value="sim">
-                  {conviteEncontrado.tipo === 'individual' ? 'Sim, estarei lá!' : 'Sim, estaremos lá!'}
+                  {tipo === 'individual' || isAutoCadastroPendente ? 'Sim, estarei lá!' : 'Sim, estaremos lá!'}
                 </option>
                 <option value="nao">
-                  {conviteEncontrado.tipo === 'individual' ? 'Infelizmente não poderei ir' : 'Infelizmente não poderemos ir'}
+                  {tipo === 'individual' || isAutoCadastroPendente ? 'Infelizmente não poderei ir' : 'Infelizmente não poderemos ir'}
                 </option>
               </select>
             </div>
 
+            {isAutoCadastroPendente && (
+              <div className={styles.fieldGroup}>
+                <label htmlFor="nomeAutoCadastro">Seu nome</label>
+                <input
+                  id="nomeAutoCadastro"
+                  type="text"
+                  required
+                  value={nomeAutoCadastro}
+                  onChange={(e) => setNomeAutoCadastro(e.target.value)}
+                  placeholder="Ex: Ana Souza"
+                  className={styles.input}
+                />
+              </div>
+            )}
+
             {formData.confirmacao === 'sim' && (
               <>
+                {isAutoCadastroPendente ? (
+                  <div className={styles.fieldGroup}>
+                    <label>Vem mais alguém com você?</label>
+                    <div className={styles.membersList}>
+                      {acompanhantesAutoCadastro.map((acompanhante, index) => (
+                        <div key={index} className={styles.memberItem} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          <input
+                            type="text"
+                            className={styles.memberInput}
+                            value={acompanhante}
+                            onChange={(e) => updateAcompanhanteAutoCadastro(index, e.target.value)}
+                            placeholder="Nome do acompanhante"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeAcompanhanteAutoCadastro(index)}
+                            aria-label="Remover acompanhante"
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6 }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={addAcompanhanteAutoCadastro}
+                      style={{ background: 'none', border: 'none', color: propConfig?.accent_color, fontWeight: 600, cursor: 'pointer', padding: '0.4rem 0' }}
+                    >
+                      + Adicionar acompanhante
+                    </button>
+                  </div>
+                ) : (
                 <div className={styles.fieldGroup}>
                   <label>
-                    {conviteEncontrado.tipo === 'individual' ? 'Confirme seus dados:' : 
-                     conviteEncontrado.tipo === 'casal' ? 'Quem de vocês poderá ir?' : 
+                    {tipo === 'individual' ? 'Confirme seus dados:' :
+                     tipo === 'casal' ? 'Quem de vocês poderá ir?' :
                      'Quem da família virá celebrar conosco?'}
                   </label>
                   <div className={styles.membersList}>
                     {membros.map(membro => (
                       <div key={membro.id} className={styles.memberItem}>
                         <div className={styles.memberHeader} onClick={() => toggleMembro(membro.id)}>
-                          <div 
+                          <div
                             className={`${styles.checkbox} ${membro.confirmado ? styles.checked : ''}`}
                             style={membro.confirmado ? { backgroundColor: propConfig?.accent_color, borderColor: propConfig?.accent_color } : {}}
                           >
@@ -408,10 +535,10 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
                           </div>
                           <span>{membro.nome}</span>
                         </div>
-                        
+
                         {membro.confirmado && (
                           <div className={styles.memberRestriction}>
-                            <input 
+                            <input
                               type="text"
                               className={styles.memberInput}
                               placeholder="Restrição alimentar? (Ex: Vegano, s/ glúten)"
@@ -424,7 +551,9 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
                     ))}
                   </div>
                 </div>
+                )}
 
+                {!isAutoCadastroPendente && (
                 <div className={styles.fieldGroup}>
                   <label htmlFor="extraGuests">Gostaria de levar mais alguém não listado acima?</label>
                   <div className={styles.extraGuestsControl}>
@@ -449,6 +578,7 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
                     Sinalize aqui se precisar adicionar acompanhantes. O organizador será avisado para conferir a disponibilidade.
                   </p>
                 </div>
+                )}
               </>
             )}
 
@@ -512,7 +642,8 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
               {loading ? 'Enviando carinho...' : 'Confirmar Presença'}
             </button>
           </form>
-        )}
+          );
+        })()}
       </div>
     </section>
   );

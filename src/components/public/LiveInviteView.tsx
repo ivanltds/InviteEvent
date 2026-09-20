@@ -47,6 +47,8 @@ interface LiveInviteViewProps {
   onGatewayComplete?: () => void;
   disableActions?: boolean; // For real-time dashboard preview disabling clicks
   isPreviewMode?: boolean; // Special preview simulation mode for organizers
+  /** Modo Link Único: repassado direto pro <RSVP> (ver RSVP.tsx). */
+  autoCadastro?: { eventoId: string; eventoSlug: string };
 }
 
 const LiveInviteView: React.FC<LiveInviteViewProps> = ({
@@ -60,6 +62,7 @@ const LiveInviteView: React.FC<LiveInviteViewProps> = ({
   onGatewayComplete,
   disableActions = false,
   isPreviewMode = false,
+  autoCadastro,
 }) => {
 
   // Telemetria: Refs de Rastreamento de Tempo de Visualização por Seção
@@ -279,7 +282,7 @@ const LiveInviteView: React.FC<LiveInviteViewProps> = ({
         {/* Evitar renderizar o RSVP formulário real se for disableActions para não conflitar requisições */}
         {/* Renderiza formulário interativo se não estiver com ações bloqueadas OU estiver no modo Simulação */}
         {!disableActions && (slug !== 'preview' || isPreviewMode) ? (
-          <RSVP inviteSlug={slug} config={config} isPreviewMode={isPreviewMode} />
+          <RSVP inviteSlug={slug} config={config} isPreviewMode={isPreviewMode} autoCadastro={autoCadastro} />
         ) : (
           <div style={{ padding: '4rem 2rem', textAlign: 'center', opacity: 0.8 }}>
             <h2 style={{ fontFamily: 'var(--font-cursive)', fontSize: '3rem', color: 'var(--accent)' }}>RSVP</h2>

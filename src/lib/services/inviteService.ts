@@ -79,7 +79,7 @@ export const inviteService = {
     eventoId: string,
     nome: string,
     acompanhantes: string[]
-  ): Promise<{ success: boolean; slug?: string; error?: Error | null }> {
+  ): Promise<{ success: boolean; convite?: Convite; membros?: ConviteMembro[]; error?: Error | null }> {
     const nomePrincipal = nome.trim();
     if (!nomePrincipal) {
       return { success: false, error: new Error('Nome é obrigatório.') };
@@ -107,14 +107,17 @@ export const inviteService = {
       return { success: false, error: conviteError ? new Error(conviteError.message) : new Error('Falha ao criar convite.') };
     }
 
-    const membros = [nomePrincipal, ...nomesAcompanhantes].map(nomeMembro => ({
+    const membrosPayload = [nomePrincipal, ...nomesAcompanhantes].map(nomeMembro => ({
       convite_id: novoConvite.id,
       evento_id: eventoId,
       nome: nomeMembro,
       confirmado: null,
     }));
 
-    const { error: membrosError } = await supabase.from('convite_membros').insert(membros);
+    const { data: novosMembros, error: membrosError } = await supabase
+      .from('convite_membros')
+      .insert(membrosPayload)
+      .select();
 
     if (membrosError) {
       // O convite já foi criado; não desfazemos (o convidado pode tentar de
@@ -122,7 +125,7 @@ export const inviteService = {
       console.error('Erro ao criar membros do auto-cadastro:', membrosError);
     }
 
-    return { success: true, slug: novoConvite.slug };
+    return { success: true, convite: novoConvite as Convite, membros: (novosMembros as ConviteMembro[]) || [] };
   },
 
   async updateInvite(id: string, invite: Partial<Convite>): Promise<{ success: boolean; error?: Error | null }> {

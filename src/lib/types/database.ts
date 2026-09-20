@@ -169,6 +169,8 @@ export interface Configuracao {
   modo_arrecadacao?: ModoArrecadacao;
   gravata_label?: GravataLabel;
   gravata_recado?: string;
+  /** Valores sugeridos de contribuição na tela da Gravata, cadastrados livremente pelos noivos. */
+  gravata_valores_sugeridos?: number[];
   /** individual: noivos cadastram cada convite. link_unico: convidados se auto-cadastram. */
   modo_convite?: ModoConvite;
   pix_chave?: string;

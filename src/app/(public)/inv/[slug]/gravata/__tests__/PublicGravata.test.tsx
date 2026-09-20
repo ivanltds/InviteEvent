@@ -77,4 +77,38 @@ describe('PublicGravataPage', () => {
 
     await waitFor(() => expect(screen.getByText(/Convite não encontrado/i)).toBeInTheDocument());
   });
+
+  it('não mostra chips de valor quando não há valores sugeridos cadastrados', async () => {
+    (rsvpService.getInviteBySlug as jest.Mock).mockResolvedValue(baseInvite);
+    (configService.getConfig as jest.Mock).mockResolvedValue(baseConfig);
+
+    render(<PublicGravataPage />);
+
+    await waitFor(() => expect(screen.getByRole('button', { name: /Copiar Código PIX/i })).toBeInTheDocument());
+    expect(screen.queryByText(/Quanto você gostaria de contribuir/i)).not.toBeInTheDocument();
+  });
+
+  it('ao escolher um valor sugerido, o payload PIX passa a incluir esse valor', async () => {
+    (rsvpService.getInviteBySlug as jest.Mock).mockResolvedValue(baseInvite);
+    (configService.getConfig as jest.Mock).mockResolvedValue({
+      ...baseConfig,
+      gravata_valores_sugeridos: [50, 100, 200],
+    });
+
+    render(<PublicGravataPage />);
+    await waitFor(() => expect(screen.getByText(/Quanto você gostaria de contribuir/i)).toBeInTheDocument());
+
+    expect(screen.getByRole('button', { name: /R\$\s*50/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /R\$\s*100/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /R\$\s*200/ })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /R\$\s*100/ }));
+
+    // O valor de R$ 100,00 deve aparecer na instrução do PixPanel
+    await waitFor(() => expect(screen.getByText(/R\$\s*100,00/)).toBeInTheDocument());
+
+    // Clicar de novo no mesmo valor desmarca (volta pro valor livre)
+    fireEvent.click(screen.getByRole('button', { name: /R\$\s*100/ }));
+    await waitFor(() => expect(screen.getByText(/Escolha o valor que quiser contribuir/i)).toBeInTheDocument());
+  });
 });

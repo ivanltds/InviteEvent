@@ -19,6 +19,7 @@ export default function PublicGravataPage() {
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(true);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+  const [valorSelecionado, setValorSelecionado] = useState<number | null>(null);
 
   useEffect(() => {
     async function init() {
@@ -47,8 +48,14 @@ export default function PublicGravataPage() {
   // "em breve" em vez de cobrar de um PIX que não é do casal.
   const pixPayload = useMemo(() => {
     if (!config?.pix_chave) return '';
-    return generatePixPayload(config.pix_chave, config.pix_nome || eventoNome || 'CASAMENTO', config.pix_tipo || 'aleatoria', 'SAO PAULO');
-  }, [config, eventoNome]);
+    return generatePixPayload(
+      config.pix_chave,
+      config.pix_nome || eventoNome || 'CASAMENTO',
+      config.pix_tipo || 'aleatoria',
+      'SAO PAULO',
+      valorSelecionado ?? undefined
+    );
+  }, [config, eventoNome, valorSelecionado]);
 
   const copyPixCode = () => {
     if (!pixPayload) return;
@@ -82,6 +89,29 @@ export default function PublicGravataPage() {
         {config.gravata_recado || 'Sua presença já é o nosso maior presente!'}
       </div>
 
+      {pixPayload && (config.gravata_valores_sugeridos?.length ?? 0) > 0 && (
+        <div className={styles.valoresSugeridos}>
+          <p className={styles.valoresLabel}>Quanto você gostaria de contribuir?</p>
+          <div className={styles.valoresChips}>
+            {config.gravata_valores_sugeridos!.map((valor) => (
+              <button
+                key={valor}
+                type="button"
+                onClick={() => setValorSelecionado(valorSelecionado === valor ? null : valor)}
+                className={styles.valorChip}
+                style={
+                  valorSelecionado === valor
+                    ? { backgroundColor: accentColor, borderColor: accentColor, color: '#fff' }
+                    : { borderColor: accentColor }
+                }
+              >
+                {valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {pixPayload ? (
         <PixPanel
           pixPayload={pixPayload}
@@ -89,6 +119,7 @@ export default function PublicGravataPage() {
           copyStatus={copyStatus}
           accentColor={accentColor}
           qrAltLabel={eventoNome}
+          total={valorSelecionado ?? undefined}
         />
       ) : (
         <div className={styles.emComBreve}>

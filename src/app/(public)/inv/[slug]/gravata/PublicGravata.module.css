@@ -33,6 +33,35 @@
   white-space: pre-wrap;
 }
 
+.valoresSugeridos {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.valoresLabel {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.valoresChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+.valorChip {
+  padding: 0.6rem 1.1rem;
+  border: 2px solid;
+  border-radius: 30px;
+  background: transparent;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
 .emComBreve {
   text-align: center;
   padding: 2rem 1rem;

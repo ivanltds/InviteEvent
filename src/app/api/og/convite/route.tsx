@@ -21,25 +21,21 @@ export const runtime = 'nodejs';
 const WIDTH = 1200;
 const HEIGHT = 630;
 
-// Google Fonts serve WOFF2 por padrão, que o Satori (motor do
-// ImageResponse) não consegue ler — precisa de TTF/OTF. Forçar um
-// User-Agent antigo faz o Google servir o formato compatível.
-async function loadGoogleFont(family: string, weight: number): Promise<ArrayBuffer | null> {
+/**
+ * Carrega a fonte de um arquivo estático em public/fonts/ em vez de
+ * buscar do Google Fonts a cada requisição. O Google não serve mais
+ * TTF/OTF de forma confiável via truque de User-Agent (só WOFF2/WOFF,
+ * que o Satori — motor do ImageResponse — não lê), então empacotamos o
+ * arquivo (fonte variável, funciona pra qualquer peso) direto no
+ * projeto. Buscar via fetch relativo à própria requisição (em vez de
+ * fs.readFile) é o padrão recomendado pra assets estáticos em rotas
+ * como esta na Vercel.
+ */
+async function loadLocalFont(request: Request, path: string): Promise<ArrayBuffer | null> {
   try {
-    const cssUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@${weight}&display=swap`;
-    const css = await fetch(cssUrl, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36',
-      },
-    }).then((res) => res.text());
-
-    const match = css.match(/src: url\(([^)]+)\) format\('(opentype|truetype)'\)/);
-    if (!match) return null;
-
-    const fontRes = await fetch(match[1]);
-    if (!fontRes.ok) return null;
-    return await fontRes.arrayBuffer();
+    const res = await fetch(new URL(path, request.url));
+    if (!res.ok) return null;
+    return await res.arrayBuffer();
   } catch {
     return null;
   }
@@ -52,7 +48,7 @@ export async function GET(request: Request) {
   const data = (searchParams.get('data') || '').slice(0, 60);
   const foto = searchParams.get('foto') || '';
 
-  const playfairBold = await loadGoogleFont('Playfair Display', 700);
+  const playfairBold = await loadLocalFont(request, '/fonts/PlayfairDisplay-Variable.ttf');
 
   return new ImageResponse(
     (
@@ -76,15 +72,20 @@ export async function GET(request: Request) {
           />
         )}
 
-        {/* Gradiente escuro de baixo pra cima — garante leitura do texto
-            independente do quão clara/escura a foto seja. */}
+        {/* Faixa sólida (não só gradiente) na parte de baixo — garante
+            leitura do texto mesmo sobre fotos claras/movimentadas, o que
+            um degradê suave sozinho não garantia (testado ao vivo: a
+            data ficava quase invisível sobre uma foto clara). Um
+            gradiente fino faz a transição entre a foto e a faixa. */}
         <div
           style={{
             position: 'absolute',
-            inset: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: '46%',
             display: 'flex',
-            background:
-              'linear-gradient(to top, rgba(20,16,10,0.88) 0%, rgba(20,16,10,0.35) 45%, rgba(20,16,10,0.15) 65%, rgba(20,16,10,0.35) 100%)',
+            background: 'linear-gradient(to top, rgba(15,12,8,0.94) 55%, rgba(15,12,8,0) 100%)',
           }}
         />
 
@@ -97,7 +98,7 @@ export async function GET(request: Request) {
             justifyContent: 'flex-end',
             width: '100%',
             height: '100%',
-            padding: '64px 80px',
+            padding: '0 70px 56px',
             textAlign: 'center',
           }}
         >
@@ -106,11 +107,10 @@ export async function GET(request: Request) {
               display: 'flex',
               fontFamily: playfairBold ? 'Playfair Display' : 'serif',
               fontWeight: 700,
-              fontSize: noiva.length + noivo.length > 30 ? 64 : 84,
-              color: '#FBF8F2',
-              letterSpacing: 1,
-              lineHeight: 1.15,
-              textShadow: '0 2px 16px rgba(0,0,0,0.4)',
+              fontSize: noiva.length + noivo.length > 26 ? 58 : 72,
+              color: '#FFFFFF',
+              letterSpacing: 0.5,
+              lineHeight: 1.2,
             }}
           >
             {noiva} &amp; {noivo}
@@ -119,11 +119,12 @@ export async function GET(request: Request) {
             <div
               style={{
                 display: 'flex',
-                marginTop: 20,
+                marginTop: 18,
                 fontFamily: playfairBold ? 'Playfair Display' : 'serif',
-                fontSize: 30,
-                color: '#E8DCC0',
-                letterSpacing: 3,
+                fontWeight: 700,
+                fontSize: 26,
+                color: '#D9B978',
+                letterSpacing: 4,
                 textTransform: 'uppercase',
               }}
             >

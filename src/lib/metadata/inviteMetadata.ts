@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { buildConviteCardImageUrl } from '@/lib/utils/conviteCard';
 
 /**
  * Gera o Open Graph/Twitter Card de cada convite (foto do casal + nome +
@@ -59,23 +60,6 @@ function formatDataCasamento(dataCasamento?: string): string {
 const OG_IMAGE_WIDTH = 1200;
 const OG_IMAGE_HEIGHT = 630;
 
-/**
- * Correção de 20/09/2026: og:image era a foto crua do casal (só
- * recortada 1200x630 via Cloudinary) — o usuário pediu um cartão de
- * verdade, com os nomes do casal em tipografia elegante sobre a foto e a
- * data, como um convite tradicional. Em vez de servir a foto direto,
- * montamos a URL de /api/og/convite (src/app/api/og/convite/route.tsx),
- * que gera esse cartão dinamicamente via ImageResponse (next/og) — a
- * composição final sempre sai 1200x630, então não precisamos mais do
- * recorte via Cloudinary aqui.
- */
-function buildConviteCardImageUrl(params: { noiva: string; noivo: string; data?: string; foto?: string }): string {
-  const qs = new URLSearchParams({ noiva: params.noiva, noivo: params.noivo });
-  if (params.data) qs.set('data', params.data);
-  if (params.foto) qs.set('foto', params.foto);
-  return `${getBaseUrl()}/api/og/convite?${qs.toString()}`;
-}
-
 function buildMetadataFromConfig(config: any, path: string): Metadata {
   const noiva = config.noiva_nome?.trim();
   const noivo = config.noivo_nome?.trim();
@@ -92,7 +76,7 @@ function buildMetadataFromConfig(config: any, path: string): Metadata {
   // Sempre que temos os dois nomes, geramos o cartão (com ou sem foto —
   // o gerador tem um fundo elegante de fallback); só cai pra "sem
   // imagem nenhuma" no caso raro de faltar algum dos nomes.
-  const image = noiva && noivo ? buildConviteCardImageUrl({ noiva, noivo, data: dataFormatada, foto: rawImage }) : undefined;
+  const image = noiva && noivo ? buildConviteCardImageUrl({ noiva, noivo, data: dataFormatada, foto: rawImage }, getBaseUrl()) : undefined;
 
   const url = `${getBaseUrl()}${path}`;
 

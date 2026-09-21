@@ -6,6 +6,7 @@ import styles from './AdminConvidados.module.css';
 import { inviteService, InviteWithRSVP } from '@/lib/services/inviteService';
 import { InviteType, Configuracao } from '@/lib/types/database';
 import { generateWhatsappLink, renderWhatsappTemplate, DEFAULT_WHATSAPP_TEMPLATE } from '@/lib/utils/whatsapp';
+import { buildConviteCardImageUrl } from '@/lib/utils/conviteCard';
 import { configService } from '@/lib/services/configService';
 import { useEvent } from '@/lib/contexts/EventContext';
 import { SearchControl } from '@/components/ui/SearchControl';
@@ -196,7 +197,7 @@ export default function AdminConvidados() {
     triggerToast('Link copiado para o clipboard!');
   };
 
-  const copyEventLinkUnico = () => {
+  const copyEventLinkUnico = async () => {
     if (!currentEvent?.slug) return;
     const url = `${window.location.origin}/inv/evento/${currentEvent.slug}`;
     // Copia a mensagem completa (template configurado em Configurações,
@@ -204,6 +205,44 @@ export default function AdminConvidados() {
     // usuário em 20/09/2026: "não copie apenas o link".
     const template = config?.whatsapp_template?.trim() || DEFAULT_WHATSAPP_TEMPLATE;
     const message = renderWhatsappTemplate(template, { nome: 'pessoal', link: url });
+
+    // Pedido de acompanhamento: "coloque a imagem no botão de copiar
+    // para o whats, dai vai o cartão, o link e a mensagem." Colar só
+    // texto no WhatsApp depende do WhatsApp buscar o og:image sozinho
+    // (pode falhar/demorar). Em vez disso, tentamos compartilhar o
+    // CARTÃO como arquivo de imagem de verdade (Web Share API), com a
+    // mensagem (que já inclui o link) como legenda — no celular isso
+    // abre o seletor nativo de apps com o WhatsApp já pronto pra
+    // enviar imagem + legenda numa única mensagem, sem depender de
+    // crawler nenhum. Sem suporte (a maioria dos navegadores desktop),
+    // cai pra copiar a mensagem em texto, como antes.
+    if (config?.noiva_nome && config?.noivo_nome && navigator.share && (navigator as any).canShare) {
+      try {
+        const [year, month, day] = (config.data_casamento || '').split('-').map(Number);
+        const dataFormatada = year && month && day
+          ? new Date(year, month - 1, day).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
+          : undefined;
+        const cardUrl = buildConviteCardImageUrl(
+          { noiva: config.noiva_nome, noivo: config.noivo_nome, data: dataFormatada, foto: config.hero_images?.[0] },
+          window.location.origin
+        );
+
+        const res = await fetch(cardUrl);
+        if (res.ok) {
+          const blob = await res.blob();
+          const file = new File([blob], 'convite.png', { type: 'image/png' });
+
+          if ((navigator as any).canShare({ files: [file] })) {
+            await navigator.share({ files: [file], text: message });
+            return;
+          }
+        }
+      } catch (err: any) {
+        if (err?.name === 'AbortError') return; // usuário cancelou o compartilhamento — não é erro
+        console.warn('[copyEventLinkUnico] Falha ao compartilhar o cartão como imagem, caindo pra copiar texto:', err);
+      }
+    }
+
     navigator.clipboard.writeText(message);
     triggerToast('Mensagem copiada! Cole no grupo do WhatsApp para enviar aos convidados.');
   };

@@ -35,4 +35,24 @@ describe('Site Sections (Public)', () => {
     expect(screen.getByText(/Cerimônia/i)).toBeInTheDocument();
     expect(screen.getByText(/Recepção/i)).toBeInTheDocument();
   });
+
+  // Correção de 20/09/2026: os campos local_cerimonia/endereco_cerimonia
+  // eram editáveis em Configurações mas o componente que os exibe nunca
+  // era renderizado no convite — o usuário reportou "a seção que tem os
+  // endereços não ta aparecendo pros convidados".
+  test('Detalhes mostra links de Google Maps e Waze a partir do endereço da cerimônia', () => {
+    render(<Detalhes config={{ ...mockConfig, endereco_cerimonia: 'Av. Paulista, 1000' } as any} />);
+
+    const mapsLink = screen.getByText('Google Maps').closest('a');
+    const wazeLink = screen.getByText('Waze').closest('a');
+    expect(mapsLink).toHaveAttribute('href', expect.stringContaining('google.com/maps'));
+    expect(mapsLink).toHaveAttribute('href', expect.stringContaining('Av.%20Paulista'));
+    expect(wazeLink).toHaveAttribute('href', expect.stringContaining('waze.com'));
+  });
+
+  test('Detalhes não mostra links de mapa sem endereço nem local cadastrado', () => {
+    render(<Detalhes config={{ ...mockConfig, endereco_cerimonia: undefined, local_cerimonia: undefined } as any} />);
+    expect(screen.queryByText('Google Maps')).not.toBeInTheDocument();
+    expect(screen.queryByText('Waze')).not.toBeInTheDocument();
+  });
 });

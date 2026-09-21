@@ -75,6 +75,12 @@
   opacity: 0.7;
 }
 
+.mapLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 .mapLink {
   display: inline-block;
   padding: 0.8rem 1.5rem;

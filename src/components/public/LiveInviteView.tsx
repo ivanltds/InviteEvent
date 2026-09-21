@@ -277,6 +277,14 @@ const LiveInviteView: React.FC<LiveInviteViewProps> = ({
         </section>
       </main>
 
+      {/* Correção de 20/09/2026: <Detalhes> (seção "A Cerimônia"/"A
+          Recepção" com local_cerimonia/endereco_cerimonia) estava
+          importado mas nunca renderizado aqui — os campos continuavam
+          editáveis em Configurações, mas não tinham nenhum efeito no
+          convite. Os convidados nunca viam o endereço preenchido pelos
+          noivos. */}
+      <Detalhes config={config} />
+
       {resolveSecoesOrdem(config.secoes_ordem).map((secao: SecaoConvite) => {
         switch (secao) {
           case 'historia':

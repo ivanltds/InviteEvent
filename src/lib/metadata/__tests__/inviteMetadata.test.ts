@@ -2,10 +2,11 @@ import { buildInviteMetadataBySlug, buildInviteMetadataByEventoSlug } from '../i
 
 /**
  * Pedido do usuário em 20/09/2026 (com print do card genérico do
- * InviteEventAI aparecendo no WhatsApp em vez do card do casal): cada
- * convite deve gerar seu próprio Open Graph (nome do casal, data e foto),
- * tanto no fluxo tradicional (`/inv/[slug]`) quanto no Link Único
- * (`/inv/evento/[eventoSlug]`).
+ * InviteEventAI aparecendo no WhatsApp em vez do card do casal, e depois
+ * uma imagem de referência de um cartão de convite tradicional): cada
+ * convite deve gerar seu próprio Open Graph, com um CARTÃO (nomes do
+ * casal em tipografia elegante sobre a foto + data), não a foto crua —
+ * gerado dinamicamente em /api/og/convite (ver route.tsx nessa pasta).
  */
 
 const makeChain = (data: any) => ({
@@ -23,12 +24,24 @@ jest.mock('@supabase/supabase-js', () => ({
   })),
 }));
 
+/** Extrai {noiva, noivo, data, foto} da URL do gerador de cartão, sem depender da ordem dos parâmetros. */
+function parseCardImageUrl(url: string) {
+  const parsed = new URL(url);
+  return {
+    pathname: parsed.pathname,
+    noiva: parsed.searchParams.get('noiva'),
+    noivo: parsed.searchParams.get('noivo'),
+    data: parsed.searchParams.get('data'),
+    foto: parsed.searchParams.get('foto'),
+  };
+}
+
 describe('buildInviteMetadataBySlug', () => {
   beforeEach(() => {
     fromMock = jest.fn();
   });
 
-  it('gera título, descrição e imagem a partir do convite e da config do evento', async () => {
+  it('gera título e descrição a partir do convite e da config do evento', async () => {
     fromMock.mockImplementation((table: string) => {
       if (table === 'convites') return makeChain({ evento_id: 'e1' });
       if (table === 'configuracoes')
@@ -46,16 +59,10 @@ describe('buildInviteMetadataBySlug', () => {
     expect(metadata.title).toBe('Ana & Carlos');
     expect(metadata.description).toContain('Ana & Carlos');
     expect(metadata.description).toContain('outubro de 2026');
-    expect(metadata.openGraph?.images).toEqual([
-      { url: 'https://cdn.example.com/foto-casal.jpg', width: 1200, height: 630, alt: 'Ana & Carlos' },
-    ]);
     expect((metadata.twitter as any)?.card).toBe('summary_large_image');
   });
 
-  it('recorta a foto para 1200x630 quando é uma URL do Cloudinary, mesmo com foto original em retrato', async () => {
-    // Correção de 20/09/2026: og:image declarava 1200x630 mas a foto real
-    // cadastrada pelos noivos costuma ser retrato (ex. 386x582) — o
-    // WhatsApp rejeitava/cortava mal o card por causa dessa divergência.
+  it('og:image aponta pro gerador de cartão (/api/og/convite) com nomes, data e foto', async () => {
     fromMock.mockImplementation((table: string) => {
       if (table === 'convites') return makeChain({ evento_id: 'e1' });
       if (table === 'configuracoes')
@@ -63,21 +70,47 @@ describe('buildInviteMetadataBySlug', () => {
           noiva_nome: 'Andréia',
           noivo_nome: 'Thiago',
           data_casamento: '2026-11-14',
-          hero_images: ['https://res.cloudinary.com/dqt35bpzt/image/upload/v1789848523/foto-retrato.jpg'],
+          hero_images: ['https://res.cloudinary.com/dqt35bpzt/image/upload/v1789848523/foto.jpg'],
         });
       return makeChain(null);
     });
 
     const metadata = await buildInviteMetadataBySlug('andreia-thiago-a1b2');
+    const images = metadata.openGraph?.images as any[];
 
-    expect(metadata.openGraph?.images).toEqual([
-      {
-        url: 'https://res.cloudinary.com/dqt35bpzt/image/upload/c_fill,w_1200,h_630,g_auto,f_jpg,q_auto/v1789848523/foto-retrato.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Andréia & Thiago',
-      },
-    ]);
+    expect(images).toHaveLength(1);
+    expect(images[0].width).toBe(1200);
+    expect(images[0].height).toBe(630);
+    expect(images[0].alt).toBe('Andréia & Thiago');
+
+    const parsed = parseCardImageUrl(images[0].url);
+    expect(parsed.pathname).toBe('/api/og/convite');
+    expect(parsed.noiva).toBe('Andréia');
+    expect(parsed.noivo).toBe('Thiago');
+    expect(parsed.data).toContain('novembro de 2026');
+    expect(parsed.foto).toBe('https://res.cloudinary.com/dqt35bpzt/image/upload/v1789848523/foto.jpg');
+  });
+
+  it('gera o cartão mesmo sem foto cadastrada (o gerador tem um fundo de fallback)', async () => {
+    fromMock.mockImplementation((table: string) => {
+      if (table === 'convites') return makeChain({ evento_id: 'e1' });
+      if (table === 'configuracoes')
+        return makeChain({
+          noiva_nome: 'Ana',
+          noivo_nome: 'Carlos',
+          data_casamento: '2026-10-10',
+          hero_images: [],
+        });
+      return makeChain(null);
+    });
+
+    const metadata = await buildInviteMetadataBySlug('ana-carlos-a1b2');
+    const images = metadata.openGraph?.images as any[];
+
+    expect(images).toHaveLength(1);
+    const parsed = parseCardImageUrl(images[0].url);
+    expect(parsed.noiva).toBe('Ana');
+    expect(parsed.foto).toBeNull();
   });
 
   it('cai para as fotos individuais quando não há hero_images', async () => {
@@ -95,9 +128,8 @@ describe('buildInviteMetadataBySlug', () => {
     });
 
     const metadata = await buildInviteMetadataBySlug('ana-carlos-a1b2');
-    expect(metadata.openGraph?.images).toEqual([
-      { url: 'https://cdn.example.com/ana.jpg', width: 1200, height: 630, alt: 'Ana & Carlos' },
-    ]);
+    const images = metadata.openGraph?.images as any[];
+    expect(parseCardImageUrl(images[0].url).foto).toBe('https://cdn.example.com/ana.jpg');
   });
 
   it('usa o fallback genérico do app quando o convite não existe', async () => {
@@ -145,6 +177,9 @@ describe('buildInviteMetadataByEventoSlug', () => {
     const metadata = await buildInviteMetadataByEventoSlug('casamento-de-andreia-e-thiago');
     expect(metadata.title).toBe('Andréia & Thiago');
     expect(metadata.openGraph?.url).toContain('/inv/evento/casamento-de-andreia-e-thiago');
+
+    const images = metadata.openGraph?.images as any[];
+    expect(parseCardImageUrl(images[0].url).foto).toBe('https://cdn.example.com/casal.jpg');
   });
 
   it('usa o fallback quando o evento não existe', async () => {

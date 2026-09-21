@@ -60,24 +60,20 @@ const OG_IMAGE_WIDTH = 1200;
 const OG_IMAGE_HEIGHT = 630;
 
 /**
- * Correção de 20/09/2026: o card do WhatsApp continuava "ruim" mesmo
- * depois do og:image aparecer, porque as fotos cadastradas pelos noivos
- * são retrato (ex.: 386x582), mas os metadados declaravam 1200x630
- * (paisagem) — a divergência entre o tamanho declarado e o real faz o
- * crawler do WhatsApp rejeitar ou cortar mal a imagem. Como todo upload
- * de foto passa pelo Cloudinary (CldUploadWidget), pedimos aqui um
- * recorte 1200x630 de verdade via transformação de URL do Cloudinary —
- * sem reprocessar/re-upload do arquivo original — garantindo que a
- * dimensão declarada sempre bate com a entregue, em qualquer orientação
- * de foto.
+ * Correção de 20/09/2026: og:image era a foto crua do casal (só
+ * recortada 1200x630 via Cloudinary) — o usuário pediu um cartão de
+ * verdade, com os nomes do casal em tipografia elegante sobre a foto e a
+ * data, como um convite tradicional. Em vez de servir a foto direto,
+ * montamos a URL de /api/og/convite (src/app/api/og/convite/route.tsx),
+ * que gera esse cartão dinamicamente via ImageResponse (next/og) — a
+ * composição final sempre sai 1200x630, então não precisamos mais do
+ * recorte via Cloudinary aqui.
  */
-function toOgImageUrl(url: string): string {
-  const cloudinaryUploadMarker = '/image/upload/';
-  const idx = url.indexOf(cloudinaryUploadMarker);
-  if (idx === -1) return url; // não é uma URL do Cloudinary — devolve como está
-
-  const insertAt = idx + cloudinaryUploadMarker.length;
-  return `${url.slice(0, insertAt)}c_fill,w_${OG_IMAGE_WIDTH},h_${OG_IMAGE_HEIGHT},g_auto,f_jpg,q_auto/${url.slice(insertAt)}`;
+function buildConviteCardImageUrl(params: { noiva: string; noivo: string; data?: string; foto?: string }): string {
+  const qs = new URLSearchParams({ noiva: params.noiva, noivo: params.noivo });
+  if (params.data) qs.set('data', params.data);
+  if (params.foto) qs.set('foto', params.foto);
+  return `${getBaseUrl()}/api/og/convite?${qs.toString()}`;
 }
 
 function buildMetadataFromConfig(config: any, path: string): Metadata {
@@ -93,7 +89,10 @@ function buildMetadataFromConfig(config: any, path: string): Metadata {
   // Prioriza a primeira imagem do carrossel (geralmente uma foto do
   // casal), caindo para as fotos individuais cadastradas se não houver.
   const rawImage: string | undefined = config.hero_images?.[0] || config.noiva_foto_url || config.noivo_foto_url || undefined;
-  const image = rawImage ? toOgImageUrl(rawImage) : undefined;
+  // Sempre que temos os dois nomes, geramos o cartão (com ou sem foto —
+  // o gerador tem um fundo elegante de fallback); só cai pra "sem
+  // imagem nenhuma" no caso raro de faltar algum dos nomes.
+  const image = noiva && noivo ? buildConviteCardImageUrl({ noiva, noivo, data: dataFormatada, foto: rawImage }) : undefined;
 
   const url = `${getBaseUrl()}${path}`;
 

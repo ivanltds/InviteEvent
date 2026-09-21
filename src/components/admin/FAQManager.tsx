@@ -17,16 +17,29 @@ export default function FAQManager({ eventoId }: { eventoId?: string }) {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ pergunta: '', resposta: '', ordem: 0 });
+  // Bug reportado pelo usuário em 21/09/2026 ("quando eu edito a faq
+  // ela não esta mudando"): a causa raiz era RLS bloqueando a leitura/
+  // escrita silenciosamente — nem o insert/update nem o fetch
+  // verificavam erro nenhum, então a tela parecia "funcionar" mesmo
+  // sem salvar nada de verdade. Agora qualquer erro do Supabase fica
+  // visível em vez de sumir.
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const fetchFaqs = async () => {
     if (!eventoId) return;
     setLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('faq')
       .select('*')
       .eq('evento_id', eventoId)
       .order('ordem', { ascending: true });
-    
+
+    if (error) {
+      console.error('[FAQManager] Erro ao carregar FAQ:', error);
+      setErrorMsg('Não foi possível carregar as perguntas. Tente recarregar a página.');
+    } else {
+      setErrorMsg(null);
+    }
     if (data) setFaqs(data);
     setLoading(false);
   };
@@ -39,11 +52,17 @@ export default function FAQManager({ eventoId }: { eventoId?: string }) {
     e.preventDefault();
     if (!eventoId) return;
 
-    if (editingId) {
-      await supabase.from('faq').update(formData).eq('id', editingId);
-    } else {
-      await supabase.from('faq').insert([{ ...formData, evento_id: eventoId }]);
+    setErrorMsg(null);
+    const { error } = editingId
+      ? await supabase.from('faq').update(formData).eq('id', editingId)
+      : await supabase.from('faq').insert([{ ...formData, evento_id: eventoId }]);
+
+    if (error) {
+      console.error('[FAQManager] Erro ao salvar FAQ:', error);
+      setErrorMsg('Não foi possível salvar essa pergunta. Tente novamente em instantes.');
+      return;
     }
+
     setFormData({ pergunta: '', resposta: '', ordem: 0 });
     setEditingId(null);
     fetchFaqs();
@@ -56,7 +75,13 @@ export default function FAQManager({ eventoId }: { eventoId?: string }) {
 
   const handleDelete = async (id: string) => {
     if (confirm('Deseja excluir esta pergunta?')) {
-      await supabase.from('faq').delete().eq('id', id);
+      setErrorMsg(null);
+      const { error } = await supabase.from('faq').delete().eq('id', id);
+      if (error) {
+        console.error('[FAQManager] Erro ao excluir FAQ:', error);
+        setErrorMsg('Não foi possível excluir essa pergunta. Tente novamente em instantes.');
+        return;
+      }
       fetchFaqs();
     }
   };
@@ -65,6 +90,11 @@ export default function FAQManager({ eventoId }: { eventoId?: string }) {
 
   return (
     <div className={styles.managerContainer}>
+      {errorMsg && (
+        <p role="alert" style={{ color: '#c0392b', background: 'rgba(192,57,43,0.08)', padding: '0.6rem 1rem', borderRadius: '6px', marginBottom: '1rem' }}>
+          {errorMsg}
+        </p>
+      )}
       <form onSubmit={handleSubmit} className={styles.faqForm}>
         <h3>{editingId ? 'Editar Pergunta' : 'Nova Pergunta'}</h3>
         <input 

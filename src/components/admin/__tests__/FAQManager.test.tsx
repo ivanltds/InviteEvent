@@ -81,17 +81,77 @@ describe('FAQManager Component Fixed', () => {
 
   test('deve permitir excluir uma pergunta', async () => {
     render(<FAQManager eventoId="e1" />);
-    
+
     await waitFor(() => screen.getByText(/P1/));
-    
+
     const deleteBtns = screen.getAllByText('Excluir');
     fireEvent.click(deleteBtns[0]);
-    
+
     expect(window.confirm).toHaveBeenCalled();
     await waitFor(() => {
       expect(mockDelete).toHaveBeenCalled();
       expect(mockEq).toHaveBeenCalledWith('id', '1');
     });
+  });
+});
+
+// Bug reportado pelo usuário em 21/09/2026: "quando eu edito a faq ela
+// não esta mudando no casamento atual" — causa raiz era RLS bloqueando
+// a leitura/escrita silenciosamente (nenhum erro do Supabase era
+// checado, então a tela parecia funcionar mesmo sem salvar nada).
+describe('FAQManager — tratamento de erro (não falha mais em silêncio)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    window.confirm = jest.fn(() => true);
+  });
+
+  test('mostra uma mensagem quando o carregamento do FAQ falha', async () => {
+    mockSelect.mockImplementationOnce(() => ({
+      eq: jest.fn().mockReturnThis(),
+      order: jest.fn().mockResolvedValue({ data: null, error: { message: 'RLS bloqueou a leitura' } }),
+    }));
+
+    render(<FAQManager eventoId="e1" />);
+
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(/não foi possível carregar/i));
+  });
+
+  test('mostra uma mensagem quando salvar uma pergunta nova falha (ex.: RLS)', async () => {
+    mockInsert.mockResolvedValueOnce({ error: { message: 'RLS bloqueou o insert' } });
+
+    render(<FAQManager eventoId="e1" />);
+    await waitFor(() => screen.getByText(/P1/));
+
+    fireEvent.change(screen.getByPlaceholderText('Pergunta'), { target: { value: 'Nova P' } });
+    fireEvent.change(screen.getByPlaceholderText('Resposta'), { target: { value: 'Nova R' } });
+    fireEvent.click(screen.getByText('Adicionar'));
+
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(/não foi possível salvar/i));
+    // O formulário não deve ser limpo quando falha — o usuário não perde o que digitou.
+    expect(screen.getByPlaceholderText('Pergunta')).toHaveValue('Nova P');
+  });
+
+  test('mostra uma mensagem quando atualizar uma pergunta falha', async () => {
+    mockEq.mockResolvedValueOnce({ error: { message: 'RLS bloqueou o update' } });
+
+    render(<FAQManager eventoId="e1" />);
+    await waitFor(() => screen.getByText(/P1/));
+
+    fireEvent.click(screen.getAllByText('Editar')[0]);
+    fireEvent.click(screen.getByText('Atualizar'));
+
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(/não foi possível salvar/i));
+  });
+
+  test('mostra uma mensagem quando excluir uma pergunta falha', async () => {
+    mockEq.mockResolvedValueOnce({ error: { message: 'RLS bloqueou o delete' } });
+
+    render(<FAQManager eventoId="e1" />);
+    await waitFor(() => screen.getByText(/P1/));
+
+    fireEvent.click(screen.getAllByText('Excluir')[0]);
+
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(/não foi possível excluir/i));
   });
 });
 

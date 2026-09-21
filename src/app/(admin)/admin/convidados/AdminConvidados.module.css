@@ -330,6 +330,96 @@
   gap: 0.5rem;
 }
 
+/* Linha expansível: quantas pessoas o convidado chamou (pedido do usuário) */
+.guestNameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.expandBtn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--admin-text-muted, #888);
+  border-radius: 6px;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.expandBtn:hover {
+  background-color: rgba(0,0,0,0.05);
+  color: var(--admin-text-primary);
+}
+
+.expandBtnOpen {
+  transform: rotate(90deg);
+}
+
+.memberCount {
+  font-size: 0.78rem;
+  color: var(--admin-text-muted);
+  margin-top: 0.15rem;
+}
+
+.expandedRow td {
+  padding: 0 1.5rem 1.2rem 1.5rem;
+  border-bottom: 1px solid rgba(0,0,0,0.03);
+  background-color: rgba(0,0,0,0.01);
+}
+
+.membersDetail {
+  padding: 0.9rem 1rem;
+  background: #fff;
+  border: 1px solid var(--admin-card-border, rgba(0,0,0,0.06));
+  border-radius: 12px;
+}
+
+.membersDetailTitle {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--admin-text-muted);
+  margin-bottom: 0.6rem;
+}
+
+.membersDetailList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.membersDetailItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.4rem 0;
+  font-size: 0.9rem;
+  color: var(--admin-text-primary);
+}
+
+.membersDetailEmpty {
+  font-size: 0.85rem;
+  color: var(--admin-text-muted);
+  font-style: italic;
+}
+
+.extraGuestsNote {
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed rgba(0,0,0,0.08);
+  font-size: 0.82rem;
+  color: var(--admin-text-muted);
+}
+
 /* Functional Small Buttons */
 /* Functional Icon Buttons & Tooltips */
 .copyBtn, .editBtn, .deleteBtn, .detailBtn, .whatsappBtn, .successBtn {

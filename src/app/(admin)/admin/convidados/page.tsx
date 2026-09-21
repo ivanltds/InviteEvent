@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './AdminConvidados.module.css';
 import { inviteService, InviteWithRSVP } from '@/lib/services/inviteService';
@@ -32,6 +32,13 @@ export default function AdminConvidados() {
   const [infoRSVP, setInfoRSVP] = useState<{mensagem?: string | null, restricoes?: string | null} | null>(null);
   const [toastMsg, setToastMsg] = useState('');
   const [showToast, setShowToast] = useState(false);
+  // Pedido do usuário: ver quantas pessoas um convidado chamou ao
+  // expandir a linha dele na tabela.
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const toggleExpand = (id: string) => {
+    setExpandedId(prev => (prev === id ? null : id));
+  };
 
   const triggerToast = (msg: string) => {
     setToastMsg(msg);
@@ -449,32 +456,54 @@ export default function AdminConvidados() {
                 const rsvpArray = (invite as any).rsvp;
                 const rsvp = Array.isArray(rsvpArray) ? rsvpArray[0] : rsvpArray;
                 
+                const membros = invite.membros || [];
+                const totalConvidado = membros.length > 0 ? membros.length : invite.limite_pessoas;
+                const isExpanded = expandedId === invite.id;
+                const extraNaoNominados = rsvp && !rsvp.status?.includes('recusado')
+                  ? Math.max(0, (rsvp.confirmados || 0) - membros.filter(m => m.confirmado).length)
+                  : 0;
+
                 return (
-                  <tr key={invite.id}>
+                  <Fragment key={invite.id}>
+                  <tr>
                     <td>
                       <div className={styles.guestInfo}>
-                        <span className={styles.guestName}>
-                          {invite.nome_principal}
-                          {config?.modo_convite === 'link_unico' && (
-                            <span
-                              title="Criado pelo próprio convidado via Link Único"
-                              style={{
-                                marginLeft: '0.4rem',
-                                fontSize: '0.7rem',
-                                padding: '0.1rem 0.4rem',
-                                borderRadius: '4px',
-                                background: 'rgba(0,0,0,0.06)',
-                                color: 'inherit',
-                                opacity: 0.7,
-                                fontWeight: 500,
-                              }}
-                            >
-                              ⓘ auto
-                            </span>
-                          )}
-                        </span>
+                        <div className={styles.guestNameRow}>
+                          <button
+                            type="button"
+                            className={`${styles.expandBtn} ${isExpanded ? styles.expandBtnOpen : ''}`}
+                            onClick={() => toggleExpand(invite.id)}
+                            aria-label={isExpanded ? `Recolher detalhes de ${invite.nome_principal}` : `Ver quantas pessoas ${invite.nome_principal} chamou`}
+                            aria-expanded={isExpanded}
+                          >
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                          </button>
+                          <span className={styles.guestName}>
+                            {invite.nome_principal}
+                            {config?.modo_convite === 'link_unico' && (
+                              <span
+                                title="Criado pelo próprio convidado via Link Único"
+                                style={{
+                                  marginLeft: '0.4rem',
+                                  fontSize: '0.7rem',
+                                  padding: '0.1rem 0.4rem',
+                                  borderRadius: '4px',
+                                  background: 'rgba(0,0,0,0.06)',
+                                  color: 'inherit',
+                                  opacity: 0.7,
+                                  fontWeight: 500,
+                                }}
+                              >
+                                ⓘ auto
+                              </span>
+                            )}
+                          </span>
+                        </div>
                         <span className={styles.guestDate}>
                           Cadastrado em: {invite.created_at ? new Date(invite.created_at).toLocaleDateString() : 'N/A'}
+                        </span>
+                        <span className={styles.memberCount}>
+                          {totalConvidado} pessoa{totalConvidado === 1 ? '' : 's'} chamada{totalConvidado === 1 ? '' : 's'}
                         </span>
                       </div>
                     </td>
@@ -556,6 +585,43 @@ export default function AdminConvidados() {
                       </div>
                     </td>
                   </tr>
+                  {isExpanded && (
+                    <tr className={styles.expandedRow}>
+                      <td colSpan={4}>
+                        <div className={styles.membersDetail}>
+                          <p className={styles.membersDetailTitle}>
+                            {membros.length > 0
+                              ? `${membros.length} pessoa${membros.length === 1 ? '' : 's'} nominada${membros.length === 1 ? '' : 's'} neste convite`
+                              : `Convite sem membros nominais (limite de ${invite.limite_pessoas} pessoa${invite.limite_pessoas === 1 ? '' : 's'})`}
+                          </p>
+                          {membros.length > 0 ? (
+                            <ul className={styles.membersDetailList}>
+                              {membros.map(membro => (
+                                <li key={membro.id} className={styles.membersDetailItem}>
+                                  <span>{membro.nome}</span>
+                                  <span className={`${styles.statusBadge} ${
+                                    membro.confirmado === true ? styles.confirmado :
+                                    membro.confirmado === false ? styles.excedente_solicitado :
+                                    styles.pendingBadge
+                                  }`}>
+                                    {membro.confirmado === true ? 'Confirmado' : membro.confirmado === false ? 'Recusado' : 'Pendente'}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className={styles.membersDetailEmpty}>Nenhum membro nominal cadastrado para este convite.</p>
+                          )}
+                          {extraNaoNominados > 0 && (
+                            <p className={styles.extraGuestsNote}>
+                              + {extraNaoNominados} acompanhante{extraNaoNominados === 1 ? '' : 's'} extra{extraNaoNominados === 1 ? '' : 's'} confirmado{extraNaoNominados === 1 ? '' : 's'} sem nome cadastrado.
+                            </p>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  </Fragment>
                 );
               })}
               {filteredInvites.length === 0 && (

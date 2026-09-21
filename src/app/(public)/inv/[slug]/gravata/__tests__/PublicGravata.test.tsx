@@ -3,6 +3,7 @@ import '@testing-library/jest-dom';
 import PublicGravataPage from '../page';
 import { rsvpService } from '@/lib/services/rsvpService';
 import { configService } from '@/lib/services/configService';
+import { eventService } from '@/lib/services/eventService';
 
 jest.mock('next/navigation', () => ({
   useParams: () => ({ slug: 'ana-e-carlos' }),
@@ -14,6 +15,10 @@ jest.mock('@/lib/services/rsvpService', () => ({
 
 jest.mock('@/lib/services/configService', () => ({
   configService: { getConfig: jest.fn() },
+}));
+
+jest.mock('@/lib/services/eventService', () => ({
+  eventService: { getEventoBySlug: jest.fn() },
 }));
 
 const baseInvite = { id: 'c1', evento_id: 'e1', slug: 'ana-e-carlos', nome_principal: 'Ana' };
@@ -70,12 +75,43 @@ describe('PublicGravataPage', () => {
     expect(screen.queryByText(/erro/i)).not.toBeInTheDocument();
   });
 
-  it('mostra "convite não encontrado" para um slug inválido', async () => {
+  it('mostra "convite não encontrado" para um slug que não é convite nem evento', async () => {
     (rsvpService.getInviteBySlug as jest.Mock).mockResolvedValue(null);
+    (eventService.getEventoBySlug as jest.Mock).mockResolvedValue(null);
 
     render(<PublicGravataPage />);
 
     await waitFor(() => expect(screen.getByText(/Convite não encontrado/i)).toBeInTheDocument());
+  });
+
+  // Correção de 20/09/2026: "Quero colaborar" no hero levava a
+  // /inv/[eventoSlug]/gravata ANTES do convidado confirmar presença no
+  // modo Link Único — nesse momento ainda não existe convite nenhum, só
+  // o evento. A página precisa reconhecer isso e não dar "não encontrado".
+  describe('modo Link Único (slug de evento, sem convite ainda)', () => {
+    const baseEvento = { id: 'e1', slug: 'casamento-ana-carlos', nome: 'Casamento' };
+    const linkUnicoConfig = { ...baseConfig, evento_id: 'e1', modo_convite: 'link_unico' as const };
+
+    it('mostra a tela da gravata normalmente quando o slug é de um evento em modo Link Único', async () => {
+      (rsvpService.getInviteBySlug as jest.Mock).mockResolvedValue(null);
+      (eventService.getEventoBySlug as jest.Mock).mockResolvedValue(baseEvento);
+      (configService.getConfig as jest.Mock).mockResolvedValue(linkUnicoConfig);
+
+      render(<PublicGravataPage />);
+
+      await waitFor(() => expect(screen.getByText(/Sua presença já é o nosso maior presente!/i)).toBeInTheDocument());
+      expect(screen.getByText(/Voltar ao Convite/i).closest('a')).toHaveAttribute('href', '/inv/evento/ana-e-carlos');
+    });
+
+    it('mostra "convite não encontrado" se o evento existe mas NÃO está no modo Link Único', async () => {
+      (rsvpService.getInviteBySlug as jest.Mock).mockResolvedValue(null);
+      (eventService.getEventoBySlug as jest.Mock).mockResolvedValue(baseEvento);
+      (configService.getConfig as jest.Mock).mockResolvedValue({ ...linkUnicoConfig, modo_convite: 'individual' });
+
+      render(<PublicGravataPage />);
+
+      await waitFor(() => expect(screen.getByText(/Convite não encontrado/i)).toBeInTheDocument());
+    });
   });
 
   it('não mostra chips de valor quando não há valores sugeridos cadastrados', async () => {

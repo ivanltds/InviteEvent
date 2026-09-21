@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { rsvpService } from '@/lib/services/rsvpService';
 import { configService } from '@/lib/services/configService';
+import { eventService } from '@/lib/services/eventService';
 import { generatePixPayload } from '@/lib/utils/pix';
 import { Configuracao } from '@/lib/types/database';
 import PixPanel from '@/components/shared/PixPanel';
@@ -20,18 +21,43 @@ export default function PublicGravataPage() {
   const [loading, setLoading] = useState(true);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
   const [valorSelecionado, setValorSelecionado] = useState<number | null>(null);
+  // No modo Link Único, antes da confirmação de presença ainda não existe
+  // convite — o botão "Quero colaborar" do hero usa o slug do EVENTO, não
+  // de um convite. "Voltar ao convite" precisa saber qual rota usar.
+  const [backHref, setBackHref] = useState<string>('/');
 
   useEffect(() => {
     async function init() {
       try {
+        // 1. Tenta como slug de convite (fluxo tradicional, ou Link Único
+        // já com convite auto-cadastrado após o RSVP).
         const invite = await rsvpService.getInviteBySlug(slug);
-        if (!invite) {
+        if (invite) {
+          const configData = await configService.getConfig(invite.evento_id);
+          setConfig(configData);
+          setEventoNome(configData ? `${configData.noiva_nome} & ${configData.noivo_nome}` : '');
+          setBackHref(`/inv/${slug}`);
+          return;
+        }
+
+        // 2. Correção de 20/09/2026 ("Convite não encontrado" ao clicar em
+        // "Quero colaborar" antes de confirmar presença): tenta como slug
+        // de EVENTO, modo Link Único.
+        const evento = await eventService.getEventoBySlug(slug);
+        if (!evento) {
           setNotFound(true);
           return;
         }
-        const configData = await configService.getConfig(invite.evento_id);
+        const configData = await configService.getConfig(evento.id);
+        if (!configData || configData.modo_convite !== 'link_unico') {
+          // Evento existe mas não é Link Único — esse slug não corresponde
+          // a nenhum convite de verdade.
+          setNotFound(true);
+          return;
+        }
         setConfig(configData);
-        setEventoNome(configData ? `${configData.noiva_nome} & ${configData.noivo_nome}` : '');
+        setEventoNome(`${configData.noiva_nome} & ${configData.noivo_nome}`);
+        setBackHref(`/inv/evento/${slug}`);
       } catch (err) {
         console.error('[Gravata] Erro ao carregar:', err);
         setNotFound(true);
@@ -79,7 +105,7 @@ export default function PublicGravataPage() {
   return (
     <main className={styles.container}>
       <header className={styles.header}>
-        <Link href={`/inv/${slug}`} className={styles.backBtn} style={{ color: accentColor }}>
+        <Link href={backHref} className={styles.backBtn} style={{ color: accentColor }}>
           ← Voltar ao Convite
         </Link>
         <h1 className="cursive">{eventoNome}</h1>

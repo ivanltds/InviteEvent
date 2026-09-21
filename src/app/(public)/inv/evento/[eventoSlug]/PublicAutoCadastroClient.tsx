@@ -7,6 +7,7 @@ import { eventService } from '@/lib/services/eventService';
 import { supabase } from '@/lib/supabase';
 import { Configuracao } from '@/lib/types/database';
 import { getSavedConvite } from '@/lib/utils/linkUnico';
+import { hasExceededViewLimit, incrementViewCount } from '@/lib/utils/envelopeViews';
 import LiveInviteView from '@/components/public/LiveInviteView';
 import styles from '../../../page.module.css';
 
@@ -41,6 +42,9 @@ export default function PublicAutoCadastroClient({ eventoSlug }: PublicAutoCadas
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [modoInvalido, setModoInvalido] = useState(false);
+  // STORY-056: controla visibilidade do envelope, igual /inv/[slug] —
+  // antes ficava sempre desligado (showGateway fixo em false) nesta rota.
+  const [showGateway, setShowGateway] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -56,6 +60,13 @@ export default function PublicAutoCadastroClient({ eventoSlug }: PublicAutoCadas
         router.replace(`/inv/${saved.slug}`);
         return;
       }
+
+      const searchParams = new URLSearchParams(window.location.search);
+      const forcePreview = searchParams.get('preview') === 'true';
+      const skipGatewayParam = searchParams.get('skip_gateway') === 'true';
+      const skipGatewayStorage = typeof window !== 'undefined' && localStorage.getItem('skip_gateway') === 'true';
+      const isExceeded = hasExceededViewLimit(eventoSlug, forcePreview);
+      setShowGateway(!isExceeded && !skipGatewayParam && !skipGatewayStorage);
 
       const [configRes, agendaRes] = await Promise.all([
         supabase.from('configuracoes').select('*').eq('evento_id', evento.id).maybeSingle(),
@@ -114,7 +125,11 @@ export default function PublicAutoCadastroClient({ eventoSlug }: PublicAutoCadas
       }}
       agenda={agenda}
       slug={eventoSlug}
-      showGateway={false}
+      showGateway={showGateway}
+      onGatewayComplete={() => {
+        incrementViewCount(eventoSlug);
+        setShowGateway(false);
+      }}
       autoCadastro={{ eventoId, eventoSlug }}
     />
   );

@@ -6,33 +6,9 @@ import { supabase } from '@/lib/supabase';
 import { rsvpService } from '@/lib/services/rsvpService';
 import { Configuracao } from '@/lib/types/database';
 import Link from 'next/link';
+import { hasExceededViewLimit, incrementViewCount } from '@/lib/utils/envelopeViews';
 
 import LiveInviteView from '@/components/public/LiveInviteView';
-
-const STORAGE_KEY_PREFIX = 'envelope_views_';
-
-/**
- * Verifica se o envelope já foi visualizado 3 vezes ou mais neste dispositivo.
- * Retorna true se deve pular a animação.
- */
-function hasExceededViewLimit(slug: string, forcePreview: boolean): boolean {
-  if (forcePreview || slug === 'preview') return false; // ?preview=true ou slug 'preview' força re-exibição
-  try {
-    const views = parseInt(localStorage.getItem(`${STORAGE_KEY_PREFIX}${slug}`) || '0', 10);
-    return views >= 3;
-  } catch {
-    return false;
-  }
-}
-
-function incrementViewCount(slug: string) {
-  try {
-    const views = parseInt(localStorage.getItem(`${STORAGE_KEY_PREFIX}${slug}`) || '0', 10);
-    localStorage.setItem(`${STORAGE_KEY_PREFIX}${slug}`, (views + 1).toString());
-  } catch {
-    // Ignora se estiver no modo anônimo, por exemplo
-  }
-}
 
 interface InvitationPageClientProps {
   slug: string;

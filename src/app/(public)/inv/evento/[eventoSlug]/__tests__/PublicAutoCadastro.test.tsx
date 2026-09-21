@@ -25,6 +25,7 @@ jest.mock('@/components/public/LiveInviteView', () => (props: any) => (
   <div data-testid="live-invite-view">
     <span data-testid="autoCadastro">{JSON.stringify(props.autoCadastro)}</span>
     <span data-testid="couple">{`${props.couple.noiva} & ${props.couple.noivo}`}</span>
+    <span data-testid="showGateway">{String(props.showGateway)}</span>
   </div>
 ));
 
@@ -63,6 +64,7 @@ describe('PublicAutoCadastroPage (Link Único)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
+    window.history.pushState({}, '', '/inv/evento/casamento-ana-carlos');
     (useRouter as jest.Mock).mockReturnValue({ replace: mockReplace, push: jest.fn(), prefetch: jest.fn() });
   });
 
@@ -107,5 +109,29 @@ describe('PublicAutoCadastroPage (Link Único)', () => {
       eventoSlug: 'casamento-ana-carlos',
     });
     expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  // Correção de 20/09/2026: a animação de abertura do envelope ficava
+  // sempre desligada nesta rota (showGateway fixo em false), diferente de
+  // /inv/[slug]. Agora usa o mesmo controle por contagem de visitas.
+  it('mostra a animação do envelope na primeira visita', async () => {
+    (eventService.getEventoBySlug as jest.Mock).mockResolvedValue(baseEvento);
+    mockSupabaseTables(linkUnicoConfig);
+
+    render(<PublicAutoCadastroClient eventoSlug="casamento-ana-carlos" />);
+
+    await waitFor(() => expect(screen.getByTestId('live-invite-view')).toBeInTheDocument());
+    expect(screen.getByTestId('showGateway')).toHaveTextContent('true');
+  });
+
+  it('não mostra mais a animação depois de 3 visitas', async () => {
+    localStorage.setItem('envelope_views_casamento-ana-carlos', '3');
+    (eventService.getEventoBySlug as jest.Mock).mockResolvedValue(baseEvento);
+    mockSupabaseTables(linkUnicoConfig);
+
+    render(<PublicAutoCadastroClient eventoSlug="casamento-ana-carlos" />);
+
+    await waitFor(() => expect(screen.getByTestId('live-invite-view')).toBeInTheDocument());
+    expect(screen.getByTestId('showGateway')).toHaveTextContent('false');
   });
 });

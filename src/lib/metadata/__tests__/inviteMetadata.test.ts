@@ -52,6 +52,34 @@ describe('buildInviteMetadataBySlug', () => {
     expect((metadata.twitter as any)?.card).toBe('summary_large_image');
   });
 
+  it('recorta a foto para 1200x630 quando é uma URL do Cloudinary, mesmo com foto original em retrato', async () => {
+    // Correção de 20/09/2026: og:image declarava 1200x630 mas a foto real
+    // cadastrada pelos noivos costuma ser retrato (ex. 386x582) — o
+    // WhatsApp rejeitava/cortava mal o card por causa dessa divergência.
+    fromMock.mockImplementation((table: string) => {
+      if (table === 'convites') return makeChain({ evento_id: 'e1' });
+      if (table === 'configuracoes')
+        return makeChain({
+          noiva_nome: 'Andréia',
+          noivo_nome: 'Thiago',
+          data_casamento: '2026-11-14',
+          hero_images: ['https://res.cloudinary.com/dqt35bpzt/image/upload/v1789848523/foto-retrato.jpg'],
+        });
+      return makeChain(null);
+    });
+
+    const metadata = await buildInviteMetadataBySlug('andreia-thiago-a1b2');
+
+    expect(metadata.openGraph?.images).toEqual([
+      {
+        url: 'https://res.cloudinary.com/dqt35bpzt/image/upload/c_fill,w_1200,h_630,g_auto,f_jpg,q_auto/v1789848523/foto-retrato.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Andréia & Thiago',
+      },
+    ]);
+  });
+
   it('cai para as fotos individuais quando não há hero_images', async () => {
     fromMock.mockImplementation((table: string) => {
       if (table === 'convites') return makeChain({ evento_id: 'e1' });

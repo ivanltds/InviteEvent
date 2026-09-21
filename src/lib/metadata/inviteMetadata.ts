@@ -56,6 +56,30 @@ function formatDataCasamento(dataCasamento?: string): string {
   });
 }
 
+const OG_IMAGE_WIDTH = 1200;
+const OG_IMAGE_HEIGHT = 630;
+
+/**
+ * Correção de 20/09/2026: o card do WhatsApp continuava "ruim" mesmo
+ * depois do og:image aparecer, porque as fotos cadastradas pelos noivos
+ * são retrato (ex.: 386x582), mas os metadados declaravam 1200x630
+ * (paisagem) — a divergência entre o tamanho declarado e o real faz o
+ * crawler do WhatsApp rejeitar ou cortar mal a imagem. Como todo upload
+ * de foto passa pelo Cloudinary (CldUploadWidget), pedimos aqui um
+ * recorte 1200x630 de verdade via transformação de URL do Cloudinary —
+ * sem reprocessar/re-upload do arquivo original — garantindo que a
+ * dimensão declarada sempre bate com a entregue, em qualquer orientação
+ * de foto.
+ */
+function toOgImageUrl(url: string): string {
+  const cloudinaryUploadMarker = '/image/upload/';
+  const idx = url.indexOf(cloudinaryUploadMarker);
+  if (idx === -1) return url; // não é uma URL do Cloudinary — devolve como está
+
+  const insertAt = idx + cloudinaryUploadMarker.length;
+  return `${url.slice(0, insertAt)}c_fill,w_${OG_IMAGE_WIDTH},h_${OG_IMAGE_HEIGHT},g_auto,f_jpg,q_auto/${url.slice(insertAt)}`;
+}
+
 function buildMetadataFromConfig(config: any, path: string): Metadata {
   const noiva = config.noiva_nome?.trim();
   const noivo = config.noivo_nome?.trim();
@@ -68,7 +92,8 @@ function buildMetadataFromConfig(config: any, path: string): Metadata {
 
   // Prioriza a primeira imagem do carrossel (geralmente uma foto do
   // casal), caindo para as fotos individuais cadastradas se não houver.
-  const image: string | undefined = config.hero_images?.[0] || config.noiva_foto_url || config.noivo_foto_url || undefined;
+  const rawImage: string | undefined = config.hero_images?.[0] || config.noiva_foto_url || config.noivo_foto_url || undefined;
+  const image = rawImage ? toOgImageUrl(rawImage) : undefined;
 
   const url = `${getBaseUrl()}${path}`;
 
@@ -82,7 +107,7 @@ function buildMetadataFromConfig(config: any, path: string): Metadata {
       siteName: APP_NAME,
       type: 'website',
       locale: 'pt_BR',
-      images: image ? [{ url: image, width: 1200, height: 630, alt: title }] : undefined,
+      images: image ? [{ url: image, width: OG_IMAGE_WIDTH, height: OG_IMAGE_HEIGHT, alt: title }] : undefined,
     },
     twitter: {
       card: image ? 'summary_large_image' : 'summary',

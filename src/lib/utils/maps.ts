@@ -29,3 +29,18 @@ export function resolveWazeUrl(enderecoOuLocal: string | undefined, linkManual?:
   if (enderecoOuLocal && enderecoOuLocal.trim()) return buildWazeUrl(enderecoOuLocal.trim());
   return null;
 }
+
+/**
+ * URL de um mapa do Google Maps incorporável em <iframe>, sem precisar de
+ * chave de API (modo "output=embed" do próprio Google Maps) — pedido do
+ * usuário em 20/09/2026: mostrar o mapa visualmente no convite, não só
+ * links pra abrir em outro app.
+ */
+export function buildGoogleMapsEmbedUrl(endereco: string): string {
+  return `https://www.google.com/maps?q=${encodeURIComponent(endereco)}&output=embed`;
+}
+
+export function resolveGoogleMapsEmbedUrl(enderecoOuLocal: string | undefined): string | null {
+  if (enderecoOuLocal && enderecoOuLocal.trim()) return buildGoogleMapsEmbedUrl(enderecoOuLocal.trim());
+  return null;
+}

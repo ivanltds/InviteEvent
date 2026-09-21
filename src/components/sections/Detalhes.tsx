@@ -1,6 +1,6 @@
 import { Configuracao } from "@/lib/types/database";
 import styles from "./Detalhes.module.css";
-import { resolveGoogleMapsUrl, resolveWazeUrl } from "@/lib/utils/maps";
+import { resolveGoogleMapsUrl, resolveWazeUrl, resolveGoogleMapsEmbedUrl } from "@/lib/utils/maps";
 
 /**
  * Correção de 20/09/2026 (feedback do usuário): recepção e cerimônia
@@ -26,6 +26,7 @@ export default function Detalhes({ config }: { config?: Configuracao }) {
   const enderecoParaNavegar = config?.endereco_cerimonia || config?.local_cerimonia;
   const googleMapsUrl = resolveGoogleMapsUrl(enderecoParaNavegar);
   const wazeUrl = resolveWazeUrl(enderecoParaNavegar);
+  const mapEmbedUrl = resolveGoogleMapsEmbedUrl(enderecoParaNavegar);
 
   return (
     <section className={styles.section} id="detalhes">
@@ -54,6 +55,21 @@ export default function Detalhes({ config }: { config?: Configuracao }) {
         <div className={styles.venue}>
           <p className={styles.location}>{localCerimonia}</p>
           <p className={styles.address}>{enderecoCerimonia}</p>
+
+          {mapEmbedUrl && (
+            <div className={styles.mapEmbed}>
+              <iframe
+                src={mapEmbedUrl}
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title={`Mapa de localização: ${localCerimonia}`}
+              />
+            </div>
+          )}
+
           <div className={styles.mapLinks}>
             {googleMapsUrl && (
               <a href={googleMapsUrl} className={styles.mapLink} target="_blank" rel="noopener noreferrer">Google Maps</a>

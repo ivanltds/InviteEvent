@@ -85,4 +85,22 @@ describe('Site Sections (Public)', () => {
     expect(screen.getByText('13:00')).toBeInTheDocument();
     expect(screen.getByText('19:00')).toBeInTheDocument();
   });
+
+  // Pedido do usuário em 20/09/2026: "quero mostrar um mapa com o
+  // endereço" — além dos links pra abrir em outro app, o mapa aparece
+  // incorporado (iframe) direto no convite.
+  test('mostra um mapa incorporado com o endereço da cerimônia', () => {
+    render(<Detalhes config={{ ...mockConfig, endereco_cerimonia: 'Av. Paulista, 1000' } as any} />);
+
+    const iframe = screen.getByTitle(/Mapa de localização/i);
+    expect(iframe.tagName).toBe('IFRAME');
+    expect(iframe).toHaveAttribute('src', expect.stringContaining('google.com/maps'));
+    expect(iframe).toHaveAttribute('src', expect.stringContaining('output=embed'));
+    expect(iframe).toHaveAttribute('src', expect.stringContaining('Av.%20Paulista'));
+  });
+
+  test('não mostra o mapa incorporado sem endereço nem local cadastrado', () => {
+    render(<Detalhes config={{ ...mockConfig, endereco_cerimonia: undefined, local_cerimonia: undefined } as any} />);
+    expect(screen.queryByTitle(/Mapa de localização/i)).not.toBeInTheDocument();
+  });
 });

@@ -83,6 +83,16 @@
   opacity: 0.7;
 }
 
+.mapEmbed {
+  width: 100%;
+  max-width: 700px;
+  aspect-ratio: 16 / 9;
+  margin: 0 auto 1.5rem;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+}
+
 .mapLinks {
   display: flex;
   flex-wrap: wrap;

@@ -1,4 +1,11 @@
-import { buildGoogleMapsUrl, buildWazeUrl, resolveGoogleMapsUrl, resolveWazeUrl } from '../maps';
+import {
+  buildGoogleMapsUrl,
+  buildWazeUrl,
+  resolveGoogleMapsUrl,
+  resolveWazeUrl,
+  buildGoogleMapsEmbedUrl,
+  resolveGoogleMapsEmbedUrl,
+} from '../maps';
 
 describe('maps utils', () => {
   it('gera URL de busca do Google Maps a partir de um endereço', () => {
@@ -46,6 +53,23 @@ describe('maps utils', () => {
 
     it('retorna null sem endereço e sem link manual', () => {
       expect(resolveWazeUrl('', undefined)).toBeNull();
+    });
+  });
+
+  describe('buildGoogleMapsEmbedUrl / resolveGoogleMapsEmbedUrl', () => {
+    it('gera URL de mapa incorporável (output=embed), sem exigir chave de API', () => {
+      expect(buildGoogleMapsEmbedUrl('Av. Paulista, 1000')).toBe(
+        'https://www.google.com/maps?q=Av.%20Paulista%2C%201000&output=embed'
+      );
+    });
+
+    it('resolve a partir do endereço/local informado', () => {
+      expect(resolveGoogleMapsEmbedUrl('Chácara Fiorese')).toBe(buildGoogleMapsEmbedUrl('Chácara Fiorese'));
+    });
+
+    it('retorna null sem endereço nem local', () => {
+      expect(resolveGoogleMapsEmbedUrl(undefined)).toBeNull();
+      expect(resolveGoogleMapsEmbedUrl('   ')).toBeNull();
     });
   });
 });

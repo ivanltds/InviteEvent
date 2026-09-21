@@ -222,14 +222,21 @@ export default function AdminConvidados() {
         const dataFormatada = year && month && day
           ? new Date(year, month - 1, day).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
           : undefined;
+        // Personalização do modelo ativo (fonte/tamanho/foto/zoom
+        // escolhidos em Configurações para esse modelo específico).
+        const activeTemplate = config.card_template || 'classico';
+        const style = config.card_template_styles?.[activeTemplate];
         const cardUrl = buildConviteCardImageUrl(
           {
             noiva: config.noiva_nome,
             noivo: config.noivo_nome,
             data: dataFormatada,
-            foto: config.hero_images?.[0],
-            template: config.card_template,
+            foto: style?.image || config.hero_images?.[0],
+            template: activeTemplate,
             accentColor: config.accent_color,
+            font: style?.font,
+            fontScale: style?.fontScale,
+            imageScale: style?.imageScale,
           },
           window.location.origin
         );

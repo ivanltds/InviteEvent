@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { createClient } from '@supabase/supabase-js';
-import { buildConviteCardImageUrl } from '@/lib/utils/conviteCard';
+import { buildConviteCardImageUrl, CardTemplate, CardTemplateStyles } from '@/lib/utils/conviteCard';
 
 /**
  * Gera o Open Graph/Twitter Card de cada convite (foto do casal + nome +
@@ -70,15 +70,31 @@ function buildMetadataFromConfig(config: any, path: string): Metadata {
     ? `Você está convidado(a) para o casamento de ${noiva} & ${noivo}, em ${dataFormatada}. Confirme sua presença!`
     : `Você está convidado(a) para o casamento de ${noiva} & ${noivo}. Confirme sua presença!`;
 
-  // Prioriza a primeira imagem do carrossel (geralmente uma foto do
-  // casal), caindo para as fotos individuais cadastradas se não houver.
-  const rawImage: string | undefined = config.hero_images?.[0] || config.noiva_foto_url || config.noivo_foto_url || undefined;
+  // Personalização do modelo ativo (fonte/tamanho da fonte/foto/zoom),
+  // escolhida em Configurações — pedido do usuário em 21/09/2026.
+  const activeTemplate = (config.card_template as CardTemplate) || 'classico';
+  const styles: CardTemplateStyles | undefined = config.card_template_styles;
+  const style = styles?.[activeTemplate];
+
+  // Prioriza a foto escolhida especificamente pra esse modelo; sem ela,
+  // cai pra primeira imagem do carrossel, depois pras fotos individuais.
+  const rawImage: string | undefined = style?.image || config.hero_images?.[0] || config.noiva_foto_url || config.noivo_foto_url || undefined;
   // Sempre que temos os dois nomes, geramos o cartão (com ou sem foto —
   // o gerador tem um fundo elegante de fallback); só cai pra "sem
   // imagem nenhuma" no caso raro de faltar algum dos nomes.
   const image = noiva && noivo
     ? buildConviteCardImageUrl(
-        { noiva, noivo, data: dataFormatada, foto: rawImage, template: config.card_template, accentColor: config.accent_color },
+        {
+          noiva,
+          noivo,
+          data: dataFormatada,
+          foto: rawImage,
+          template: activeTemplate,
+          accentColor: config.accent_color,
+          font: style?.font,
+          fontScale: style?.fontScale,
+          imageScale: style?.imageScale,
+        },
         getBaseUrl()
       )
     : undefined;
@@ -116,7 +132,7 @@ export async function buildInviteMetadataBySlug(slug: string): Promise<Metadata>
 
     const { data: config } = await supabase
       .from('configuracoes')
-      .select('noiva_nome, noivo_nome, data_casamento, hero_images, noiva_foto_url, noivo_foto_url, card_template, accent_color')
+      .select('noiva_nome, noivo_nome, data_casamento, hero_images, noiva_foto_url, noivo_foto_url, card_template, accent_color, card_template_styles')
       .eq('evento_id', invite.evento_id)
       .maybeSingle();
     if (!config) return FALLBACK_METADATA;
@@ -143,7 +159,7 @@ export async function buildInviteMetadataByEventoSlug(eventoSlug: string): Promi
 
     const { data: config } = await supabase
       .from('configuracoes')
-      .select('noiva_nome, noivo_nome, data_casamento, hero_images, noiva_foto_url, noivo_foto_url, card_template, accent_color')
+      .select('noiva_nome, noivo_nome, data_casamento, hero_images, noiva_foto_url, noivo_foto_url, card_template, accent_color, card_template_styles')
       .eq('evento_id', evento.id)
       .maybeSingle();
     if (!config) return FALLBACK_METADATA;

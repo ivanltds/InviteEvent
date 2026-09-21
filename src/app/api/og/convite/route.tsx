@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { CURSIVE_FONTS } from '@/lib/constants/fonts';
 
 /**
  * Gera dinamicamente o cartão de preview do convite (nomes do casal em
@@ -14,9 +15,15 @@ import { join } from 'node:path';
  * Pedido de acompanhamento: pelo menos 5 modelos diferentes, escolhidos
  * pelos noivos em Configurações (config.card_template).
  *
+ * Pedido de acompanhamento em 21/09/2026: escolher a fonte do nome, o
+ * tamanho dela e o tamanho/zoom da foto, de forma independente para
+ * cada um dos 6 modelos (config.card_template_styles). Esta rota só
+ * recebe os valores já resolvidos via querystring (fonte, escala, zoom)
+ * — quem resolve qual estilo vale pra cada modelo é
+ * src/lib/metadata/inviteMetadata.ts / src/app/(admin)/admin/convidados.
+ *
  * Recebe os dados já prontos via querystring (noiva, noivo, data, foto,
- * template, cor) em vez de consultar o banco aqui — quem monta a URL é
- * src/lib/metadata/inviteMetadata.ts / src/lib/utils/conviteCard.ts.
+ * template, cor, fonte, escala, zoom) em vez de consultar o banco aqui.
  */
 
 export const runtime = 'nodejs';
@@ -32,26 +39,63 @@ function isCardTemplate(value: string | null): value is CardTemplate {
 }
 
 /**
- * Fontes estáticas em public/fonts/ — o Google Fonts não serve mais
- * TTF/OTF de forma confiável (só WOFF2/WOFF, que o Satori não lê), e
- * fontes VARIÁVEIS quebram o parser interno do Satori (@vercel/og)
- * ("Cannot read properties of undefined (reading '256')" em
- * parseFvarAxis) — por isso cada arquivo aqui é uma fonte estática de
- * peso/estilo fixo, resgatada do histórico do próprio repositório do
- * Google Fonts. Lidas do disco (não via fetch) e cacheadas em memória do
- * processo — só a primeira requisição de cada instância "fria" paga
- * esse custo (ver histórico: fetch pra própria rota deixava a geração
- * lenta o bastante pra arriscar estourar o timeout do crawler do
- * WhatsApp).
+ * Fontes do nome: os mesmos pares cursivos de "Tipografia Premium"
+ * (src/lib/constants/fonts.ts CURSIVE_FONTS — o picker já usado hoje em
+ * Configurações), pra manter uma única fonte de verdade das fontes
+ * exibidas pro usuário. Identificamos cada fonte pelo `googleFamily`
+ * (já um slug estável, ex. "Great+Vibes") em vez de um código
+ * inventado, e extraímos o nome real da família (ex.: "Pinyon Script")
+ * do `cssValue` ("'Pinyon Script', cursive") pra casar com o arquivo
+ * estático carregado do disco.
  */
-const FONT_FILES = {
+function isValidNameFontKey(value: string | null): value is string {
+  return !!value && CURSIVE_FONTS.some(f => f.googleFamily === value);
+}
+
+function resolveNameFontFamily(googleFamily: string): string {
+  const font = CURSIVE_FONTS.find(f => f.googleFamily === googleFamily);
+  const match = font?.cssValue.match(/'([^']+)'/);
+  return match ? match[1] : 'cursive';
+}
+
+/**
+ * Arquivos estáticos em public/fonts/ — o Google Fonts não serve mais
+ * TTF/OTF de forma confiável pra fontes de peso variável (só
+ * WOFF2/WOFF, que o Satori não lê), e fontes VARIÁVEIS quebram o parser
+ * interno do Satori (@vercel/og) ("Cannot read properties of undefined
+ * (reading '256')" em parseFvarAxis). As fontes cursivas abaixo são
+ * naturalmente de peso único (fontes de script/caligrafia não têm
+ * variantes bold/variável), então o CSS2 do Google Fonts já serve TTF
+ * puro pra elas — baixadas diretamente de fonts.gstatic.com. Lidas do
+ * disco (não via fetch) e cacheadas em memória do processo. Chave =
+ * `googleFamily` de CURSIVE_FONTS, pra bater com o slug recebido na
+ * querystring.
+ */
+const NAME_FONT_FILES: Record<string, string> = {
+  'Corinthia': 'Corinthia-Regular.ttf',
+  'Nanum+Pen+Script': 'NanumPenScript-Regular.ttf',
+  'Pinyon+Script': 'PinyonScript-Regular.ttf',
+  'Great+Vibes': 'GreatVibes-Regular.ttf',
+  'Alex+Brush': 'AlexBrush-Regular.ttf',
+  'Birthstone': 'Birthstone-Regular.ttf',
+  'Ruthie': 'Ruthie-Regular.ttf',
+  'Euphoria+Script': 'EuphoriaScript-Regular.ttf',
+  'Dancing+Script': 'DancingScript-Regular.ttf',
+  'Sacramento': 'Sacramento-Regular.ttf',
+  'Satisfy': 'Satisfy-Regular.ttf',
+  'Pacifico': 'Pacifico-Regular.ttf',
+  'Herr+Von+Muellerhoff': 'HerrVonMuellerhoff-Regular.ttf',
+  'Meddon': 'Meddon-Regular.ttf',
+};
+
+const STATIC_FONT_FILES: Record<string, string> = {
   playfairBold: 'PlayfairDisplay-Bold.ttf',
   playfairRegular: 'PlayfairDisplay-Regular.ttf',
   playfairItalic: 'PlayfairDisplay-Italic.ttf',
-  pinyonScript: 'PinyonScript-Regular.ttf',
-} as const;
+  ...NAME_FONT_FILES,
+};
 
-type LoadedFonts = Record<keyof typeof FONT_FILES, ArrayBuffer | null>;
+type LoadedFonts = Record<string, ArrayBuffer | null>;
 
 let cachedFonts: LoadedFonts | null = null;
 
@@ -59,7 +103,7 @@ async function loadFonts(): Promise<LoadedFonts> {
   if (cachedFonts) return cachedFonts;
 
   const entries = await Promise.all(
-    (Object.entries(FONT_FILES) as [keyof typeof FONT_FILES, string][]).map(async ([key, filename]) => {
+    Object.entries(STATIC_FONT_FILES).map(async ([key, filename]) => {
       try {
         const buffer = await readFile(join(process.cwd(), 'public', 'fonts', filename));
         return [key, buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer] as const;
@@ -73,12 +117,14 @@ async function loadFonts(): Promise<LoadedFonts> {
   return cachedFonts;
 }
 
-function buildFontsOption(fonts: LoadedFonts) {
+/** Só inclui no ImageResponse as fontes realmente usadas nesse render (Playfair, sempre, + a fonte do nome escolhida) — mantém a geração rápida mesmo com 13 fontes bundladas. */
+function buildFontsOption(fonts: LoadedFonts, nameFontKey: string) {
   const list: { name: string; data: ArrayBuffer; weight: 400 | 700; style: 'normal' | 'italic' }[] = [];
   if (fonts.playfairBold) list.push({ name: 'Playfair Display', data: fonts.playfairBold, weight: 700, style: 'normal' });
   if (fonts.playfairRegular) list.push({ name: 'Playfair Display', data: fonts.playfairRegular, weight: 400, style: 'normal' });
   if (fonts.playfairItalic) list.push({ name: 'Playfair Display Italic', data: fonts.playfairItalic, weight: 400, style: 'italic' });
-  if (fonts.pinyonScript) list.push({ name: 'Pinyon Script', data: fonts.pinyonScript, weight: 400, style: 'normal' });
+  const nameFontData = fonts[nameFontKey];
+  if (nameFontData) list.push({ name: resolveNameFontFamily(nameFontKey), data: nameFontData, weight: 400, style: 'normal' });
   return list.length > 0 ? list : undefined;
 }
 
@@ -89,22 +135,26 @@ interface CardData {
   foto: string;
   accentColor: string;
   hasPlayfair: boolean;
-  hasScript: boolean;
+  /** Fonte escolhida pra exibir o nome do casal, já resolvida (com fallback genérico se o arquivo não carregou). */
+  nameFontFamily: string;
+  /** Escala livre do tamanho da fonte do nome (1 = tamanho calibrado original de cada modelo). */
+  nameFontScale: number;
+  /** Escala livre do zoom da foto dentro do seu quadro (1 = como já era; >1 aproxima, mantendo o recorte/composição do modelo). */
+  imageScale: number;
 }
 
 const serifBold = (hasPlayfair: boolean) => (hasPlayfair ? 'Playfair Display' : 'serif');
 const serifRegular = (hasPlayfair: boolean) => (hasPlayfair ? 'Playfair Display' : 'serif');
 const serifItalic = (hasPlayfair: boolean) => (hasPlayfair ? 'Playfair Display Italic' : 'serif');
-const script = (hasScript: boolean, hasPlayfair: boolean) => (hasScript ? 'Pinyon Script' : serifItalic(hasPlayfair));
 
-/** 1) Clássico — foto de fundo, faixa escura sólida embaixo, nomes grandes em negrito. */
-function CardClassico({ noiva, noivo, data, foto, hasPlayfair }: CardData) {
+/** 1) Clássico — foto de fundo, faixa escura sólida embaixo, nomes grandes na fonte escolhida. */
+function CardClassico({ noiva, noivo, data, foto, hasPlayfair, nameFontFamily, nameFontScale, imageScale }: CardData) {
   const namesLong = noiva.length + noivo.length > 26;
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', backgroundColor: '#2b2620' }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', backgroundColor: '#2b2620', overflow: 'hidden' }}>
       {foto && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={foto} alt="" width={WIDTH} height={HEIGHT} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        <img src={foto} alt="" width={WIDTH} height={HEIGHT} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${imageScale})` }} />
       )}
       <div
         style={{
@@ -113,7 +163,7 @@ function CardClassico({ noiva, noivo, data, foto, hasPlayfair }: CardData) {
         }}
       />
       <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', width: '100%', height: '100%', padding: '0 70px 56px', textAlign: 'center' }}>
-        <div style={{ display: 'flex', fontFamily: serifBold(hasPlayfair), fontWeight: 700, fontSize: namesLong ? 58 : 72, color: '#FFFFFF', letterSpacing: 0.5, lineHeight: 1.2 }}>
+        <div style={{ display: 'flex', fontFamily: nameFontFamily, fontSize: (namesLong ? 58 : 72) * nameFontScale, color: '#FFFFFF', letterSpacing: 0.5, lineHeight: 1.2 }}>
           {noiva} &amp; {noivo}
         </div>
         {data && (
@@ -126,8 +176,8 @@ function CardClassico({ noiva, noivo, data, foto, hasPlayfair }: CardData) {
   );
 }
 
-/** 2) Circular — fundo cor sólida, foto redonda emoldurada, nomes em script. */
-function CardCircular({ noiva, noivo, data, foto, accentColor, hasPlayfair, hasScript }: CardData) {
+/** 2) Circular — fundo cor sólida, foto redonda emoldurada, nomes na fonte escolhida. */
+function CardCircular({ noiva, noivo, data, foto, accentColor, hasPlayfair, nameFontFamily, nameFontScale, imageScale }: CardData) {
   const nameFits = noiva.length + noivo.length <= 22;
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#F6EFE4', padding: '48px 60px', position: 'relative' }}>
@@ -137,16 +187,12 @@ function CardCircular({ noiva, noivo, data, foto, accentColor, hasPlayfair, hasS
       {foto ? (
         <div style={{ display: 'flex', width: 300, height: 300, borderRadius: '50%', border: `10px solid ${accentColor}`, marginTop: 26, overflow: 'hidden' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={foto} alt="" width={300} height={300} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src={foto} alt="" width={300} height={300} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${imageScale})` }} />
         </div>
       ) : (
         <div style={{ display: 'flex', width: 300, height: 300, borderRadius: '50%', border: `10px solid ${accentColor}`, marginTop: 26, backgroundColor: '#EFE4D2' }} />
       )}
-      <div
-        style={{
-          display: 'flex', marginTop: 30, fontFamily: script(hasScript, hasPlayfair), fontSize: nameFits ? 96 : 68, color: '#5c4630', lineHeight: 1,
-        }}
-      >
+      <div style={{ display: 'flex', marginTop: 30, fontFamily: nameFontFamily, fontSize: (nameFits ? 96 : 68) * nameFontScale, color: '#5c4630', lineHeight: 1 }}>
         {noiva} &amp; {noivo}
       </div>
       {data && (
@@ -158,28 +204,28 @@ function CardCircular({ noiva, noivo, data, foto, accentColor, hasPlayfair, hasS
   );
 }
 
-/** 3) Retrato — cabeçalho, foto em faixa horizontal ao centro, nomes com "&" em script colorido. */
-function CardRetrato({ noiva, noivo, data, foto, accentColor, hasPlayfair, hasScript }: CardData) {
+/** 3) Retrato — cabeçalho, foto em faixa horizontal ao centro, nomes com "&" na fonte escolhida. */
+function CardRetrato({ noiva, noivo, data, foto, accentColor, hasPlayfair, nameFontFamily, nameFontScale, imageScale }: CardData) {
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: '#FFFFFF' }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '30px 40px 18px', textAlign: 'center' }}>
         <div style={{ display: 'flex', fontFamily: serifRegular(hasPlayfair), fontSize: 18, letterSpacing: 3, textTransform: 'uppercase', color: '#8a8a8a' }}>
           Convidamos você para
         </div>
-        <div style={{ display: 'flex', fontFamily: script(hasScript, hasPlayfair), fontSize: 40, color: '#2b2b2b', marginTop: 4 }}>
+        <div style={{ display: 'flex', fontFamily: serifItalic(hasPlayfair), fontStyle: 'italic', fontSize: 32, color: '#2b2b2b', marginTop: 4 }}>
           O Casamento de
         </div>
       </div>
-      <div style={{ display: 'flex', width: '100%', height: 300, position: 'relative', backgroundColor: '#e8e8e8' }}>
+      <div style={{ display: 'flex', width: '100%', height: 300, position: 'relative', backgroundColor: '#e8e8e8', overflow: 'hidden' }}>
         {foto && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={foto} alt="" width={WIDTH} height={300} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src={foto} alt="" width={WIDTH} height={300} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${imageScale})` }} />
         )}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, textAlign: 'center', padding: '0 40px' }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', fontFamily: serifBold(hasPlayfair), fontWeight: 700, fontSize: 54, color: '#2b2b2b' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', fontFamily: nameFontFamily, fontSize: 54 * nameFontScale, color: '#2b2b2b' }}>
           <span>{noiva}</span>
-          <span style={{ display: 'flex', fontFamily: script(hasScript, hasPlayfair), color: accentColor, fontSize: 60, margin: '0 18px' }}>&amp;</span>
+          <span style={{ display: 'flex', color: accentColor, fontSize: 60 * nameFontScale, margin: '0 18px' }}>&amp;</span>
           <span>{noivo}</span>
         </div>
         {data && (
@@ -193,14 +239,14 @@ function CardRetrato({ noiva, noivo, data, foto, accentColor, hasPlayfair, hasSc
 }
 
 /** 4) Minimalista — tipografia pura, sem foto, muito espaço em branco. */
-function CardMinimalista({ noiva, noivo, data, accentColor, hasPlayfair }: CardData) {
+function CardMinimalista({ noiva, noivo, data, accentColor, hasPlayfair, nameFontFamily, nameFontScale }: CardData) {
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAF7F2', padding: '0 90px', textAlign: 'center' }}>
       <div style={{ display: 'flex', fontFamily: serifRegular(hasPlayfair), fontSize: 16, letterSpacing: 6, textTransform: 'uppercase', color: '#9a9284' }}>
         Save the date
       </div>
       <div style={{ display: 'flex', width: 90, height: 1, backgroundColor: accentColor, marginTop: 26 }} />
-      <div style={{ display: 'flex', marginTop: 26, fontFamily: serifRegular(hasPlayfair), fontWeight: 400, fontSize: 68, color: '#2b2620', letterSpacing: 1 }}>
+      <div style={{ display: 'flex', marginTop: 26, fontFamily: nameFontFamily, fontSize: 68 * nameFontScale, color: '#2b2620', letterSpacing: 1 }}>
         {noiva} &amp; {noivo}
       </div>
       <div style={{ display: 'flex', width: 90, height: 1, backgroundColor: accentColor, marginTop: 26 }} />
@@ -213,13 +259,13 @@ function CardMinimalista({ noiva, noivo, data, accentColor, hasPlayfair }: CardD
   );
 }
 
-/** 5) Romântico — foto com vinheta escura por inteiro, nomes centralizados em itálico. */
-function CardRomantico({ noiva, noivo, data, foto, hasPlayfair }: CardData) {
+/** 5) Romântico — foto com vinheta escura por inteiro, nomes centralizados na fonte escolhida. */
+function CardRomantico({ noiva, noivo, data, foto, hasPlayfair, nameFontFamily, nameFontScale, imageScale }: CardData) {
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', backgroundColor: '#1a1512' }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', backgroundColor: '#1a1512', overflow: 'hidden' }}>
       {foto && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={foto} alt="" width={WIDTH} height={HEIGHT} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        <img src={foto} alt="" width={WIDTH} height={HEIGHT} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${imageScale})` }} />
       )}
       <div style={{ position: 'absolute', inset: 0, display: 'flex', backgroundColor: 'rgba(15,10,8,0.6)' }} />
       <div
@@ -229,7 +275,7 @@ function CardRomantico({ noiva, noivo, data, foto, hasPlayfair }: CardData) {
         }}
       />
       <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', textAlign: 'center', padding: '0 80px' }}>
-        <div style={{ display: 'flex', fontFamily: serifItalic(hasPlayfair), fontStyle: 'italic', fontSize: 66, color: '#FFFFFF', letterSpacing: 3 }}>
+        <div style={{ display: 'flex', fontFamily: nameFontFamily, fontSize: 66 * nameFontScale, color: '#FFFFFF', letterSpacing: 3 }}>
           {noiva} &amp; {noivo}
         </div>
         {data && (
@@ -243,12 +289,12 @@ function CardRomantico({ noiva, noivo, data, foto, hasPlayfair }: CardData) {
 }
 
 /** 6) Colorido — foto com tingimento na cor do tema do evento, nome alinhado à esquerda embaixo. */
-function CardColorido({ noiva, noivo, data, foto, accentColor, hasPlayfair }: CardData) {
+function CardColorido({ noiva, noivo, data, foto, accentColor, hasPlayfair, nameFontFamily, nameFontScale, imageScale }: CardData) {
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', backgroundColor: accentColor }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', backgroundColor: accentColor, overflow: 'hidden' }}>
       {foto && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={foto} alt="" width={WIDTH} height={HEIGHT} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        <img src={foto} alt="" width={WIDTH} height={HEIGHT} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${imageScale})` }} />
       )}
       <div style={{ position: 'absolute', inset: 0, display: 'flex', backgroundColor: accentColor, opacity: 0.42 }} />
       <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 14, display: 'flex', backgroundColor: accentColor }} />
@@ -263,7 +309,7 @@ function CardColorido({ noiva, noivo, data, foto, accentColor, hasPlayfair }: Ca
             {data}
           </div>
         )}
-        <div style={{ display: 'flex', fontFamily: serifBold(hasPlayfair), fontWeight: 700, fontSize: 66, color: '#FFFFFF', lineHeight: 1.15 }}>
+        <div style={{ display: 'flex', fontFamily: nameFontFamily, fontSize: 66 * nameFontScale, color: '#FFFFFF', lineHeight: 1.15 }}>
           {noiva} &amp; {noivo}
         </div>
       </div>
@@ -284,6 +330,14 @@ function renderCard(template: CardTemplate, ctx: CardData) {
   }
 }
 
+/** Lê um percentual da querystring, com default e faixa segura (evita layout quebrado em valores extremos). */
+function readScalePercent(searchParams: URLSearchParams, key: string, defaultPercent: number, min: number, max: number): number {
+  const raw = searchParams.get(key);
+  let percent = raw ? parseInt(raw, 10) : defaultPercent;
+  if (!Number.isFinite(percent)) percent = defaultPercent;
+  return Math.min(max, Math.max(min, percent)) / 100;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const noiva = (searchParams.get('noiva') || 'Noiva').slice(0, 60);
@@ -294,17 +348,25 @@ export async function GET(request: Request) {
   const templateParam = searchParams.get('template');
   const template: CardTemplate = isCardTemplate(templateParam) ? templateParam : 'classico';
 
+  const fonteParam = searchParams.get('fonte');
+  const nameFontKey = isValidNameFontKey(fonteParam) ? fonteParam : 'Pinyon+Script';
+  // Fonte do nome: slider livre (pedido do usuário), com faixa segura pra não quebrar o layout do cartão.
+  const nameFontScale = readScalePercent(searchParams, 'escala', 100, 50, 200);
+  // Zoom da foto dentro do seu quadro: o quadro em si (círculo, faixa, fundo) nunca muda de tamanho —
+  // só o conteúdo da imagem aproxima/afasta dentro dele, então não há risco de quebrar a composição.
+  const imageScale = readScalePercent(searchParams, 'zoom', 100, 80, 200);
+
   const fonts = await loadFonts();
   const hasPlayfair = !!(fonts.playfairBold || fonts.playfairRegular || fonts.playfairItalic);
-  const hasScript = !!fonts.pinyonScript;
+  const nameFontFamily = fonts[nameFontKey] ? resolveNameFontFamily(nameFontKey) : 'cursive';
 
   try {
     const imageResponse = new ImageResponse(
-      renderCard(template, { noiva, noivo, data, foto, accentColor, hasPlayfair, hasScript }),
+      renderCard(template, { noiva, noivo, data, foto, accentColor, hasPlayfair, nameFontFamily, nameFontScale, imageScale }),
       {
         width: WIDTH,
         height: HEIGHT,
-        fonts: buildFontsOption(fonts),
+        fonts: buildFontsOption(fonts, nameFontKey),
       }
     );
 

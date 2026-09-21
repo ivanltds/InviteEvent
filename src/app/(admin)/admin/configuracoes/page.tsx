@@ -17,7 +17,8 @@ import { configService } from '@/lib/services/configService';
 import { Configuracao, ModoArrecadacao, ModoConvite } from '@/lib/types/database';
 import { GRAVATA_LABEL_TEXT, GRAVATA_LABEL_OPTIONS } from '@/lib/constants/gravata';
 import { SECOES_CONVITE_LABELS, resolveSecoesOrdem, SecaoConvite } from '@/lib/constants/secoes';
-import { CARD_TEMPLATES, CARD_TEMPLATE_LABELS, buildConviteCardImageUrl } from '@/lib/utils/conviteCard';
+import { CARD_TEMPLATES, CARD_TEMPLATE_LABELS, CardTemplate, CardTemplateStyle, buildConviteCardImageUrl } from '@/lib/utils/conviteCard';
+import { CURSIVE_FONTS } from '@/lib/constants/fonts';
 import FAQManager from '@/components/admin/FAQManager';
 import ConfigPreview from '@/components/admin/ConfigPreview';
 import TeamManagement from '@/components/admin/TeamManagement';
@@ -43,6 +44,7 @@ const DEFAULT_CONFIG: Omit<Configuracao, 'id' | 'evento_id'> = {
   mostrar_detalhes: true,
   secoes_ordem: ['detalhes', 'historia', 'noivos', 'agenda', 'rsvp', 'faq'],
   card_template: 'classico',
+  card_template_styles: {},
   modo_arrecadacao: 'presentes',
   gravata_label: 'quero_colaborar',
   gravata_recado: 'Sua presença já é o nosso maior presente, mas se quiser nos ajudar a começar essa nova fase, ficaremos muito felizes com sua contribuição.',
@@ -78,10 +80,13 @@ function formatDataCasamentoPreview(dataCasamento?: string): string {
   });
 }
 
+/** Fonte padrão do nome no cartão quando o modelo ainda não foi personalizado (mesma usada antes dessa opção existir). */
+const DEFAULT_CARD_NAME_FONT = 'Pinyon+Script';
+
 export default function AdminConfig() {
   const router = useRouter();
   const { currentEvent, loading: eventLoading } = useEvent();
-  
+
   const [config, setConfig] = useState<Configuracao | null>(null);
   const [novoValorGravata, setNovoValorGravata] = useState('');
   const [originalConfigStr, setOriginalConfigStr] = useState<string>('');
@@ -161,6 +166,20 @@ export default function AdminConfig() {
     };
     window.addEventListener('hashchange', handleHash);
     return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
+  // Carrega o CSS de todas as fontes do nome do cartão de uma vez, pra
+  // exibir cada botão do seletor já na sua própria fonte (prévia real,
+  // igual o FontPicker de Tipografia Premium já faz).
+  useEffect(() => {
+    const linkId = 'card-name-fonts-preview';
+    if (document.getElementById(linkId)) return;
+    const families = CURSIVE_FONTS.map(f => `family=${f.googleFamily}`).join('&');
+    const link = document.createElement('link');
+    link.id = linkId;
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?${families}&display=swap`;
+    document.head.appendChild(link);
   }, []);
 
   // Interceptador de navegação interna (Links/Sidebar)
@@ -407,18 +426,22 @@ export default function AdminConfig() {
 
             <section className={styles.section}>
               <h2>Modelo do Cartão de Compartilhamento</h2>
-              <p className={styles.helpText}>Escolha como o cartão do seu convite vai aparecer quando o link for compartilhado no WhatsApp.</p>
+              <p className={styles.helpText}>Escolha como o cartão do seu convite vai aparecer quando o link for compartilhado no WhatsApp. Clique num modelo pra ativá-lo e personalizar a fonte, o tamanho e a foto dele logo abaixo.</p>
               <div className={styles.cardTemplateGrid}>
                 {CARD_TEMPLATES.map(templateId => {
                   const isActive = (config.card_template || 'classico') === templateId;
+                  const styleForThumb = config.card_template_styles?.[templateId];
                   const previewUrl = buildConviteCardImageUrl(
                     {
                       noiva: config.noiva_nome || 'Noiva',
                       noivo: config.noivo_nome || 'Noivo',
                       data: formatDataCasamentoPreview(config.data_casamento),
-                      foto: config.hero_images?.[0] || config.noiva_foto_url || config.noivo_foto_url,
+                      foto: styleForThumb?.image || config.hero_images?.[0] || config.noiva_foto_url || config.noivo_foto_url,
                       template: templateId,
                       accentColor: config.accent_color,
+                      font: styleForThumb?.font,
+                      fontScale: styleForThumb?.fontScale,
+                      imageScale: styleForThumb?.imageScale,
                     },
                     typeof window !== 'undefined' ? window.location.origin : ''
                   );
@@ -440,6 +463,107 @@ export default function AdminConfig() {
                   );
                 })}
               </div>
+
+              {(() => {
+                const activeTemplate = (config.card_template || 'classico') as CardTemplate;
+                const activeStyle: CardTemplateStyle = config.card_template_styles?.[activeTemplate] || {};
+                const updateActiveStyle = (patch: Partial<CardTemplateStyle>) => {
+                  setConfig({
+                    ...config,
+                    card_template_styles: {
+                      ...(config.card_template_styles || {}),
+                      [activeTemplate]: { ...activeStyle, ...patch },
+                    },
+                  });
+                };
+                const availableImages = Array.from(
+                  new Set([...(config.hero_images || []), config.noiva_foto_url, config.noivo_foto_url].filter(Boolean) as string[])
+                );
+                // Minimalista não tem foto no design (só tipografia) — o controle de foto/zoom não se aplica a ele.
+                const hasPhoto = activeTemplate !== 'minimalista';
+
+                return (
+                  <div className={styles.cardStyleCustomizer}>
+                    <h3 className={styles.cardStyleCustomizerTitle}>
+                      Personalizando: {CARD_TEMPLATE_LABELS[activeTemplate]}
+                    </h3>
+
+                    <div className={styles.field} style={{ marginBottom: '1.2rem' }}>
+                      <label>Fonte do nome</label>
+                      <div className={styles.nameFontGrid}>
+                        {CURSIVE_FONTS.map(font => {
+                          const isFontActive = (activeStyle.font || DEFAULT_CARD_NAME_FONT) === font.googleFamily;
+                          return (
+                            <button
+                              type="button"
+                              key={font.googleFamily}
+                              className={`${styles.nameFontOption} ${isFontActive ? styles.nameFontOptionActive : ''}`}
+                              style={{ fontFamily: font.cssValue }}
+                              onClick={() => updateActiveStyle({ font: font.googleFamily })}
+                              title={font.name}
+                            >
+                              {config.noiva_nome || 'Noiva'} &amp; {config.noivo_nome || 'Noivo'}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className={styles.field} style={{ marginBottom: hasPhoto ? '1.2rem' : 0 }}>
+                      <label>Tamanho da fonte do nome: {activeStyle.fontScale ?? 100}%</label>
+                      <input
+                        type="range"
+                        min={50}
+                        max={200}
+                        step={5}
+                        value={activeStyle.fontScale ?? 100}
+                        onChange={(e) => updateActiveStyle({ fontScale: Number(e.target.value) })}
+                        className={styles.cardStyleSlider}
+                      />
+                    </div>
+
+                    {hasPhoto && (
+                      <>
+                        <div className={styles.field} style={{ marginBottom: '1.2rem' }}>
+                          <label>Foto do cartão</label>
+                          <div className={styles.cardImageGrid}>
+                            <button
+                              type="button"
+                              className={`${styles.cardImageOption} ${!activeStyle.image ? styles.cardImageOptionActive : ''}`}
+                              onClick={() => updateActiveStyle({ image: undefined })}
+                            >
+                              Automática
+                            </button>
+                            {availableImages.map(url => (
+                              <button
+                                type="button"
+                                key={url}
+                                className={`${styles.cardImageOption} ${activeStyle.image === url ? styles.cardImageOptionActive : ''}`}
+                                onClick={() => updateActiveStyle({ image: url })}
+                              >
+                                <img src={url} alt="" className={styles.cardImageThumb} />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className={styles.field}>
+                          <label>Zoom da foto: {activeStyle.imageScale ?? 100}%</label>
+                          <input
+                            type="range"
+                            min={80}
+                            max={200}
+                            step={5}
+                            value={activeStyle.imageScale ?? 100}
+                            onChange={(e) => updateActiveStyle({ imageScale: Number(e.target.value) })}
+                            className={styles.cardStyleSlider}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })()}
             </section>
 
             <section className={styles.section}>

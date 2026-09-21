@@ -29,6 +29,7 @@ const ConfigPreview: React.FC<ConfigPreviewProps> = ({ config, agenda = [] }) =>
 
   // Mapeamento da visibilidade em tempo real
   const visibility = {
+    detalhes: config.mostrar_detalhes !== false,
     historia: config.mostrar_historia !== false,
     noivos: config.mostrar_noivos !== false,
     faq: config.mostrar_faq !== false,

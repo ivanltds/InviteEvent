@@ -6,11 +6,12 @@
  * à parte (ver `mostrar_mural` em Configuracao), então não faz sentido
  * "reordená-lo" junto com o resto.
  */
-export type SecaoConvite = 'historia' | 'noivos' | 'agenda' | 'rsvp' | 'faq';
+export type SecaoConvite = 'detalhes' | 'historia' | 'noivos' | 'agenda' | 'rsvp' | 'faq';
 
-export const SECOES_CONVITE_ORDEM_PADRAO: SecaoConvite[] = ['historia', 'noivos', 'agenda', 'rsvp', 'faq'];
+export const SECOES_CONVITE_ORDEM_PADRAO: SecaoConvite[] = ['detalhes', 'historia', 'noivos', 'agenda', 'rsvp', 'faq'];
 
 export const SECOES_CONVITE_LABELS: Record<SecaoConvite, string> = {
+  detalhes: 'Detalhes do Evento (Cerimônia/Recepção)',
   historia: 'Nossa História',
   noivos: 'Os Noivos (Bio)',
   agenda: 'Programação',

@@ -39,7 +39,8 @@ const DEFAULT_CONFIG: Omit<Configuracao, 'id' | 'evento_id'> = {
   mostrar_faq: true,
   mostrar_presentes: true,
   mostrar_mural: true,
-  secoes_ordem: ['historia', 'noivos', 'agenda', 'rsvp', 'faq'],
+  mostrar_detalhes: true,
+  secoes_ordem: ['detalhes', 'historia', 'noivos', 'agenda', 'rsvp', 'faq'],
   modo_arrecadacao: 'presentes',
   gravata_label: 'quero_colaborar',
   gravata_recado: 'Sua presença já é o nosso maior presente, mas se quiser nos ajudar a começar essa nova fase, ficaremos muito felizes com sua contribuição.',
@@ -394,6 +395,15 @@ export default function AdminConfig() {
               <h2>Módulos do Convite (Visibilidade)</h2>
               <p className={styles.helpText}>Escolha quais seções deseja exibir para seus convidados.</p>
               <div className={styles.checkboxGrid}>
+                <div className={styles.checkboxField}>
+                  <input
+                    id="mostrar_detalhes"
+                    type="checkbox"
+                    checked={config.mostrar_detalhes !== false}
+                    onChange={(e) => setConfig({...config, mostrar_detalhes: e.target.checked})}
+                  />
+                  <label htmlFor="mostrar_detalhes">Detalhes do Evento (Cerimônia/Recepção)</label>
+                </div>
                 <div className={styles.checkboxField}>
                   <input
                     id="mostrar_historia"

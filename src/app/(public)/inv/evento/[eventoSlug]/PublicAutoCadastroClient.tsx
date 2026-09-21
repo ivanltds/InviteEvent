@@ -118,6 +118,7 @@ export default function PublicAutoCadastroClient({ eventoSlug }: PublicAutoCadas
       config={config}
       couple={couple}
       visibility={{
+        detalhes: config.mostrar_detalhes !== false,
         historia: config.mostrar_historia !== false,
         noivos: config.mostrar_noivos !== false,
         faq: config.mostrar_faq !== false,

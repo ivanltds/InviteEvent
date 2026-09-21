@@ -36,6 +36,7 @@ export default function InvitationPageClient({ slug }: InvitationPageClientProps
   const [previewBase64, setPreviewBase64] = useState<string | null>(null);
 
   const [visibility, setVisibility] = useState({
+    detalhes: true,
     historia: true,
     noivos: true,
     faq: true,
@@ -103,7 +104,7 @@ export default function InvitationPageClient({ slug }: InvitationPageClientProps
               rawDate: payload.data_evento || '2050-01-01'
             });
             setVisibility({
-              historia: true, noivos: false, faq: false, presentes: true
+              detalhes: false, historia: true, noivos: false, faq: false, presentes: true
             });
             if (payload.cover_image_url) {
                setPreviewBase64(payload.cover_image_url);
@@ -157,6 +158,7 @@ export default function InvitationPageClient({ slug }: InvitationPageClientProps
           });
 
           setVisibility({
+            detalhes: configData.mostrar_detalhes !== false,
             historia: configData.mostrar_historia !== false,
             noivos: configData.mostrar_noivos !== false,
             faq: configData.mostrar_faq !== false,

@@ -21,7 +21,7 @@ export default function VisualizarPreviewPage() {
     rawDate: ''
   });
   const [visibility, setVisibility] = useState({
-    historia: true, noivos: true, faq: true, presentes: true
+    detalhes: true, historia: true, noivos: true, faq: true, presentes: true
   });
 
   const [showGateway, setShowGateway] = useState(false);
@@ -69,6 +69,7 @@ export default function VisualizarPreviewPage() {
           });
 
           setVisibility({
+            detalhes: configData.mostrar_detalhes !== false,
             historia: configData.mostrar_historia !== false,
             noivos: configData.mostrar_noivos !== false,
             faq: configData.mostrar_faq !== false,

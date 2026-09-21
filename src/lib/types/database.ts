@@ -165,6 +165,8 @@ export interface Configuracao {
   mostrar_historia?: boolean;
   mostrar_noivos?: boolean;
   mostrar_presentes?: boolean;
+  /** Seção "O Evento" (A Cerimônia/A Recepção, com local_cerimonia/endereco_cerimonia). */
+  mostrar_detalhes?: boolean;
   /** Mural de Lembranças é opcional: pode ser removido do convite (botão + rota /mural) nas configurações. */
   mostrar_mural?: boolean;
   /** Ordem de exibição das seções do convite, reordenável nas configurações. Ver SECOES_CONVITE_ORDEM_PADRAO. */

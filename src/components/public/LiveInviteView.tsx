@@ -40,6 +40,8 @@ interface LiveInviteViewProps {
     noivos: boolean;
     faq: boolean;
     presentes: boolean;
+    /** Opcional por retrocompatibilidade — ausente é tratado como visível. */
+    detalhes?: boolean;
   };
   agenda: any[];
   slug: string;
@@ -277,16 +279,12 @@ const LiveInviteView: React.FC<LiveInviteViewProps> = ({
         </section>
       </main>
 
-      {/* Correção de 20/09/2026: <Detalhes> (seção "A Cerimônia"/"A
-          Recepção" com local_cerimonia/endereco_cerimonia) estava
-          importado mas nunca renderizado aqui — os campos continuavam
-          editáveis em Configurações, mas não tinham nenhum efeito no
-          convite. Os convidados nunca viam o endereço preenchido pelos
-          noivos. */}
-      <Detalhes config={config} />
-
       {resolveSecoesOrdem(config.secoes_ordem).map((secao: SecaoConvite) => {
         switch (secao) {
+          case 'detalhes':
+            return visibility.detalhes !== false ? (
+              <section key="detalhes"><Detalhes config={config} /></section>
+            ) : null;
           case 'historia':
             return visibility.historia ? (
               <section key="historia" ref={refHistoria}><Historia config={config} /></section>

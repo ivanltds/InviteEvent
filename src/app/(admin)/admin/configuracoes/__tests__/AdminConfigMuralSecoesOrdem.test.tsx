@@ -31,7 +31,7 @@ const baseConfig = {
   noivo_nome: 'Marcus',
   data_casamento: '2026-06-13',
   mostrar_mural: true,
-  secoes_ordem: ['historia', 'noivos', 'agenda', 'rsvp', 'faq'],
+  secoes_ordem: ['detalhes', 'historia', 'noivos', 'agenda', 'rsvp', 'faq'],
 };
 
 describe('AdminConfig — Mural opcional e ordem das seções', () => {
@@ -65,7 +65,10 @@ describe('AdminConfig — Mural opcional e ordem das seções', () => {
   });
 
   test('mover uma seção para baixo troca sua posição na lista', async () => {
-    (configService.getConfig as jest.Mock).mockResolvedValue(baseConfig);
+    (configService.getConfig as jest.Mock).mockResolvedValue({
+      ...baseConfig,
+      secoes_ordem: ['historia', 'noivos', 'agenda', 'rsvp', 'faq', 'detalhes'],
+    });
     render(<AdminConfig />);
     await waitFor(() => expect(screen.queryByText(/Carregando configurações/i)).not.toBeInTheDocument());
 
@@ -79,11 +82,34 @@ describe('AdminConfig — Mural opcional e ordem das seções', () => {
   });
 
   test('botão de mover para cima fica desabilitado no primeiro item', async () => {
-    (configService.getConfig as jest.Mock).mockResolvedValue(baseConfig);
+    (configService.getConfig as jest.Mock).mockResolvedValue({
+      ...baseConfig,
+      secoes_ordem: ['historia', 'noivos', 'agenda', 'rsvp', 'faq', 'detalhes'],
+    });
     render(<AdminConfig />);
     await waitFor(() => expect(screen.queryByText(/Carregando configurações/i)).not.toBeInTheDocument());
 
     expect(screen.getByLabelText('Mover Nossa História para cima')).toBeDisabled();
-    expect(screen.getByLabelText('Mover Perguntas Frequentes (FAQ) para baixo')).toBeDisabled();
+    expect(screen.getByLabelText('Mover Detalhes do Evento (Cerimônia/Recepção) para baixo')).toBeDisabled();
+  });
+
+  // Pedido de acompanhamento do usuário: a seção "Detalhes do Evento"
+  // (endereço da cerimônia) também precisa aparecer nos módulos de
+  // visibilidade e na ordenação, igual história/noivos/faq/mural.
+  test('a seção "Detalhes do Evento" aparece na lista de ordem das seções', async () => {
+    (configService.getConfig as jest.Mock).mockResolvedValue(baseConfig);
+    render(<AdminConfig />);
+    await waitFor(() => expect(screen.queryByText(/Carregando configurações/i)).not.toBeInTheDocument());
+
+    expect(screen.getByText(/1\. Detalhes do Evento \(Cerimônia\/Recepção\)/)).toBeInTheDocument();
+  });
+
+  test('checkbox "Detalhes do Evento" aparece nos módulos de visibilidade, marcada por padrão', async () => {
+    (configService.getConfig as jest.Mock).mockResolvedValue(baseConfig);
+    render(<AdminConfig />);
+    await waitFor(() => expect(screen.queryByText(/Carregando configurações/i)).not.toBeInTheDocument());
+
+    const checkbox = screen.getByLabelText(/^Detalhes do Evento \(Cerimônia\/Recepção\)$/);
+    expect(checkbox).toBeChecked();
   });
 });

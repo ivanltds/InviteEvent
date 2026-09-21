@@ -1,9 +1,10 @@
 /** Os mesmos modelos definidos em src/app/api/og/convite/route.tsx. */
-export const CARD_TEMPLATES = ['classico', 'circular', 'retrato', 'minimalista', 'romantico', 'colorido'] as const;
+export const CARD_TEMPLATES = ['classico', 'classico_convite', 'circular', 'retrato', 'minimalista', 'romantico', 'colorido'] as const;
 export type CardTemplate = (typeof CARD_TEMPLATES)[number];
 
 export const CARD_TEMPLATE_LABELS: Record<CardTemplate, string> = {
   classico: 'Clássico',
+  classico_convite: 'Clássico com Convite',
   circular: 'Foto Circular',
   retrato: 'Retrato',
   minimalista: 'Minimalista',

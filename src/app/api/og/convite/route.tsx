@@ -33,7 +33,7 @@ export const runtime = 'nodejs';
 const WIDTH = 1200;
 const HEIGHT = 630;
 
-export const CARD_TEMPLATES = ['classico', 'circular', 'retrato', 'minimalista', 'romantico', 'colorido'] as const;
+export const CARD_TEMPLATES = ['classico', 'classico_convite', 'circular', 'retrato', 'minimalista', 'romantico', 'colorido'] as const;
 export type CardTemplate = (typeof CARD_TEMPLATES)[number];
 
 function isCardTemplate(value: string | null): value is CardTemplate {
@@ -166,6 +166,51 @@ function CardClassico({ noiva, noivo, data, foto, hasPlayfair, nameFontFamily, n
           background: 'linear-gradient(to top, rgba(15,12,8,0.94) 55%, rgba(15,12,8,0) 100%)',
         }}
       />
+      <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', width: '100%', height: '100%', padding: '0 70px 56px', textAlign: 'center' }}>
+        <div style={{ display: 'flex', fontFamily: nameFontFamily, fontSize: (namesLong ? 58 : 72) * nameFontScale, color: '#FFFFFF', letterSpacing: 0.5, lineHeight: 1.2 }}>
+          {noiva} &amp; {noivo}
+        </div>
+        {data && (
+          <div style={{ display: 'flex', marginTop: 18, fontFamily: serifBold(hasPlayfair), fontWeight: 700, fontSize: 26 * dateFontScale, color: '#D9B978', letterSpacing: 4, textTransform: 'uppercase' }}>
+            {data}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 1b) Clássico com Convite — variação do Clássico com uma vinheta
+ * também no topo e o texto "Você foi convidado para o casamento de"
+ * acima, menor e na mesma fonte da data (pedido do usuário em
+ * 21/09/2026).
+ */
+function CardClassicoConvite({ noiva, noivo, data, foto, hasPlayfair, nameFontFamily, nameFontScale, dateFontScale, imageScale }: CardData) {
+  const namesLong = noiva.length + noivo.length > 26;
+  return (
+    <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', backgroundColor: '#2b2620', overflow: 'hidden' }}>
+      {foto && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={foto} alt="" width={WIDTH} height={HEIGHT} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${imageScale})` }} />
+      )}
+      <div
+        style={{
+          position: 'absolute', left: 0, right: 0, top: 0, height: '32%', display: 'flex',
+          background: 'linear-gradient(to bottom, rgba(15,12,8,0.85) 35%, rgba(15,12,8,0) 100%)',
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute', left: 0, right: 0, bottom: 0, height: '46%', display: 'flex',
+          background: 'linear-gradient(to top, rgba(15,12,8,0.94) 55%, rgba(15,12,8,0) 100%)',
+        }}
+      />
+      <div style={{ position: 'absolute', left: 0, right: 0, top: 44, display: 'flex', justifyContent: 'center', padding: '0 70px', textAlign: 'center' }}>
+        <div style={{ display: 'flex', fontFamily: serifBold(hasPlayfair), fontWeight: 700, fontSize: 16 * dateFontScale, color: '#D9B978', letterSpacing: 3, textTransform: 'uppercase' }}>
+          Você foi convidado para o casamento de
+        </div>
+      </div>
       <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', width: '100%', height: '100%', padding: '0 70px 56px', textAlign: 'center' }}>
         <div style={{ display: 'flex', fontFamily: nameFontFamily, fontSize: (namesLong ? 58 : 72) * nameFontScale, color: '#FFFFFF', letterSpacing: 0.5, lineHeight: 1.2 }}>
           {noiva} &amp; {noivo}
@@ -323,6 +368,7 @@ function CardColorido({ noiva, noivo, data, foto, accentColor, hasPlayfair, name
 
 function renderCard(template: CardTemplate, ctx: CardData) {
   switch (template) {
+    case 'classico_convite': return <CardClassicoConvite {...ctx} />;
     case 'circular': return <CardCircular {...ctx} />;
     case 'retrato': return <CardRetrato {...ctx} />;
     case 'minimalista': return <CardMinimalista {...ctx} />;

@@ -55,4 +55,34 @@ describe('Site Sections (Public)', () => {
     expect(screen.queryByText('Google Maps')).not.toBeInTheDocument();
     expect(screen.queryByText('Waze')).not.toBeInTheDocument();
   });
+
+  // Feedback do usuário em 20/09/2026: a Recepção deve aparecer antes da
+  // Cerimônia, e o endereço (sendo o mesmo local para os dois) deve
+  // aparecer uma única vez, fora dos cards de horário — não mais
+  // duplicado (e às vezes com texto placeholder inconsistente) dentro
+  // de cada card.
+  test('mostra o card da Recepção antes do card da Cerimônia', () => {
+    render(<Detalhes config={mockConfig as any} />);
+    const headings = screen.getAllByRole('heading', { level: 3 }).map(h => h.textContent);
+    expect(headings).toEqual(['A Recepção', 'A Cerimônia']);
+  });
+
+  test('mostra o endereço uma única vez, fora dos cards, compartilhado pelos dois horários', () => {
+    render(
+      <Detalhes
+        config={{
+          ...mockConfig,
+          local_cerimonia: 'Chácara Fiorese',
+          endereco_cerimonia: 'Estr. Mun. do Carmo, 300, Vargem Grande Paulista - SP',
+          horario_cerimonia: '13:00',
+          horario_recepcao: '19:00',
+        } as any}
+      />
+    );
+
+    expect(screen.getAllByText('Chácara Fiorese')).toHaveLength(1);
+    expect(screen.getAllByText('Estr. Mun. do Carmo, 300, Vargem Grande Paulista - SP')).toHaveLength(1);
+    expect(screen.getByText('13:00')).toBeInTheDocument();
+    expect(screen.getByText('19:00')).toBeInTheDocument();
+  });
 });

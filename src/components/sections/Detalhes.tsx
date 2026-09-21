@@ -2,6 +2,13 @@ import { Configuracao } from "@/lib/types/database";
 import styles from "./Detalhes.module.css";
 import { resolveGoogleMapsUrl, resolveWazeUrl } from "@/lib/utils/maps";
 
+/**
+ * Correção de 20/09/2026 (feedback do usuário): recepção e cerimônia
+ * geralmente acontecem no mesmo local, então o endereço não fica mais
+ * duplicado (e às vezes inconsistente, com texto placeholder) dentro de
+ * cada card — aparece uma única vez, fora dos cards de horário. Além
+ * disso a Recepção passou a vir antes da Cerimônia, por pedido explícito.
+ */
 export default function Detalhes({ config }: { config?: Configuracao }) {
   let dateStr = '13 de Junho de 2026';
   if (config?.data_casamento) {
@@ -14,9 +21,11 @@ export default function Detalhes({ config }: { config?: Configuracao }) {
     });
   }
 
-  const enderecoCerimonia = config?.endereco_cerimonia || config?.local_cerimonia;
-  const googleMapsUrl = resolveGoogleMapsUrl(enderecoCerimonia);
-  const wazeUrl = resolveWazeUrl(enderecoCerimonia);
+  const localCerimonia = config?.local_cerimonia || 'Igreja Matriz';
+  const enderecoCerimonia = config?.endereco_cerimonia || 'Praça da Matriz, Centro';
+  const enderecoParaNavegar = config?.endereco_cerimonia || config?.local_cerimonia;
+  const googleMapsUrl = resolveGoogleMapsUrl(enderecoParaNavegar);
+  const wazeUrl = resolveWazeUrl(enderecoParaNavegar);
 
   return (
     <section className={styles.section} id="detalhes">
@@ -26,31 +35,32 @@ export default function Detalhes({ config }: { config?: Configuracao }) {
 
         <div className={styles.cards}>
           <div className={styles.card}>
-            <h3>A Cerimônia</h3>
-            <div className={styles.info}>
-              <p className={styles.date}>{dateStr}</p>
-              <p className={styles.time}>{config?.horario_cerimonia || '16:00'}</p>
-              <p className={styles.location}>{config?.local_cerimonia || 'Igreja Matriz'}</p>
-              <p className={styles.address}>{config?.endereco_cerimonia || 'Praça da Matriz, Centro'}</p>
-              <div className={styles.mapLinks}>
-                {googleMapsUrl && (
-                  <a href={googleMapsUrl} className={styles.mapLink} target="_blank" rel="noopener noreferrer">Google Maps</a>
-                )}
-                {wazeUrl && (
-                  <a href={wazeUrl} className={styles.mapLink} target="_blank" rel="noopener noreferrer">Waze</a>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.card}>
             <h3>A Recepção</h3>
             <div className={styles.info}>
               <p className={styles.date}>{dateStr}</p>
               <p className={styles.time}>{config?.horario_recepcao || '18:30'}</p>
-              <p className={styles.location}>Local a confirmar</p>
-              <p className={styles.address}>Mesmo endereço ou local próximo</p>
             </div>
+          </div>
+
+          <div className={styles.card}>
+            <h3>A Cerimônia</h3>
+            <div className={styles.info}>
+              <p className={styles.date}>{dateStr}</p>
+              <p className={styles.time}>{config?.horario_cerimonia || '16:00'}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.venue}>
+          <p className={styles.location}>{localCerimonia}</p>
+          <p className={styles.address}>{enderecoCerimonia}</p>
+          <div className={styles.mapLinks}>
+            {googleMapsUrl && (
+              <a href={googleMapsUrl} className={styles.mapLink} target="_blank" rel="noopener noreferrer">Google Maps</a>
+            )}
+            {wazeUrl && (
+              <a href={wazeUrl} className={styles.mapLink} target="_blank" rel="noopener noreferrer">Waze</a>
+            )}
           </div>
         </div>
       </div>

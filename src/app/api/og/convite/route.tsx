@@ -23,13 +23,13 @@ const HEIGHT = 630;
 
 /**
  * Carrega a fonte de um arquivo estático em public/fonts/ em vez de
- * buscar do Google Fonts a cada requisição. O Google não serve mais
+ * buscar do Google Fonts a cada requisição — o Google não serve mais
  * TTF/OTF de forma confiável via truque de User-Agent (só WOFF2/WOFF,
- * que o Satori — motor do ImageResponse — não lê), então empacotamos o
- * arquivo (fonte variável, funciona pra qualquer peso) direto no
- * projeto. Buscar via fetch relativo à própria requisição (em vez de
- * fs.readFile) é o padrão recomendado pra assets estáticos em rotas
- * como esta na Vercel.
+ * que o Satori — motor do ImageResponse — não lê). O arquivo precisa
+ * ser uma fonte ESTÁTICA (peso fixo), não variável: o parser de fonte
+ * interno do Satori (@vercel/og) quebra ao ler a tabela `fvar` de
+ * fontes variáveis (confirmado ao vivo: "Cannot read properties of
+ * undefined (reading '256')" em parseFvarAxis).
  */
 async function loadLocalFont(request: Request, path: string): Promise<ArrayBuffer | null> {
   try {
@@ -48,110 +48,105 @@ export async function GET(request: Request) {
   const data = (searchParams.get('data') || '').slice(0, 60);
   const foto = searchParams.get('foto') || '';
 
-  const playfairBold = await loadLocalFont(request, '/fonts/PlayfairDisplay-Variable.ttf');
+  const playfairBold = await loadLocalFont(request, '/fonts/PlayfairDisplay-Bold.ttf');
 
   try {
-  const imageResponse = new ImageResponse(
-    (
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          position: 'relative',
-          backgroundColor: '#2b2620',
-        }}
-      >
-        {foto && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={foto}
-            alt=""
-            width={WIDTH}
-            height={HEIGHT}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-          />
-        )}
-
-        {/* Faixa sólida (não só gradiente) na parte de baixo — garante
-            leitura do texto mesmo sobre fotos claras/movimentadas, o que
-            um degradê suave sozinho não garantia (testado ao vivo: a
-            data ficava quase invisível sobre uma foto clara). Um
-            gradiente fino faz a transição entre a foto e a faixa. */}
+    const imageResponse = new ImageResponse(
+      (
         <div
           style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: '46%',
-            display: 'flex',
-            background: 'linear-gradient(to top, rgba(15,12,8,0.94) 55%, rgba(15,12,8,0) 100%)',
-          }}
-        />
-
-        <div
-          style={{
-            position: 'relative',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
             width: '100%',
             height: '100%',
-            padding: '0 70px 56px',
-            textAlign: 'center',
+            display: 'flex',
+            position: 'relative',
+            backgroundColor: '#2b2620',
           }}
         >
+          {foto && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={foto}
+              alt=""
+              width={WIDTH}
+              height={HEIGHT}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          )}
+
+          {/* Faixa sólida (não só gradiente) na parte de baixo — garante
+              leitura do texto mesmo sobre fotos claras/movimentadas, o
+              que um degradê suave sozinho não garantia. Um gradiente
+              fino faz a transição entre a foto e a faixa. */}
           <div
             style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: '46%',
               display: 'flex',
-              fontFamily: playfairBold ? 'Playfair Display' : 'serif',
-              fontWeight: 700,
-              fontSize: noiva.length + noivo.length > 26 ? 58 : 72,
-              color: '#FFFFFF',
-              letterSpacing: 0.5,
-              lineHeight: 1.2,
+              background: 'linear-gradient(to top, rgba(15,12,8,0.94) 55%, rgba(15,12,8,0) 100%)',
+            }}
+          />
+
+          <div
+            style={{
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              width: '100%',
+              height: '100%',
+              padding: '0 70px 56px',
+              textAlign: 'center',
             }}
           >
-            {noiva} &amp; {noivo}
-          </div>
-          {data && (
             <div
               style={{
                 display: 'flex',
-                marginTop: 18,
                 fontFamily: playfairBold ? 'Playfair Display' : 'serif',
                 fontWeight: 700,
-                fontSize: 26,
-                color: '#D9B978',
-                letterSpacing: 4,
-                textTransform: 'uppercase',
+                fontSize: noiva.length + noivo.length > 26 ? 58 : 72,
+                color: '#FFFFFF',
+                letterSpacing: 0.5,
+                lineHeight: 1.2,
               }}
             >
-              {data}
+              {noiva} &amp; {noivo}
             </div>
-          )}
+            {data && (
+              <div
+                style={{
+                  display: 'flex',
+                  marginTop: 18,
+                  fontFamily: playfairBold ? 'Playfair Display' : 'serif',
+                  fontWeight: 700,
+                  fontSize: 26,
+                  color: '#D9B978',
+                  letterSpacing: 4,
+                  textTransform: 'uppercase',
+                }}
+              >
+                {data}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    ),
-    {
-      width: WIDTH,
-      height: HEIGHT,
-      headers: {
-        'Cache-Control': 'public, immutable, no-transform, max-age=86400',
-      },
-      fonts: playfairBold
-        ? [{ name: 'Playfair Display', data: playfairBold, weight: 700, style: 'normal' }]
-        : undefined,
-    }
-  );
-    // ImageResponse devolve um Response cujo corpo (o encode real da
-    // imagem) só roda quando o stream é lido — um catch em volta só do
-    // `new ImageResponse(...)` não pega erros daí. Forçamos a leitura
-    // completa aqui dentro do try pra qualquer erro de renderização
-    // aparecer no catch abaixo, em vez de virar um 500 genérico do
-    // Next sem detalhe nenhum.
+      ),
+      {
+        width: WIDTH,
+        height: HEIGHT,
+        fonts: playfairBold
+          ? [{ name: 'Playfair Display', data: playfairBold, weight: 700, style: 'normal' }]
+          : undefined,
+      }
+    );
+
+    // O corpo do ImageResponse (o encode real da imagem) só roda quando
+    // o stream é lido — força a leitura completa aqui pra qualquer erro
+    // de renderização virar uma exceção capturável abaixo, em vez de um
+    // 500 genérico do Next sem detalhe nenhum.
     const buffer = await imageResponse.arrayBuffer();
     return new Response(buffer, {
       status: 200,
@@ -160,14 +155,11 @@ export async function GET(request: Request) {
         'Cache-Control': 'public, immutable, no-transform, max-age=86400',
       },
     });
-  } catch (err: any) {
-    // DEBUG TEMPORÁRIO (20/09/2026): rota retornando 500 em produção sem
-    // mensagem visível nos logs — expõe o erro real pra diagnosticar,
-    // remover assim que identificado.
-    console.error('[og/convite] Erro ao gerar imagem:', err);
-    return new Response(`DEBUG ERROR: ${err?.message || String(err)}\n\n${err?.stack || ''}`, {
-      status: 500,
-      headers: { 'Content-Type': 'text/plain' },
-    });
+  } catch (err) {
+    console.error('[og/convite] Erro ao gerar o cartão:', err);
+    // Sem cartão nenhum é melhor que quebrar o carregamento do <head>
+    // do convite — WhatsApp/Facebook simplesmente mostram o preview sem
+    // imagem quando o og:image falha.
+    return new Response('Erro ao gerar o cartão do convite.', { status: 500 });
   }
 }

@@ -32,4 +32,18 @@ describe('Pix Utility', () => {
     const payload = generatePixPayload('key', 'João & Maria!', 'aleatoria');
     expect(payload).toContain('JOAO MARIA');
   });
+
+  // Pedido do usuário em 21/09/2026: "NO APP DA CAIXA NÃO FOI POSSIVEL
+  // ENCONTRAR A CHAVE PIX DO COPIA E COLA" — o campo "Point of
+  // Initiation Method" (ID 01) é opcional no QR mas alguns apps de
+  // banco (Caixa incluído) exigem ele pra reconhecer a chave no fluxo
+  // "Copia e Cola" de texto colado.
+  it('inclui o campo Point of Initiation Method (ID 01 = "11", estático) logo após o Payload Format Indicator', () => {
+    const payload = generatePixPayload('11999999999', 'Ivan', 'telefone');
+    // "000201" = ID 00 (Payload Format Indicator), len 02, valor "01"
+    // "0102" = ID 01 (Point of Initiation Method), len 02
+    // "11" = valor estático
+    expect(payload.startsWith('00020101021126')).toBe(true);
+    expect(payload).toContain('010211');
+  });
 });

@@ -30,6 +30,12 @@ export function generatePixPayload(
   // 2. Montagem dos campos base
   const payloadParts = [
     formatField('00', '01'), // Payload Format Indicator
+    // Point of Initiation Method (ID 01): opcional no QR escaneado, mas
+    // vários apps de banco (Caixa incluída) usam esse campo pra
+    // reconhecer a chave no fluxo "Copia e Cola" — sem ele, o app
+    // "não encontra" a chave mesmo com o payload tecnicamente válido.
+    // "11" = código estático (reutilizável), que é sempre o caso aqui.
+    formatField('01', '11'),
     merchantAccountInfo,
     formatField('52', '0000'), // Merchant Category Code
     formatField('53', '986'), // Currency (BRL)

@@ -17,6 +17,7 @@ import { configService } from '@/lib/services/configService';
 import { Configuracao, ModoArrecadacao, ModoConvite } from '@/lib/types/database';
 import { GRAVATA_LABEL_TEXT, GRAVATA_LABEL_OPTIONS } from '@/lib/constants/gravata';
 import { SECOES_CONVITE_LABELS, resolveSecoesOrdem, SecaoConvite } from '@/lib/constants/secoes';
+import { CARD_TEMPLATES, CARD_TEMPLATE_LABELS, buildConviteCardImageUrl } from '@/lib/utils/conviteCard';
 import FAQManager from '@/components/admin/FAQManager';
 import ConfigPreview from '@/components/admin/ConfigPreview';
 import TeamManagement from '@/components/admin/TeamManagement';
@@ -41,6 +42,7 @@ const DEFAULT_CONFIG: Omit<Configuracao, 'id' | 'evento_id'> = {
   mostrar_mural: true,
   mostrar_detalhes: true,
   secoes_ordem: ['detalhes', 'historia', 'noivos', 'agenda', 'rsvp', 'faq'],
+  card_template: 'classico',
   modo_arrecadacao: 'presentes',
   gravata_label: 'quero_colaborar',
   gravata_recado: 'Sua presença já é o nosso maior presente, mas se quiser nos ajudar a começar essa nova fase, ficaremos muito felizes com sua contribuição.',
@@ -63,6 +65,18 @@ const DEFAULT_CONFIG: Omit<Configuracao, 'id' | 'evento_id'> = {
   font_cursive: "'Pinyon Script', cursive",
   font_serif: "'Playfair Display', serif"
 };
+
+/** Mesma lógica de src/lib/metadata/inviteMetadata.ts, só pra prévia local dos cartões. */
+function formatDataCasamentoPreview(dataCasamento?: string): string {
+  if (!dataCasamento) return '';
+  const [year, month, day] = dataCasamento.split('-').map(Number);
+  if (!year || !month || !day) return '';
+  return new Date(year, month - 1, day).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+}
 
 export default function AdminConfig() {
   const router = useRouter();
@@ -390,7 +404,44 @@ export default function AdminConfig() {
                 })}
               </div>
             </section>
-            
+
+            <section className={styles.section}>
+              <h2>Modelo do Cartão de Compartilhamento</h2>
+              <p className={styles.helpText}>Escolha como o cartão do seu convite vai aparecer quando o link for compartilhado no WhatsApp.</p>
+              <div className={styles.cardTemplateGrid}>
+                {CARD_TEMPLATES.map(templateId => {
+                  const isActive = (config.card_template || 'classico') === templateId;
+                  const previewUrl = buildConviteCardImageUrl(
+                    {
+                      noiva: config.noiva_nome || 'Noiva',
+                      noivo: config.noivo_nome || 'Noivo',
+                      data: formatDataCasamentoPreview(config.data_casamento),
+                      foto: config.hero_images?.[0] || config.noiva_foto_url || config.noivo_foto_url,
+                      template: templateId,
+                      accentColor: config.accent_color,
+                    },
+                    typeof window !== 'undefined' ? window.location.origin : ''
+                  );
+                  return (
+                    <div
+                      key={templateId}
+                      className={`${styles.cardTemplateOption} ${isActive ? styles.cardTemplateOptionActive : ''}`}
+                      onClick={() => setConfig({ ...config, card_template: templateId })}
+                    >
+                      <img
+                        className={styles.cardTemplatePreview}
+                        src={previewUrl}
+                        alt={`Prévia do modelo ${CARD_TEMPLATE_LABELS[templateId]}`}
+                        loading="lazy"
+                      />
+                      <div className={styles.animLabel}>{CARD_TEMPLATE_LABELS[templateId]}</div>
+                      {isActive && <div className={styles.activeBadge}>✓</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
             <section className={styles.section}>
               <h2>Módulos do Convite (Visibilidade)</h2>
               <p className={styles.helpText}>Escolha quais seções deseja exibir para seus convidados.</p>

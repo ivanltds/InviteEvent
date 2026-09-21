@@ -223,7 +223,14 @@ export default function AdminConvidados() {
           ? new Date(year, month - 1, day).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
           : undefined;
         const cardUrl = buildConviteCardImageUrl(
-          { noiva: config.noiva_nome, noivo: config.noivo_nome, data: dataFormatada, foto: config.hero_images?.[0] },
+          {
+            noiva: config.noiva_nome,
+            noivo: config.noivo_nome,
+            data: dataFormatada,
+            foto: config.hero_images?.[0],
+            template: config.card_template,
+            accentColor: config.accent_color,
+          },
           window.location.origin
         );
 

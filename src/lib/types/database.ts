@@ -171,6 +171,8 @@ export interface Configuracao {
   mostrar_mural?: boolean;
   /** Ordem de exibição das seções do convite, reordenável nas configurações. Ver SECOES_CONVITE_ORDEM_PADRAO. */
   secoes_ordem?: string[];
+  /** Modelo visual do cartão de preview (WhatsApp/redes sociais). Ver CARD_TEMPLATES em conviteCard.ts. */
+  card_template?: string;
   /** Fonte de verdade para o botão de arrecadação no convite (substitui mostrar_presentes). */
   modo_arrecadacao?: ModoArrecadacao;
   gravata_label?: GravataLabel;

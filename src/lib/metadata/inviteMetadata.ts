@@ -76,7 +76,12 @@ function buildMetadataFromConfig(config: any, path: string): Metadata {
   // Sempre que temos os dois nomes, geramos o cartão (com ou sem foto —
   // o gerador tem um fundo elegante de fallback); só cai pra "sem
   // imagem nenhuma" no caso raro de faltar algum dos nomes.
-  const image = noiva && noivo ? buildConviteCardImageUrl({ noiva, noivo, data: dataFormatada, foto: rawImage }, getBaseUrl()) : undefined;
+  const image = noiva && noivo
+    ? buildConviteCardImageUrl(
+        { noiva, noivo, data: dataFormatada, foto: rawImage, template: config.card_template, accentColor: config.accent_color },
+        getBaseUrl()
+      )
+    : undefined;
 
   const url = `${getBaseUrl()}${path}`;
 
@@ -111,7 +116,7 @@ export async function buildInviteMetadataBySlug(slug: string): Promise<Metadata>
 
     const { data: config } = await supabase
       .from('configuracoes')
-      .select('noiva_nome, noivo_nome, data_casamento, hero_images, noiva_foto_url, noivo_foto_url')
+      .select('noiva_nome, noivo_nome, data_casamento, hero_images, noiva_foto_url, noivo_foto_url, card_template, accent_color')
       .eq('evento_id', invite.evento_id)
       .maybeSingle();
     if (!config) return FALLBACK_METADATA;
@@ -138,7 +143,7 @@ export async function buildInviteMetadataByEventoSlug(eventoSlug: string): Promi
 
     const { data: config } = await supabase
       .from('configuracoes')
-      .select('noiva_nome, noivo_nome, data_casamento, hero_images, noiva_foto_url, noivo_foto_url')
+      .select('noiva_nome, noivo_nome, data_casamento, hero_images, noiva_foto_url, noivo_foto_url, card_template, accent_color')
       .eq('evento_id', evento.id)
       .maybeSingle();
     if (!config) return FALLBACK_METADATA;

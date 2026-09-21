@@ -24,7 +24,7 @@ jest.mock('@supabase/supabase-js', () => ({
   })),
 }));
 
-/** Extrai {noiva, noivo, data, foto} da URL do gerador de cartão, sem depender da ordem dos parâmetros. */
+/** Extrai {noiva, noivo, data, foto, template, cor} da URL do gerador de cartão, sem depender da ordem dos parâmetros. */
 function parseCardImageUrl(url: string) {
   const parsed = new URL(url);
   return {
@@ -33,6 +33,8 @@ function parseCardImageUrl(url: string) {
     noivo: parsed.searchParams.get('noivo'),
     data: parsed.searchParams.get('data'),
     foto: parsed.searchParams.get('foto'),
+    template: parsed.searchParams.get('template'),
+    cor: parsed.searchParams.get('cor'),
   };
 }
 
@@ -130,6 +132,28 @@ describe('buildInviteMetadataBySlug', () => {
     const metadata = await buildInviteMetadataBySlug('ana-carlos-a1b2');
     const images = metadata.openGraph?.images as any[];
     expect(parseCardImageUrl(images[0].url).foto).toBe('https://cdn.example.com/ana.jpg');
+  });
+
+  it('repassa card_template e accent_color escolhidos em Configurações pra URL do cartão', async () => {
+    fromMock.mockImplementation((table: string) => {
+      if (table === 'convites') return makeChain({ evento_id: 'e1' });
+      if (table === 'configuracoes')
+        return makeChain({
+          noiva_nome: 'Ana',
+          noivo_nome: 'Carlos',
+          data_casamento: '2026-10-10',
+          hero_images: ['https://cdn.example.com/foto.jpg'],
+          card_template: 'circular',
+          accent_color: '#123456',
+        });
+      return makeChain(null);
+    });
+
+    const metadata = await buildInviteMetadataBySlug('ana-carlos-a1b2');
+    const images = metadata.openGraph?.images as any[];
+    const parsed = parseCardImageUrl(images[0].url);
+    expect(parsed.template).toBe('circular');
+    expect(parsed.cor).toBe('#123456');
   });
 
   it('usa o fallback genérico do app quando o convite não existe', async () => {

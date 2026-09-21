@@ -730,3 +730,46 @@
   font-weight: bold;
   box-shadow: 0 2px 5px rgba(197, 160, 89, 0.4);
 }
+
+.cardTemplateGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.cardTemplateOption {
+  cursor: pointer;
+  border: 2px solid rgba(0,0,0,0.05);
+  border-radius: 12px;
+  padding: 0.6rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  background: var(--admin-input-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.cardTemplateOption:hover {
+  transform: translateY(-3px);
+  border-color: rgba(197, 160, 89, 0.3);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+
+.cardTemplateOptionActive {
+  border-color: var(--admin-accent);
+  background: rgba(197, 160, 89, 0.03);
+  box-shadow: 0 4px 15px rgba(197, 160, 89, 0.1);
+}
+
+.cardTemplatePreview {
+  width: 100%;
+  aspect-ratio: 1200 / 630;
+  object-fit: cover;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.04);
+}

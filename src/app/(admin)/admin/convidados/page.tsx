@@ -236,6 +236,7 @@ export default function AdminConvidados() {
             accentColor: config.accent_color,
             font: style?.font,
             fontScale: style?.fontScale,
+            dateFontScale: style?.dateFontScale,
             imageScale: style?.imageScale,
           },
           window.location.origin

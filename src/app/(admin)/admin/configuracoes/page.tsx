@@ -441,6 +441,7 @@ export default function AdminConfig() {
                       accentColor: config.accent_color,
                       font: styleForThumb?.font,
                       fontScale: styleForThumb?.fontScale,
+                      dateFontScale: styleForThumb?.dateFontScale,
                       imageScale: styleForThumb?.imageScale,
                     },
                     typeof window !== 'undefined' ? window.location.origin : ''
@@ -482,11 +483,36 @@ export default function AdminConfig() {
                 // Minimalista não tem foto no design (só tipografia) — o controle de foto/zoom não se aplica a ele.
                 const hasPhoto = activeTemplate !== 'minimalista';
 
+                // Preview grande e ao vivo do modelo ativo — pedido do usuário, pra ver o
+                // resultado da personalização (fonte/tamanho/foto/zoom) sem depender da
+                // miniatura pequena da grade acima.
+                const bigPreviewUrl = buildConviteCardImageUrl(
+                  {
+                    noiva: config.noiva_nome || 'Noiva',
+                    noivo: config.noivo_nome || 'Noivo',
+                    data: formatDataCasamentoPreview(config.data_casamento),
+                    foto: activeStyle.image || config.hero_images?.[0] || config.noiva_foto_url || config.noivo_foto_url,
+                    template: activeTemplate,
+                    accentColor: config.accent_color,
+                    font: activeStyle.font,
+                    fontScale: activeStyle.fontScale,
+                    dateFontScale: activeStyle.dateFontScale,
+                    imageScale: activeStyle.imageScale,
+                  },
+                  typeof window !== 'undefined' ? window.location.origin : ''
+                );
+
                 return (
                   <div className={styles.cardStyleCustomizer}>
                     <h3 className={styles.cardStyleCustomizerTitle}>
                       Personalizando: {CARD_TEMPLATE_LABELS[activeTemplate]}
                     </h3>
+
+                    <img
+                      className={styles.cardBigPreview}
+                      src={bigPreviewUrl}
+                      alt={`Preview do cartão — modelo ${CARD_TEMPLATE_LABELS[activeTemplate]}`}
+                    />
 
                     <div className={styles.field} style={{ marginBottom: '1.2rem' }}>
                       <label>Fonte do nome</label>
@@ -509,7 +535,7 @@ export default function AdminConfig() {
                       </div>
                     </div>
 
-                    <div className={styles.field} style={{ marginBottom: hasPhoto ? '1.2rem' : 0 }}>
+                    <div className={styles.field} style={{ marginBottom: '1.2rem' }}>
                       <label>Tamanho da fonte do nome: {activeStyle.fontScale ?? 100}%</label>
                       <input
                         type="range"
@@ -518,6 +544,19 @@ export default function AdminConfig() {
                         step={5}
                         value={activeStyle.fontScale ?? 100}
                         onChange={(e) => updateActiveStyle({ fontScale: Number(e.target.value) })}
+                        className={styles.cardStyleSlider}
+                      />
+                    </div>
+
+                    <div className={styles.field} style={{ marginBottom: hasPhoto ? '1.2rem' : 0 }}>
+                      <label>Tamanho da fonte da data: {activeStyle.dateFontScale ?? 100}%</label>
+                      <input
+                        type="range"
+                        min={50}
+                        max={200}
+                        step={5}
+                        value={activeStyle.dateFontScale ?? 100}
+                        onChange={(e) => updateActiveStyle({ dateFontScale: Number(e.target.value) })}
                         className={styles.cardStyleSlider}
                       />
                     </div>

@@ -37,6 +37,7 @@ function parseCardImageUrl(url: string) {
     cor: parsed.searchParams.get('cor'),
     fonte: parsed.searchParams.get('fonte'),
     escala: parsed.searchParams.get('escala'),
+    escalaData: parsed.searchParams.get('escalaData'),
     zoom: parsed.searchParams.get('zoom'),
   };
 }
@@ -172,7 +173,7 @@ describe('buildInviteMetadataBySlug', () => {
           hero_images: ['https://cdn.example.com/automatica.jpg'],
           card_template: 'circular',
           card_template_styles: {
-            circular: { font: 'Great+Vibes', fontScale: 120, image: 'https://cdn.example.com/escolhida.jpg', imageScale: 150 },
+            circular: { font: 'Great+Vibes', fontScale: 120, dateFontScale: 90, image: 'https://cdn.example.com/escolhida.jpg', imageScale: 150 },
             classico: { font: 'Sacramento', fontScale: 80 },
           },
         });
@@ -186,6 +187,7 @@ describe('buildInviteMetadataBySlug', () => {
     expect(parsed.template).toBe('circular');
     expect(parsed.fonte).toBe('Great+Vibes');
     expect(parsed.escala).toBe('120');
+    expect(parsed.escalaData).toBe('90');
     expect(parsed.zoom).toBe('150');
     // A foto escolhida especificamente pro modelo ativo tem prioridade sobre o fallback automático (hero_images[0]).
     expect(parsed.foto).toBe('https://cdn.example.com/escolhida.jpg');

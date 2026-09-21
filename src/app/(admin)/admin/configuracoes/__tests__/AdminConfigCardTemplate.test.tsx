@@ -145,6 +145,35 @@ describe('AdminConfig — Personalização do modelo ativo (fonte, tamanho, foto
     expect(new URL(preview.src).searchParams.get('escala')).toBe('150');
   });
 
+  test('o slider de tamanho da data atualiza o percentual exibido e a prévia', async () => {
+    (configService.getConfig as jest.Mock).mockResolvedValue(configWithPhotos);
+    const { container } = render(<AdminConfig />);
+    await waitFor(() => expect(screen.queryByText(/Carregando configurações/i)).not.toBeInTheDocument());
+
+    expect(screen.getByText('Tamanho da fonte da data: 100%')).toBeInTheDocument();
+
+    const sliders = container.querySelectorAll('input[type="range"]');
+    fireEvent.change(sliders[1], { target: { value: '70' } });
+
+    expect(screen.getByText('Tamanho da fonte da data: 70%')).toBeInTheDocument();
+    const preview = screen.getByAltText(`Prévia do modelo ${CARD_TEMPLATE_LABELS.classico}`) as HTMLImageElement;
+    expect(new URL(preview.src).searchParams.get('escalaData')).toBe('70');
+  });
+
+  test('mostra um preview grande do cartão, que reflete a personalização do modelo ativo', async () => {
+    (configService.getConfig as jest.Mock).mockResolvedValue({
+      ...configWithPhotos,
+      card_template_styles: { classico: { font: 'Great+Vibes', fontScale: 130 } },
+    });
+    render(<AdminConfig />);
+    await waitFor(() => expect(screen.queryByText(/Carregando configurações/i)).not.toBeInTheDocument());
+
+    const bigPreview = screen.getByAltText(`Preview do cartão — modelo ${CARD_TEMPLATE_LABELS.classico}`) as HTMLImageElement;
+    const url = new URL(bigPreview.src);
+    expect(url.searchParams.get('fonte')).toBe('Great+Vibes');
+    expect(url.searchParams.get('escala')).toBe('130');
+  });
+
   test('mostra as fotos do evento como opções, e a opção "Automática" fica ativa por padrão', async () => {
     (configService.getConfig as jest.Mock).mockResolvedValue(configWithPhotos);
     render(<AdminConfig />);

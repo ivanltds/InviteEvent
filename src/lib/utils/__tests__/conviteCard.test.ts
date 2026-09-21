@@ -58,25 +58,28 @@ describe('buildConviteCardImageUrl', () => {
   });
 
   // Pedido do usuário em 21/09/2026: escolher a fonte do nome, o
-  // tamanho dela e o zoom da foto, independente para cada modelo.
-  it('repassa font, fontScale e imageScale como query params (fonte/escala/zoom)', () => {
+  // tamanho dela, o tamanho da data e o zoom da foto, independente para
+  // cada modelo.
+  it('repassa font, fontScale, dateFontScale e imageScale como query params (fonte/escala/escalaData/zoom)', () => {
     const url = buildConviteCardImageUrl(
-      { noiva: 'Ana', noivo: 'Carlos', font: 'Great+Vibes', fontScale: 120, imageScale: 150 },
+      { noiva: 'Ana', noivo: 'Carlos', font: 'Great+Vibes', fontScale: 120, dateFontScale: 80, imageScale: 150 },
       baseUrl
     );
     const parsed = new URL(url);
 
     expect(parsed.searchParams.get('fonte')).toBe('Great+Vibes');
     expect(parsed.searchParams.get('escala')).toBe('120');
+    expect(parsed.searchParams.get('escalaData')).toBe('80');
     expect(parsed.searchParams.get('zoom')).toBe('150');
   });
 
-  it('não inclui fonte/escala/zoom na URL quando não informados', () => {
+  it('não inclui fonte/escala/escalaData/zoom na URL quando não informados', () => {
     const url = buildConviteCardImageUrl({ noiva: 'Ana', noivo: 'Carlos' }, baseUrl);
     const parsed = new URL(url);
 
     expect(parsed.searchParams.has('fonte')).toBe(false);
     expect(parsed.searchParams.has('escala')).toBe(false);
+    expect(parsed.searchParams.has('escalaData')).toBe(false);
     expect(parsed.searchParams.has('zoom')).toBe(false);
   });
 });

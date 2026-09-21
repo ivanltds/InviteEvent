@@ -23,6 +23,8 @@ export const CARD_TEMPLATE_LABELS: Record<CardTemplate, string> = {
 export interface CardTemplateStyle {
   font?: string;
   fontScale?: number;
+  /** Percentual do tamanho da fonte da data (100 = tamanho calibrado padrão de cada modelo). */
+  dateFontScale?: number;
   /** URL da foto escolhida pro cartão desse modelo; vazio = usa o fallback automático (hero_images[0]/fotos individuais). */
   image?: string;
   imageScale?: number;
@@ -50,6 +52,7 @@ export function buildConviteCardImageUrl(
     accentColor?: string;
     font?: string;
     fontScale?: number;
+    dateFontScale?: number;
     imageScale?: number;
   },
   baseUrl: string
@@ -61,6 +64,7 @@ export function buildConviteCardImageUrl(
   if (params.accentColor) qs.set('cor', params.accentColor);
   if (params.font) qs.set('fonte', params.font);
   if (params.fontScale) qs.set('escala', String(params.fontScale));
+  if (params.dateFontScale) qs.set('escalaData', String(params.dateFontScale));
   if (params.imageScale) qs.set('zoom', String(params.imageScale));
   return `${baseUrl}/api/og/convite?${qs.toString()}`;
 }

@@ -93,6 +93,7 @@ function buildMetadataFromConfig(config: any, path: string): Metadata {
           accentColor: config.accent_color,
           font: style?.font,
           fontScale: style?.fontScale,
+          dateFontScale: style?.dateFontScale,
           imageScale: style?.imageScale,
         },
         getBaseUrl()

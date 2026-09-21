@@ -16,14 +16,16 @@ import { CURSIVE_FONTS } from '@/lib/constants/fonts';
  * pelos noivos em Configurações (config.card_template).
  *
  * Pedido de acompanhamento em 21/09/2026: escolher a fonte do nome, o
- * tamanho dela e o tamanho/zoom da foto, de forma independente para
- * cada um dos 6 modelos (config.card_template_styles). Esta rota só
- * recebe os valores já resolvidos via querystring (fonte, escala, zoom)
- * — quem resolve qual estilo vale pra cada modelo é
- * src/lib/metadata/inviteMetadata.ts / src/app/(admin)/admin/convidados.
+ * tamanho dela, o tamanho da data e o tamanho/zoom da foto, de forma
+ * independente para cada um dos 6 modelos (config.card_template_styles).
+ * Esta rota só recebe os valores já resolvidos via querystring (fonte,
+ * escala, escalaData, zoom) — quem resolve qual estilo vale pra cada
+ * modelo é src/lib/metadata/inviteMetadata.ts /
+ * src/app/(admin)/admin/convidados.
  *
  * Recebe os dados já prontos via querystring (noiva, noivo, data, foto,
- * template, cor, fonte, escala, zoom) em vez de consultar o banco aqui.
+ * template, cor, fonte, escala, escalaData, zoom) em vez de consultar o
+ * banco aqui.
  */
 
 export const runtime = 'nodejs';
@@ -139,6 +141,8 @@ interface CardData {
   nameFontFamily: string;
   /** Escala livre do tamanho da fonte do nome (1 = tamanho calibrado original de cada modelo). */
   nameFontScale: number;
+  /** Escala livre do tamanho da fonte da data (1 = tamanho calibrado original de cada modelo). */
+  dateFontScale: number;
   /** Escala livre do zoom da foto dentro do seu quadro (1 = como já era; >1 aproxima, mantendo o recorte/composição do modelo). */
   imageScale: number;
 }
@@ -148,7 +152,7 @@ const serifRegular = (hasPlayfair: boolean) => (hasPlayfair ? 'Playfair Display'
 const serifItalic = (hasPlayfair: boolean) => (hasPlayfair ? 'Playfair Display Italic' : 'serif');
 
 /** 1) Clássico — foto de fundo, faixa escura sólida embaixo, nomes grandes na fonte escolhida. */
-function CardClassico({ noiva, noivo, data, foto, hasPlayfair, nameFontFamily, nameFontScale, imageScale }: CardData) {
+function CardClassico({ noiva, noivo, data, foto, hasPlayfair, nameFontFamily, nameFontScale, dateFontScale, imageScale }: CardData) {
   const namesLong = noiva.length + noivo.length > 26;
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', backgroundColor: '#2b2620', overflow: 'hidden' }}>
@@ -167,7 +171,7 @@ function CardClassico({ noiva, noivo, data, foto, hasPlayfair, nameFontFamily, n
           {noiva} &amp; {noivo}
         </div>
         {data && (
-          <div style={{ display: 'flex', marginTop: 18, fontFamily: serifBold(hasPlayfair), fontWeight: 700, fontSize: 26, color: '#D9B978', letterSpacing: 4, textTransform: 'uppercase' }}>
+          <div style={{ display: 'flex', marginTop: 18, fontFamily: serifBold(hasPlayfair), fontWeight: 700, fontSize: 26 * dateFontScale, color: '#D9B978', letterSpacing: 4, textTransform: 'uppercase' }}>
             {data}
           </div>
         )}
@@ -177,7 +181,7 @@ function CardClassico({ noiva, noivo, data, foto, hasPlayfair, nameFontFamily, n
 }
 
 /** 2) Circular — fundo cor sólida, foto redonda emoldurada, nomes na fonte escolhida. */
-function CardCircular({ noiva, noivo, data, foto, accentColor, hasPlayfair, nameFontFamily, nameFontScale, imageScale }: CardData) {
+function CardCircular({ noiva, noivo, data, foto, accentColor, hasPlayfair, nameFontFamily, nameFontScale, dateFontScale, imageScale }: CardData) {
   const nameFits = noiva.length + noivo.length <= 22;
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#F6EFE4', padding: '48px 60px', position: 'relative' }}>
@@ -196,7 +200,7 @@ function CardCircular({ noiva, noivo, data, foto, accentColor, hasPlayfair, name
         {noiva} &amp; {noivo}
       </div>
       {data && (
-        <div style={{ display: 'flex', marginTop: 18, fontFamily: serifRegular(hasPlayfair), fontSize: 26, letterSpacing: 2, color: '#8a7256' }}>
+        <div style={{ display: 'flex', marginTop: 18, fontFamily: serifRegular(hasPlayfair), fontSize: 26 * dateFontScale, letterSpacing: 2, color: '#8a7256' }}>
           {data}
         </div>
       )}
@@ -205,7 +209,7 @@ function CardCircular({ noiva, noivo, data, foto, accentColor, hasPlayfair, name
 }
 
 /** 3) Retrato — cabeçalho, foto em faixa horizontal ao centro, nomes com "&" na fonte escolhida. */
-function CardRetrato({ noiva, noivo, data, foto, accentColor, hasPlayfair, nameFontFamily, nameFontScale, imageScale }: CardData) {
+function CardRetrato({ noiva, noivo, data, foto, accentColor, hasPlayfair, nameFontFamily, nameFontScale, dateFontScale, imageScale }: CardData) {
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: '#FFFFFF' }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '30px 40px 18px', textAlign: 'center' }}>
@@ -229,7 +233,7 @@ function CardRetrato({ noiva, noivo, data, foto, accentColor, hasPlayfair, nameF
           <span>{noivo}</span>
         </div>
         {data && (
-          <div style={{ display: 'flex', marginTop: 12, fontFamily: serifRegular(hasPlayfair), fontSize: 24, color: accentColor, fontWeight: 700 }}>
+          <div style={{ display: 'flex', marginTop: 12, fontFamily: serifRegular(hasPlayfair), fontSize: 24 * dateFontScale, color: accentColor, fontWeight: 700 }}>
             {data}
           </div>
         )}
@@ -239,7 +243,7 @@ function CardRetrato({ noiva, noivo, data, foto, accentColor, hasPlayfair, nameF
 }
 
 /** 4) Minimalista — tipografia pura, sem foto, muito espaço em branco. */
-function CardMinimalista({ noiva, noivo, data, accentColor, hasPlayfair, nameFontFamily, nameFontScale }: CardData) {
+function CardMinimalista({ noiva, noivo, data, accentColor, hasPlayfair, nameFontFamily, nameFontScale, dateFontScale }: CardData) {
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAF7F2', padding: '0 90px', textAlign: 'center' }}>
       <div style={{ display: 'flex', fontFamily: serifRegular(hasPlayfair), fontSize: 16, letterSpacing: 6, textTransform: 'uppercase', color: '#9a9284' }}>
@@ -251,7 +255,7 @@ function CardMinimalista({ noiva, noivo, data, accentColor, hasPlayfair, nameFon
       </div>
       <div style={{ display: 'flex', width: 90, height: 1, backgroundColor: accentColor, marginTop: 26 }} />
       {data && (
-        <div style={{ display: 'flex', marginTop: 26, fontFamily: serifRegular(hasPlayfair), fontSize: 22, letterSpacing: 4, textTransform: 'uppercase', color: '#6b6255' }}>
+        <div style={{ display: 'flex', marginTop: 26, fontFamily: serifRegular(hasPlayfair), fontSize: 22 * dateFontScale, letterSpacing: 4, textTransform: 'uppercase', color: '#6b6255' }}>
           {data}
         </div>
       )}
@@ -260,7 +264,7 @@ function CardMinimalista({ noiva, noivo, data, accentColor, hasPlayfair, nameFon
 }
 
 /** 5) Romântico — foto com vinheta escura por inteiro, nomes centralizados na fonte escolhida. */
-function CardRomantico({ noiva, noivo, data, foto, hasPlayfair, nameFontFamily, nameFontScale, imageScale }: CardData) {
+function CardRomantico({ noiva, noivo, data, foto, hasPlayfair, nameFontFamily, nameFontScale, dateFontScale, imageScale }: CardData) {
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', backgroundColor: '#1a1512', overflow: 'hidden' }}>
       {foto && (
@@ -289,7 +293,7 @@ function CardRomantico({ noiva, noivo, data, foto, hasPlayfair, nameFontFamily, 
 }
 
 /** 6) Colorido — foto com tingimento na cor do tema do evento, nome alinhado à esquerda embaixo. */
-function CardColorido({ noiva, noivo, data, foto, accentColor, hasPlayfair, nameFontFamily, nameFontScale, imageScale }: CardData) {
+function CardColorido({ noiva, noivo, data, foto, accentColor, hasPlayfair, nameFontFamily, nameFontScale, dateFontScale, imageScale }: CardData) {
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', backgroundColor: accentColor, overflow: 'hidden' }}>
       {foto && (
@@ -302,7 +306,7 @@ function CardColorido({ noiva, noivo, data, foto, accentColor, hasPlayfair, name
         {data && (
           <div
             style={{
-              display: 'flex', alignSelf: 'flex-start', fontFamily: serifRegular(hasPlayfair), fontSize: 20, letterSpacing: 3, textTransform: 'uppercase',
+              display: 'flex', alignSelf: 'flex-start', fontFamily: serifRegular(hasPlayfair), fontSize: 20 * dateFontScale, letterSpacing: 3, textTransform: 'uppercase',
               color: '#FFFFFF', backgroundColor: accentColor, padding: '8px 20px', borderRadius: 30, marginBottom: 22,
             }}
           >
@@ -352,6 +356,8 @@ export async function GET(request: Request) {
   const nameFontKey = isValidNameFontKey(fonteParam) ? fonteParam : 'Pinyon+Script';
   // Fonte do nome: slider livre (pedido do usuário), com faixa segura pra não quebrar o layout do cartão.
   const nameFontScale = readScalePercent(searchParams, 'escala', 100, 50, 200);
+  // Tamanho da data: mesmo esquema do nome, slider livre e independente.
+  const dateFontScale = readScalePercent(searchParams, 'escalaData', 100, 50, 200);
   // Zoom da foto dentro do seu quadro: o quadro em si (círculo, faixa, fundo) nunca muda de tamanho —
   // só o conteúdo da imagem aproxima/afasta dentro dele, então não há risco de quebrar a composição.
   const imageScale = readScalePercent(searchParams, 'zoom', 100, 80, 200);
@@ -362,7 +368,7 @@ export async function GET(request: Request) {
 
   try {
     const imageResponse = new ImageResponse(
-      renderCard(template, { noiva, noivo, data, foto, accentColor, hasPlayfair, nameFontFamily, nameFontScale, imageScale }),
+      renderCard(template, { noiva, noivo, data, foto, accentColor, hasPlayfair, nameFontFamily, nameFontScale, dateFontScale, imageScale }),
       {
         width: WIDTH,
         height: HEIGHT,

@@ -101,6 +101,9 @@
   font-size: 3.2rem;
   line-height: 0.95;
   color: var(--ink);
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .cardDivider {
@@ -208,5 +211,15 @@
 @media (max-width: 768px) {
   .flowerWrapper {
     transform: scale(0.75);
+  }
+
+  .card h2 {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .card h2 {
+    font-size: 2.1rem;
   }
 }

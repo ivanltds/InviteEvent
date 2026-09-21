@@ -21,7 +21,6 @@ export default function GSAPFlowerWind({
   accentColor = '#C9A84C', // The "gold" equivalent
   coupleNoiva = 'Noiva',
   coupleNoivo = 'Noivo',
-  date = '',
   fontCursive = "'Great Vibes', cursive",
   fontSerif = "'Cinzel', serif",
   onComplete
@@ -276,6 +275,11 @@ export default function GSAPFlowerWind({
     .set(wrapperRef.current, { display: "none" });
   };
 
+  // Pedido do usuário em 21/09/2026: dentro do botão da flor (círculo
+  // pequeno), mostrar só o primeiro nome de cada um — nada de rótulo,
+  // divisor ou data, que vazavam pra fora do círculo em telas menores.
+  const firstName = (fullName: string) => fullName.trim().split(/\s+/)[0] || fullName;
+
   const handleSkip = () => {
     try { localStorage.setItem(`${STORAGE_KEY_PREFIX}${slug}`, 'true'); } catch (_) {}
     onComplete();
@@ -303,10 +307,7 @@ export default function GSAPFlowerWind({
           <div className={styles.card}>
             <div className={styles.cardBorder}></div>
             <div className={styles.cardContent}>
-              <div className={styles.cardTopText}>CELEBRE CONOSCO</div>
-              <h2>{coupleNoiva} &<br/>{coupleNoivo}</h2>
-              <div className={styles.cardDivider}></div>
-              <div className={styles.cardDate}>{date}</div>
+              <h2>{firstName(coupleNoiva)} &<br/>{firstName(coupleNoivo)}</h2>
             </div>
           </div>
 

@@ -9,6 +9,7 @@ import { Convite, ConviteMembro, RSVP as RSVPType, Configuracao } from '@/lib/ty
 import { triggerCelebration, triggerSideCannons } from '@/lib/utils/confetti';
 import { Telemetry } from '@/lib/services/telemetryService';
 import { saveConvite } from '@/lib/utils/linkUnico';
+import { GRAVATA_LABEL_TEXT } from '@/lib/constants/gravata';
 
 interface RSVPProps {
   inviteSlug?: string;
@@ -339,12 +340,20 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
           </p>
           
           <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
-            {!isRecusado && (
+            {/* Correção de 20/09/2026: o link de presentes aparecia fixo
+                aqui mesmo em eventos no modo Gravata dos Noivos, que não
+                têm lista de presentes nenhuma. */}
+            {!isRecusado && (propConfig?.modo_arrecadacao ?? 'presentes') === 'presentes' && (
               <Link href={`/presentes?invite=${conviteEncontrado.slug}`} className={styles.primaryBtn} style={{ backgroundColor: propConfig?.accent_color }}>
                 Ver Lista de Presentes
               </Link>
             )}
-            <button 
+            {!isRecusado && propConfig?.modo_arrecadacao === 'gravata' && (
+              <Link href={`/inv/${conviteEncontrado.slug}/gravata`} className={styles.primaryBtn} style={{ backgroundColor: propConfig?.accent_color }}>
+                {GRAVATA_LABEL_TEXT[propConfig?.gravata_label ?? 'quero_colaborar']}
+              </Link>
+            )}
+            <button
               onClick={() => setShowForm(true)} 
               className={styles.resetBtn}
             >
@@ -388,9 +397,14 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
           <div className={styles.successIcon}>❤️</div>
           <h2 className="cursive" style={{ color: propConfig?.accent_color }}>{currentMsg.title}</h2>
           <p>{currentMsg.text}</p>
-          {!isRecusado && (
+          {!isRecusado && (propConfig?.modo_arrecadacao ?? 'presentes') === 'presentes' && (
             <Link href={`/presentes?invite=${conviteEncontrado?.slug}`} className={styles.primaryBtn} style={{ marginTop: '2rem', display: 'inline-block', backgroundColor: propConfig?.accent_color }}>
               Ver Lista de Presentes
+            </Link>
+          )}
+          {!isRecusado && propConfig?.modo_arrecadacao === 'gravata' && (
+            <Link href={`/inv/${conviteEncontrado?.slug}/gravata`} className={styles.primaryBtn} style={{ marginTop: '2rem', display: 'inline-block', backgroundColor: propConfig?.accent_color }}>
+              {GRAVATA_LABEL_TEXT[propConfig?.gravata_label ?? 'quero_colaborar']}
             </Link>
           )}
           {alertaExcedente && !isRecusado && (

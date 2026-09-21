@@ -11,6 +11,17 @@ import { Telemetry } from '@/lib/services/telemetryService';
 import { saveConvite } from '@/lib/utils/linkUnico';
 import { GRAVATA_LABEL_TEXT } from '@/lib/constants/gravata';
 
+/**
+ * Formata uma data "YYYY-MM-DD" evitando o offset de 1 dia que
+ * `new Date(string)` sofre (interpreta como UTC meia-noite; em fusos
+ * negativos como o do Brasil, exibe o dia anterior).
+ */
+function formatDeadlineDate(dateStr: string): string {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
 interface RSVPProps {
   inviteSlug?: string;
   config?: Configuracao;
@@ -62,10 +73,16 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
       if (typeof window !== 'undefined') {
         setLoading(true);
 
-        const config = await rsvpService.getRSVPConfig();
-        if (config?.prazo_rsvp) {
-          const date = new Date(config.prazo_rsvp);
-          setDeadline(date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }));
+        // Correção de 20/09/2026: getRSVPConfig() sem argumento caía
+        // sempre em configuracoes.id=1 (o primeiro evento cadastrado no
+        // sistema inteiro) — no modo Link Único essa era a ÚNICA fonte
+        // do prazo de confirmação, porque o fluxo abaixo retorna cedo
+        // (autoCadastro) antes de chegar na busca correta por evento. O
+        // prazo mostrado era sempre de um evento aleatório e errado.
+        // `propConfig` já é o config do evento certo (vem por prop de
+        // LiveInviteView), então usamos ele direto, sem fetch nenhum.
+        if (propConfig?.prazo_rsvp) {
+          setDeadline(formatDeadlineDate(propConfig.prazo_rsvp));
         }
 
         // Link Único: sem convite pré-existente — mostra o form direto,
@@ -108,11 +125,14 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
           if (data) {
             setConviteEncontrado(data);
             setFormData(prev => ({ ...prev, nome: data.nome_principal }));
-            
-            const config = await rsvpService.getRSVPConfig(data.id);
-            if (config?.prazo_rsvp) {
-              const date = new Date(config.prazo_rsvp);
-              setDeadline(date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }));
+
+            // Só busca de novo se não veio por prop (fallback defensivo
+            // pra quando <RSVP> é usado sem config, fora do fluxo normal).
+            if (!propConfig?.prazo_rsvp) {
+              const config = await rsvpService.getRSVPConfig(data.id);
+              if (config?.prazo_rsvp) {
+                setDeadline(formatDeadlineDate(config.prazo_rsvp));
+              }
             }
 
             const [members, rsvp] = await Promise.all([

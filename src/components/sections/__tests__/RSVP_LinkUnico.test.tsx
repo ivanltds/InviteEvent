@@ -41,6 +41,27 @@ describe('RSVP — modo Link Único (autoCadastro)', () => {
     (rsvpService.getRSVPConfig as jest.Mock).mockResolvedValue(null);
   });
 
+  // Correção de 20/09/2026: "a data na seção de confirmar presença ta
+  // errada". No modo Link Único, a data mostrada nunca vinha do prazo de
+  // confirmação do evento certo — RSVP.tsx chamava getRSVPConfig() sem
+  // nenhum argumento, que caía sempre em configuracoes.id=1 (o primeiro
+  // evento cadastrado no sistema), e o fluxo saía cedo demais (early
+  // return do autoCadastro) pra nunca corrigir depois. Agora usa direto
+  // o `config` recebido por prop (o do evento certo), sem fetch nenhum.
+  it('mostra o prazo de confirmação do evento certo (vindo por prop), não de um fetch às cegas', async () => {
+    render(
+      <RSVP
+        autoCadastro={autoCadastro}
+        config={{ prazo_rsvp: '2026-10-31' } as any}
+      />
+    );
+
+    await waitFor(() => expect(screen.getByLabelText(/Seu nome/i)).toBeInTheDocument());
+
+    expect(screen.getByText(/31 de outubro de 2026/i)).toBeInTheDocument();
+    expect(rsvpService.getRSVPConfig).not.toHaveBeenCalled();
+  });
+
   it('mostra direto o formulário de confirmação com os campos de identificação — sem tela separada antes', async () => {
     render(<RSVP autoCadastro={autoCadastro} />);
 

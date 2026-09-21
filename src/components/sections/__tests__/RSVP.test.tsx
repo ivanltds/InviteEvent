@@ -100,12 +100,19 @@ describe('RSVP Component (Restricted Access)', () => {
       get: jest.fn().mockReturnValue('joao-silva')
     }));
 
+    // Correção de 20/09/2026: RSVP.tsx não faz mais a chamada "às cegas"
+    // getRSVPConfig() sem argumento no início (ela sempre buscava o
+    // config errado, id=1) — agora só busca configuracoes se não vier
+    // config por prop, e só DEPOIS de já ter o convite. Como este teste
+    // renderiza <RSVP /> sem prop `config`, a ordem real das chamadas a
+    // maybeSingle() é: 1) convites (getInviteBySlug), 2) configuracoes
+    // (dentro de getRSVPConfig(data.id)).
     mockMaybeSingle
-      .mockResolvedValueOnce({ data: { prazo_rsvp: '2026-06-13' }, error: null })
-      .mockResolvedValueOnce({ 
-        data: { id: 'c1', nome_principal: 'João Silva', tipo: 'individual', slug: 'joao-silva', limite_pessoas: 1 }, 
-        error: null 
-      });
+      .mockResolvedValueOnce({
+        data: { id: 'c1', nome_principal: 'João Silva', tipo: 'individual', slug: 'joao-silva', limite_pessoas: 1 },
+        error: null
+      })
+      .mockResolvedValueOnce({ data: { prazo_rsvp: '2026-06-13' }, error: null });
 
     render(<RSVP />);
     

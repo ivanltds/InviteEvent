@@ -193,6 +193,54 @@ describe('rsvpService', () => {
       await rsvpService.submitFullRSVP({ convite_id: '1' }, []);
       expect(mockUpsert).toHaveBeenCalledTimes(1);
     });
+
+    // Pedido do usuário em 21/09/2026 (modo Link Único: adição nominal
+    // de acompanhantes mesmo depois do convite já existir): membros sem
+    // `id` são novos e devem ser INSERIDOS (não apenas upsertados, que
+    // antes os descartava silenciosamente).
+    test('deve fazer upsert dos membros com id e insert dos membros novos (sem id)', async () => {
+      const mockUpsert = jest.fn().mockResolvedValue({ error: null });
+      const mockInsert = jest.fn().mockResolvedValue({ error: null });
+      (supabase.from as jest.Mock).mockImplementation(() => ({ upsert: mockUpsert, insert: mockInsert }));
+
+      const members = [
+        { id: 'm1', nome: 'Membro Existente' },
+        { nome: 'Acompanhante Novo' }, // sem id — precisa ser inserido, não upsertado
+      ];
+
+      const result = await rsvpService.submitFullRSVP({ convite_id: 'inv1', evento_id: 'evt1' }, members);
+
+      expect(result.success).toBe(true);
+      expect(mockUpsert).toHaveBeenCalledTimes(2); // rsvp + membro com id
+      expect(mockInsert).toHaveBeenCalledTimes(1);
+
+      const insertedPayload = mockInsert.mock.calls[0][0];
+      expect(insertedPayload).toHaveLength(1);
+      expect(insertedPayload[0]).toMatchObject({ nome: 'Acompanhante Novo', convite_id: 'inv1', evento_id: 'evt1' });
+      expect(insertedPayload[0]).not.toHaveProperty('id');
+    });
+
+    test('não insere o membro "virtual" (placeholder de UI do convite individual, nunca vira linha no banco)', async () => {
+      const mockUpsert = jest.fn().mockResolvedValue({ error: null });
+      const mockInsert = jest.fn().mockResolvedValue({ error: null });
+      (supabase.from as jest.Mock).mockImplementation(() => ({ upsert: mockUpsert, insert: mockInsert }));
+
+      const members = [{ id: 'virtual', nome: 'Convidado Único' }];
+      await rsvpService.submitFullRSVP({ convite_id: 'inv1' }, members);
+
+      expect(mockInsert).not.toHaveBeenCalled();
+      expect(mockUpsert).toHaveBeenCalledTimes(1); // só o rsvp
+    });
+
+    test('deve falhar se o insert de membros novos falhar', async () => {
+      const mockUpsert = jest.fn().mockResolvedValue({ error: null });
+      const mockInsert = jest.fn().mockResolvedValue({ error: { message: 'Erro Insert' } });
+      (supabase.from as jest.Mock).mockImplementation(() => ({ upsert: mockUpsert, insert: mockInsert }));
+
+      const result = await rsvpService.submitFullRSVP({ convite_id: 'inv1' }, [{ nome: 'Novo' }]);
+      expect(result.success).toBe(false);
+      expect(consoleSpy).toHaveBeenCalled();
+    });
   });
 
   describe('confirmRSVP', () => {

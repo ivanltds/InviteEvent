@@ -68,6 +68,22 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
   const updateAcompanhanteAutoCadastro = (index: number, value: string) =>
     setAcompanhantesAutoCadastro(prev => prev.map((a, i) => (i === index ? value : a)));
 
+  // Modo Link Único: pedido do usuário em 21/09/2026 — mesmo depois do
+  // convite já criado (voltando pra editar a resposta), qualquer
+  // acompanhante adicional deve ser identificado pelo NOME, nunca só
+  // por uma quantidade anônima (que é o que o convite tradicional usa
+  // pro contador "extraGuests"). Estado separado do
+  // `acompanhantesAutoCadastro` acima (que só serve pro cadastro
+  // inicial, quando o convite ainda não existe).
+  const isLinkUnico = propConfig?.modo_convite === 'link_unico';
+  const [acompanhantesExtras, setAcompanhantesExtras] = useState<string[]>([]);
+
+  const addAcompanhanteExtra = () => setAcompanhantesExtras(prev => [...prev, '']);
+  const removeAcompanhanteExtra = (index: number) =>
+    setAcompanhantesExtras(prev => prev.filter((_, i) => i !== index));
+  const updateAcompanhanteExtra = (index: number, value: string) =>
+    setAcompanhantesExtras(prev => prev.map((a, i) => (i === index ? value : a)));
+
   useEffect(() => {
     async function init() {
       if (typeof window !== 'undefined') {
@@ -224,6 +240,24 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
       saveConvite(autoCadastro.eventoSlug, criado.convite.slug);
     }
 
+    // Link Único, convite JÁ existente (voltando pra editar a resposta):
+    // acompanhantes adicionados agora também entram pelo nome, nunca
+    // como uma quantidade anônima — mesma regra do cadastro inicial.
+    // Viram membros novos (sem id), que rsvpService.submitFullRSVP
+    // insere de verdade em convite_membros.
+    if (isLinkUnico && conviteAtual && !isRecusado && acompanhantesExtras.length > 0) {
+      const novosMembros: ConviteMembro[] = acompanhantesExtras
+        .map(nome => nome.trim())
+        .filter(Boolean)
+        .map(nome => ({
+          nome,
+          confirmado: true,
+          convite_id: conviteAtual!.id,
+          evento_id: conviteAtual!.evento_id,
+        } as ConviteMembro));
+      membrosAtual = [...membrosAtual, ...novosMembros];
+    }
+
     // Detecção Dinâmica de Restrições Alimentares (Dado sensível LGPD)
     const hasRestrictions = !isRecusado && (
       (formData.restricoes && formData.restricoes.trim().length > 0) ||
@@ -292,6 +326,18 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
       if (autoCadastro && conviteAtual && !conviteEncontrado) {
         setConviteEncontrado(conviteAtual);
         setMembros(membrosAtual);
+      }
+
+      // Link Único, convite já existente: os acompanhantes nomeados que
+      // acabaram de ser inseridos precisam ser buscados de novo do banco
+      // (pra pegar o `id` real gerado no insert) antes de entrarem em
+      // `membros` — sem isso, uma segunda edição de resposta os reenviaria
+      // como "novos" de novo, duplicando a linha em convite_membros. A
+      // caixa de "adicionar mais" também é limpa, evitando reenvio.
+      if (isLinkUnico && conviteAtual && conviteEncontrado && acompanhantesExtras.length > 0 && !isPreviewMode) {
+        const membrosAtualizados = await rsvpService.getInviteMembers(conviteAtual.id);
+        setMembros(membrosAtualizados);
+        setAcompanhantesExtras([]);
       }
 
       setAlertaExcedente(!!isExcedente);
@@ -587,21 +633,21 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
                 </div>
                 )}
 
-                {!isAutoCadastroPendente && (
+                {!isAutoCadastroPendente && !isLinkUnico && (
                 <div className={styles.fieldGroup}>
                   <label htmlFor="extraGuests">Gostaria de levar mais alguém não listado acima?</label>
                   <div className={styles.extraGuestsControl}>
-                    <button 
-                      type="button" 
-                      className={styles.qtyBtn} 
+                    <button
+                      type="button"
+                      className={styles.qtyBtn}
                       onClick={() => setFormData(prev => ({ ...prev, extraGuests: Math.max(0, prev.extraGuests - 1) }))}
                     >
                       -
                     </button>
                     <span className={styles.extraQty}>{formData.extraGuests}</span>
-                    <button 
-                      type="button" 
-                      className={styles.qtyBtn} 
+                    <button
+                      type="button"
+                      className={styles.qtyBtn}
                       onClick={() => setFormData(prev => ({ ...prev, extraGuests: prev.extraGuests + 1 }))}
                     >
                       +
@@ -610,6 +656,47 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
                   </div>
                   <p className={styles.extraHint}>
                     Sinalize aqui se precisar adicionar acompanhantes. O organizador será avisado para conferir a disponibilidade.
+                  </p>
+                </div>
+                )}
+
+                {/* Link Único, convite já existente: acompanhante adicional
+                    também é sempre pelo nome — pedido do usuário em
+                    21/09/2026 ("deve haver a adição nominal de todos os
+                    convidados ao confirmar a presença"). */}
+                {!isAutoCadastroPendente && isLinkUnico && (
+                <div className={styles.fieldGroup}>
+                  <label>Vem mais alguém com você?</label>
+                  <div className={styles.membersList}>
+                    {acompanhantesExtras.map((acompanhante, index) => (
+                      <div key={index} className={styles.memberItem} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <input
+                          type="text"
+                          className={styles.memberInput}
+                          value={acompanhante}
+                          onChange={(e) => updateAcompanhanteExtra(index, e.target.value)}
+                          placeholder="Nome do acompanhante"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeAcompanhanteExtra(index)}
+                          aria-label="Remover acompanhante"
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6 }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addAcompanhanteExtra}
+                    style={{ background: 'none', border: 'none', color: propConfig?.accent_color, fontWeight: 600, cursor: 'pointer', padding: '0.4rem 0' }}
+                  >
+                    + Adicionar acompanhante
+                  </button>
+                  <p className={styles.extraHint}>
+                    Sinalize aqui quem mais vem com você. O organizador será avisado para conferir a disponibilidade.
                   </p>
                 </div>
                 )}

@@ -98,12 +98,15 @@ export const rsvpService = {
       }
 
       if (members.length > 0) {
-        const membersToUpdate = members.map(m => ({
+        const enriched = members.map(m => ({
           ...m,
           convite_id: rsvpData.convite_id,
           evento_id: rsvpData.evento_id,
           updated_at: new Date().toISOString()
-        })).filter(m => m.id !== undefined && m.id !== 'virtual');
+        }));
+
+        // Membros com id real: upsert (atualiza os já existentes).
+        const membersToUpdate = enriched.filter(m => m.id !== undefined && m.id !== 'virtual');
 
         if (membersToUpdate.length > 0) {
           const { error: membersError } = await supabase
@@ -113,6 +116,28 @@ export const rsvpService = {
           if (membersError) {
             console.error('Members Upsert Error Details:', JSON.stringify(membersError, null, 2));
             throw membersError;
+          }
+        }
+
+        // Membros novos (sem id, ex.: acompanhantes nomeados adicionados
+        // depois do auto-cadastro no modo Link Único — pedido do usuário
+        // em 21/09/2026): insert em vez de upsert, sem passar `id`
+        // nenhum pro Postgres gerar. 'virtual' continua sendo ignorado
+        // (é só um placeholder de UI pro convite individual sem membro
+        // real cadastrado — nunca deve virar uma linha no banco).
+        const membersToInsert = enriched
+          .filter(m => m.id === undefined)
+          .map(({ id: _id, ...rest }) => rest)
+          .filter(m => m.nome && m.nome.trim());
+
+        if (membersToInsert.length > 0) {
+          const { error: insertError } = await supabase
+            .from('convite_membros')
+            .insert(membersToInsert);
+
+          if (insertError) {
+            console.error('Members Insert Error Details:', JSON.stringify(insertError, null, 2));
+            throw insertError;
           }
         }
       }

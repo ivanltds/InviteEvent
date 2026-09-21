@@ -15,6 +15,9 @@ jest.mock('@/lib/services/rsvpService', () => ({
   rsvpService: {
     getRSVPConfig: jest.fn().mockResolvedValue(null),
     submitFullRSVP: jest.fn(),
+    getInviteBySlug: jest.fn(),
+    getInviteMembers: jest.fn(),
+    getExistingRSVP: jest.fn(),
   },
 }));
 
@@ -127,5 +130,75 @@ describe('RSVP — modo Link Único (autoCadastro)', () => {
     await waitFor(() => expect(screen.getByText(/Não conseguimos confirmar/i)).toBeInTheDocument());
     expect(rsvpService.submitFullRSVP).not.toHaveBeenCalled();
     expect(saveConvite).not.toHaveBeenCalled();
+  });
+});
+
+// Pedido do usuário em 21/09/2026: "quando estou em modo de convite
+// unico, deve haver a adição nominal de todos os convidados ao
+// confirmar a presença." — isso vale também depois que o convite já
+// existe (convidado voltando pra editar a resposta, via /inv/[slug]),
+// não só no cadastro inicial. Nesse caso o contador anônimo de
+// "pessoa(s) extra(s)" (usado no convite tradicional) não deve
+// aparecer — só a mesma caixa de nomes do cadastro inicial.
+describe('RSVP — modo Link Único, convite já existente (editar resposta)', () => {
+  const linkUnicoConfig = { modo_convite: 'link_unico', prazo_rsvp: '2026-10-31' } as any;
+  const convite = { id: 'c1', evento_id: 'e1', slug: 'joao-silva-a1b2', tipo: 'individual', limite_pessoas: 1, nome_principal: 'João Silva' };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (rsvpService.getRSVPConfig as jest.Mock).mockResolvedValue(null);
+    (rsvpService.getInviteBySlug as jest.Mock).mockResolvedValue(convite);
+    (rsvpService.getInviteMembers as jest.Mock).mockResolvedValue([
+      { id: 'm1', nome: 'João Silva', confirmado: true, convite_id: 'c1' },
+    ]);
+    (rsvpService.getExistingRSVP as jest.Mock).mockResolvedValue(null);
+  });
+
+  it('mostra a caixa de acompanhante pelo nome, não o contador anônimo de pessoas extras', async () => {
+    render(<RSVP inviteSlug="joao-silva-a1b2" config={linkUnicoConfig} />);
+
+    await waitFor(() => expect(screen.getByText(/Vem mais alguém com você/i)).toBeInTheDocument());
+    expect(screen.queryByText(/Gostaria de levar mais alguém não listado acima/i)).not.toBeInTheDocument();
+  });
+
+  it('um convite tradicional (sem link único) continua mostrando o contador anônimo', async () => {
+    render(<RSVP inviteSlug="joao-silva-a1b2" config={{ prazo_rsvp: '2026-10-31' } as any} />);
+
+    await waitFor(() => expect(screen.getByText(/Gostaria de levar mais alguém não listado acima/i)).toBeInTheDocument());
+    expect(screen.queryByText(/Vem mais alguém com você/i)).not.toBeInTheDocument();
+  });
+
+  it('ao adicionar um acompanhante pelo nome e confirmar, envia como membro novo (sem id) e busca os membros atualizados', async () => {
+    (rsvpService.submitFullRSVP as jest.Mock).mockResolvedValue({ success: true });
+    // Segunda chamada de getInviteMembers (depois do submit) já retorna o novo membro com id real.
+    (rsvpService.getInviteMembers as jest.Mock)
+      .mockResolvedValueOnce([{ id: 'm1', nome: 'João Silva', confirmado: true, convite_id: 'c1' }])
+      .mockResolvedValueOnce([
+        { id: 'm1', nome: 'João Silva', confirmado: true, convite_id: 'c1' },
+        { id: 'm2', nome: 'Maria Silva', confirmado: true, convite_id: 'c1' },
+      ]);
+
+    render(<RSVP inviteSlug="joao-silva-a1b2" config={linkUnicoConfig} />);
+    await waitFor(() => expect(screen.getByText(/Vem mais alguém com você/i)).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText(/\+ Adicionar acompanhante/i));
+    fireEvent.change(screen.getByPlaceholderText(/Nome do acompanhante/i), { target: { value: 'Maria Silva' } });
+    fireEvent.click(screen.getByRole('button', { name: /Confirmar Presença/i }));
+
+    await waitFor(() => expect(rsvpService.submitFullRSVP).toHaveBeenCalled());
+
+    const [, membersPayload] = (rsvpService.submitFullRSVP as jest.Mock).mock.calls[0];
+    expect(membersPayload).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'm1', nome: 'João Silva' }),
+        expect.objectContaining({ nome: 'Maria Silva', confirmado: true }),
+      ])
+    );
+    // O acompanhante novo não deve carregar um `id` (senão viraria upsert em vez de insert).
+    const novoMembro = membersPayload.find((m: any) => m.nome === 'Maria Silva');
+    expect(novoMembro.id).toBeUndefined();
+
+    // Busca os membros de novo do banco, pra pegar o id real do novo acompanhante.
+    await waitFor(() => expect(rsvpService.getInviteMembers).toHaveBeenCalledTimes(2));
   });
 });

@@ -50,6 +50,7 @@ export async function GET(request: Request) {
 
   const playfairBold = await loadLocalFont(request, '/fonts/PlayfairDisplay-Variable.ttf');
 
+  try {
   return new ImageResponse(
     (
       <div
@@ -145,4 +146,14 @@ export async function GET(request: Request) {
         : undefined,
     }
   );
+  } catch (err: any) {
+    // DEBUG TEMPORÁRIO (20/09/2026): rota retornando 500 em produção sem
+    // mensagem visível nos logs — expõe o erro real pra diagnosticar,
+    // remover assim que identificado.
+    console.error('[og/convite] Erro ao gerar imagem:', err);
+    return new Response(`DEBUG ERROR: ${err?.message || String(err)}\n\n${err?.stack || ''}`, {
+      status: 500,
+      headers: { 'Content-Type': 'text/plain' },
+    });
+  }
 }

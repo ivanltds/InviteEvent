@@ -10,6 +10,7 @@ import { triggerCelebration, triggerSideCannons } from '@/lib/utils/confetti';
 import { Telemetry } from '@/lib/services/telemetryService';
 import { saveConvite } from '@/lib/utils/linkUnico';
 import { resolveGravataLabel } from '@/lib/constants/gravata';
+import AddToCalendarButton from '@/components/shared/AddToCalendarButton';
 
 /**
  * Formata uma data "YYYY-MM-DD" evitando o offset de 1 dia que
@@ -419,8 +420,9 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
                 {resolveGravataLabel(propConfig?.gravata_label, propConfig?.gravata_label_personalizado)}
               </Link>
             )}
+            {!isRecusado && <AddToCalendarButton config={propConfig} />}
             <button
-              onClick={() => setShowForm(true)} 
+              onClick={() => setShowForm(true)}
               className={styles.resetBtn}
             >
               Mudei de ideia / Editar resposta
@@ -472,6 +474,11 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
             <Link href={`/inv/${conviteEncontrado?.slug}/gravata`} className={styles.primaryBtn} style={{ marginTop: '2rem', display: 'inline-block', backgroundColor: propConfig?.accent_color }}>
               {resolveGravataLabel(propConfig?.gravata_label, propConfig?.gravata_label_personalizado)}
             </Link>
+          )}
+          {!isRecusado && (
+            <div style={{ marginTop: '0.8rem' }}>
+              <AddToCalendarButton config={propConfig} />
+            </div>
           )}
           {alertaExcedente && !isRecusado && (
             <p className={styles.excedenteMsg}>

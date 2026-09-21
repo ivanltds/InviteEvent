@@ -1,0 +1,28 @@
+/* Botão discreto — pedido do usuário: "mais discreto" que o botão
+   principal de gravata/lista de presentes, abaixo dele. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  color: var(--text-main-safe, #4a4a4a);
+  opacity: 0.75;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0.5rem 0.8rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity 0.2s ease;
+}
+
+.btn:hover {
+  opacity: 1;
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}

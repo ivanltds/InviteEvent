@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from "../../page.module.css";
 import { supabase } from '@/lib/supabase';
 import { rsvpService } from '@/lib/services/rsvpService';
 import { Configuracao } from '@/lib/types/database';
 import Link from 'next/link';
 import { hasExceededViewLimit, incrementViewCount } from '@/lib/utils/envelopeViews';
+import { findEventoSlugForSavedConvite, clearSavedConvite } from '@/lib/utils/linkUnico';
 
 import LiveInviteView from '@/components/public/LiveInviteView';
 
@@ -21,6 +23,7 @@ interface InvitationPageClientProps {
  * passando `slug` como prop em vez de ler via `useParams()` aqui dentro.
  */
 export default function InvitationPageClient({ slug }: InvitationPageClientProps) {
+  const router = useRouter();
   const [config, setConfig] = useState<Configuracao | null>(null);
   const [loading, setLoading] = useState(true);
   // STORY-056: controla visibilidade do gateway
@@ -44,6 +47,12 @@ export default function InvitationPageClient({ slug }: InvitationPageClientProps
   });
 
   const [agenda, setAgenda] = useState<any[]>([]);
+  // Modo Link Único: slug do EVENTO associado a este convite neste
+  // dispositivo (achado via localStorage), usado em dois cenários
+  // pedidos pelo usuário em 20/09/2026: (1) oferecer recomeçar quando o
+  // convite salvo foi excluído, (2) permitir que outra pessoa no mesmo
+  // dispositivo confirme a presença dela separadamente.
+  const [linkUnicoEventoSlug, setLinkUnicoEventoSlug] = useState<string | null>(null);
 
   useEffect(() => {
     async function init() {
@@ -116,6 +125,17 @@ export default function InvitationPageClient({ slug }: InvitationPageClientProps
 
         // 1. Buscar o convite pelo slug
         if (!invite) {
+          // Correção de 20/09/2026: se este dispositivo tinha um convite
+          // salvo (Link Único) apontando pra este slug e ele não existe
+          // mais (ex.: excluído pelo admin), o convidado ficava preso
+          // pra sempre num "Convite não encontrado" — o dispositivo
+          // sempre redirecionava de volta pro mesmo slug morto. Zera o
+          // vínculo salvo pra ele poder se cadastrar de novo.
+          const eventoSlug = findEventoSlugForSavedConvite(slug);
+          if (eventoSlug) {
+            clearSavedConvite(eventoSlug);
+            setLinkUnicoEventoSlug(eventoSlug);
+          }
           setLoading(false);
           return;
         }
@@ -164,6 +184,15 @@ export default function InvitationPageClient({ slug }: InvitationPageClientProps
             faq: configData.mostrar_faq !== false,
             presentes: configData.mostrar_presentes !== false
           });
+
+          // Pedido do usuário: permitir que outra pessoa, no MESMO
+          // dispositivo de quem já confirmou, consiga confirmar a
+          // presença dela separadamente (o dispositivo só "lembra" um
+          // convidado por evento no modo Link Único).
+          if (configData.modo_convite === 'link_unico') {
+            const eventoSlug = findEventoSlugForSavedConvite(slug);
+            if (eventoSlug) setLinkUnicoEventoSlug(eventoSlug);
+          }
         }
       } catch (e) {
         console.error('Erro ao inicializar convite:', e);
@@ -180,25 +209,68 @@ export default function InvitationPageClient({ slug }: InvitationPageClientProps
     return (
       <div className={styles.errorContainer}>
         <h1>Convite não encontrado</h1>
-        <p>Por favor, verifique o link enviado pelos noivos.</p>
-        <Link href="/">Voltar para a Home</Link>
+        {linkUnicoEventoSlug ? (
+          <>
+            <p>Esse convite não está mais disponível, mas você pode se cadastrar de novo.</p>
+            <Link href={`/inv/evento/${linkUnicoEventoSlug}`}>Cadastrar presença novamente</Link>
+          </>
+        ) : (
+          <>
+            <p>Por favor, verifique o link enviado pelos noivos.</p>
+            <Link href="/">Voltar para a Home</Link>
+          </>
+        )}
       </div>
     );
   }
 
   return (
-    <LiveInviteView
-      config={config}
-      couple={couple}
-      visibility={visibility}
-      agenda={agenda}
-      slug={slug}
-      previewBase64={previewBase64}
-      showGateway={showGateway}
-      onGatewayComplete={() => {
-        incrementViewCount(slug);
-        setShowGateway(false);
-      }}
-    />
+    <>
+      {linkUnicoEventoSlug && (
+        <div
+          style={{
+            background: '#faf8f4',
+            borderBottom: '1px solid rgba(0,0,0,0.08)',
+            padding: '10px 16px',
+            textAlign: 'center',
+            fontSize: '0.82rem',
+            color: '#555',
+          }}
+        >
+          Esse link já está associado a uma confirmação neste dispositivo.{' '}
+          <button
+            type="button"
+            onClick={() => {
+              clearSavedConvite(linkUnicoEventoSlug);
+              router.push(`/inv/evento/${linkUnicoEventoSlug}`);
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              color: '#8a6d3b',
+              textDecoration: 'underline',
+              cursor: 'pointer',
+              font: 'inherit',
+            }}
+          >
+            Não é você? Confirme sua presença separadamente
+          </button>
+        </div>
+      )}
+      <LiveInviteView
+        config={config}
+        couple={couple}
+        visibility={visibility}
+        agenda={agenda}
+        slug={slug}
+        previewBase64={previewBase64}
+        showGateway={showGateway}
+        onGatewayComplete={() => {
+          incrementViewCount(slug);
+          setShowGateway(false);
+        }}
+      />
+    </>
   );
 }

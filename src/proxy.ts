@@ -27,7 +27,13 @@ export async function proxy(request: NextRequest) {
   );
 
   // 2. Proteção das rotas ADMIN — exige sessão ativa
-  if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+  // /admin/recuperar-senha e /admin/redefinir-senha precisam ficar de
+  // fora da barreira, junto com /admin/login: o fluxo de recuperação de
+  // senha existe justamente pra quem não tem (ou perdeu) uma sessão
+  // válida — a sessão de recuperação do Supabase (via link do e-mail)
+  // vive no client, não no cookie sb-access-token que este proxy checa.
+  const publicAdminRoutes = ['/admin/login', '/admin/recuperar-senha', '/admin/redefinir-senha'];
+  if (pathname.startsWith('/admin') && !publicAdminRoutes.includes(pathname)) {
     const accessToken = request.cookies.get('sb-access-token')?.value;
 
     if (!accessToken) {

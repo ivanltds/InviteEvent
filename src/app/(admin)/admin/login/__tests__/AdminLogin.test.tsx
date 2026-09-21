@@ -55,6 +55,13 @@ describe('Admin Login Page', () => {
     expect(screen.getByPlaceholderText(/Senha/i)).toBeInTheDocument();
   });
 
+  // Pedido do usuário em 20/09/2026 ("Use o maestro pra fazer a
+  // recuperação de senha"): link pra iniciar o fluxo de recuperação.
+  test('deve exibir o link "Esqueceu sua senha?" apontando pra /admin/recuperar-senha', () => {
+    render(<LoginPage />);
+    expect(screen.getByText(/Esqueceu sua senha\?/i).closest('a')).toHaveAttribute('href', '/admin/recuperar-senha');
+  });
+
   test('deve exibir erro se as credenciais estiverem incorretas', async () => {
     (authService.login as jest.Mock).mockRejectedValue(new Error('Invalid login credentials'));
     

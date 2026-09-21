@@ -37,5 +37,30 @@ export const authService = {
     await supabase.auth.signOut();
     await fetch('/api/auth/session', { method: 'DELETE' });
     window.location.href = '/admin/login';
+  },
+
+  /**
+   * Dispara o e-mail de redefinição de senha do Supabase Auth. O link
+   * enviado traz o usuário de volta pra /admin/redefinir-senha com uma
+   * sessão de recuperação temporária (o client do Supabase detecta o
+   * token no fragmento da URL automaticamente).
+   *
+   * Não diferenciamos "e-mail existe" de "e-mail não existe" na resposta
+   * — nem o Supabase faz isso por padrão — pra não expor quais e-mails
+   * têm conta cadastrada (user enumeration).
+   */
+  async requestPasswordReset(email: string): Promise<{ success: boolean; error?: Error | null }> {
+    const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/admin/redefinir-senha` : undefined;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+    return { success: !error, error: error ? new Error(error.message) : null };
+  },
+
+  /**
+   * Define uma nova senha para o usuário da sessão de recuperação ativa
+   * (só funciona logo após clicar no link do e-mail de redefinição).
+   */
+  async updatePassword(newPassword: string): Promise<{ success: boolean; error?: Error | null }> {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    return { success: !error, error: error ? new Error(error.message) : null };
   }
 };

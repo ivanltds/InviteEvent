@@ -98,6 +98,25 @@ describe('STORY-055: proxy de autenticação e ativação (ex-middleware)', () =
       expect(res?.status).toBe(200);
     });
 
+    // Correção de 20/09/2026: fluxo de recuperação de senha — essas duas
+    // rotas precisam ficar acessíveis sem sessão, senão ninguém que
+    // esqueceu a senha consegue chegar nelas.
+    test('deve permitir /admin/recuperar-senha sem token', async () => {
+      const req = createMockRequest('/admin/recuperar-senha') as any;
+      const res = await proxy(req);
+      expect(mockNext).toHaveBeenCalled();
+      expect(res?.status).toBe(200);
+      expect(mockGetUser).not.toHaveBeenCalled();
+    });
+
+    test('deve permitir /admin/redefinir-senha sem token', async () => {
+      const req = createMockRequest('/admin/redefinir-senha') as any;
+      const res = await proxy(req);
+      expect(mockNext).toHaveBeenCalled();
+      expect(res?.status).toBe(200);
+      expect(mockGetUser).not.toHaveBeenCalled();
+    });
+
     test('deve redirecionar /admin/dashboard para login sem token', async () => {
       const req = createMockRequest('/admin/dashboard') as any;
       const res = await proxy(req);

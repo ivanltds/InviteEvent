@@ -14,6 +14,8 @@ jest.mock('@/lib/supabase', () => {
         signInWithPassword: jest.fn(),
         getUser: jest.fn(),
         signOut: jest.fn(),
+        resetPasswordForEmail: jest.fn(),
+        updateUser: jest.fn(),
       },
     },
   };
@@ -58,5 +60,50 @@ describe('authService - Fix Final', () => {
     } catch (e: any) {
       expect(e.message).toBe('Invalid credentials');
     }
+  });
+
+  describe('requestPasswordReset', () => {
+    it('dispara o e-mail de redefinição com redirectTo apontando pra /admin/redefinir-senha', async () => {
+      (supabase.auth.resetPasswordForEmail as jest.Mock).mockResolvedValue({ error: null });
+
+      const result = await authService.requestPasswordReset(MOCK_EMAIL);
+
+      expect(result.success).toBe(true);
+      expect(supabase.auth.resetPasswordForEmail).toHaveBeenCalledWith(
+        MOCK_EMAIL,
+        expect.objectContaining({ redirectTo: expect.stringContaining('/admin/redefinir-senha') })
+      );
+    });
+
+    it('retorna erro quando o Supabase falha (não quando o e-mail simplesmente não existe)', async () => {
+      (supabase.auth.resetPasswordForEmail as jest.Mock).mockResolvedValue({
+        error: { message: 'Serviço indisponível' },
+      });
+
+      const result = await authService.requestPasswordReset(MOCK_EMAIL);
+
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toBe('Serviço indisponível');
+    });
+  });
+
+  describe('updatePassword', () => {
+    it('atualiza a senha do usuário da sessão de recuperação ativa', async () => {
+      (supabase.auth.updateUser as jest.Mock).mockResolvedValue({ error: null });
+
+      const result = await authService.updatePassword('novaSenha123');
+
+      expect(result.success).toBe(true);
+      expect(supabase.auth.updateUser).toHaveBeenCalledWith({ password: 'novaSenha123' });
+    });
+
+    it('retorna erro quando a atualização falha', async () => {
+      (supabase.auth.updateUser as jest.Mock).mockResolvedValue({ error: { message: 'Token expirado' } });
+
+      const result = await authService.updatePassword('novaSenha123');
+
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toBe('Token expirado');
+    });
   });
 });

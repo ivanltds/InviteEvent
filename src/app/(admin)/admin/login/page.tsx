@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
+import Link from 'next/link';
 import styles from '../admin.module.css';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authService } from '@/lib/services/authService';
@@ -330,6 +331,22 @@ function LoginFormContent() {
         <button type="submit" className={styles.loginBtn} disabled={loading}>
           {loading ? 'Aguarde...' : (isSignUp ? 'Cadastrar' : 'Entrar')}
         </button>
+
+        {!isSignUp && (
+          <Link
+            href="/admin/recuperar-senha"
+            style={{
+              display: 'block',
+              textAlign: 'center',
+              marginTop: '1rem',
+              color: '#C5A059',
+              textDecoration: 'underline',
+              fontSize: '0.9rem',
+            }}
+          >
+            Esqueceu sua senha?
+          </Link>
+        )}
 
         <button
           type="button"

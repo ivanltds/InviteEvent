@@ -1,4 +1,6 @@
 import { ImageResponse } from 'next/og';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 /**
  * Gera dinamicamente o cartão de preview do convite (nomes do casal em
@@ -30,15 +32,26 @@ const HEIGHT = 630;
  * interno do Satori (@vercel/og) quebra ao ler a tabela `fvar` de
  * fontes variáveis (confirmado ao vivo: "Cannot read properties of
  * undefined (reading '256')" em parseFvarAxis).
+ *
+ * Correção de 20/09/2026: lia a fonte via `fetch` pra própria rota (um
+ * round-trip HTTP inteiro a cada requisição), o que deixava a geração
+ * do cartão lenta o bastante (~2.6s) pra arriscar estourar o timeout do
+ * crawler do WhatsApp — o preview simplesmente não carregava a imagem.
+ * Lendo direto do disco (fs) é bem mais rápido, e o resultado fica em
+ * cache num módulo (memória do processo), então só a PRIMEIRA
+ * requisição de cada instância "fria" da function paga esse custo.
  */
-async function loadLocalFont(request: Request, path: string): Promise<ArrayBuffer | null> {
+let cachedFont: ArrayBuffer | null | undefined;
+
+async function loadLocalFont(): Promise<ArrayBuffer | null> {
+  if (cachedFont !== undefined) return cachedFont;
   try {
-    const res = await fetch(new URL(path, request.url));
-    if (!res.ok) return null;
-    return await res.arrayBuffer();
+    const buffer = await readFile(join(process.cwd(), 'public', 'fonts', 'PlayfairDisplay-Bold.ttf'));
+    cachedFont = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
   } catch {
-    return null;
+    cachedFont = null;
   }
+  return cachedFont;
 }
 
 export async function GET(request: Request) {
@@ -48,7 +61,7 @@ export async function GET(request: Request) {
   const data = (searchParams.get('data') || '').slice(0, 60);
   const foto = searchParams.get('foto') || '';
 
-  const playfairBold = await loadLocalFont(request, '/fonts/PlayfairDisplay-Bold.ttf');
+  const playfairBold = await loadLocalFont();
 
   try {
     const imageResponse = new ImageResponse(

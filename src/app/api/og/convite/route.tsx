@@ -51,7 +51,7 @@ export async function GET(request: Request) {
   const playfairBold = await loadLocalFont(request, '/fonts/PlayfairDisplay-Variable.ttf');
 
   try {
-  return new ImageResponse(
+  const imageResponse = new ImageResponse(
     (
       <div
         style={{
@@ -146,6 +146,20 @@ export async function GET(request: Request) {
         : undefined,
     }
   );
+    // ImageResponse devolve um Response cujo corpo (o encode real da
+    // imagem) só roda quando o stream é lido — um catch em volta só do
+    // `new ImageResponse(...)` não pega erros daí. Forçamos a leitura
+    // completa aqui dentro do try pra qualquer erro de renderização
+    // aparecer no catch abaixo, em vez de virar um 500 genérico do
+    // Next sem detalhe nenhum.
+    const buffer = await imageResponse.arrayBuffer();
+    return new Response(buffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'image/png',
+        'Cache-Control': 'public, immutable, no-transform, max-age=86400',
+      },
+    });
   } catch (err: any) {
     // DEBUG TEMPORÁRIO (20/09/2026): rota retornando 500 em produção sem
     // mensagem visível nos logs — expõe o erro real pra diagnosticar,

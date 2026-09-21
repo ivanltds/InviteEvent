@@ -9,7 +9,7 @@ import { Convite, ConviteMembro, RSVP as RSVPType, Configuracao } from '@/lib/ty
 import { triggerCelebration, triggerSideCannons } from '@/lib/utils/confetti';
 import { Telemetry } from '@/lib/services/telemetryService';
 import { saveConvite } from '@/lib/utils/linkUnico';
-import { GRAVATA_LABEL_TEXT } from '@/lib/constants/gravata';
+import { resolveGravataLabel } from '@/lib/constants/gravata';
 
 /**
  * Formata uma data "YYYY-MM-DD" evitando o offset de 1 dia que
@@ -370,7 +370,7 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
             )}
             {!isRecusado && propConfig?.modo_arrecadacao === 'gravata' && (
               <Link href={`/inv/${conviteEncontrado.slug}/gravata`} className={styles.primaryBtn} style={{ backgroundColor: propConfig?.accent_color }}>
-                {GRAVATA_LABEL_TEXT[propConfig?.gravata_label ?? 'quero_colaborar']}
+                {resolveGravataLabel(propConfig?.gravata_label, propConfig?.gravata_label_personalizado)}
               </Link>
             )}
             <button
@@ -424,7 +424,7 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
           )}
           {!isRecusado && propConfig?.modo_arrecadacao === 'gravata' && (
             <Link href={`/inv/${conviteEncontrado?.slug}/gravata`} className={styles.primaryBtn} style={{ marginTop: '2rem', display: 'inline-block', backgroundColor: propConfig?.accent_color }}>
-              {GRAVATA_LABEL_TEXT[propConfig?.gravata_label ?? 'quero_colaborar']}
+              {resolveGravataLabel(propConfig?.gravata_label, propConfig?.gravata_label_personalizado)}
             </Link>
           )}
           {alertaExcedente && !isRecusado && (

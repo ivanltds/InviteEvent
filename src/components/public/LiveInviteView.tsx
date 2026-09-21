@@ -12,7 +12,7 @@ import AgendaSection from '@/components/sections/AgendaSection';
 import Countdown from '@/components/sections/Countdown';
 import HeroCarousel from '@/components/ui/HeroCarousel';
 import { Configuracao } from '@/lib/types/database';
-import { GRAVATA_LABEL_TEXT } from '@/lib/constants/gravata';
+import { resolveGravataLabel } from '@/lib/constants/gravata';
 import { resolveSecoesOrdem, SecaoConvite } from '@/lib/constants/secoes';
 import Link from 'next/link';
 import { useTrackSection } from '@/hooks/useTrackSection';
@@ -263,7 +263,7 @@ const LiveInviteView: React.FC<LiveInviteViewProps> = ({
                 className={styles.secondaryBtn}
                 onClick={ctaClick}
               >
-                {GRAVATA_LABEL_TEXT[config.gravata_label ?? 'quero_colaborar']}
+                {resolveGravataLabel(config.gravata_label, config.gravata_label_personalizado)}
               </Link>
             )}
             {config.mostrar_mural !== false && (

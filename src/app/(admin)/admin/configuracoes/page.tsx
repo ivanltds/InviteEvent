@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import styles from './AdminConfig.module.css';
 import { configService } from '@/lib/services/configService';
 import { Configuracao, ModoArrecadacao, ModoConvite } from '@/lib/types/database';
-import { GRAVATA_LABEL_TEXT, GRAVATA_LABEL_OPTIONS } from '@/lib/constants/gravata';
+import { GRAVATA_LABEL_OPTIONS, GRAVATA_LABEL_OPTION_NAMES, GRAVATA_LABEL_PERSONALIZADO_MAX_LENGTH } from '@/lib/constants/gravata';
 import { SECOES_CONVITE_LABELS, resolveSecoesOrdem, SecaoConvite } from '@/lib/constants/secoes';
 import { CARD_TEMPLATES, CARD_TEMPLATE_LABELS, CardTemplate, CardTemplateStyle, buildConviteCardImageUrl } from '@/lib/utils/conviteCard';
 import { CURSIVE_FONTS } from '@/lib/constants/fonts';
@@ -47,6 +47,7 @@ const DEFAULT_CONFIG: Omit<Configuracao, 'id' | 'evento_id'> = {
   card_template_styles: {},
   modo_arrecadacao: 'presentes',
   gravata_label: 'quero_colaborar',
+  gravata_label_personalizado: '',
   gravata_recado: 'Sua presença já é o nosso maior presente, mas se quiser nos ajudar a começar essa nova fase, ficaremos muito felizes com sua contribuição.',
   gravata_valores_sugeridos: [],
   modo_convite: 'individual',
@@ -758,10 +759,26 @@ export default function AdminConfig() {
                               checked={(config.gravata_label ?? 'quero_colaborar') === option}
                               onChange={() => setConfig({ ...config, gravata_label: option })}
                             />
-                            <label htmlFor={`gravata_label_${option}`}>{GRAVATA_LABEL_TEXT[option]}</label>
+                            <label htmlFor={`gravata_label_${option}`}>{GRAVATA_LABEL_OPTION_NAMES[option]}</label>
                           </div>
                         ))}
                       </div>
+                      {config.gravata_label === 'personalizado' && (
+                        <div style={{ marginTop: '0.8rem' }}>
+                          <input
+                            id="gravata_label_personalizado"
+                            type="text"
+                            maxLength={GRAVATA_LABEL_PERSONALIZADO_MAX_LENGTH}
+                            value={config.gravata_label_personalizado || ''}
+                            onChange={(e) => setConfig({ ...config, gravata_label_personalizado: e.target.value })}
+                            placeholder="Ex: Ajude nossa lua de mel"
+                            className={styles.whatsappField}
+                          />
+                          <span className={styles.helpText} style={{ display: 'block', marginTop: '0.3rem' }}>
+                            {(config.gravata_label_personalizado || '').length}/{GRAVATA_LABEL_PERSONALIZADO_MAX_LENGTH} caracteres
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <div className={styles.field} style={{ gridColumn: '1 / -1' }}>

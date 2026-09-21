@@ -92,6 +92,46 @@ describe('AdminConfig — Gravata dos Noivos', () => {
     expect(screen.getByText(/Chave PIX não cadastrada/i)).toBeInTheDocument();
   });
 
+  // Pedido do usuário em 21/09/2026: "texto para o botão da gravata dos
+  // noivos deve ser configuravel com as opçõs, mas tbm ter uma caixa de
+  // texto com tamanho limitado."
+  test('ao escolher "Personalizado", mostra uma caixa de texto com contador e limite de caracteres', async () => {
+    (configService.getConfig as jest.Mock).mockResolvedValue({ ...baseConfig, pix_chave: '11999999999' });
+    render(<AdminConfig />);
+    await waitFor(() => expect(screen.queryByText(/Carregando configurações/i)).not.toBeInTheDocument());
+
+    fireEvent.click(screen.getByLabelText('Gravata dos Noivos'));
+    expect(screen.queryByPlaceholderText(/Ajude nossa lua de mel/i)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('Personalizado'));
+
+    const input = screen.getByPlaceholderText(/Ajude nossa lua de mel/i) as HTMLInputElement;
+    expect(input).toBeInTheDocument();
+    expect(input.maxLength).toBe(30);
+    expect(screen.getByText('0/30 caracteres')).toBeInTheDocument();
+
+    fireEvent.change(input, { target: { value: 'Ajude na lua de mel' } });
+    expect(input).toHaveValue('Ajude na lua de mel');
+    expect(screen.getByText('19/30 caracteres')).toBeInTheDocument();
+  });
+
+  test('a caixa de texto personalizado some ao trocar de volta pra um preset', async () => {
+    (configService.getConfig as jest.Mock).mockResolvedValue({
+      ...baseConfig,
+      pix_chave: '11999999999',
+      gravata_label: 'personalizado' as const,
+      gravata_label_personalizado: 'Contribua com a lua de mel',
+    });
+    render(<AdminConfig />);
+    await waitFor(() => expect(screen.queryByText(/Carregando configurações/i)).not.toBeInTheDocument());
+
+    fireEvent.click(screen.getByLabelText('Gravata dos Noivos'));
+    expect(screen.getByDisplayValue('Contribua com a lua de mel')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('Quero colaborar'));
+    expect(screen.queryByDisplayValue('Contribua com a lua de mel')).not.toBeInTheDocument();
+  });
+
   test('Presentes e Gravata são mutuamente exclusivos', async () => {
     (configService.getConfig as jest.Mock).mockResolvedValue(baseConfig);
     render(<AdminConfig />);

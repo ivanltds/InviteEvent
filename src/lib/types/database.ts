@@ -144,8 +144,8 @@ export interface Comprovante {
 /** Modo de arrecadação do evento: Lista de Presentes, Gravata dos Noivos ou nenhum. */
 export type ModoArrecadacao = 'presentes' | 'gravata' | 'nenhum';
 
-/** Preset fechado do texto do botão de Gravata dos Noivos no convite. */
-export type GravataLabel = 'quero_presentear' | 'quero_colaborar';
+/** Texto do botão de Gravata dos Noivos no convite: presets fechados ou 'personalizado' (texto livre, ver gravata_label_personalizado). */
+export type GravataLabel = 'quero_presentear' | 'quero_colaborar' | 'personalizado';
 
 /** Modo de convite do evento: cadastro individual pelos noivos ou auto-cadastro por link único. */
 export type ModoConvite = 'individual' | 'link_unico';
@@ -178,6 +178,8 @@ export interface Configuracao {
   /** Fonte de verdade para o botão de arrecadação no convite (substitui mostrar_presentes). */
   modo_arrecadacao?: ModoArrecadacao;
   gravata_label?: GravataLabel;
+  /** Texto do botão quando gravata_label === 'personalizado'. Ver GRAVATA_LABEL_PERSONALIZADO_MAX_LENGTH em constants/gravata.ts. */
+  gravata_label_personalizado?: string;
   gravata_recado?: string;
   /** Valores sugeridos de contribuição na tela da Gravata, cadastrados livremente pelos noivos. */
   gravata_valores_sugeridos?: number[];

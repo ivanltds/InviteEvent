@@ -39,12 +39,26 @@ describe('RSVP - Success Action', () => {
   it('deve mostrar link para presentes após confirmar', async () => {
     render(<RSVP inviteSlug="joao-silva" />);
     await waitFor(() => expect(screen.getByText('Confirmar Presença')).toBeInTheDocument());
-    
+
     fireEvent.click(screen.getByText('Confirmar Presença'));
-    
+
     await waitFor(() => {
       expect(screen.getByText(/presença está confirmada/i)).toBeInTheDocument();
       expect(screen.getByText(/Ver Lista de Presentes/i)).toBeInTheDocument();
     });
+  });
+
+  // Pedido do usuário em 21/09/2026: "quando confirmo e ele joga os
+  // confetes da um scrol pra baixo e não fica onde ta a confirmação"
+  // (mobile). A tela de confirmação deve se reancorar na própria seção
+  // assim que aparecer, contra qualquer scroll indesejado.
+  it('reancora a tela na seção de confirmação assim que a presença é confirmada', async () => {
+    render(<RSVP inviteSlug="joao-silva" />);
+    await waitFor(() => expect(screen.getByText('Confirmar Presença')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('Confirmar Presença'));
+
+    await waitFor(() => expect(screen.getByText(/presença está confirmada/i)).toBeInTheDocument());
+    await waitFor(() => expect(Element.prototype.scrollIntoView).toHaveBeenCalled());
   });
 });

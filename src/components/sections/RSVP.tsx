@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styles from './RSVP.module.css';
 import Link from 'next/link';
 import { rsvpService } from '@/lib/services/rsvpService';
@@ -50,6 +50,7 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
     telefone: ''
   });
   const [enviado, setEnviado] = useState(false);
+  const successSectionRef = useRef<HTMLElement>(null);
   const [alertaExcedente, setAlertaExcedente] = useState(false);
   const [loading, setLoading] = useState(false);
   const [deadline, setDeadline] = useState('13 de Maio de 2026');
@@ -192,6 +193,21 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
     }
     init();
   }, [propSlug, autoCadastro]);
+
+  // Pedido do usuário em 21/09/2026: "quando confirmo e ele joga os
+  // confetes da um scrol pra baixo e não fica onde ta a confirmação"
+  // (mobile). A troca do formulário pela tela de sucesso muda a altura
+  // da página bem na hora em que o confete dispara, e o navegador
+  // (principalmente no celular) acaba deslocando o scroll pra longe da
+  // confirmação. Reancora a tela no início da seção assim que ela
+  // aparece, depois do primeiro paint da nova altura.
+  useEffect(() => {
+    if (!enviado) return;
+    const raf = requestAnimationFrame(() => {
+      successSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [enviado]);
 
   const toggleMembro = (id: string) => {
     setMembros(prev => prev.map(m => 
@@ -460,7 +476,7 @@ export default function RSVP({ inviteSlug: propSlug, config: propConfig, isPrevi
         };
 
     return (
-      <section className={styles.section} id="rsvp">
+      <section className={styles.section} id="rsvp" ref={successSectionRef}>
         <div className={styles.successContainer}>
           <div className={styles.successIcon}>❤️</div>
           <h2 className="cursive" style={{ color: propConfig?.accent_color }}>{currentMsg.title}</h2>

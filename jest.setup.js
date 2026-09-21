@@ -148,6 +148,19 @@ jest.mock('react-chartjs-2', () => ({
   Line: () => <div data-testid="mock-line-chart" />,
 }));
 
+// Mock do scrollIntoView (jsdom não implementa) — necessário pra
+// componentes que reancoram a tela por ref.scrollIntoView(), como
+// RSVP.tsx na tela de confirmação (pedido do usuário em 21/09/2026:
+// "quando confirmo e ele joga os confetes da um scrol pra baixo").
+Element.prototype.scrollIntoView = jest.fn();
+
+// Garante requestAnimationFrame/cancelAnimationFrame no ambiente de
+// teste (algumas versões do jsdom não implementam).
+if (typeof global.requestAnimationFrame !== 'function') {
+  global.requestAnimationFrame = (cb) => setTimeout(cb, 0);
+  global.cancelAnimationFrame = (id) => clearTimeout(id);
+}
+
 // Mock global canvas-confetti to prevent context canvas errors in JSDOM
 jest.mock('canvas-confetti', () => {
   const mockConfetti = jest.fn(() => Promise.resolve());

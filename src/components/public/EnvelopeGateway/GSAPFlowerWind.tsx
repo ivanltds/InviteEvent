@@ -307,7 +307,11 @@ export default function GSAPFlowerWind({
           <div className={styles.card}>
             <div className={styles.cardBorder}></div>
             <div className={styles.cardContent}>
-              <h2>{firstName(coupleNoiva)} &<br/>{firstName(coupleNoivo)}</h2>
+              <h2>
+                <span className={styles.cardName}>{firstName(coupleNoiva)}</span>
+                <span className={styles.cardAmp}>&amp;</span>
+                <span className={styles.cardName}>{firstName(coupleNoivo)}</span>
+              </h2>
             </div>
           </div>
 

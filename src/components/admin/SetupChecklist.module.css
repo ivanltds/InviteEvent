@@ -1,0 +1,146 @@
+.container {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-card-border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+}
+
+.subtitle {
+  margin: 4px 0 0 0;
+  font-size: 0.85rem;
+  color: var(--admin-text-secondary);
+}
+
+.hideBtn {
+  background: transparent;
+  border: none;
+  color: var(--admin-text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.hideBtn:hover {
+  color: var(--admin-text-secondary);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.progressBar {
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--admin-accent);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.itemList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.itemLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--admin-text-primary);
+  font-size: 0.9rem;
+  transition: background 0.15s ease;
+}
+
+.itemLink:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.itemCheck {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--admin-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: transparent;
+}
+
+.itemDone {
+  color: var(--admin-text-secondary);
+  text-decoration: line-through;
+}
+
+.itemDone .itemCheck {
+  border-color: var(--admin-success);
+  background: var(--admin-success);
+  color: #fff;
+}
+
+.suggestions {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--admin-card-border);
+}
+
+.suggestionsLabel {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--admin-text-muted);
+  margin-bottom: 10px;
+}
+
+.suggestionsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.suggestionChip {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--admin-accent);
+  color: var(--admin-accent);
+  font-size: 0.8rem;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.suggestionChip:hover {
+  background: rgba(197, 160, 89, 0.1);
+}

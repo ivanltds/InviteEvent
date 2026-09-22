@@ -6,16 +6,13 @@ import { eventService } from '@/lib/services/eventService';
 import { rsvpService } from '@/lib/services/rsvpService';
 import { supabase } from '@/lib/supabase';
 import styles from './Dashboard.module.css';
-import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import OnboardingWizard from '@/components/admin/OnboardingWizard';
+import SetupChecklist from '@/components/admin/SetupChecklist';
 
 export default function DashboardPage() {
-  const router = useRouter();
   const { currentEvent, events, setCurrentEvent, refreshEvents, loading: contextLoading, userProfile } = useEvent();
 
   const [isCreating, setIsCreating] = useState(false);
-  const [showWizard, setShowWizard] = useState(false);
   const [eventName, setEventName] = useState('');
   const [stats, setStats] = useState({ totalConvites: 0, totalConfirmados: 0, totalPessoasPossiveis: 0, valorPresentes: 0 });
   const [recentRSVPs, setRecentRSVPs] = useState<any[]>([]);
@@ -70,14 +67,6 @@ export default function DashboardPage() {
     }
     fetchRoles();
   }, [events, currentEvent]);
-
-  useEffect(() => {
-    if (currentEvent && !currentEvent.onboarding_completed) {
-      setShowWizard(true);
-    } else {
-      setShowWizard(false);
-    }
-  }, [currentEvent]);
 
   // Recarrega a lixeira sempre que carregar a listagem principal
   useEffect(() => {
@@ -441,25 +430,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {!currentEvent.onboarding_completed && (
-        <div style={{ background: 'rgba(245,158,11,0.1)', color: 'var(--admin-warning)', padding: '15px 20px', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h4 style={{ margin: 0, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
-              Bem-vindo ao painel do seu evento!
-            </h4>
-            <p style={{ margin: '5px 0 0 0', fontSize: '0.9rem', color: 'var(--admin-text-primary)'}}>
-              Seu convite inicial já está de pé! Vá na aba <strong>Configurações</strong> para adicionar as suas fotos de capa e biografia.
-            </p>
-          </div>
-          <button 
-            onClick={() => router.push('/admin/configuracoes')} 
-            style={{ padding: '8px 16px', background: 'var(--admin-warning)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
-          >
-            Personalizar
-          </button>
-        </div>
-      )}
+      <SetupChecklist eventId={currentEvent.id} />
 
       <section className={styles.statsGrid}>
         <div className={styles.statCard}>
@@ -495,15 +466,6 @@ export default function DashboardPage() {
         </section>
       </div>
 
-      {showWizard && (
-        <OnboardingWizard 
-          eventId={currentEvent.id} 
-          onComplete={async () => {
-            setShowWizard(false);
-            await refreshEvents();
-          }} 
-        />
-      )}
     </main>
   );
 }

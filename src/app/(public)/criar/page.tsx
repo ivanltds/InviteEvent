@@ -14,18 +14,22 @@ export default function PublicOnboarding() {
 
   const [noivaNome, setNoivaNome] = useState('');
   const [noivoNome, setNoivoNome] = useState('');
+  const [dataEvento, setDataEvento] = useState('');
   const [selectedPalette, setSelectedPalette] = useState(PALETTES[0]);
   const [selectedFont, setSelectedFont] = useState(FONTS[0]);
-  const [coverBase64, setCoverBase64] = useState<string | null>(null);
 
-  // STORY-PERSISTENCE: Auto-save e restauração de rascunho
+  // STORY-PERSISTENCE: Auto-save e restauração de rascunho. Leitura de
+  // localStorage é client-only por natureza — não dá pra fazer isso fora
+  // de um efeito sem quebrar a hidratação (SSR não tem localStorage).
   useEffect(() => {
     const saved = localStorage.getItem('pending_invite_state');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        /* eslint-disable react-hooks/set-state-in-effect -- restauração de rascunho do localStorage, só roda no mount, client-only por natureza */
         if (parsed.noiva_nome) setNoivaNome(parsed.noiva_nome);
         if (parsed.noivo_nome) setNoivoNome(parsed.noivo_nome);
+        if (parsed.data_evento) setDataEvento(parsed.data_evento);
         if (parsed.accent_color) {
           const palette = PALETTES.find(p => p.primary === parsed.accent_color);
           if (palette) setSelectedPalette(palette);
@@ -34,6 +38,7 @@ export default function PublicOnboarding() {
           const font = FONTS.find(f => f.cursiveValue === parsed.font_cursive);
           if (font) setSelectedFont(font);
         }
+        /* eslint-enable react-hooks/set-state-in-effect */
       } catch (e) {
         console.warn('Falha ao restaurar rascunho:', e);
       }
@@ -49,15 +54,14 @@ export default function PublicOnboarding() {
       accent_color: selectedPalette.primary,
       font_cursive: selectedFont.cursiveValue,
       font_serif: selectedFont.serifValue,
-      cover_image_url: coverBase64 && coverBase64.startsWith('blob:') ? '__GLOBAL_MEDIA__' : coverBase64,
-      data_evento: '2027-10-10'
+      data_evento: dataEvento
     };
     try {
       localStorage.setItem('pending_invite_state', JSON.stringify(payload));
     } catch (e) {
       console.warn('Quota de armazenamento estendida, rascunho mantido apenas em memória:', e);
     }
-  }, [noivaNome, noivoNome, selectedPalette, selectedFont, coverBase64]);
+  }, [noivaNome, noivoNome, dataEvento, selectedPalette, selectedFont]);
 
   const goToStep = (next: number) => {
     setAnimating(true);
@@ -67,60 +71,23 @@ export default function PublicOnboarding() {
     }, 300);
   };
 
-  const resizeImageAndSave = (file: File): Promise<string> => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          let { width, height } = img;
-          const MAX_SIZE = 1000;
-          if (width > height && width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
-          else if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
-          canvas.width = width;
-          canvas.height = height;
-          canvas.getContext('2d')?.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', 0.6));
-        };
-        img.src = e.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Usar Blob URL na memória do navegador: suporta QUALQUER tamanho de mídia (20MB+) instantaneamente e com zero latência!
-      const objectUrl = URL.createObjectURL(file);
-      setCoverBase64(objectUrl);
-
-      if (typeof window !== 'undefined') {
-        (window as any).pendingCoverMedia = objectUrl;
-        (window as any).pendingCoverMediaType = file.type.startsWith('video/') ? 'video' : 'image';
-      }
-    }
-  };
-
   const handleFinish = () => {
-    if (!selectedPalette || !selectedFont) {
-      console.warn('Finish sem estilo/fonte selecionados');
+    if (!selectedPalette || !selectedFont || !dataEvento) {
+      console.warn('Finish sem estilo/fonte/data selecionados');
       return;
     }
 
     const payload = {
       noiva_nome: noivaNome.trim() || 'Julieta',
       noivo_nome: noivoNome.trim() || 'Romeu',
-      bg_primary: selectedPalette.secondary, 
-      bg_secondary: selectedPalette.secondary, 
-      accent_color: selectedPalette.primary, 
+      bg_primary: selectedPalette.secondary,
+      bg_secondary: selectedPalette.secondary,
+      accent_color: selectedPalette.primary,
       font_cursive: selectedFont.cursiveValue,
       font_serif: selectedFont.serifValue,
-      cover_image_url: coverBase64 && coverBase64.startsWith('blob:') ? '__GLOBAL_MEDIA__' : coverBase64,
-      data_evento: '2027-10-10'
+      data_evento: dataEvento
     };
-    
+
     try {
       localStorage.setItem('pending_invite_state', JSON.stringify(payload));
     } catch (e) {
@@ -150,10 +117,10 @@ export default function PublicOnboarding() {
 
           <div className={styles.progressBar}>
             <div className={styles.progressTrack}>
-              <div className={styles.progressFill} style={{ width: `${(step / 4) * 100}%` }} />
+              <div className={styles.progressFill} style={{ width: `${(step / 3) * 100}%` }} />
             </div>
             <div className={styles.progressSteps}>
-              {['Vocês', 'Identidade', 'Tipografia', 'A foto'].map((label, i) => (
+              {['Vocês', 'Identidade', 'Tipografia'].map((label, i) => (
                 <div key={label} className={`${styles.progressStep} ${step > i ? styles.done : ''} ${step === i + 1 ? styles.current : ''}`}>
                   <div className={styles.progressDot}>{step > i + 1 ? '✓' : i + 1}</div>
                   <span>{label}</span>
@@ -202,9 +169,21 @@ export default function PublicOnboarding() {
                 </div>
               )}
 
+              <div className={styles.inputWrapper} style={{ marginTop: '1.5rem' }}>
+                <label htmlFor="data_evento" className={styles.label}>Data do casamento</label>
+                <input
+                  id="data_evento"
+                  type="date"
+                  value={dataEvento}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={e => setDataEvento(e.target.value)}
+                  className={styles.input}
+                  required
+                />
+              </div>
+
               <div className={styles.actions}>
-                <button onClick={() => goToStep(2)} className={styles.skipBtn}>Deixar padrão</button>
-                <button onClick={() => goToStep(2)} className={styles.primaryBtn}>
+                <button onClick={() => goToStep(2)} className={styles.primaryBtn} disabled={!dataEvento}>
                   Continuar ➜
                 </button>
               </div>
@@ -294,48 +273,6 @@ export default function PublicOnboarding() {
 
               <div className={styles.actions}>
                 <button onClick={() => goToStep(2)} className={styles.backBtn}>← Voltar</button>
-                <button onClick={() => goToStep(4)} className={styles.primaryBtn} style={{ background: selectedPalette.primary }}>
-                  Perfeito! Continuar ➜
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 4: Foto ou Vídeo de Capa */}
-          {step === 4 && (
-            <div className={styles.stepContent}>
-              <h1 className="cursive" style={{ fontSize: '2.8rem', marginBottom: '0.5rem' }}>
-                Para fechar: o rosto do evento.
-              </h1>
-              <p className={styles.subtitle}>Uma foto ou um vídeo de vocês. Ele será o destaque do convite.</p>
-
-              <label className={styles.uploadZone} style={{ borderColor: selectedPalette.primary }}>
-                {coverBase64 ? (
-                  <div className={styles.uploadPreview}>
-                    {coverBase64.startsWith('data:video/') ? (
-                      <video src={coverBase64} autoPlay muted loop playsInline style={{ width: '100%', maxHeight: '180px', objectFit: 'cover', borderRadius: '10px' }} />
-                    ) : (
-                      <img src={coverBase64} alt="Capa" />
-                    )}
-                    <span style={{ color: selectedPalette.primary }}>✓ Mídia carregada</span>
-                  </div>
-                ) : (
-                  <div className={styles.uploadPrompt} style={{ color: selectedPalette.primary }}>
-                    <div className={styles.uploadIcon} style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', fontSize: '1rem' }}>
-                      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                      <span style={{opacity: 0.5}}>/</span>
-                      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
-                    </div>
-                    <strong>Arraste ou clique para escolher</strong>
-                    <span>JPG, PNG, WEBP ou MP4 • Até 10mb</span>
-                  </div>
-                )}
-                <input type="file" accept="image/*,video/*" onChange={handleFileUpload} style={{ display: 'none' }} />
-              </label>
-
-              <div className={styles.actions}>
-                <button onClick={() => goToStep(3)} className={styles.backBtn}>← Voltar</button>
-                <button onClick={handleFinish} className={styles.skipBtn}>Pular</button>
                 <button onClick={handleFinish} className={styles.primaryBtn} style={{ background: selectedPalette.primary, fontSize: '1.1rem', padding: '1rem 2.5rem' }}>
                   Gerar meu convite ✨
                 </button>

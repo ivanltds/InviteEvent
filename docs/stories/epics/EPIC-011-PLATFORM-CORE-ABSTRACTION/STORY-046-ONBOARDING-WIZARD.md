@@ -1,5 +1,7 @@
 # STORY-046: Onboarding Wizard Multi-Step (Refined)
 
+> ⚠️ **Superseded by [STORY-061](../EPIC-011-PLATFORM-CORE-ABSTRACTION/STORY-061-SETUP-CHECKLIST-GUIADO.md)** (22/09/2026). O `OnboardingWizard.tsx` descrito abaixo acabou implementado de forma reduzida (3 passos, sem slug/data/fotos) e nunca persistia os dados preenchidos — foi removido e substituído por um checklist de setup guiado no Dashboard, calculado a partir dos dados reais do evento. Mantido aqui só para histórico.
+
 ## Descrição
 Como um novo organizador, desejo um assistente de configuração (Wizard) que me guie pelos passos essenciais de criação do site, garantindo que eu não precise de suporte técnico para configurar meu casamento.
 

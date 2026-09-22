@@ -19,6 +19,7 @@ import { GRAVATA_LABEL_OPTIONS, GRAVATA_LABEL_OPTION_NAMES, GRAVATA_LABEL_PERSON
 import { SECOES_CONVITE_LABELS, resolveSecoesOrdem, SecaoConvite } from '@/lib/constants/secoes';
 import { CARD_TEMPLATES, CARD_TEMPLATE_LABELS, CardTemplate, CardTemplateStyle, buildConviteCardImageUrl } from '@/lib/utils/conviteCard';
 import { CURSIVE_FONTS } from '@/lib/constants/fonts';
+import { DEFAULT_CONFIG } from '@/lib/constants/configDefaults';
 import FAQManager from '@/components/admin/FAQManager';
 import ConfigPreview from '@/components/admin/ConfigPreview';
 import TeamManagement from '@/components/admin/TeamManagement';
@@ -27,47 +28,9 @@ import HeroImagesManager from '@/components/admin/HeroImagesManager';
 import { useEvent } from '@/lib/contexts/EventContext';
 import { supabase } from '@/lib/supabase';
 
-const DEFAULT_CONFIG: Omit<Configuracao, 'id' | 'evento_id'> = {
-  noiva_nome: 'Noiva',
-  noivo_nome: 'Noivo',
-  data_casamento: '2026-06-13',
-  prazo_rsvp: '2026-05-13',
-  horario_cerimonia: '16:00',
-  horario_recepcao: '18:30',
-  local_cerimonia: 'Igreja Matriz',
-  endereco_cerimonia: 'Praça da Matriz, Centro',
-  mostrar_historia: true,
-  mostrar_noivos: true,
-  mostrar_faq: true,
-  mostrar_presentes: true,
-  mostrar_mural: true,
-  mostrar_detalhes: true,
-  secoes_ordem: ['detalhes', 'historia', 'noivos', 'agenda', 'rsvp', 'faq'],
-  card_template: 'classico',
-  card_template_styles: {},
-  modo_arrecadacao: 'presentes',
-  gravata_label: 'quero_colaborar',
-  gravata_label_personalizado: '',
-  gravata_recado: 'Sua presença já é o nosso maior presente, mas se quiser nos ajudar a começar essa nova fase, ficaremos muito felizes com sua contribuição.',
-  gravata_valores_sugeridos: [],
-  modo_convite: 'individual',
-  pix_chave: '',
-  pix_banco: '',
-  pix_nome: '',
-  pix_tipo: 'cpf',
-  historia_titulo: 'Nossa História',
-  historia_subtitulo: 'O Início de Tudo',
-  historia_texto: 'Tudo começou através de um amigo distante do primo da noiva...',
-  historia_conclusao: 'O dia 13 de junho não é apenas uma data qualquer. Foi o dia em que o pedido de namoro aconteceu, e agora, será o dia em que diremos "sim" para o resto de nossas vidas.',
-  noiva_bio: 'Bio da Noiva...',
-  noivo_bio: 'Bio do Noivo...',
-  noivos_conclusao: 'Mensagem Final do Casal...',
-  bg_primary: '#fdfbf7',
-  text_main: '#4a4a4a',
-  accent_color: '#8fa89b',
-  font_cursive: "'Pinyon Script', cursive",
-  font_serif: "'Playfair Display', serif"
-};
+// DEFAULT_CONFIG mora em @/lib/constants/configDefaults — compartilhado com
+// o cálculo do checklist de setup (src/lib/utils/setupProgress.ts), pra não
+// duplicar os mesmos valores-placeholder em dois lugares.
 
 /** Mesma lógica de src/lib/metadata/inviteMetadata.ts, só pra prévia local dos cartões. */
 function formatDataCasamentoPreview(dataCasamento?: string): string {
@@ -289,7 +252,7 @@ export default function AdminConfig() {
       <div className={styles.layout}>
         <div className={styles.formColumn}>
           <form onSubmit={handleSave} className={styles.form}>
-            <section className={styles.section}>
+            <section id="link-unico" className={styles.section}>
               <h2>Como você vai gerenciar a lista de convidados?</h2>
               <div className={styles.grid}>
                 <div className={styles.fieldFull}>
@@ -335,7 +298,7 @@ export default function AdminConfig() {
               </div>
             </section>
 
-            <section className={styles.section}>
+            <section id="identidade-visual" className={styles.section}>
               <h2>Identidade Visual & Cores</h2>
               
               <HeroImagesManager 
@@ -398,7 +361,7 @@ export default function AdminConfig() {
 
             </section>
 
-            <section className={styles.section}>
+            <section id="animacao" className={styles.section}>
               <h2>Animação de Entrada</h2>
               <p className={styles.helpText}>Escolha o efeito cinematográfico que os convidados verão ao abrir seu convite.</p>
               <div className={styles.animationSelectorGrid}>
@@ -425,7 +388,7 @@ export default function AdminConfig() {
               </div>
             </section>
 
-            <section className={styles.section}>
+            <section id="cartao" className={styles.section}>
               <h2>Modelo do Cartão de Compartilhamento</h2>
               <p className={styles.helpText}>Escolha como o cartão do seu convite vai aparecer quando o link for compartilhado no WhatsApp. Clique num modelo pra ativá-lo e personalizar a fonte, o tamanho e a foto dele logo abaixo.</p>
               <div className={styles.cardTemplateGrid}>
@@ -606,7 +569,7 @@ export default function AdminConfig() {
               })()}
             </section>
 
-            <section className={styles.section}>
+            <section id="modulos" className={styles.section}>
               <h2>Módulos do Convite (Visibilidade)</h2>
               <p className={styles.helpText}>Escolha quais seções deseja exibir para seus convidados.</p>
               <div className={styles.checkboxGrid}>
@@ -658,7 +621,7 @@ export default function AdminConfig() {
               </div>
             </section>
 
-            <section className={styles.section}>
+            <section id="ordem-secoes" className={styles.section}>
               <h2>Ordem das Seções do Convite</h2>
               <p className={styles.helpText}>Defina em que ordem cada seção aparece para o convidado. Seções desativadas acima não aparecem, mas mantêm seu lugar na ordem.</p>
               <div className={styles.fieldFull}>
@@ -709,7 +672,7 @@ export default function AdminConfig() {
               </div>
             </section>
 
-            <section className={styles.section}>
+            <section id="contribuicao" className={styles.section}>
               <h2>Como os convidados vão contribuir?</h2>
               <div className={styles.grid}>
                 <div className={styles.fieldFull}>
@@ -864,7 +827,7 @@ export default function AdminConfig() {
               </div>
             </section>
 
-            <section className={styles.section}>
+            <section id="noivos" className={styles.section}>
               <h2>Os Noivos</h2>
               <div className={styles.grid}>
                 <div className={styles.fieldFull}>
@@ -948,7 +911,7 @@ export default function AdminConfig() {
               </div>
             </section>
 
-            <section className={styles.section}>
+            <section id="historia" className={styles.section}>
               <h2>Nossa História</h2>
               <div className={styles.grid}>
                 <div className={styles.field}>
@@ -989,7 +952,7 @@ export default function AdminConfig() {
               </div>
             </section>
 
-            <section className={styles.section}>
+            <section id="agenda" className={styles.section}>
               <h2>Logística & Agenda</h2>
               <div className={styles.grid}>
                 <div className={styles.field}>
@@ -1049,7 +1012,7 @@ export default function AdminConfig() {
               </div>
             </section>
 
-            <section className={styles.section}>
+            <section id="pix" className={styles.section}>
               <h2>Pagamentos PIX</h2>
               <div className={styles.grid}>
                 <div className={styles.field}>
@@ -1098,7 +1061,7 @@ export default function AdminConfig() {
                 </div>
                 </section>
 
-                <section className={styles.section}>
+                <section id="whatsapp" className={styles.section}>
                 <h2>Mensagem do WhatsApp (Convite)</h2>
                 <div className={styles.grid}>
                 <div className={styles.field} style={{ gridColumn: '1 / -1' }}>
@@ -1129,7 +1092,7 @@ export default function AdminConfig() {
             {/* Botão obsoleto removido, substituído pela Floating Action Bar */}
           </form>
 
-          <section className={styles.section} style={{ marginTop: '3rem' }}>
+          <section id="faq" className={styles.section} style={{ marginTop: '3rem' }}>
             <h2>Perguntas Frequentes (FAQ)</h2>
             <FAQManager eventoId={currentEvent.id} />
           </section>

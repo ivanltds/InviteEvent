@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import styles from '../admin.module.css';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authService } from '@/lib/services/authService';
 import { supabase } from '@/lib/supabase';
 import { AuthChangeEvent, Session } from '@supabase/supabase-js';
+import HCaptchaGate, { HCaptchaGateHandle, isHCaptchaEnabled } from '@/components/shared/HCaptchaGate';
 
 function formatCPF(value: string): string {
   const digits = value.replace(/\D/g, '').slice(0, 11);
@@ -38,16 +39,21 @@ async function claimPendingInvite(onError?: (msg: string) => void): Promise<stri
     const res = await eventService.createEvent(nomeCasamento);
 
     if (res.data && !res.error) {
-      // Atualizar config com os dados do onboarding
+      // Atualizar config com os dados do onboarding. data_evento agora é
+      // sempre preenchido de verdade (campo obrigatório em /criar) — sem
+      // fallback pra data fictícia. `fotos` foi removido: não é mais uma
+      // coluna de `configuracoes` (virou hero_images/galeria_fotos) e o
+      // passo de upload de capa foi retirado do /criar (STORY-061) — a
+      // foto de capa agora é configurada no checklist pós-cadastro, com
+      // upload assinado de verdade.
       const { error: cfgErr } = await supabase.from('configuracoes').update({
         noiva_nome: payload.noiva_nome,
         noivo_nome: payload.noivo_nome,
-        data_casamento: payload.data_evento || '2027-10-10',
+        data_casamento: payload.data_evento,
         bg_primary: payload.bg_primary || null,
         accent_color: payload.accent_color || null,
         font_cursive: payload.font_cursive || null,
         font_serif: payload.font_serif || null,
-        ...(payload.cover_image_url && payload.cover_image_url !== '__GLOBAL_MEDIA__' ? { fotos: [payload.cover_image_url] } : {})
       }).eq('evento_id', res.data.id);
 
       if (cfgErr) {
@@ -55,7 +61,9 @@ async function claimPendingInvite(onError?: (msg: string) => void): Promise<stri
         if (onError) onError(`Erro ao salvar personalizações: ${cfgErr.message}`);
       }
 
-      // Marcar onboarding como concluído para o dashboard não mostrar o wizard interno
+      // Marcar onboarding como concluído — não é mais usado pra gatear UI
+      // (isso agora é o SetupChecklist, calculado a partir dos dados reais),
+      // mas mantemos a flag por compatibilidade com o restante do sistema.
       await supabase.from('eventos').update({ onboarding_completed: true }).eq('id', res.data.id);
 
       localStorage.removeItem('pending_invite_state');
@@ -89,6 +97,8 @@ function LoginFormContent() {
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(initialIsSignUp);
   const [showConfirmationSent, setShowConfirmationSent] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<HCaptchaGateHandle>(null);
 
   /**
    * Ouvir o evento de autenticação do Supabase.
@@ -163,6 +173,12 @@ function LoginFormContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isHCaptchaEnabled() && !captchaToken) {
+      setError('Confirme que você não é um robô antes de continuar.');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -175,7 +191,11 @@ function LoginFormContent() {
           telefone: telefone.replace(/\D/g, ''),
         }));
 
-        const { error: signUpError } = await supabase.auth.signUp({ email, password });
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: captchaToken ? { captchaToken } : undefined,
+        });
         if (signUpError) {
           sessionStorage.removeItem('pending_profile');
           throw signUpError;
@@ -192,8 +212,8 @@ function LoginFormContent() {
           
           if (isTestEmail) {
             console.log('[SignUp] E-mail de teste detectado, tentando auto-login...');
-            await authService.login(email, password);
-            return; 
+            await authService.login(email, password, captchaToken || undefined);
+            return;
           }
 
           // Email confirmation required ou Erro silenciado pelo Supabase
@@ -205,7 +225,7 @@ function LoginFormContent() {
         // Se já tem sessão (confirmação desabilida), o onAuthStateChange vai redirecionar.
 
       } else {
-        await authService.login(email, password);
+        await authService.login(email, password, captchaToken || undefined);
         // Se login OK, o onAuthStateChange vai cuidar do redirect e claim.
       }
     } catch (err: any) {
@@ -216,6 +236,10 @@ function LoginFormContent() {
       } else {
         setError(err.message || 'Ocorreu um erro ao tentar entrar.');
       }
+      // Token de captcha é de uso único — precisa resetar o widget pra
+      // permitir uma nova tentativa.
+      captchaRef.current?.resetCaptcha();
+      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -326,9 +350,11 @@ function LoginFormContent() {
           disabled={loading}
         />
 
+        <HCaptchaGate ref={captchaRef} onVerify={setCaptchaToken} onExpire={() => setCaptchaToken(null)} />
+
         {error && <p className={styles.error}>{error}</p>}
 
-        <button type="submit" className={styles.loginBtn} disabled={loading}>
+        <button type="submit" className={styles.loginBtn} disabled={loading || (isHCaptchaEnabled() && !captchaToken)}>
           {loading ? 'Aguarde...' : (isSignUp ? 'Cadastrar' : 'Entrar')}
         </button>
 

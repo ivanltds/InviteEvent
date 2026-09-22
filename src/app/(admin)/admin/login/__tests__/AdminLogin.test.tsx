@@ -102,4 +102,45 @@ describe('Admin Login Page', () => {
       expect(mockPush).toHaveBeenCalledWith('/admin/dashboard');
     });
   });
+
+  // O Supabase Auth deste projeto tem "Enable Captcha protection" (hCaptcha)
+  // ligado — sem token a chamada é rejeitada com "captcha protection:
+  // request disallowed". Ver src/components/shared/HCaptchaGate.tsx.
+  describe('com hCaptcha habilitado (NEXT_PUBLIC_HCAPTCHA_SITE_KEY definida)', () => {
+    const originalSiteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY;
+
+    beforeEach(() => {
+      process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY = 'test-site-key';
+    });
+
+    afterEach(() => {
+      process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY = originalSiteKey;
+    });
+
+    test('bloqueia o envio até o captcha ser verificado', async () => {
+      render(<LoginPage />);
+      const button = screen.getByRole('button', { name: /Entrar/i });
+
+      fireEvent.change(screen.getByPlaceholderText(/E-mail/i), { target: { value: 'admin@test.com' } });
+      fireEvent.change(screen.getByPlaceholderText(/Senha/i), { target: { value: 'password123' } });
+      expect(button).toBeDisabled();
+
+      fireEvent.click(screen.getByTestId('hcaptcha-mock-verify'));
+      expect(button).not.toBeDisabled();
+    });
+
+    test('envia o captchaToken pro authService.login depois de verificado', async () => {
+      (authService.login as jest.Mock).mockResolvedValue(true);
+      render(<LoginPage />);
+
+      fireEvent.change(screen.getByPlaceholderText(/E-mail/i), { target: { value: 'admin@test.com' } });
+      fireEvent.change(screen.getByPlaceholderText(/Senha/i), { target: { value: 'password123' } });
+      fireEvent.click(screen.getByTestId('hcaptcha-mock-verify'));
+      fireEvent.click(screen.getByRole('button', { name: /Entrar/i }));
+
+      await waitFor(() => {
+        expect(authService.login).toHaveBeenCalledWith('admin@test.com', 'password123', 'test-captcha-token');
+      });
+    });
+  });
 });

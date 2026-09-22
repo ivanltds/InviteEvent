@@ -20,6 +20,7 @@ const config = {
     '^react-markdown$': '<rootDir>/src/__mocks__/mockComponent.js',
     '^remark-gfm$': '<rootDir>/src/__mocks__/dummy.js',
     '^rehype-raw$': '<rootDir>/src/__mocks__/dummy.js',
+    '^@hcaptcha/react-hcaptcha$': '<rootDir>/src/__mocks__/hcaptchaMock.tsx',
   },
   collectCoverage: true,
   collectCoverageFrom: [

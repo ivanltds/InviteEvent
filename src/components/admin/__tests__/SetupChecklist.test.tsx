@@ -116,4 +116,23 @@ describe('SetupChecklist', () => {
       '/admin/configuracoes#faq'
     );
   });
+
+  it('linka o item de agenda pra /admin/agenda, não pra uma âncora em Configurações', async () => {
+    (configService.getConfig as jest.Mock).mockResolvedValue({
+      id: 1,
+      evento_id: 'evento-1',
+      ...DEFAULT_CONFIG,
+      created_at: '2026-01-01T00:00:00.000Z',
+      data_casamento: '2026-06-30',
+    });
+    setupCounts(0, 0, 0);
+
+    render(<SetupChecklist eventId="evento-1" />);
+    await waitFor(() => expect(screen.getByText(/Adicionar pelo menos um item na agenda do dia/i)).toBeInTheDocument());
+
+    expect(screen.getByText(/Adicionar pelo menos um item na agenda do dia/i).closest('a')).toHaveAttribute(
+      'href',
+      '/admin/agenda'
+    );
+  });
 });

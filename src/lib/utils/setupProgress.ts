@@ -17,7 +17,13 @@ export interface SetupChecklistItem {
   key: string;
   label: string;
   done: boolean;
-  /** Âncora dentro de /admin/configuracoes, ex: '#noivos'. */
+  /**
+   * Pra onde o item linka: '#id' vira uma âncora dentro de
+   * /admin/configuracoes; qualquer valor começando com '/' é usado como
+   * path completo (ex: '/admin/agenda' — a tabela `eventos_agenda`, com
+   * múltiplos itens de cerimônia/recepção/festa, é gerenciada numa página
+   * própria, não dentro de Configurações).
+   */
   anchor: string;
 }
 
@@ -115,7 +121,9 @@ export function computeSetupProgress(config: Configuracao, counts: SetupProgress
       key: 'agenda-item',
       label: 'Adicionar pelo menos um item na agenda do dia',
       done: counts.agenda > 0,
-      anchor: '#agenda',
+      // Página própria (não é uma âncora em Configurações) — é onde a
+      // tabela `eventos_agenda` é de fato gerenciada.
+      anchor: '/admin/agenda',
     },
     {
       key: 'capa',

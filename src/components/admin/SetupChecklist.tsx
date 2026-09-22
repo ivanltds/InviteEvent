@@ -7,6 +7,11 @@ import { supabase } from '@/lib/supabase';
 import { computeSetupProgress, SetupProgress } from '@/lib/utils/setupProgress';
 import styles from './SetupChecklist.module.css';
 
+/** '#id' vira âncora em /admin/configuracoes; algo começando com '/' é um path completo (ex: '/admin/agenda'). */
+function resolveChecklistHref(anchor: string): string {
+  return anchor.startsWith('/') ? anchor : `/admin/configuracoes${anchor}`;
+}
+
 /**
  * Checklist de Setup Guiado (STORY-061).
  *
@@ -80,7 +85,7 @@ export default function SetupChecklist({ eventId }: { eventId: string }) {
       <ul className={styles.itemList}>
         {progress.items.map(item => (
           <li key={item.key}>
-            <Link href={`/admin/configuracoes${item.anchor}`} className={`${styles.itemLink} ${item.done ? styles.itemDone : ''}`}>
+            <Link href={resolveChecklistHref(item.anchor)} className={`${styles.itemLink} ${item.done ? styles.itemDone : ''}`}>
               <span className={styles.itemCheck} aria-hidden="true">
                 {item.done ? '✓' : ''}
               </span>
@@ -95,7 +100,7 @@ export default function SetupChecklist({ eventId }: { eventId: string }) {
           <span className={styles.suggestionsLabel}>Ainda não experimentou?</span>
           <div className={styles.suggestionsList}>
             {progress.suggestions.map(s => (
-              <Link key={s.key} href={`/admin/configuracoes${s.anchor}`} className={styles.suggestionChip}>
+              <Link key={s.key} href={resolveChecklistHref(s.anchor)} className={styles.suggestionChip}>
                 {s.label}
               </Link>
             ))}

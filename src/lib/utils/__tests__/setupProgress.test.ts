@@ -127,4 +127,15 @@ describe('computeSetupProgress', () => {
     expect(progress.suggestions).toHaveLength(4);
     expect(progress.suggestions.map(s => s.key)).toEqual(['cartao', 'fonte', 'animacao', 'link-unico']);
   });
+
+  it('item "agenda-item" linka pra /admin/agenda (página própria da tabela eventos_agenda), não pra uma âncora em Configurações', () => {
+    // Bug real: a seção "Logística & Agenda" de /admin/configuracoes só
+    // edita local_cerimonia/horario_cerimonia (campos únicos), não deixa
+    // adicionar itens à tabela eventos_agenda — isso é feito só em
+    // /admin/agenda. Linkar pra #agenda fazia o organizador preencher os
+    // campos errados e o checklist continuar "pendente" mesmo depois.
+    const progress = computeSetupProgress(baseConfig(), { agenda: 0, faq: 0, presentes: 0 });
+    const item = progress.items.find(i => i.key === 'agenda-item');
+    expect(item?.anchor).toBe('/admin/agenda');
+  });
 });

@@ -40,7 +40,7 @@ describe('Admin Sidebar Component (TDD)', () => {
     render(<Sidebar />);
     
     await waitFor(() => {
-      expect(screen.getByText('InviteEventAI')).toBeInTheDocument();
+      expect(screen.getByText('Celebraê')).toBeInTheDocument();
       expect(screen.getByText('Evento Teste')).toBeInTheDocument();
     });
   });

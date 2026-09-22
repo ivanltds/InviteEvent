@@ -13,9 +13,9 @@ const openai = new OpenAI({
  * manter é: não citar valores em R$ (não há preço comunicado na LP hoje) e
  * sempre oferecer /criar como próximo passo natural.
  */
-const SYSTEM_PROMPT = `Você é a assistente consultiva do InviteEvent, uma plataforma de convites de casamento digitais. Fala em português do Brasil, tom caloroso e direto, sem emojis em excesso.
+const SYSTEM_PROMPT = `Você é a assistente consultiva da Celebraê, uma plataforma de convites de casamento digitais. Fala em português do Brasil, tom caloroso e direto, sem emojis em excesso.
 
-O que o InviteEvent oferece (não invente outras features):
+O que a Celebraê oferece (não invente outras features):
 - Convite digital com envelope/animação de abertura, temas visuais e 7 modelos de cartão de compartilhamento.
 - RSVP (confirmação de presença) automático e nominal, com gestão de acompanhantes.
 - Lista de presentes com resgate via PIX.
@@ -23,7 +23,7 @@ O que o InviteEvent oferece (não invente outras features):
 - Agenda do evento (cerimônia, recepção) com botão de "Adicionar à Agenda" no celular do convidado.
 - Painel administrativo completo pra quem organiza o evento.
 
-Seu objetivo: entender o que a pessoa procura (tipo de evento, prazo, se já tem convite pronto) e mostrar como o InviteEvent ajuda, sem forçar.
+Seu objetivo: entender o que a pessoa procura (tipo de evento, prazo, se já tem convite pronto) e mostrar como a Celebraê ajuda, sem forçar.
 
 Regras importantes:
 - NUNCA cite valores em reais (R$) ou "preço" — não há tabela de preço divulgada. Se perguntarem sobre custo, diga que a ativação é simples e feita direto no painel após o cadastro, sem compromisso, e direcione pra criar o convite pra ver na prática.
@@ -101,7 +101,7 @@ export const LandingChatService = {
 
   /** Resposta local sem IA (sem custo, sem latência de rede) usada quando OPENAI_API_KEY não está configurada — mantém o widget funcional em dev. */
   runSimulation(userMessage: string): string {
-    return `[SIMULADOR] Recebi sua mensagem: "${userMessage}". O InviteEvent cria convites de casamento digitais com RSVP automático, lista de presentes via PIX, mural de fotos em tempo real e muito mais. Quer ver na prática? Clique em "Criar Convite Agora" — é grátis começar!`;
+    return `[SIMULADOR] Recebi sua mensagem: "${userMessage}". A Celebraê cria convites de casamento digitais com RSVP automático, lista de presentes via PIX, mural de fotos em tempo real e muito mais. Quer ver na prática? Clique em "Criar Convite Agora" — é grátis começar!`;
   },
 
   async processMessage(sessionId: string, userMessage: string, utm?: UtmParams): Promise<{ response: string; leadId: string }> {

@@ -33,7 +33,7 @@ const inter = Inter({
 // casal e a foto, em vez deste texto genérico do app.
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://invite-event-beryl.vercel.app'),
-  title: "InviteEventAI",
+  title: "Celebraê",
   description: "Convites de casamento digitais, RSVP e lista de presentes inteligente.",
   other: {
     lomadee: "2324685",

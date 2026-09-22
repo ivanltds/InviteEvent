@@ -2,7 +2,7 @@ import { buildInviteMetadataBySlug, buildInviteMetadataByEventoSlug } from '../i
 
 /**
  * Pedido do usuário em 20/09/2026 (com print do card genérico do
- * InviteEventAI aparecendo no WhatsApp em vez do card do casal, e depois
+ * Celebraê aparecendo no WhatsApp em vez do card do casal, e depois
  * uma imagem de referência de um cartão de convite tradicional): cada
  * convite deve gerar seu próprio Open Graph, com um CARTÃO (nomes do
  * casal em tipografia elegante sobre a foto + data), não a foto crua —
@@ -243,13 +243,13 @@ describe('buildInviteMetadataBySlug', () => {
     fromMock.mockImplementation(() => makeChain(null));
 
     const metadata = await buildInviteMetadataBySlug('slug-inexistente');
-    expect(metadata.title).toBe('InviteEventAI');
+    expect(metadata.title).toBe('Celebraê');
     expect(metadata.openGraph).toBeUndefined();
   });
 
   it('usa o fallback genérico para o slug especial "preview", sem ir ao banco', async () => {
     const metadata = await buildInviteMetadataBySlug('preview');
-    expect(metadata.title).toBe('InviteEventAI');
+    expect(metadata.title).toBe('Celebraê');
     expect(fromMock).not.toHaveBeenCalled();
   });
 
@@ -259,7 +259,7 @@ describe('buildInviteMetadataBySlug', () => {
     });
 
     const metadata = await buildInviteMetadataBySlug('ana-carlos-a1b2');
-    expect(metadata.title).toBe('InviteEventAI');
+    expect(metadata.title).toBe('Celebraê');
   });
 });
 
@@ -292,6 +292,6 @@ describe('buildInviteMetadataByEventoSlug', () => {
   it('usa o fallback quando o evento não existe', async () => {
     fromMock.mockImplementation(() => makeChain(null));
     const metadata = await buildInviteMetadataByEventoSlug('evento-inexistente');
-    expect(metadata.title).toBe('InviteEventAI');
+    expect(metadata.title).toBe('Celebraê');
   });
 });

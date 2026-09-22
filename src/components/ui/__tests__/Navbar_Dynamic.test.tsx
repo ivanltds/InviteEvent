@@ -26,7 +26,7 @@ describe('Navbar Dynamic Items', () => {
     (usePathname as jest.Mock).mockReturnValue('/');
     render(<Navbar />);
     
-    expect(screen.getByText(/InviteEventAI/i)).toBeInTheDocument();
+    expect(screen.getByText(/Celebraê/i)).toBeInTheDocument();
     expect(screen.queryByText('L & M')).not.toBeInTheDocument();
     // Links do convite NÃO devem aparecer
     expect(screen.queryByText(/Nossa História/i)).not.toBeInTheDocument();
@@ -47,7 +47,7 @@ describe('Navbar Dynamic Items', () => {
     await waitFor(() => {
       expect(screen.getByText('A & B')).toBeInTheDocument();
     });
-    expect(screen.queryByText('InviteEventAI')).not.toBeInTheDocument();
+    expect(screen.queryByText('Celebraê')).not.toBeInTheDocument();
     
     expect(screen.getByText(/Nossa História/i)).toBeInTheDocument();
     expect(screen.getByText(/O Evento/i)).toBeInTheDocument();

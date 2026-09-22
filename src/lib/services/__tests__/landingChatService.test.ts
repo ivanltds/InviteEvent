@@ -149,12 +149,12 @@ describe('LandingChatService', () => {
     it('retorna a resposta da IA quando não há tool call', async () => {
       mockLeadAndHistory();
       mockCreate.mockResolvedValue({
-        choices: [{ message: { content: 'Olá! O InviteEvent ajuda a criar seu convite digital.' } }],
+        choices: [{ message: { content: 'Olá! O Celebraê ajuda a criar seu convite digital.' } }],
       });
 
       const result = await LandingChatService.processMessage('s1', 'Me conta mais');
 
-      expect(result.response).toBe('Olá! O InviteEvent ajuda a criar seu convite digital.');
+      expect(result.response).toBe('Olá! O Celebraê ajuda a criar seu convite digital.');
       expect(result.leadId).toBe('lead-1');
     });
 

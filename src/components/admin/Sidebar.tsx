@@ -193,7 +193,7 @@ export default function Sidebar() {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.logo}>
-        <h2 className="cursive">InviteEventAI</h2>
+        <h2 className="cursive">Celebraê</h2>
       </div>
 
       <div className={styles.contextSwitcher}>

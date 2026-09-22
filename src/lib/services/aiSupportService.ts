@@ -22,11 +22,11 @@ export const AISupportService = {
         .single();
       
       if (error || !data) {
-        return 'Você é o Assistente Oficial do InviteEvent. Regras: Cordial e objetivo.';
+        return 'Você é o Assistente Oficial da Celebraê. Regras: Cordial e objetivo.';
       }
       return data.system_prompt;
     } catch (e) {
-      return 'Você é o Assistente Oficial do InviteEvent. Regras: Cordial.';
+      return 'Você é o Assistente Oficial da Celebraê. Regras: Cordial.';
     }
   },
 

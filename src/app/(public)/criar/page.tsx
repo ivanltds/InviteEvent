@@ -112,7 +112,7 @@ export default function PublicOnboarding() {
       <div className={styles.page}>
         <header className={styles.header}>
           <h2 className="cursive" style={{ margin: 0, color: 'var(--admin-accent)', fontSize: '1.6rem' }}>
-            InviteEventAI
+            Celebraê
           </h2>
 
           <div className={styles.progressBar}>

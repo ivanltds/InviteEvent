@@ -28,7 +28,7 @@ describe('LandingChatWidget', () => {
     mockFetchSequence({ success: true, messages: [] });
 
     render(<LandingChatWidget />);
-    fireEvent.click(screen.getByLabelText(/Tirar dúvidas sobre o InviteEvent/i));
+    fireEvent.click(screen.getByLabelText(/Tirar dúvidas sobre a Celebraê/i));
 
     expect(await screen.findByText(/Fale com a gente/i)).toBeInTheDocument();
     expect(await screen.findByText(/Quer saber como funciona/i)).toBeInTheDocument();
@@ -44,7 +44,7 @@ describe('LandingChatWidget', () => {
     });
 
     render(<LandingChatWidget />);
-    fireEvent.click(screen.getByLabelText(/Tirar dúvidas sobre o InviteEvent/i));
+    fireEvent.click(screen.getByLabelText(/Tirar dúvidas sobre a Celebraê/i));
 
     expect(await screen.findByText('Quanto custa?')).toBeInTheDocument();
     expect(await screen.findByText(/A ativação é feita direto no painel/i)).toBeInTheDocument();
@@ -53,7 +53,7 @@ describe('LandingChatWidget', () => {
   it('gera e persiste um session_id no localStorage', async () => {
     mockFetchSequence({ success: true, messages: [] });
     render(<LandingChatWidget />);
-    fireEvent.click(screen.getByLabelText(/Tirar dúvidas sobre o InviteEvent/i));
+    fireEvent.click(screen.getByLabelText(/Tirar dúvidas sobre a Celebraê/i));
 
     await waitFor(() => expect(window.localStorage.getItem('landing_chat_session_id')).toBe('session-abc'));
   });
@@ -61,18 +61,18 @@ describe('LandingChatWidget', () => {
   it('envia a mensagem do usuário e mostra a resposta do assistente', async () => {
     mockFetchSequence(
       { success: true, messages: [] }, // GET histórico ao abrir
-      { success: true, response: 'O InviteEvent cuida do RSVP pra você.' } // POST da mensagem
+      { success: true, response: 'O Celebraê cuida do RSVP pra você.' } // POST da mensagem
     );
 
     render(<LandingChatWidget />);
-    fireEvent.click(screen.getByLabelText(/Tirar dúvidas sobre o InviteEvent/i));
+    fireEvent.click(screen.getByLabelText(/Tirar dúvidas sobre a Celebraê/i));
     await screen.findByText(/Fale com a gente/i);
 
     fireEvent.change(screen.getByPlaceholderText(/Digite sua pergunta/i), { target: { value: 'Como funciona o RSVP?' } });
     fireEvent.click(screen.getByText('Enviar'));
 
     expect(await screen.findByText('Como funciona o RSVP?')).toBeInTheDocument();
-    expect(await screen.findByText(/O InviteEvent cuida do RSVP/i)).toBeInTheDocument();
+    expect(await screen.findByText(/O Celebraê cuida do RSVP/i)).toBeInTheDocument();
   });
 
   it('mostra uma mensagem amigável se o envio falhar', async () => {
@@ -83,7 +83,7 @@ describe('LandingChatWidget', () => {
     global.fetch = failingFetch as unknown as typeof fetch;
 
     render(<LandingChatWidget />);
-    fireEvent.click(screen.getByLabelText(/Tirar dúvidas sobre o InviteEvent/i));
+    fireEvent.click(screen.getByLabelText(/Tirar dúvidas sobre a Celebraê/i));
     await screen.findByText(/Fale com a gente/i);
 
     fireEvent.change(screen.getByPlaceholderText(/Digite sua pergunta/i), { target: { value: 'oi' } });

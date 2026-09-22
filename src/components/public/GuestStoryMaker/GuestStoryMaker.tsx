@@ -391,7 +391,7 @@ export function GuestStoryMaker({ coupleNames, eventDate, accentColor = '#C5A059
                   )}
                 </div>
                 
-                <div className={styles.brandSubtle} style={{ color: activeTpl?.id === 'minimal' || activeTpl?.id === 'polaroid' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.45)' }}>InviteEvent.ai</div>
+                <div className={styles.brandSubtle} style={{ color: activeTpl?.id === 'minimal' || activeTpl?.id === 'polaroid' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.45)' }}>Celebraê</div>
                 
                 <div className="overlayContainer">
                   {activeTpl?.renderOverlay(coupleNames, resolvedEventDate)}

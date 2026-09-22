@@ -122,7 +122,7 @@ export default function LegalFooter({ theme = 'dark' }: LegalFooterProps) {
   return (
     <>
       <footer style={styles.footer}>
-        <div style={styles.logo}>InviteEvent</div>
+        <div style={styles.logo}>Celebraê</div>
         <div style={styles.links}>
           <a 
             style={styles.link} 
@@ -142,7 +142,7 @@ export default function LegalFooter({ theme = 'dark' }: LegalFooterProps) {
           </a>
         </div>
         <div style={styles.copyright}>
-          &copy; {new Date().getFullYear()} InviteEventAI. Todos os direitos reservados.<br />
+          &copy; {new Date().getFullYear()} Celebraê. Todos os direitos reservados.<br />
           Plataforma de automação premium para casamentos.
         </div>
       </footer>
@@ -153,7 +153,7 @@ export default function LegalFooter({ theme = 'dark' }: LegalFooterProps) {
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalHeader}>
               <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#C5A25C' }}>
-                {modalContent === 'terms' ? 'Termos de Uso — InviteEventAI' : 'Política de Privacidade e LGPD'}
+                {modalContent === 'terms' ? 'Termos de Uso — Celebraê' : 'Política de Privacidade e LGPD'}
               </h3>
               <button style={styles.closeBtn} onClick={() => setIsModalOpen(false)}>&times;</button>
             </div>
@@ -162,7 +162,7 @@ export default function LegalFooter({ theme = 'dark' }: LegalFooterProps) {
               {modalContent === 'terms' ? (
                 <div>
                   <h4>1. Objeto</h4>
-                  <p>Este termo rege o uso da plataforma InviteEventAI para criação e gestão de convites de casamentos, RSVP digital e intermediação de listas de presentes.</p>
+                  <p>Este termo rege o uso da plataforma Celebraê para criação e gestão de convites de casamentos, RSVP digital e intermediação de listas de presentes.</p>
                   <h4>2. Limitação de Responsabilidade</h4>
                   <p>A plataforma funciona estritamente como intermediária tecnológica. Qualquer compra efetuada através de links externos de Lojas Parceiras é de inteira e exclusiva responsabilidade da plataforma de comércio final (Amazon, Magalu, etc).</p>
                   <h4>3. Cancelamento e Reembolso</h4>

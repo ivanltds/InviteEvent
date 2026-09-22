@@ -77,7 +77,7 @@ export function buildIcsContent(event: CalendarEventInput): string {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//InviteEventAI//Convite de Casamento//PT',
+    'PRODID:-//Celebrae//Convite de Casamento//PT',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',

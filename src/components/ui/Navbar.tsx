@@ -47,7 +47,7 @@ export default function Navbar() {
     <nav className={styles.navbar} data-testid="navbar">
       <div className={styles.container}>
         <Link href="/" className={styles.logo} onClick={closeMenu}>
-          {isLanding ? 'InviteEventAI' : initials}
+          {isLanding ? 'Celebraê' : initials}
         </Link>
         
         <div className={styles.navActions}>

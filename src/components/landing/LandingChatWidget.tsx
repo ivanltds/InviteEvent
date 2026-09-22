@@ -119,7 +119,7 @@ export default function LandingChatWidget() {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={styles.launcher}
-        aria-label={isOpen ? 'Fechar chat' : 'Tirar dúvidas sobre o InviteEvent'}
+        aria-label={isOpen ? 'Fechar chat' : 'Tirar dúvidas sobre a Celebraê'}
       >
         {isOpen ? '×' : '✧'}
       </button>
@@ -129,7 +129,7 @@ export default function LandingChatWidget() {
           <div className={styles.header}>
             <div>
               <h3 className={styles.headerTitle}>Fale com a gente</h3>
-              <p className={styles.headerSubtitle}>Tire dúvidas sobre o InviteEvent</p>
+              <p className={styles.headerSubtitle}>Tire dúvidas sobre a Celebraê</p>
             </div>
           </div>
 

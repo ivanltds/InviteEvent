@@ -1036,7 +1036,7 @@ export default function CatalogoGlobalPage() {
         <div className={styles.modalOverlay} onClick={() => setActiveModal(null)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <h2 style={{ color: '#fca5a5' }}>Atenção: Exclusão Global</h2>
-            <p>Você está prestes a remover o produto <strong>&quot;{selectedItem.nome}&quot;</strong> permanentemente de toda a plataforma InviteEvent.</p>
+            <p>Você está prestes a remover o produto <strong>&quot;{selectedItem.nome}&quot;</strong> permanentemente de toda a plataforma Celebraê.</p>
             
             <div style={{ background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.15)', padding: '1.2rem', borderRadius: '12px', marginBottom: '1.5rem' }}>
               <p style={{ color: '#fca5a5', margin: 0, fontSize: '0.8rem', fontWeight: 600 }}>🛡️ MECANISMO DE AUDITORIA E SEGURANÇA DE DADOS ATIVO:</p>

@@ -74,7 +74,7 @@ export async function POST(req: Request) {
           price_data: {
             currency: 'brl',
             product_data: {
-              name: 'Licença InviteEventAI - Evento Ilimitado',
+              name: 'Licença Celebraê - Evento Ilimitado',
               description: 'Ativação do RSVP online e recursos premium',
             },
             unit_amount: 50, // Mínimo permitido pelo Stripe: R$ 0.50 para Testes

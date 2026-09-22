@@ -28,7 +28,7 @@ export default function LandingPage() {
   return (
     <div className={styles.landingWrapper}>
       <nav className={styles.glassNav}>
-        <div className={styles.logo}>InviteEvent</div>
+        <div className={styles.logo}>Celebraê</div>
         <div className={styles.navLinks}>
           <a href="#experiencia">Experiência</a>
           <a href="#funcionalidades">Inteligência</a>
@@ -91,7 +91,7 @@ export default function LandingPage() {
           <div className={styles.splitText}>
             <h2 className={styles.gold}>Incomparável desde o primeiro toque.</h2>
             <h2>Mais que um convite,<br/>uma declaração de amor.</h2>
-            <p>Diga adeus aos PDFs estáticos e links sem graça. O InviteEvent entrega um envelope digital de luxo animado em 3D, projetado para emular a elegância de um convite impresso com a fluidez do digital.</p>
+            <p>Diga adeus aos PDFs estáticos e links sem graça. A Celebraê entrega um envelope digital de luxo animado em 3D, projetado para emular a elegância de um convite impresso com a fluidez do digital.</p>
             <p>Cada detalhe — do selo dourado de cera às transições em slow-motion das fotos do casal — foi desenvolvido para criar uma contagem regressiva emocionante até o grande dia.</p>
             <Link href="/inv/preview">Ver Demonstração do Envelope</Link>
           </div>

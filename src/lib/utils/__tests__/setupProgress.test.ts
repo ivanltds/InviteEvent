@@ -69,8 +69,20 @@ describe('computeSetupProgress', () => {
   it('usa a contagem de agenda/faq pra marcar os respectivos itens', () => {
     const config = baseConfig();
     const progress = computeSetupProgress(config, { agenda: 2, faq: 1, presentes: 0 });
-    expect(progress.items.find(i => i.key === 'agenda-item')?.done).toBe(true);
+    expect(progress.items.find(i => i.key === 'horarios')?.done).toBe(true);
     expect(progress.items.find(i => i.key === 'faq')?.done).toBe(true);
+  });
+
+  it('marca "horarios" como concluído quando cerimônia e recepção foram alteradas, mesmo sem nenhum item na agenda detalhada', () => {
+    const config = baseConfig({ horario_cerimonia: '15:00', horario_recepcao: '20:00' });
+    const progress = computeSetupProgress(config, { agenda: 0, faq: 0, presentes: 0 });
+    expect(progress.items.find(i => i.key === 'horarios')?.done).toBe(true);
+  });
+
+  it('não marca "horarios" como concluído se só um dos dois horários foi alterado e não há item na agenda detalhada', () => {
+    const config = baseConfig({ horario_cerimonia: '15:00', horario_recepcao: DEFAULT_CONFIG.horario_recepcao });
+    const progress = computeSetupProgress(config, { agenda: 0, faq: 0, presentes: 0 });
+    expect(progress.items.find(i => i.key === 'horarios')?.done).toBe(false);
   });
 
   it('contribuição: modo "nenhum" conta como resolvido sem precisar de PIX ou presentes', () => {
@@ -122,20 +134,20 @@ describe('computeSetupProgress', () => {
     expect(progress.percent).toBe(100);
   });
 
-  it('sempre retorna as 4 sugestões, independente do progresso', () => {
+  it('sempre retorna as 5 sugestões, independente do progresso', () => {
     const progress = computeSetupProgress(baseConfig(), { agenda: 0, faq: 0, presentes: 0 });
-    expect(progress.suggestions).toHaveLength(4);
-    expect(progress.suggestions.map(s => s.key)).toEqual(['cartao', 'fonte', 'animacao', 'link-unico']);
+    expect(progress.suggestions).toHaveLength(5);
+    expect(progress.suggestions.map(s => s.key)).toEqual(['cartao', 'fonte', 'animacao', 'link-unico', 'agenda-detalhada']);
   });
 
-  it('item "agenda-item" linka pra /admin/agenda (página própria da tabela eventos_agenda), não pra uma âncora em Configurações', () => {
+  it('sugestão "agenda-detalhada" linka pra /admin/agenda (página própria da tabela eventos_agenda), não pra uma âncora em Configurações', () => {
     // Bug real: a seção "Logística & Agenda" de /admin/configuracoes só
-    // edita local_cerimonia/horario_cerimonia (campos únicos), não deixa
-    // adicionar itens à tabela eventos_agenda — isso é feito só em
-    // /admin/agenda. Linkar pra #agenda fazia o organizador preencher os
-    // campos errados e o checklist continuar "pendente" mesmo depois.
+    // edita horario_cerimonia/horario_recepcao/local_cerimonia (campos
+    // únicos), não deixa adicionar itens à tabela eventos_agenda — isso é
+    // feito só em /admin/agenda. Cerimônia+recepção já bastam pro item
+    // obrigatório 'horarios'; detalhar mais marcos é só sugestão opcional.
     const progress = computeSetupProgress(baseConfig(), { agenda: 0, faq: 0, presentes: 0 });
-    const item = progress.items.find(i => i.key === 'agenda-item');
-    expect(item?.anchor).toBe('/admin/agenda');
+    const suggestion = progress.suggestions.find(s => s.key === 'agenda-detalhada');
+    expect(suggestion?.anchor).toBe('/admin/agenda');
   });
 });

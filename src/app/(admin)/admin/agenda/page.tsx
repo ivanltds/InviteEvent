@@ -1,15 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useEvent } from '@/lib/contexts/EventContext';
 import { supabase } from '@/lib/supabase';
-import { AgendaEvent } from '@/lib/types/database';
+import { configService } from '@/lib/services/configService';
+import { AgendaEvent, Configuracao } from '@/lib/types/database';
 import styles from './AdminAgenda.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AdminAgenda() {
   const { currentEvent } = useEvent();
   const [events, setEvents] = useState<AgendaEvent[]>([]);
+  // Cerimônia/recepção já vêm de Configurações → Logística & Agenda — mostrados
+  // aqui só pra contexto, pra não parecer que a agenda está vazia quando na
+  // verdade o organizador já preencheu esses dois marcos lá (pedido do
+  // usuário em 22/09/2026: evitar essa redundância/confusão).
+  const [config, setConfig] = useState<Configuracao | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -41,13 +48,17 @@ export default function AdminAgenda() {
   const fetchData = async () => {
     if (!currentEvent) return;
     setLoading(true);
-    const { data } = await supabase
-      .from('eventos_agenda')
-      .select('*')
-      .eq('evento_id', currentEvent.id)
-      .order('ordem', { ascending: true });
-    
+    const [{ data }, configData] = await Promise.all([
+      supabase
+        .from('eventos_agenda')
+        .select('*')
+        .eq('evento_id', currentEvent.id)
+        .order('ordem', { ascending: true }),
+      configService.getConfig(currentEvent.id),
+    ]);
+
     setEvents(data || []);
+    setConfig(configData);
     setLoading(false);
   };
 
@@ -114,6 +125,32 @@ export default function AdminAgenda() {
           Novo Marco
         </button>
       </header>
+
+      {config && (config.horario_cerimonia || config.horario_recepcao) && (
+        <div className={styles.summaryPanel}>
+          <div className={styles.summaryHeader}>
+            <span>Já definido em Configurações</span>
+            <Link href="/admin/configuracoes#agenda">Editar</Link>
+          </div>
+          <div className={styles.summaryItems}>
+            {config.horario_cerimonia && (
+              <div className={styles.summaryItem}>
+                <strong>Cerimônia</strong>
+                <span>{config.horario_cerimonia.substring(0, 5)}{config.local_cerimonia ? ` · ${config.local_cerimonia}` : ''}</span>
+              </div>
+            )}
+            {config.horario_recepcao && (
+              <div className={styles.summaryItem}>
+                <strong>Recepção</strong>
+                <span>{config.horario_recepcao.substring(0, 5)}</span>
+              </div>
+            )}
+          </div>
+          <p className={styles.summaryNote}>
+            Use os marcos abaixo pra detalhar ainda mais a programação (festa, welcome, sessão de fotos...) — cerimônia e recepção já aparecem no convite mesmo sem cadastrar nada aqui.
+          </p>
+        </div>
+      )}
 
       <AnimatePresence>
         {isAdding && (

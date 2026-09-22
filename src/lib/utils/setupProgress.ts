@@ -90,6 +90,22 @@ function isLocationUnset(config: Configuracao): boolean {
   );
 }
 
+/**
+ * "Feito" quando os horários de cerimônia E recepção foram alterados dos
+ * defaults (16:00/18:30), OU quando já existe pelo menos 1 item na agenda
+ * detalhada (`eventos_agenda`). As duas coisas representam "o horário do
+ * dia está definido" — a agenda detalhada (múltiplos marcos: festa,
+ * welcome, etc.) é um refinamento opcional, não um requisito à parte, por
+ * isso vira sugestão em vez de item obrigatório do checklist.
+ */
+function isScheduleUnset(config: Configuracao, agendaCount: number): boolean {
+  if (agendaCount > 0) return false;
+  return (
+    (config.horario_cerimonia || '') === DEFAULT_CONFIG.horario_cerimonia ||
+    (config.horario_recepcao || '') === DEFAULT_CONFIG.horario_recepcao
+  );
+}
+
 function isContribuicaoUnset(config: Configuracao, presentesCount: number): boolean {
   if (config.modo_arrecadacao === 'nenhum') return false; // escolha explícita, conta como resolvido
   if (config.modo_arrecadacao === 'gravata') return !config.pix_chave;
@@ -118,12 +134,10 @@ export function computeSetupProgress(config: Configuracao, counts: SetupProgress
       anchor: '#agenda',
     },
     {
-      key: 'agenda-item',
-      label: 'Adicionar pelo menos um item na agenda do dia',
-      done: counts.agenda > 0,
-      // Página própria (não é uma âncora em Configurações) — é onde a
-      // tabela `eventos_agenda` é de fato gerenciada.
-      anchor: '/admin/agenda',
+      key: 'horarios',
+      label: 'Confirmar os horários da cerimônia e recepção',
+      done: !isScheduleUnset(config, counts.agenda),
+      anchor: '#agenda',
     },
     {
       key: 'capa',
@@ -150,6 +164,7 @@ export function computeSetupProgress(config: Configuracao, counts: SetupProgress
     { key: 'fonte', label: 'Personalizar a tipografia premium do convite', anchor: '#identidade-visual' },
     { key: 'animacao', label: 'Escolher a animação de entrada (envelope, cinematográfica...)', anchor: '#animacao' },
     { key: 'link-unico', label: 'Revisar como os convidados vão se cadastrar (individual ou Link Único)', anchor: '#link-unico' },
+    { key: 'agenda-detalhada', label: 'Detalhar mais a linha do tempo do dia (festa, welcome...)', anchor: '/admin/agenda' },
   ];
 
   const completedCount = items.filter(i => i.done).length;

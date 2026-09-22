@@ -117,7 +117,26 @@ describe('SetupChecklist', () => {
     );
   });
 
-  it('linka o item de agenda pra /admin/agenda, não pra uma âncora em Configurações', async () => {
+  it('marca "horários da cerimônia e recepção" como concluído sem exigir item na agenda detalhada', async () => {
+    (configService.getConfig as jest.Mock).mockResolvedValue({
+      id: 1,
+      evento_id: 'evento-1',
+      ...DEFAULT_CONFIG,
+      created_at: '2026-01-01T00:00:00.000Z',
+      data_casamento: '2027-03-20',
+      horario_cerimonia: '15:00',
+      horario_recepcao: '20:00',
+    });
+    setupCounts(0, 0, 0); // nenhum item em eventos_agenda — só os horários já bastam
+
+    render(<SetupChecklist eventId="evento-1" />);
+    await waitFor(() => expect(screen.getByText(/Confirmar os horários da cerimônia e recepção/i)).toBeInTheDocument());
+
+    const item = screen.getByText(/Confirmar os horários da cerimônia e recepção/i).closest('a');
+    expect(item).toHaveClass('itemDone');
+  });
+
+  it('a sugestão de detalhar mais a agenda linka pra /admin/agenda', async () => {
     (configService.getConfig as jest.Mock).mockResolvedValue({
       id: 1,
       evento_id: 'evento-1',
@@ -128,9 +147,9 @@ describe('SetupChecklist', () => {
     setupCounts(0, 0, 0);
 
     render(<SetupChecklist eventId="evento-1" />);
-    await waitFor(() => expect(screen.getByText(/Adicionar pelo menos um item na agenda do dia/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Detalhar mais a linha do tempo do dia/i)).toBeInTheDocument());
 
-    expect(screen.getByText(/Adicionar pelo menos um item na agenda do dia/i).closest('a')).toHaveAttribute(
+    expect(screen.getByText(/Detalhar mais a linha do tempo do dia/i).closest('a')).toHaveAttribute(
       'href',
       '/admin/agenda'
     );

@@ -27,6 +27,64 @@
   font-size: 0.95rem;
 }
 
+.summaryPanel {
+  background: var(--admin-card-bg, #fff);
+  border: 1px solid var(--admin-card-border, rgba(0, 0, 0, 0.06));
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 2rem;
+}
+
+.summaryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--admin-text-muted, #a1a1aa);
+  margin-bottom: 12px;
+}
+
+.summaryHeader a {
+  color: var(--admin-accent, #C5A059);
+  text-decoration: underline;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 600;
+}
+
+.summaryItems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 10px;
+}
+
+.summaryItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.summaryItem strong {
+  font-size: 0.85rem;
+  color: var(--admin-text-primary);
+}
+
+.summaryItem span {
+  font-size: 0.85rem;
+  color: var(--admin-text-secondary, #71717A);
+}
+
+.summaryNote {
+  font-size: 0.78rem;
+  color: var(--admin-text-muted, #a1a1aa);
+  margin: 0;
+  line-height: 1.5;
+}
+
 .addBtn {
   display: flex;
   align-items: center;

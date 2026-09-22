@@ -3,12 +3,17 @@ import { supabase } from '@/lib/supabase';
 export const authService = {
   /**
    * Realiza login via Supabase Auth e gerencia a sessão server-side via proxy de API.
+   *
+   * `captchaToken`: o projeto tem "Enable Captcha protection" (hCaptcha)
+   * ligado no Supabase Auth — sem esse token a chamada é rejeitada com
+   * "captcha protection: request disallowed". Ver HCaptchaGate.tsx.
    */
-  async login(email: string, password?: string): Promise<void> {
+  async login(email: string, password?: string, captchaToken?: string): Promise<void> {
     // 1. Autenticação no Supabase
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      password: password || ''
+      password: password || '',
+      options: captchaToken ? { captchaToken } : undefined,
     });
 
     if (error) {
@@ -48,10 +53,20 @@ export const authService = {
    * Não diferenciamos "e-mail existe" de "e-mail não existe" na resposta
    * — nem o Supabase faz isso por padrão — pra não expor quais e-mails
    * têm conta cadastrada (user enumeration).
+   *
+   * O redirect usa NEXT_PUBLIC_SITE_URL quando definida (mesmo padrão de
+   * src/app/api/checkout/route.ts) em vez de window.location.origin, pra
+   * sempre apontar pro domínio canônico de produção — independente de o
+   * usuário ter acessado por um preview da Vercel ou outra variante de
+   * origin. Isso reduz a allow-list de redirect URLs do Supabase a uma
+   * única URL fixa. Em dev local (sem a env var), cai no origin atual.
+   *
+   * `captchaToken`: mesma exigência do login — ver HCaptchaGate.tsx.
    */
-  async requestPasswordReset(email: string): Promise<{ success: boolean; error?: Error | null }> {
-    const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/admin/redefinir-senha` : undefined;
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+  async requestPasswordReset(email: string, captchaToken?: string): Promise<{ success: boolean; error?: Error | null }> {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : undefined);
+    const redirectTo = siteUrl ? `${siteUrl}/admin/redefinir-senha` : undefined;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo, captchaToken });
     return { success: !error, error: error ? new Error(error.message) : null };
   },
 

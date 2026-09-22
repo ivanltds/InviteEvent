@@ -48,6 +48,38 @@ describe('authService - Fix Final', () => {
     await expect(authService.login(MOCK_EMAIL, MOCK_PASSWORD)).resolves.not.toThrow();
   });
 
+  it('repassa o captchaToken pro Supabase quando fornecido (hCaptcha)', async () => {
+    (supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({
+      data: { user: { id: 'user-123' }, session: { access_token: 'jwt-token' } },
+      error: null,
+    });
+    (global.fetch as jest.Mock).mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+
+    await authService.login(MOCK_EMAIL, MOCK_PASSWORD, 'captcha-token-abc');
+
+    expect(supabase.auth.signInWithPassword).toHaveBeenCalledWith({
+      email: MOCK_EMAIL,
+      password: MOCK_PASSWORD,
+      options: { captchaToken: 'captcha-token-abc' },
+    });
+  });
+
+  it('não envia options quando nenhum captchaToken é fornecido', async () => {
+    (supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({
+      data: { user: { id: 'user-123' }, session: { access_token: 'jwt-token' } },
+      error: null,
+    });
+    (global.fetch as jest.Mock).mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+
+    await authService.login(MOCK_EMAIL, MOCK_PASSWORD);
+
+    expect(supabase.auth.signInWithPassword).toHaveBeenCalledWith({
+      email: MOCK_EMAIL,
+      password: MOCK_PASSWORD,
+      options: undefined,
+    });
+  });
+
   it('deve lançar erro em caso de falha no Supabase', async () => {
     (supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({
       data: { user: null, session: null },
@@ -57,8 +89,8 @@ describe('authService - Fix Final', () => {
     try {
       await authService.login(MOCK_EMAIL, MOCK_PASSWORD);
       throw new Error('Deveria ter falhado');
-    } catch (e: any) {
-      expect(e.message).toBe('Invalid credentials');
+    } catch (e) {
+      expect((e as Error).message).toBe('Invalid credentials');
     }
   });
 
@@ -84,6 +116,47 @@ describe('authService - Fix Final', () => {
 
       expect(result.success).toBe(false);
       expect(result.error?.message).toBe('Serviço indisponível');
+    });
+
+    it('usa NEXT_PUBLIC_SITE_URL como domínio canônico do redirect quando definida', async () => {
+      const original = process.env.NEXT_PUBLIC_SITE_URL;
+      process.env.NEXT_PUBLIC_SITE_URL = 'https://inviteevent.com.br';
+      (supabase.auth.resetPasswordForEmail as jest.Mock).mockResolvedValue({ error: null });
+
+      await authService.requestPasswordReset(MOCK_EMAIL);
+
+      expect(supabase.auth.resetPasswordForEmail).toHaveBeenCalledWith(
+        MOCK_EMAIL,
+        expect.objectContaining({ redirectTo: 'https://inviteevent.com.br/admin/redefinir-senha' })
+      );
+
+      process.env.NEXT_PUBLIC_SITE_URL = original;
+    });
+
+    it('cai no window.location.origin quando NEXT_PUBLIC_SITE_URL não está definida', async () => {
+      const original = process.env.NEXT_PUBLIC_SITE_URL;
+      delete process.env.NEXT_PUBLIC_SITE_URL;
+      (supabase.auth.resetPasswordForEmail as jest.Mock).mockResolvedValue({ error: null });
+
+      await authService.requestPasswordReset(MOCK_EMAIL);
+
+      expect(supabase.auth.resetPasswordForEmail).toHaveBeenCalledWith(
+        MOCK_EMAIL,
+        expect.objectContaining({ redirectTo: expect.stringContaining('/admin/redefinir-senha') })
+      );
+
+      process.env.NEXT_PUBLIC_SITE_URL = original;
+    });
+
+    it('repassa o captchaToken pro Supabase quando fornecido (hCaptcha)', async () => {
+      (supabase.auth.resetPasswordForEmail as jest.Mock).mockResolvedValue({ error: null });
+
+      await authService.requestPasswordReset(MOCK_EMAIL, 'captcha-token-xyz');
+
+      expect(supabase.auth.resetPasswordForEmail).toHaveBeenCalledWith(
+        MOCK_EMAIL,
+        expect.objectContaining({ captchaToken: 'captcha-token-xyz' })
+      );
     });
   });
 

@@ -73,6 +73,9 @@
 | STORY-047 | Navegação em Camadas | EPIC-011 |
 | STORY-048 | Dashboard de Métricas do Evento | EPIC-011 |
 | STORY-055 | Proxy + Fix Build (Antigo 049) | EPIC-010 |
+| STORY-061 | Checklist de Setup Guiado (substitui STORY-046) | EPIC-011 |
+| STORY-062 | Chat de Vendas na Landing Page + Captura de Leads | EPIC-004 |
+| STORY-063 | Reset de Senha — Gaps de Produção | EPIC-010 |
 
 ---
 

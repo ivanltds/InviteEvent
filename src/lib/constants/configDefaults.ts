@@ -48,7 +48,12 @@ export const DEFAULT_CONFIG: Omit<Configuracao, 'id' | 'evento_id'> = {
   text_main: '#4a4a4a',
   accent_color: '#8fa89b',
   font_cursive: "'Pinyon Script', cursive",
-  font_serif: "'Playfair Display', serif"
+  font_serif: "'Playfair Display', serif",
+  // Pedido do usuário em 23/09/2026: novo padrão do onboarding é a
+  // animação "Pétalas ao Vento" — mesmo valor do DEFAULT da coluna
+  // `configuracoes.animacao_tipo` (ver migration
+  // 20260923000000_default_animacao_flower_wind.sql).
+  animacao_tipo: 'flower_wind'
 };
 
 /**

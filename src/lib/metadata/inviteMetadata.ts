@@ -17,7 +17,7 @@ import { buildConviteCardImageUrl, CardTemplate, CardTemplateStyles } from '@/li
  * duplicar a lógica de fetch client-side já usada para a tela em si.
  */
 
-const APP_NAME = 'Celebraê';
+const APP_NAME = 'Celebre';
 
 const FALLBACK_METADATA: Metadata = {
   title: APP_NAME,

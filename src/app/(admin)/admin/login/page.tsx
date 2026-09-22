@@ -54,6 +54,7 @@ async function claimPendingInvite(onError?: (msg: string) => void): Promise<stri
         accent_color: payload.accent_color || null,
         font_cursive: payload.font_cursive || null,
         font_serif: payload.font_serif || null,
+        animacao_tipo: payload.animacao_tipo || null,
       }).eq('evento_id', res.data.id);
 
       if (cfgErr) {
@@ -163,13 +164,14 @@ function LoginFormContent() {
           return;
         }
 
-        router.push('/admin/dashboard');
+        const redirectUrl = searchParams.get('redirect');
+        router.push(redirectUrl || '/admin/dashboard');
         router.refresh();
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [router, isFromOnboarding]);
+  }, [router, isFromOnboarding, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

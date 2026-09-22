@@ -77,6 +77,9 @@ export default function PublicOnboarding() {
       return;
     }
 
+    const ANIMATION_TYPES = ['padrao', 'envelope_v3', 'cinematic', 'flower_wind', 'flower_wind_2'] as const;
+    const randomAnimation = ANIMATION_TYPES[Math.floor(Math.random() * ANIMATION_TYPES.length)];
+
     const payload = {
       noiva_nome: noivaNome.trim() || 'Julieta',
       noivo_nome: noivoNome.trim() || 'Romeu',
@@ -85,7 +88,8 @@ export default function PublicOnboarding() {
       accent_color: selectedPalette.primary,
       font_cursive: selectedFont.cursiveValue,
       font_serif: selectedFont.serifValue,
-      data_evento: dataEvento
+      data_evento: dataEvento,
+      animacao_tipo: randomAnimation
     };
 
     try {
@@ -112,7 +116,7 @@ export default function PublicOnboarding() {
       <div className={styles.page}>
         <header className={styles.header}>
           <h2 className="cursive" style={{ margin: 0, color: 'var(--admin-accent)', fontSize: '1.6rem' }}>
-            Celebraê
+            Celebre
           </h2>
 
           <div className={styles.progressBar}>

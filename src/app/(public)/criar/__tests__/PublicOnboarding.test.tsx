@@ -46,6 +46,7 @@ describe('Public Onboarding UI Flow', () => {
     expect(saved.data_evento).toBe('2027-05-20');
     expect(saved.noiva_nome).toBe('Maria');
     expect(saved.noivo_nome).toBe('João');
+    expect(['padrao', 'envelope_v3', 'cinematic', 'flower_wind', 'flower_wind_2']).toContain(saved.animacao_tipo);
     expect(saved.cover_image_url).toBeUndefined();
   });
 

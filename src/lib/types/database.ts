@@ -29,6 +29,19 @@ export interface EventoOrganizador {
   role: OrganizerRole;
 }
 
+export interface EventoConviteEquipe {
+  id: string;
+  evento_id: string;
+  token: string;
+  email?: string | null;
+  role: OrganizerRole;
+  criado_por?: string | null;
+  usado_em?: string | null;
+  usado_por?: string | null;
+  expira_em: string;
+  created_at: string;
+}
+
 export interface Convite {
   id: string;
   evento_id: string;

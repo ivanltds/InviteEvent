@@ -233,16 +233,18 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Uncomment to customize email template
-# [auth.email.template.invite]
-# subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+# Customização dos templates de e-mail com identidade Celebre
+[auth.email.template.confirmation]
+subject = "Confirme seu e-mail no Celebre ✨"
+content_path = "./supabase/templates/confirm-signup.html"
 
-# Uncomment to customize notification email template
-# [auth.email.notification.password_changed]
-# enabled = true
-# subject = "Your password has been changed"
-# content_path = "./templates/password_changed_notification.html"
+[auth.email.template.recovery]
+subject = "Redefinição de senha — Celebre 🔒"
+content_path = "./supabase/templates/reset-password.html"
+
+[auth.email.template.invite]
+subject = "Você foi convidado(a) para gerenciar o casamento no Celebre 👑"
+content_path = "./supabase/templates/team-invite.html"
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.

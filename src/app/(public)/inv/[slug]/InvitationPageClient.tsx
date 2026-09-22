@@ -87,40 +87,46 @@ export default function InvitationPageClient({ slug }: InvitationPageClientProps
           if (!rawPayload) {
             rawPayload = sessionStorage.getItem('pending_invite_state');
           }
-          if (rawPayload) {
-            const payload = JSON.parse(rawPayload);
-            const mockConfig = {
-              noiva_nome: payload.noiva_nome,
-              noivo_nome: payload.noivo_nome,
-              data_casamento: payload.data_evento || '2050-01-01',
-              bg_primary: payload.bg_primary, // Agora é o fundo claro
-              text_main: payload.accent_color, // Fonte agora é a cor forte (marcante)
-              accent_color: payload.accent_color, // Destaques agora são a cor forte
-              font_cursive: payload.font_cursive || "'Pinyon Script', cursive",
-              font_serif: payload.font_serif || "'Playfair Display', serif",
-              mostrar_historia: true,
-              mostrar_noivos: true,
-              mostrar_faq: false,
-              mostrar_presentes: true,
-              evento_id: 'preview',
-              fotos: []
-            };
-            setConfig(mockConfig as any);
-            setCouple({
-              noiva: payload.noiva_nome,
-              noivo: payload.noivo_nome,
-              data: new Date(payload.data_evento || '2050-01-01').toLocaleDateString('pt-BR', {day:'2-digit', month:'long', year:'numeric'}),
-              rawDate: payload.data_evento || '2050-01-01'
-            });
-            setVisibility({
-              detalhes: false, historia: true, noivos: false, faq: false, presentes: true
-            });
-            if (payload.cover_image_url) {
-               setPreviewBase64(payload.cover_image_url);
-            }
-            setLoading(false);
-            return;
+          const payload = rawPayload ? JSON.parse(rawPayload) : null;
+          const ANIMATION_TYPES = ['padrao', 'envelope_v3', 'cinematic', 'flower_wind', 'flower_wind_2'] as const;
+          const randomAnimation = payload?.animacao_tipo || ANIMATION_TYPES[Math.floor(Math.random() * ANIMATION_TYPES.length)];
+
+          const noiva = payload?.noiva_nome || 'Julieta';
+          const noivo = payload?.noivo_nome || 'Romeu';
+          const dataCasamento = payload?.data_evento || '2050-01-01';
+
+          const mockConfig = {
+            noiva_nome: noiva,
+            noivo_nome: noivo,
+            data_casamento: dataCasamento,
+            bg_primary: payload?.bg_primary || '#FAF9F6',
+            text_main: payload?.accent_color || '#333333',
+            accent_color: payload?.accent_color || '#c8943a',
+            font_cursive: payload?.font_cursive || "'Pinyon Script', cursive",
+            font_serif: payload?.font_serif || "'Playfair Display', serif",
+            animacao_tipo: randomAnimation,
+            mostrar_historia: true,
+            mostrar_noivos: true,
+            mostrar_faq: false,
+            mostrar_presentes: true,
+            evento_id: 'preview',
+            fotos: []
+          };
+          setConfig(mockConfig as unknown as Configuracao);
+          setCouple({
+            noiva,
+            noivo,
+            data: new Date(dataCasamento).toLocaleDateString('pt-BR', {day:'2-digit', month:'long', year:'numeric'}),
+            rawDate: dataCasamento
+          });
+          setVisibility({
+            detalhes: false, historia: true, noivos: false, faq: false, presentes: true
+          });
+          if (payload?.cover_image_url) {
+             setPreviewBase64(payload.cover_image_url);
           }
+          setLoading(false);
+          return;
         }
 
         // 1. Buscar o convite pelo slug

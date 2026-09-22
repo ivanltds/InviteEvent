@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { Evento, EventoOrganizador, Perfil } from '@/lib/types/database';
+import { Evento, EventoOrganizador, EventoConviteEquipe, Perfil } from '@/lib/types/database';
 
 export const eventService = {
   /** Leitura pública por slug do evento — usada pela "portaria" do Link Único (/inv/evento/[eventoSlug]). */
@@ -182,13 +182,46 @@ export const eventService = {
     }));
   },
 
-  async addOrganizer(eventId: string, email: string, role: 'owner' | 'organizador' = 'organizador'): Promise<boolean> {
-    const { data: profile } = await supabase.from('perfis').select('id').eq('email', email).maybeSingle();
+  async addOrganizer(eventId: string, email: string, role: 'owner' | 'organizador' = 'owner'): Promise<boolean> {
+    const { data: profile } = await supabase.from('perfis').select('id').eq('email', email.trim().toLowerCase()).maybeSingle();
     if (!profile) throw new Error('Usuário não encontrado com este e-mail.');
 
     const { error } = await supabase
       .from('evento_organizadores')
       .insert([{ evento_id: eventId, user_id: profile.id, role }]);
+    
+    if (error) {
+      // Se já existir, tentar atualizar o papel
+      const { error: updateErr } = await supabase
+        .from('evento_organizadores')
+        .update({ role })
+        .eq('evento_id', eventId)
+        .eq('user_id', profile.id);
+      if (updateErr) throw new Error(error.message || 'Erro ao adicionar membro à equipe.');
+    }
+    return true;
+  },
+
+  async updateOrganizerRole(eventId: string, userId: string, role: 'owner' | 'organizador'): Promise<boolean> {
+    // Se estiver rebaixando para organizador, verificar se ainda restará ao menos um owner
+    if (role === 'organizador') {
+      const { data: owners } = await supabase
+        .from('evento_organizadores')
+        .select('user_id')
+        .eq('evento_id', eventId)
+        .eq('role', 'owner');
+      
+      const otherOwners = owners?.filter((o: any) => o.user_id !== userId) || [];
+      if (otherOwners.length === 0) {
+        throw new Error('O evento precisa ter pelo menos um Proprietário.');
+      }
+    }
+
+    const { error } = await supabase
+      .from('evento_organizadores')
+      .update({ role })
+      .eq('evento_id', eventId)
+      .eq('user_id', userId);
     
     return !error;
   },
@@ -204,25 +237,172 @@ export const eventService = {
   },
 
   async transferOwnership(eventId: string, newOwnerId: string): Promise<boolean> {
-    const userResponse = await supabase.auth.getUser();
-    const user = userResponse.data.user;
-    if (!user) return false;
-
-    const { error: err1 } = await supabase
+    // Agora promove a owner sem rebaixar o usuário atual (suporte a múltiplos proprietários)
+    const { error } = await supabase
       .from('evento_organizadores')
       .update({ role: 'owner' })
       .eq('evento_id', eventId)
       .eq('user_id', newOwnerId);
 
-    if (err1) return false;
+    return !error;
+  },
 
-    const { error: err2 } = await supabase
-      .from('evento_organizadores')
-      .update({ role: 'organizador' })
+  /** Cria convite mágico compartilhável (WhatsApp/Link) para a equipe */
+  async createTeamInvite(eventId: string, role: 'owner' | 'organizador' = 'owner', email?: string): Promise<EventoConviteEquipe> {
+    const { data: userResponse } = await supabase.auth.getUser();
+    const userId = userResponse?.user?.id;
+
+    // Gera token aleatório de 32 chars
+    const randomBytes = new Uint8Array(16);
+    crypto.getRandomValues(randomBytes);
+    const token = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+
+    const payload: any = {
+      evento_id: eventId,
+      token,
+      role,
+      criado_por: userId || null,
+      email: email ? email.trim().toLowerCase() : null
+    };
+
+    const { data, error } = await supabase
+      .from('evento_convites_equipe')
+      .insert([payload])
+      .select()
+      .single();
+
+    if (error || !data) {
+      throw new Error(error?.message || 'Erro ao gerar link de convite.');
+    }
+
+    return data as EventoConviteEquipe;
+  },
+
+  /** Lista convites pendentes e não expirados do evento */
+  async getTeamInvites(eventId: string): Promise<EventoConviteEquipe[]> {
+    const { data, error } = await supabase
+      .from('evento_convites_equipe')
+      .select('*')
       .eq('evento_id', eventId)
-      .eq('user_id', user.id);
-    
-    return !err2;
+      .is('usado_em', null)
+      .gt('expira_em', new Date().toISOString())
+      .order('created_at', { ascending: false });
+
+    if (error) return [];
+    return (data as EventoConviteEquipe[]) || [];
+  },
+
+  /** Revoga um convite pendente */
+  async revokeTeamInvite(inviteId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('evento_convites_equipe')
+      .delete()
+      .eq('id', inviteId);
+
+    return !error;
+  },
+
+  /** Obtém informações básicas de um convite para exibir antes de aceitar */
+  async getInviteInfo(token: string): Promise<{
+    valid: boolean;
+    error?: string;
+    evento_id?: string;
+    evento_nome?: string;
+    role?: 'owner' | 'organizador';
+    email_destinatario?: string;
+    criado_por_email?: string;
+    expira_em?: string;
+  }> {
+    // 1. Tentar via RPC
+    const { data: rpcData, error: rpcError } = await supabase.rpc('obter_info_convite_equipe', { p_token: token });
+    if (!rpcError && rpcData) {
+      return rpcData as any;
+    }
+
+    // 2. Fallback direto da tabela caso a RPC ainda não esteja instalada
+    const { data, error } = await supabase
+      .from('evento_convites_equipe')
+      .select('*, evento:eventos(nome)')
+      .eq('token', token)
+      .is('usado_em', null)
+      .gt('expira_em', new Date().toISOString())
+      .maybeSingle();
+
+    if (error || !data) {
+      return { valid: false, error: 'Convite não encontrado, já utilizado ou expirado.' };
+    }
+
+    return {
+      valid: true,
+      evento_id: data.evento_id,
+      evento_nome: (data.evento as any)?.nome || 'Casamento',
+      role: data.role,
+      email_destinatario: data.email,
+      expira_em: data.expira_em
+    };
+  },
+
+  /** Aceita o convite mágico e vincula o usuário autenticado à equipe */
+  async acceptTeamInvite(token: string): Promise<{
+    success: boolean;
+    evento_id: string;
+    evento_nome: string;
+    role: string;
+  }> {
+    const { data: userRes } = await supabase.auth.getUser();
+    const user = userRes?.user;
+    if (!user) {
+      throw new Error('Você precisa estar logado para aceitar este convite.');
+    }
+
+    // 1. Tentar via RPC segura
+    const { data: rpcData, error: rpcError } = await supabase.rpc('aceitar_convite_equipe', { p_token: token });
+    if (!rpcError && rpcData && rpcData.success) {
+      return rpcData;
+    }
+
+    if (rpcError && !rpcError.message.includes('function') && !rpcError.message.includes('not found')) {
+      throw new Error(rpcError.message);
+    }
+
+    // 2. Fallback direto
+    const { data: invite, error: fetchErr } = await supabase
+      .from('evento_convites_equipe')
+      .select('*, evento:eventos(nome)')
+      .eq('token', token)
+      .is('usado_em', null)
+      .gt('expira_em', new Date().toISOString())
+      .single();
+
+    if (fetchErr || !invite) {
+      throw new Error('Convite inválido, já utilizado ou expirado.');
+    }
+
+    if (invite.email && invite.email.toLowerCase() !== user.email?.toLowerCase()) {
+      throw new Error(`Este convite foi gerado para o e-mail ${invite.email}. Seu e-mail atual é ${user.email}.`);
+    }
+
+    // Inserir ou atualizar na equipe
+    const { error: insertErr } = await supabase
+      .from('evento_organizadores')
+      .upsert([{ evento_id: invite.evento_id, user_id: user.id, role: invite.role }], { onConflict: 'evento_id,user_id' });
+
+    if (insertErr) {
+      throw new Error(insertErr.message || 'Erro ao vincular ao evento.');
+    }
+
+    // Marcar como usado
+    await supabase
+      .from('evento_convites_equipe')
+      .update({ usado_em: new Date().toISOString(), usado_por: user.id })
+      .eq('id', invite.id);
+
+    return {
+      success: true,
+      evento_id: invite.evento_id,
+      evento_nome: (invite.evento as any)?.nome || 'Casamento',
+      role: invite.role
+    };
   },
 
   async activateEvent(eventId: string): Promise<boolean> {

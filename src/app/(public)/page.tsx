@@ -5,6 +5,7 @@ import styles from "./Landing.module.css";
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import LegalFooter from '@/components/ui/LegalFooter';
+import LandingChatWidget from '@/components/landing/LandingChatWidget';
 
 export default function LandingPage() {
   const [videoIndex, setVideoIndex] = useState(0);
@@ -194,6 +195,7 @@ export default function LandingPage() {
         </div>
       </section>
       <LegalFooter theme="light" />
+      <LandingChatWidget />
     </div>
   );
 }

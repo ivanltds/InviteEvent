@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-type="software" data-radius="soft" data-buttons="pill" data-motion="on">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Celebraê · Convite de casamento digital</title>
+<meta name="description" content="Convite de casamento digital com abertura animada, site do casal, confirmação de presença nome a nome, presentes pelo Pix e mural de fotos ao vivo. Grátis para começar.">
+<meta name="page-type" content="software">
+<meta name="site-kind" content="software">
+<meta property="og:title" content="Celebraê · Convite de casamento digital">
+<meta property="og:description" content="Escrevam os nomes de vocês e vejam o convite pronto, do jeito que os convidados vão abrir.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#141414">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Landing: Instrument Serif + Hanken Grotesk. Convite: as mesmas fontes do produto
+     (Pinyon Script + Playfair Display por padrão; Great Vibes, Alex Brush e Corinthia da lista real em src/lib/constants/fonts.ts) -->
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Pinyon+Script&family=Great+Vibes&family=Alex+Brush&family=Corinthia:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<!--
+  Proposta de landing v2 — Celebraê (taste-skill 2.5.1, aplicada à mão)
+  O que mudou da v1:
+   1. O hero É um convite da Celebraê, em tela cheia, montado com as mesmas regras do LiveInviteView:
+      fotos em crossfade (HeroCarousel) no PC, vídeo vertical no celular, nomes em Pinyon Script,
+      data em Playfair em caixa alta, contagem regressiva, frase "O nosso grande dia está chegando!"
+      e os botões retos em caixa alta. Fundo e texto padrão do produto (#fdfbf7 / #4a4a4a) com destaque dourado #C5A059 (paleta da landing original).
+   2. Abre com "Pétalas ao Vento" (a abertura padrão do onboarding) e o casal escreve os próprios
+      nomes e a data: o convite inteiro passa a ser deles, na hora.
+   3. Todos os celulares da página mostram esse mesmo convite (cqw, como no produto), então o que
+      o casal vê aqui é o que vai receber.
+  Plano:
+    #topo       convite real em tela cheia + barra "escrevam os nomes de vocês"     1 tela
+    #aberturas  as 5 aberturas, terminando no convite real                          1 tela
+    #site       o convite rolando no celular (capa, história, agenda) + cores/fontes 1 tela
+    #presenca   faixa escura: painel de convidados                                  1-2 telas
+    #presentes  Pix, cotas, gravata                                                 1 tela
+    #mural      mural de fotos, modo TV, story                                      1 tela
+    close       foto + ação principal                                               1 tela
+-->
+<style>
+:root{
+  /* paleta da landing original (Landing.module.css): #F9F9FB, #1A1A1A, dourado #C5A059, #71717A */
+  --bg:#F9F9FB; --surface:#F3F0EA; --paper:#FFFFFF; --ink:#1A1A1A; --muted:#71717A; --line:#E6E3DD;
+  --accent:#9A7633; --accent-2:#000000; --on-accent:#FFFFFF; --gold:#C5A059; --gold-soft:#E9D9B6;
+  --btn:#1A1A1A; --clay:#C5A059; --blush:#F4EEE4;
+  --dark:#141414; --dark-line:#2A2A2A; --dark-ink:#F2EEE6; --dark-muted:#A1A1AA;
+  --serif:"Instrument Serif", Georgia, serif; --sans:"Hanken Grotesk", system-ui, sans-serif;
+  --wrap:1240px; --pad:clamp(20px,5vw,64px); --r:16px; --r-l:24px; --nav-h:72px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+
+  /* Tema do convite — mesmas variáveis do LiveInviteView; destaque dourado (bg e texto = padrão do produto) */
+  --bg-primary:#fdfbf7; --text-main:#4a4a4a; --inv-accent:#C5A059; --text-on-accent:#111;
+  --font-cursive:'Pinyon Script', cursive; --font-serif:'Playfair Display', serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:var(--nav-h)}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+img,video{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button,input{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:6px}
+.skip{position:absolute;left:12px;top:-60px;z-index:100;background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:999px}
+.skip:focus{top:12px}
+.wrap{width:100%;max-width:calc(var(--wrap) + 2*var(--pad));margin-inline:auto;padding-inline:var(--pad)}
+main>section{min-height:100svh;padding-block:calc(var(--nav-h) + 48px) 72px;display:flex;flex-direction:column;justify-content:center}
+.eyebrow{font:600 13px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1,h2{font-family:var(--serif);font-weight:400;letter-spacing:-.01em;line-height:1.02}
+h2{font-size:clamp(38px,4.6vw,66px)}
+h2 em{font-style:italic;color:#B08A45}
+h2 .muted{color:var(--muted)}
+h3{font:600 19px/1.3 var(--sans);letter-spacing:-.01em}
+.lead{font-size:clamp(17px,1.35vw,20px);color:var(--muted);max-width:34em}
+.sec-head{display:grid;grid-template-columns:repeat(12,1fr);gap:24px;align-items:end;margin-bottom:clamp(32px,5vh,56px)}
+.sec-head h2{grid-column:1/8}
+.sec-head .lead{grid-column:8/13}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 26px;border-radius:999px;font:600 16px/1 var(--sans);white-space:nowrap;transition:transform .25s var(--ease),background-color .25s,box-shadow .25s}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(0) scale(.98)}
+.btn--primary{background:var(--btn);color:var(--on-accent);box-shadow:0 10px 24px -12px rgba(0,0,0,.55),inset 0 -1px 0 var(--gold)}
+.btn--primary:hover{background:var(--accent-2);box-shadow:0 14px 28px -12px rgba(0,0,0,.6),inset 0 -2px 0 var(--gold)}
+.btn--ghost{border:1px solid var(--line)}
+.btn--ghost:hover{background:var(--paper)}
+.btn .arr{transition:transform .25s var(--ease)}
+.btn:hover .arr{transform:translateX(3px)}
+.link{background:linear-gradient(currentColor,currentColor) 0 100%/0 1px no-repeat;transition:background-size .3s var(--ease);padding-bottom:2px}
+.link:hover{background-size:100% 1px}
+
+/* ---------- Nav (clara sobre o convite, papel depois) ---------- */
+.nav{position:fixed;inset:0 0 auto;height:var(--nav-h);z-index:50;color:#fff;transition:background-color .35s,color .35s,border-color .35s;border-bottom:1px solid transparent}
+.nav.is-scrolled{background:rgba(249,249,251,.88);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);color:var(--ink);border-color:var(--line)}
+.nav .wrap{height:100%;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:24px}
+.mark{font:400 30px/1 var(--serif)}
+.mark span{font-style:italic;color:var(--gold)}
+.nav.is-scrolled .mark span{color:var(--gold)}
+.nav__links{display:flex;gap:30px;font-size:15px;font-weight:500}
+.nav__links a{opacity:.82;transition:opacity .2s}
+.nav__links a:hover{opacity:1}
+.nav__cta{display:flex;justify-content:flex-end;align-items:center;gap:22px;font-size:15px;font-weight:500}
+.nav__cta .btn{min-height:44px;padding:0 20px;font-size:15px}
+.nav:not(.is-scrolled) .nav__cta .btn{background:rgba(255,255,255,.95);color:var(--ink);box-shadow:none}
+.menu-btn{display:none;width:44px;height:44px;border-radius:999px;border:1px solid currentColor;align-items:center;justify-content:center;border-color:rgba(255,255,255,.5)}
+.nav.is-scrolled .menu-btn{border-color:var(--line)}
+.menu-btn span,.menu-btn span::before{display:block;width:16px;height:1.5px;background:currentColor;position:relative;transition:transform .3s}
+.menu-btn span::before{content:"";position:absolute;top:5px}
+.menu-btn[aria-expanded="true"] span{transform:translateY(2.5px) rotate(45deg)}
+.menu-btn[aria-expanded="true"] span::before{transform:translateY(-5px) rotate(-90deg)}
+.mobile-menu{position:fixed;inset:var(--nav-h) 0 0;background:var(--bg);z-index:49;padding:32px var(--pad);display:none;flex-direction:column;gap:6px}
+.mobile-menu.open{display:flex}
+.mobile-menu a{font:400 34px/1.3 var(--serif);padding:8px 0;border-bottom:1px solid var(--line)}
+.mobile-menu .btn{margin-top:24px;font:600 16px/1 var(--sans);border:0}
+
+/* ---------- O convite (espelho do LiveInviteView + page.module.css) ---------- */
+.inv{position:relative;isolation:isolate;container-type:inline-size;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;padding:2rem 1.2rem;text-shadow:0 2px 12px rgba(0,0,0,.6);overflow:hidden}
+.inv__bg{position:absolute;inset:0;z-index:-1;overflow:hidden;background:#2a2723}
+.inv__bg img,.inv__bg video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.5s ease-in-out}
+.inv__bg .on{opacity:1}
+.inv__bg::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 55%,rgba(0,0,0,.18),rgba(0,0,0,.42))}
+.inv__names{font-family:var(--font-cursive);font-weight:400;font-size:clamp(2.5rem,14cqw,6rem);line-height:1.1;margin-bottom:.5rem;text-shadow:0 4px 16px rgba(0,0,0,.5);overflow-wrap:break-word;max-width:100%}
+.inv__date{font-family:var(--font-serif);font-size:clamp(.9rem,5cqw,1.5rem);letter-spacing:.2rem;text-transform:uppercase;margin-bottom:1rem}
+.inv__count{display:flex;gap:2rem;justify-content:center;margin:1.4rem 0}
+.inv__count div{display:flex;flex-direction:column;align-items:center}
+.inv__count b{font-family:var(--font-serif);font-weight:400;font-size:3rem;line-height:1}
+.inv__count small{font-size:.8rem;text-transform:uppercase;letter-spacing:.1rem;opacity:.85;margin-top:.5rem;font-family:var(--sans)}
+.inv__tag{font-family:var(--font-serif);font-size:clamp(.85rem,4cqw,1.2rem);font-style:italic;font-weight:500;margin-bottom:2rem}
+.inv__cta{display:flex;gap:1.5rem;justify-content:center}
+.inv__btn{display:inline-block;padding:1rem 2rem;font-family:var(--font-serif);font-size:clamp(.9rem,3.5cqw,1.1rem);text-transform:uppercase;letter-spacing:.1rem;text-shadow:none;transition:transform .3s ease,opacity .3s,background-color .3s;white-space:nowrap}
+.inv__btn--p{background:var(--inv-accent);color:var(--text-on-accent);box-shadow:0 4px 15px rgba(0,0,0,.2)}
+.inv__btn--p:hover{transform:translateY(-2px);opacity:.92}
+.inv__btn--s{background:rgba(255,255,255,.1);backdrop-filter:blur(5px);border:1px solid #fff;color:#fff}
+.inv__btn--s:hover{background:rgba(255,255,255,.2)}
+@container (max-width:600px){
+  .inv__cta{flex-direction:column;gap:.8rem;width:100%}
+  .inv__btn{width:100%}
+  .inv__count{gap:1rem}
+  .inv__count b{font-size:2rem}
+}
+@container (max-width:340px){
+  .inv__count b{font-size:1.6rem}
+  .inv__count small{font-size:.6rem}
+  .inv__btn{padding:.8rem .6rem;letter-spacing:.05rem}
+  .inv__date{letter-spacing:.12rem}
+  .inv__tag{margin-bottom:1.2rem}
+}
+
+/* ---------- HERO = o convite em tela cheia ---------- */
+.hero{position:relative;height:100svh;min-height:640px;padding:0!important;overflow:hidden;background:#141414}
+.hero .inv{position:absolute;inset:0;padding:calc(var(--nav-h) + 8px) var(--pad) 190px}
+.hero .inv__names{font-size:clamp(3.6rem,10cqw,8.6rem)}
+.hero .inv__count b{font-size:clamp(2.4rem,3.6cqw,3.4rem)}
+.inv__content{display:flex;flex-direction:column;align-items:center;transition:opacity 1.2s ease,transform 1.4s var(--ease),filter 1.2s ease}
+.hero.pre .inv__content{opacity:0;transform:scale(.97);filter:blur(6px)}
+.hero .inv__bg img{transform:scale(1.06);animation:kb 14s ease-out both}
+@keyframes kb{to{transform:scale(1)}}
+.example-tag{position:absolute;top:calc(var(--nav-h) + 6px);left:50%;transform:translateX(-50%);z-index:3;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:99px;background:rgba(20,20,18,.35);backdrop-filter:blur(8px);color:rgba(255,255,255,.92);font:500 13px/1 var(--sans);white-space:nowrap;transition:opacity 1s ease 1.4s}
+.hero.pre .example-tag{opacity:0}
+.example-tag i{width:6px;height:6px;border-radius:50%;background:#E2C48A}
+
+/* barra "escrevam os nomes de vocês" */
+.sheet{position:absolute;z-index:4;left:var(--pad);right:var(--pad);bottom:24px;max-width:var(--wrap);margin-inline:auto;background:rgba(255,255,255,.94);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border-radius:var(--r-l);box-shadow:0 30px 60px -30px rgba(0,0,0,.55);padding:22px 24px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1.5fr) auto;gap:28px;align-items:center;transition:transform 1s var(--ease) .9s,opacity 1s ease .9s}
+.hero.pre .sheet{opacity:0;transform:translateY(30px)}
+.sheet h1{font-size:clamp(24px,2.1vw,32px);line-height:1.08}
+.sheet h1 em{font-style:italic;color:#B08A45}
+.sheet__facts{margin-top:8px;font-size:14px;color:var(--muted)}
+.sheet__facts b{color:var(--ink)}
+.names{display:grid;grid-template-columns:1fr auto 1fr 1.05fr;gap:10px;align-items:end}
+.field label{display:block;font:600 12px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.field input{width:100%;height:50px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:0 14px;font-size:16px;transition:border-color .2s,box-shadow .2s}
+.field input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(197,160,89,.22)}
+.amp{font:400 34px/50px var(--font-cursive);color:var(--muted);padding:0 2px}
+.sheet__hint{grid-column:2/3;margin-top:-18px;font-size:13px;color:var(--muted)}
+.sheet__toggle{display:none}
+
+/* pétalas da abertura */
+.wind{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden}
+.wind b,.wind u,.wind i{position:absolute;left:0;top:0;display:block;will-change:transform,opacity}
+.wind>b{left:50%;top:44%}
+.hero .inv__bg::before{content:"";position:absolute;inset:0;z-index:1;background:rgba(18,16,14,.5);opacity:0;transition:opacity 1.6s ease}
+.hero.blooming .inv__bg::before{opacity:1}
+.wind span{position:absolute;display:block;left:calc(var(--s)*-.5);top:calc(var(--s)*-1.45);width:var(--s);height:calc(var(--s)*1.45);border-radius:50% 50% 46% 46% / 64% 64% 36% 36%;background:radial-gradient(ellipse at 50% 22%,rgba(255,255,255,.55),transparent 45%),linear-gradient(0deg,var(--c2),var(--c1) 70%);box-shadow:inset 0 -8px 12px -8px rgba(110,45,40,.35),0 4px 12px -4px rgba(60,20,20,.35);transform-origin:50% 100%}
+.example-tag b{font-weight:600;margin-left:-4px}
+.intro-light .nav:not(.is-scrolled){color:var(--ink);transition:color .8s}
+.intro-light .nav:not(.is-scrolled) .mark span{color:var(--gold)}
+.intro-light .menu-btn{border-color:var(--line)}
+.example-tag:hover{background:rgba(20,20,18,.5)}
+.wind .leaf-o{position:absolute;left:0;top:0}
+.wind .leaf-s{position:absolute;left:calc(var(--s)*-.5);top:calc(var(--s)*-.25);width:var(--s);height:calc(var(--s)*.5);border-radius:100% 0 100% 0;background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:0 3px 8px -3px rgba(0,0,0,.3)}
+.h-env{position:absolute;inset:0;display:grid;place-items:center;perspective:1100px}
+.h-env .env{width:min(500px,82vw)}
+.h-env .env__letter .n{font-size:clamp(30px,5vw,46px)}
+.h-env .env__letter .s{font-size:11px}
+.h-env .env__flap,.h-env .env__letter,.h-env .env__seal{transition:none}
+.h-env .env__seal{width:64px;height:64px;margin:-32px 0 0 -32px;font-size:26px}
+.h-black{position:absolute;inset:0;background:#060706}
+.h-line{position:absolute;left:50%;top:44%;height:1px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,#f6e9cf,transparent);box-shadow:0 0 18px 2px rgba(246,233,207,.45)}
+.h-spark{position:absolute;left:50%;top:44%;width:3px;height:3px;border-radius:50%;background:#f8ecd2;box-shadow:0 0 10px 3px rgba(248,236,210,.7)}
+.h-paper{position:absolute;inset:0;background:var(--bg-primary);display:grid;place-items:center}
+.h-card{width:min(360px,78vw);aspect-ratio:3/4.2;background:#fff;border:1px solid #eee5d8;outline:1px solid color-mix(in srgb,var(--inv-accent) 45%,transparent);outline-offset:-12px;box-shadow:0 30px 60px -28px rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:28px;color:var(--text-main)}
+.h-card .n{font:400 clamp(40px,6vw,56px)/1.05 var(--font-cursive);color:var(--inv-accent)}
+.h-card .s{font:400 11px/1.5 var(--font-serif);letter-spacing:.2em;text-transform:uppercase}
+.h-card hr{width:48px;border:0;border-top:1px solid var(--inv-accent)}
+.wind .core{position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fbf1d9,#e6c98f 60%,#c9a560);box-shadow:0 0 0 3px rgba(255,255,255,.35)}
+.skip-intro{position:absolute;z-index:6;right:var(--pad);top:calc(var(--nav-h) + 6px);font:600 13px/1 var(--sans);color:#fff;padding:10px 14px;border-radius:99px;background:rgba(0,0,0,.3);transition:opacity .4s}
+.hero:not(.pre) .skip-intro{opacity:0;pointer-events:none}
+
+/* ---------- Celular ---------- */
+.phone{position:relative;aspect-ratio:9/19.2;background:#0d0d0c;border-radius:44px;padding:10px;box-shadow:0 40px 80px -30px rgba(27,26,23,.55),0 0 0 1px rgba(0,0,0,.4)}
+.phone::before{content:"";position:absolute;top:20px;left:50%;width:84px;height:24px;margin-left:-42px;background:#0d0d0c;border-radius:20px;z-index:5}
+.phone__screen{position:relative;width:100%;height:100%;border-radius:35px;overflow:hidden;background:var(--bg-primary)}
+
+/* ---------- Aberturas ---------- */
+#aberturas{background:var(--surface)}
+.open-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:24px;align-items:center}
+.open-copy{grid-column:1/7}
+.open-copy h2{margin:16px 0;font-size:clamp(36px,3.9vw,56px)}
+.tabs{margin-top:26px;display:grid;gap:4px;max-width:520px}
+.tab{display:grid;grid-template-columns:36px 1fr auto;align-items:center;gap:14px;text-align:left;padding:10px 18px;border-radius:var(--r);border:1px solid transparent;transition:background-color .25s,border-color .25s,transform .25s var(--ease);min-height:56px}
+.tab:hover{background:rgba(255,255,255,.7);transform:translateX(2px)}
+.tab[aria-selected="true"]{background:var(--paper);border-color:var(--line)}
+.tab__n{font:400 22px/1 var(--serif);color:var(--muted)}
+.tab[aria-selected="true"] .tab__n{color:var(--accent)}
+.tab__name{font-weight:600}
+.tab__desc{display:block;font-size:14px;color:var(--muted);margin-top:2px}
+.tab__play{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);opacity:0;transition:opacity .2s}
+.tab[aria-selected="true"] .tab__play,.tab:hover .tab__play{opacity:1}
+.tab__play svg{width:10px;height:10px;fill:currentColor;margin-left:2px}
+.open-stage{grid-column:8/13;display:flex;flex-direction:column;align-items:center;gap:20px}
+.open-stage .phone{width:min(290px,100%)}
+.replay{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:15px;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line);background:var(--paper);transition:transform .25s var(--ease)}
+.replay:hover{transform:translateY(-2px)}
+.replay:active{transform:scale(.97)}
+.replay svg{width:16px;height:16px}
+
+.demo{position:absolute;inset:0;overflow:hidden;container-type:inline-size}
+.demo .final{position:absolute;inset:0;opacity:0;transition:opacity 1.1s ease}
+.demo .final.show{opacity:1}
+.demo .inv__bg img{opacity:1}
+.d-trad{position:absolute;inset:0;background:var(--bg-primary);display:grid;place-items:center}
+.d-card{width:80%;aspect-ratio:3/4.3;background:#fff;box-shadow:0 20px 40px -18px rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;border:1px solid #eee5d8;padding:16px;color:var(--text-main);outline:1px solid color-mix(in srgb,var(--inv-accent) 45%,transparent);outline-offset:-10px}
+.d-card .n{font:400 40px/1.05 var(--font-cursive);color:var(--inv-accent)}
+.d-card .s{font:400 10px/1.4 var(--font-serif);letter-spacing:.2em;text-transform:uppercase}
+.d-card hr{width:40px;border:0;border-top:1px solid var(--inv-accent)}
+.d-env{position:absolute;inset:0;background:linear-gradient(180deg,#f7f2ea,#ece2d2);display:grid;place-items:center;perspective:900px}
+.env{position:relative;width:84%;aspect-ratio:1.45;transform-style:preserve-3d}
+.env__back{position:absolute;inset:0;background:#ddd0bb;border-radius:6px}
+.env__letter{position:absolute;left:7%;right:7%;top:8%;bottom:8%;background:#fff;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;transition:transform 1.1s var(--ease)}
+.env__letter .n{font:400 28px/1 var(--font-cursive);color:var(--inv-accent)}
+.env__letter .s{font:400 8px/1 var(--font-serif);letter-spacing:.2em;text-transform:uppercase;color:var(--text-main)}
+.env__front{position:absolute;inset:0;background:linear-gradient(160deg,#f1e9dc,#e2d4bd);clip-path:polygon(0 30%,50% 64%,100% 30%,100% 100%,0 100%);border-radius:6px;z-index:3}
+.env__flap{position:absolute;left:0;right:0;top:0;height:64%;background:linear-gradient(180deg,#eadfcd,#d8c7ab);clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top;transition:transform 1s var(--ease),z-index 0s .5s;z-index:4}
+.env__seal{position:absolute;left:50%;top:58%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ead3a0,var(--inv-accent) 55%,#8e6d2e);box-shadow:0 3px 8px rgba(0,0,0,.3);z-index:5;display:grid;place-items:center;color:#fff;font:400 18px/1 var(--font-cursive);transition:opacity .4s,transform .4s}
+.d-env.open .env__seal{opacity:0;transform:scale(1.3)}
+.d-env.open .env__flap{transform:rotateX(180deg);z-index:1}
+.d-env.rise .env__letter{transform:translateY(-58%);z-index:2}
+.d-cine{position:absolute;inset:0;background:#070807;overflow:hidden}
+.cine-line{position:absolute;left:50%;top:50%;height:1px;width:0;background:linear-gradient(90deg,transparent,#f3e7cf,transparent);transform:translate(-50%,-50%);transition:width 1.1s var(--ease),opacity .6s 1.6s}
+.d-cine.go .cine-line{width:120%;opacity:0}
+.spark{position:absolute;left:50%;top:50%;width:3px;height:3px;border-radius:50%;background:#f6ead2;box-shadow:0 0 8px 2px rgba(246,234,210,.7)}
+.cine-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#f4ece0;text-align:center;opacity:0;letter-spacing:.5em;transition:opacity 1.4s ease 1s,letter-spacing 2s var(--ease) 1s}
+.d-cine.go .cine-text{opacity:1;letter-spacing:.02em}
+.cine-text .n{font:400 44px/1.1 var(--font-cursive)}
+.cine-text .s{font:400 11px/1 var(--font-serif);letter-spacing:.2em;text-transform:uppercase;margin-top:8px}
+.d-pet{position:absolute;inset:0;background:var(--bg-primary)}
+.petal{position:absolute;top:-30px;left:0;width:14px;height:10px;border-radius:80% 0 80% 0;opacity:.95;will-change:transform;background:linear-gradient(135deg,#f3d3c9,#dfa596)}
+.leaf{position:absolute;left:-30px;top:0;width:16px;height:8px;border-radius:100% 0 100% 0;will-change:transform;background:linear-gradient(90deg,#efe0bf,var(--inv-accent))}
+.pet-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--text-main);opacity:0;transform:translateY(8px);transition:opacity 1.2s ease,transform 1.2s var(--ease)}
+.pet-text.show{opacity:1;transform:none}
+.pet-text .n{font:400 46px/1.1 var(--font-cursive);color:var(--inv-accent)}
+.pet-text .s{font:400 10px/1 var(--font-serif);letter-spacing:.2em;text-transform:uppercase;margin-top:8px}
+
+/* ---------- Site (o convite rolando dentro do celular) ---------- */
+.site-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:24px;align-items:center}
+.site-copy{grid-column:1/6}
+.site-copy h2{margin:18px 0 20px}
+.parts{margin-top:28px;border-top:1px solid var(--line)}
+.parts li{list-style:none;display:grid;grid-template-columns:34px 1fr;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);font-size:16px}
+.parts li span{font:400 18px/1.2 var(--serif);color:var(--clay)}
+.parts li b{font-weight:600}
+.studio{grid-column:7/13;display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:var(--r-l);padding:28px}
+.studio .phone{width:100%}
+.scroller{position:absolute;inset:0;overflow-y:auto;scrollbar-width:none;background:var(--bg-primary);container-type:inline-size;transition:background-color .5s}
+.scroller::-webkit-scrollbar{display:none}
+.scroller .inv{height:auto;min-height:100%;aspect-ratio:9/18.4}
+.scroller .inv__bg img{opacity:1}
+.isec{padding:2.6rem 1.3rem;text-align:center;background:var(--bg-primary);color:var(--text-main);transition:background-color .5s,color .5s}
+.isec h4{font:400 clamp(2.2rem,12cqw,4rem)/1.1 var(--font-cursive);color:var(--inv-accent);margin-bottom:.5rem;transition:color .5s}
+.isec .sub{font:400 .8rem/1.4 var(--font-serif);text-transform:uppercase;letter-spacing:.15rem;color:var(--inv-accent);opacity:.85;margin-bottom:1.2rem}
+.isec p{font-size:.84rem;line-height:1.75}
+.isec .hl{margin-top:1.2rem;padding:1rem 0;border-top:1px solid rgba(0,0,0,.1);border-bottom:1px solid rgba(0,0,0,.1);font:italic 400 .92rem/1.6 var(--font-serif);color:var(--inv-accent)}
+.isec--white{background:#fff}
+.tl{display:grid;gap:.9rem;margin-top:.4rem;text-align:left}
+.tl-item{display:flex;gap:.7rem;align-items:flex-start}
+.tl-time{min-width:52px;height:28px;border-radius:14px;background:var(--inv-accent);color:#fff;display:grid;place-items:center;font:700 .78rem/1 var(--sans);box-shadow:0 4px 10px rgba(0,0,0,.1);transition:background-color .5s}
+.tl-card{flex:1;background:#fdfdfd;border:1px solid rgba(0,0,0,.05);border-radius:12px;padding:.8rem;font-size:.76rem;color:#4a4a4a}
+.tl-card b{display:block;font:400 1rem/1.2 var(--font-serif);color:#333}
+.tl-card .gps{display:inline-block;margin-top:.5rem;padding:.35rem .6rem;border-radius:99px;border:1px solid rgba(0,0,0,.12);font-size:.66rem;font-weight:600}
+.scroll-hint{position:absolute;z-index:6;left:50%;bottom:16px;transform:translateX(-50%);display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:99px;background:rgba(20,20,18,.55);color:#fff;font:600 11px/1 var(--sans);pointer-events:none;transition:opacity .4s}
+.scroll-hint.off{opacity:0}
+.controls{display:grid;gap:22px;min-width:0}
+.ctrl-label{font:600 12px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:block}
+.swatches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.swatch,.font-opt{display:flex;align-items:center;gap:10px;white-space:nowrap;overflow:hidden;padding:8px 10px;border-radius:12px;border:1px solid var(--line);font-size:13.5px;font-weight:500;min-height:48px;text-align:left;transition:border-color .2s,transform .25s var(--ease),background-color .2s}
+.swatch:hover,.font-opt:hover{transform:translateY(-2px)}
+.swatch[aria-pressed="true"],.font-opt[aria-pressed="true"]{border-color:var(--ink);background:var(--bg)}
+.sw-dots{display:flex}
+.sw-dots i{width:18px;height:18px;border-radius:50%;border:1px solid rgba(0,0,0,.12);margin-right:-6px}
+.fonts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.font-opt{justify-content:center;font-size:26px;font-weight:400;line-height:1}
+.ctrl-note{margin-top:10px;font-size:13px;color:var(--muted)}
+
+/* ---------- Presença ---------- */
+#presenca{background:var(--dark);color:var(--dark-ink)}
+#presenca h2 em{color:#D9BC7E}
+#presenca .lead{color:var(--dark-muted)}
+.app{border-radius:var(--r-l);background:#FBFAF8;color:var(--ink);overflow:hidden;box-shadow:0 50px 100px -40px rgba(0,0,0,.8)}
+.app__bar{height:42px;display:flex;align-items:center;gap:8px;padding:0 16px;background:#F0EEEA;border-bottom:1px solid #E4E1DB}
+.app__bar i{width:11px;height:11px;border-radius:50%;background:#D6D3CE}
+.app__bar span{margin:0 auto;font-size:12px;color:var(--muted);font-weight:500;transform:translateX(-22px)}
+.app__body{display:grid;grid-template-columns:200px 1fr;min-height:400px}
+.app__side{border-right:1px solid #E8E5E0;padding:18px 12px;display:flex;flex-direction:column;gap:2px;font-size:14px}
+.app__side .mark{font-size:22px;padding:4px 10px 16px}
+.app__side .mark span{color:var(--gold)}
+.app__side a{padding:9px 10px;border-radius:8px;color:var(--muted);display:flex;align-items:center;gap:10px}
+.app__side a.on{background:#F4ECDC;color:#7A5C24;font-weight:600}
+.app__side svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7}
+.app__main{padding:22px 26px}
+.app__top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.app__top h3{font:400 26px/1 var(--serif)}
+.seg{display:inline-flex;padding:4px;border-radius:999px;background:#F0EEEA}
+.seg button{padding:0 16px;min-height:36px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted);transition:background-color .25s,color .25s}
+.seg button[aria-pressed="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+.stat{border:1px solid #E8E5E0;border-radius:12px;padding:12px 14px;background:#fff}
+.stat small{font-size:12px;color:var(--muted)}
+.stat b{display:block;font:400 30px/1.1 var(--serif)}
+.table{width:100%;border-collapse:collapse;font-size:14px}
+.table th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);padding:8px 10px;border-bottom:1px solid #E8E5E0}
+.table td{padding:8px 10px;border-bottom:1px solid #EFEDE9}
+.table td.who{display:flex;align-items:center;gap:10px;font-weight:500}
+.avatar{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:600 11px/1 var(--sans);color:var(--paper);flex:none}
+.chip{font:600 11px/1 var(--sans);padding:5px 9px;border-radius:99px}
+.chip--yes{background:#F2E7CF;color:#7A5C24}
+.chip--wait{background:#EEEEF0;color:#52525B}
+.chip--no{background:#F0DEDA;color:#9A4B3E}
+.app-notes{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:32px}
+.app-notes div{border-top:1px solid var(--dark-line);padding-top:16px}
+.app-notes h3{color:var(--dark-ink);font-size:17px}
+.app-notes p{color:var(--dark-muted);font-size:15px;margin-top:4px}
+
+/* ---------- Presentes ---------- */
+.gift-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:24px}
+.gift-photo{grid-column:1/6;border-radius:var(--r-l);overflow:hidden;min-height:480px;position:relative}
+.gift-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .8s var(--ease)}
+.gift-photo:hover img{transform:scale(1.03)}
+.gift-cards{grid-column:6/13;display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-l);padding:24px;display:flex;flex-direction:column;gap:16px;transition:transform .3s var(--ease),box-shadow .3s}
+.card:hover{transform:translateY(-2px);box-shadow:0 20px 40px -28px rgba(27,26,23,.45)}
+.card p{color:var(--muted);font-size:15px}
+.card--wide{grid-column:1/3;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:28px}
+.ui{background:var(--bg);border-radius:var(--r);padding:16px;font-size:13px}
+.f-line{font-weight:600;font-size:14px;line-height:1.3}
+.f-sub{color:var(--muted);font-size:12px;margin-top:2px}
+.pix{display:grid;grid-template-columns:96px 1fr;gap:16px;align-items:center}
+.qr{width:96px;height:96px;display:grid;grid-template-columns:repeat(13,1fr);gap:1px;padding:6px;background:#fff;border-radius:8px}
+.qr i{background:var(--ink);border-radius:1px}
+.qr i.o{background:transparent}
+.copy-btn{margin-top:10px;display:inline-flex;align-items:center;min-height:36px;padding:0 14px;border-radius:999px;background:var(--btn);color:var(--on-accent);font-weight:600;font-size:12px;transition:transform .2s var(--ease)}
+.copy-btn:hover{transform:translateY(-2px)}
+.quota{display:flex;justify-content:space-between;font-weight:600;margin-bottom:8px}
+.quota small{color:var(--muted);font-weight:500}
+.quota-bar{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:14px}
+.quota-bar i{display:block;height:100%;background:var(--clay);border-radius:99px;width:var(--w);animation:fill 3s var(--ease) infinite}
+@keyframes fill{0%{width:0}60%,100%{width:var(--w)}}
+.amounts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.amounts span{padding:8px 11px;border-radius:999px;border:1px solid var(--line);font-weight:600;background:#fff;cursor:pointer;transition:background-color .2s,color .2s}
+.amounts span.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* ---------- Mural ---------- */
+#mural{background:var(--blush)}
+.mural-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:24px;align-items:center}
+.mural-copy{grid-column:1/5}
+.mural-copy h2{margin:18px 0 20px}
+.mural-list{margin-top:26px;display:grid;gap:14px}
+.mural-list div{display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start}
+.m-ico{width:40px;height:40px;border-radius:12px;background:var(--paper);display:grid;place-items:center}
+.m-ico svg{width:18px;height:18px;stroke:#9A7633;fill:none;stroke-width:1.7}
+.mural-list b{display:block;font-weight:600}
+.mural-list span{color:var(--muted);font-size:15px}
+.wall{grid-column:5/13;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:120px;gap:12px}
+.tile{border-radius:var(--r);overflow:hidden;position:relative;background:var(--surface)}
+.tile img{width:100%;height:100%;object-fit:cover;transition:transform .8s var(--ease)}
+.tile:hover img{transform:scale(1.03)}
+.t-a{grid-column:1/3;grid-row:1/4}.t-b{grid-column:3/4;grid-row:1/3}.t-c{grid-column:4/5;grid-row:1/2}.t-d{grid-column:4/5;grid-row:2/4}
+.t-e{grid-column:3/4;grid-row:3/5}.t-f{grid-column:1/2;grid-row:4/5}.t-g{grid-column:2/3;grid-row:4/5}.t-h{grid-column:4/5;grid-row:4/5}
+.note{background:var(--paper);padding:16px;display:flex;flex-direction:column;justify-content:space-between}
+.note p{font:italic 400 19px/1.2 var(--serif)}
+.note small{font-size:12px;color:var(--muted);font-weight:600}
+.tile.new{animation:pop 4s var(--ease) infinite}
+@keyframes pop{0%,8%{box-shadow:0 0 0 0 transparent}14%{box-shadow:0 0 0 3px var(--gold)}40%,100%{box-shadow:0 0 0 0 transparent}}
+.tv-badge{position:absolute;left:10px;top:10px;background:rgba(20,20,20,.82);color:#fff;font:600 11px/1 var(--sans);padding:7px 10px;border-radius:99px;display:flex;align-items:center;gap:6px}
+.tv-badge i{width:6px;height:6px;border-radius:50%;background:#E2C48A}
+
+/* ---------- Close ---------- */
+.close{position:relative;color:#fff;justify-content:flex-end!important;overflow:hidden}
+.close>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 35%}
+.close::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(12,12,12,.7),rgba(12,12,12,.3) 55%,rgba(12,12,12,0) 80%),linear-gradient(180deg,rgba(12,12,12,0) 40%,rgba(12,12,12,.6));z-index:1}
+.close .wrap{position:relative;z-index:2}
+.close h2{max-width:12em;font-size:clamp(44px,6vw,88px)}
+.close .lead{color:rgba(255,255,255,.85);margin:20px 0 32px}
+.close .btn--primary{background:#fff;color:var(--ink)}
+
+footer{background:var(--dark);color:var(--dark-muted);padding:72px 0 36px;font-size:15px}
+.foot{display:grid;grid-template-columns:repeat(12,1fr);gap:24px}
+.foot .mark{color:var(--dark-ink);font-size:36px}
+.foot .mark span{color:#D9BC7E}
+.foot__brand{grid-column:1/5}
+.foot__brand p{margin-top:12px;max-width:22em}
+.foot__col{grid-column:span 2}
+.foot__col h4{color:var(--dark-ink);font:600 13px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px}
+.foot__col a{display:block;padding:6px 0}
+.foot__col a:hover{color:var(--dark-ink)}
+.foot__base{margin-top:56px;padding-top:22px;border-top:1px solid var(--dark-line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px}
+
+.phone-bar{position:fixed;left:12px;right:12px;bottom:12px;z-index:40;display:none}
+.phone-bar .btn{width:100%;box-shadow:0 14px 30px -12px rgba(0,0,0,.5)}
+
+/* mobile video only on phones */
+.inv__bg .vid{display:none}
+
+@media (max-width:1100px){
+  .nav__links{display:none}
+  .nav .wrap{grid-template-columns:1fr auto}
+  .sheet{grid-template-columns:1fr auto;}
+  .sheet__intro{grid-column:1/-1}
+  .sheet__hint{grid-column:1/2;margin-top:-14px}
+  .studio{grid-template-columns:280px 1fr}
+  .site-copy,.studio,.gift-photo,.gift-cards,.mural-copy,.wall{grid-column:1/13}
+  .gift-photo{min-height:340px}
+}
+@media (max-width:860px){
+  :root{--nav-h:64px}
+  body{font-size:16px}
+  .nav__cta .link,.nav__cta .btn{display:none}
+  .menu-btn{display:inline-flex}
+  main>section{padding-block:calc(var(--nav-h) + 36px) 56px}
+
+  /* hero no celular: o convite ocupa a tela, como o convidado vê */
+  .hero{min-height:0}
+  .hero .inv{padding:calc(var(--nav-h) + 30px) 22px 196px}
+  .hero .inv__names{font-size:clamp(3.4rem,17cqw,5rem)}
+  .hero .inv__count b{font-size:2.1rem}
+  .hero .inv__tag{margin-bottom:0}
+  .hero .inv__cta{display:none}
+  .inv__bg .vid{display:block}
+  .inv__bg .desk{display:none}
+  .example-tag{top:calc(var(--nav-h) + 2px);font-size:12px}
+  .sheet{left:10px;right:10px;bottom:10px;padding:18px;border-radius:22px;grid-template-columns:1fr;gap:12px}
+  .sheet h1{font-size:25px}
+  .sheet__facts{display:none}
+  .sheet__toggle{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:#fff;font-weight:600;font-size:15px}
+  .sheet__toggle svg{width:16px;height:16px;transition:transform .3s}
+  .sheet__toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
+  .sheet__form{display:none}
+  .sheet.open .sheet__form{display:block}
+  .names{grid-template-columns:1fr auto 1fr}
+  .names .field--date{grid-column:1/-1}
+  .sheet__hint{display:none}
+  .sheet .btn{width:100%}
+  .skip-intro{top:auto;bottom:220px;right:50%;transform:translateX(50%)}
+
+  .open-grid,.site-grid,.gift-grid,.mural-grid,.sec-head,.foot{grid-template-columns:1fr}
+  .open-copy,.open-stage,.sec-head h2,.sec-head .lead,.foot__brand,.foot__col{grid-column:1/-1}
+  .tabs{max-width:none}
+  .studio{grid-template-columns:1fr;justify-items:center;padding:18px}
+  .studio .phone{max-width:280px}
+  .controls{width:100%}
+  .app__body{grid-template-columns:1fr}
+  .app__side{display:none}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .app-notes{grid-template-columns:1fr;gap:16px}
+  .table th:nth-child(3),.table td:nth-child(3){display:none}
+  .gift-cards{grid-template-columns:1fr}
+  .card--wide{grid-column:1/-1;grid-template-columns:1fr}
+  .wall{grid-template-columns:repeat(2,1fr);grid-auto-rows:150px}
+  .t-a{grid-column:1/3;grid-row:auto/span 2}
+  .t-b,.t-c,.t-d,.t-e,.t-f,.t-g,.t-h{grid-column:auto;grid-row:auto}
+  .t-d{grid-row:span 2}
+  .t-h{display:none}
+  .phone-bar.on{display:block}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
+
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a href="#topo" class="mark" aria-label="Celebraê, início">Celebra<span>ê</span></a>
+    <nav class="nav__links" aria-label="Seções">
+      <a href="#aberturas">Aberturas</a><a href="#site">O site</a><a href="#presenca">Presença</a><a href="#presentes">Presentes</a><a href="#mural">Mural</a>
+    </nav>
+    <div class="nav__cta">
+      <a href="/admin/login" class="link">Entrar</a>
+      <a href="/criar" class="btn btn--primary js-create">Criar meu convite</a>
+      <button class="menu-btn" aria-expanded="false" aria-controls="menu" aria-label="Abrir menu"><span></span></button>
+    </div>
+  </div>
+</header>
+<div class="mobile-menu" id="menu">
+  <a href="#aberturas">Aberturas</a><a href="#site">O site</a><a href="#presenca">Presença</a><a href="#presentes">Presentes</a><a href="#mural">Mural</a><a href="/admin/login">Entrar</a>
+  <a href="/criar" class="btn btn--primary js-create">Criar meu convite</a>
+</div>
+
+<main id="conteudo">
+
+<!-- HERO: um convite da Celebraê em tela cheia -->
+<section class="hero pre" id="topo" data-enter aria-label="Convite de exemplo">
+  <div class="inv">
+    <div class="inv__bg" aria-hidden="true">
+      <!-- PC: fotos em crossfade de 1,5 s, como o HeroCarousel -->
+      <img class="desk on" src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=2000&q=75" alt="">
+      <img class="desk" src="https://images.unsplash.com/photo-1460978812857-470ed1c77af0?auto=format&fit=crop&w=2000&q=75" alt="" loading="lazy">
+      <!-- celular: vídeo vertical, como hero_videos -->
+      <video class="vid on" autoplay muted loop playsinline preload="metadata" poster="https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=900&q=70">
+        <source src="../../public/videos/8502799-uhd_2160_3840_24fps.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="inv__content">
+      <p class="inv__names"><span data-n1>Lia</span> &amp; <span data-n2>Tomás</span></p>
+      <p class="inv__date" data-date>18 de abril de 2027</p>
+      <div class="inv__count" data-count aria-hidden="true"><div><b>0</b><small>dias</small></div><div><b>0</b><small>horas</small></div><div><b>0</b><small>min</small></div><div><b>0</b><small>seg</small></div></div>
+      <p class="inv__tag">O nosso grande dia está chegando!</p>
+      <div class="inv__cta">
+        <a href="#presenca" class="inv__btn inv__btn--p">Confirmar presença</a>
+        <a href="#presentes" class="inv__btn inv__btn--s">Lista de presentes</a>
+      </div>
+    </div>
+  </div>
+
+  <a href="#aberturas" class="example-tag"><i></i>Convite feito na Celebraê · abertura <b id="openingName">Pétalas ao Vento</b></a>
+  <div class="wind" id="wind" aria-hidden="true"></div>
+  <button class="skip-intro" id="skipIntro">Pular abertura</button>
+
+  <div class="sheet" id="sheet">
+    <div class="sheet__intro">
+      <h1>Convite de casamento digital, <em>com site, presença e presentes</em>.</h1>
+      <p class="sheet__facts"><b>Grátis</b> para começar · <b>5</b> aberturas animadas</p>
+    </div>
+    <button class="sheet__toggle" id="sheetToggle" aria-expanded="false" aria-controls="sheetForm">Ver com os nomes de vocês <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+    <form class="sheet__form" id="sheetForm" onsubmit="return false">
+      <div class="names">
+        <div class="field"><label for="n1">Nome</label><input id="n1" value="Lia" maxlength="18" autocomplete="off"></div>
+        <span class="amp" aria-hidden="true">&amp;</span>
+        <div class="field"><label for="n2">Nome</label><input id="n2" value="Tomás" maxlength="18" autocomplete="off"></div>
+        <div class="field field--date"><label for="dt">Data do casamento</label><input id="dt" type="date" value="2027-04-18"></div>
+      </div>
+    </form>
+    <a href="/criar" class="btn btn--primary js-create">Criar meu convite <span class="arr" aria-hidden="true">→</span></a>
+    <p class="sheet__hint">Escrevam os nomes de vocês: o convite muda na hora, nesta página inteira.</p>
+  </div>
+</section>
+
+<!-- ABERTURAS -->
+<section id="aberturas" aria-labelledby="ab-h">
+  <div class="wrap open-grid">
+    <div class="open-copy">
+      <p class="eyebrow">Abertura do convite</p>
+      <h2 id="ab-h">Cinco aberturas para o primeiro toque. <span class="muted">Escolha uma e veja tocar.</span></h2>
+      <p class="lead">É o que o convidado vê ao abrir o link, antes da capa. Vocês trocam a abertura no painel quando quiserem, sem reenviar nada.</p>
+      <div class="tabs" role="tablist" aria-label="Aberturas do convite">
+        <button class="tab" role="tab" aria-selected="false" data-demo="trad"><span class="tab__n">01</span><span><span class="tab__name">Tradicional</span><span class="tab__desc">O cartão aparece limpo, como no papel.</span></span><span class="tab__play"><svg viewBox="0 0 10 12"><path d="M0 0l10 6-10 6z"/></svg></span></button>
+        <button class="tab" role="tab" aria-selected="false" data-demo="env"><span class="tab__n">02</span><span><span class="tab__name">Envelope 3D</span><span class="tab__desc">O selo se solta e a carta sobe do envelope.</span></span><span class="tab__play"><svg viewBox="0 0 10 12"><path d="M0 0l10 6-10 6z"/></svg></span></button>
+        <button class="tab" role="tab" aria-selected="false" data-demo="cine"><span class="tab__n">03</span><span><span class="tab__name">Cinematic Spark</span><span class="tab__desc">Um risco de luz no escuro revela os nomes.</span></span><span class="tab__play"><svg viewBox="0 0 10 12"><path d="M0 0l10 6-10 6z"/></svg></span></button>
+        <button class="tab" role="tab" aria-selected="true" data-demo="pet"><span class="tab__n">04</span><span><span class="tab__name">Pétalas ao Vento</span><span class="tab__desc">Pétalas caem pela tela antes do convite.</span></span><span class="tab__play"><svg viewBox="0 0 10 12"><path d="M0 0l10 6-10 6z"/></svg></span></button>
+        <button class="tab" role="tab" aria-selected="false" data-demo="pet2"><span class="tab__n">05</span><span><span class="tab__name">Pétalas ao Vento 2</span><span class="tab__desc">Folhas atravessam a tela com o vento.</span></span><span class="tab__play"><svg viewBox="0 0 10 12"><path d="M0 0l10 6-10 6z"/></svg></span></button>
+      </div>
+    </div>
+    <div class="open-stage">
+      <div class="phone" role="tabpanel" aria-label="Prévia da abertura"><div class="phone__screen"><div class="demo" id="demo"></div></div></div>
+      <button class="replay" id="replay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Ver de novo</button>
+    </div>
+  </div>
+</section>
+
+<!-- SITE -->
+<section id="site" aria-labelledby="site-h">
+  <div class="wrap site-grid">
+    <div class="site-copy">
+      <p class="eyebrow">O site do casamento</p>
+      <h2 id="site-h">O convite é também <em>o site de vocês</em>.</h2>
+      <p class="lead">Depois da capa, o convidado rola e encontra tudo do dia. Role o celular ao lado e troquem cores e letra.</p>
+      <ul class="parts">
+        <li><span>i</span><div><b>Nossa história</b> e quem são os noivos</div></li>
+        <li><span>ii</span><div><b>Agenda</b> da cerimônia e da recepção, com o mapa de cada lugar</div></li>
+        <li><span>iii</span><div><b>Confirmação de presença</b> e perguntas frequentes</div></li>
+        <li><span>iv</span><div><b>Ordem das seções</b> do jeito que vocês quiserem</div></li>
+      </ul>
+    </div>
+
+    <div class="studio">
+      <div class="phone">
+        <div class="phone__screen">
+          <div class="scroller" id="scroller" tabindex="0" aria-label="Convite de exemplo, role para ver as seções">
+            <div class="inv">
+              <div class="inv__bg" aria-hidden="true"><img class="on" src="https://images.unsplash.com/photo-1591604466107-ec97de577aff?auto=format&fit=crop&w=700&q=70" alt=""></div>
+              <p class="inv__names"><span data-n1>Lia</span> &amp; <span data-n2>Tomás</span></p>
+              <p class="inv__date" data-date>18 de abril de 2027</p>
+              <div class="inv__count" data-count><div><b>0</b><small>dias</small></div><div><b>0</b><small>horas</small></div><div><b>0</b><small>min</small></div><div><b>0</b><small>seg</small></div></div>
+              <p class="inv__tag">O nosso grande dia está chegando!</p>
+              <div class="inv__cta"><span class="inv__btn inv__btn--p">Confirmar presença</span><span class="inv__btn inv__btn--s">Lista de presentes</span></div>
+            </div>
+            <div class="isec">
+              <h4>Nossa História</h4>
+              <p class="sub">O início de tudo</p>
+              <p>Nos conhecemos numa festa de aniversário, no meio de um assunto que não tinha nada a ver com a gente. Dez anos depois, aqui estamos.</p>
+              <p class="hl">Agora começa o capítulo mais bonito: e queremos vocês do nosso lado.</p>
+            </div>
+            <div class="isec isec--white">
+              <h4>Agenda</h4>
+              <p class="sub" style="text-transform:none;letter-spacing:0;font-size:.82rem;color:#666">Acompanhe cada momento do nosso grande dia</p>
+              <div class="tl">
+                <div class="tl-item"><span class="tl-time">16:00</span><div class="tl-card"><b>Cerimônia</b>Capela do Bosque<br><span class="gps">Abrir no mapa</span></div></div>
+                <div class="tl-item"><span class="tl-time">18:00</span><div class="tl-card"><b>Recepção</b>Casa Jardim<br><span class="gps">Abrir no mapa</span></div></div>
+              </div>
+            </div>
+          </div>
+          <span class="scroll-hint" id="scrollHint">Role o convite ↓</span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div>
+          <span class="ctrl-label" id="lbl-cor">Cores</span>
+          <div class="swatches" role="group" aria-labelledby="lbl-cor">
+            <button class="swatch" aria-pressed="true" data-bg="#fdfbf7" data-ink="#4a4a4a" data-acc="#C5A059"><span class="sw-dots"><i style="background:#fdfbf7"></i><i style="background:#C5A059"></i></span>Dourado</button>
+            <button class="swatch" aria-pressed="false" data-bg="#fbf5f0" data-ink="#4d3c36" data-acc="#b97a62"><span class="sw-dots"><i style="background:#fbf5f0"></i><i style="background:#b97a62"></i></span>Terracota</button>
+            <button class="swatch" aria-pressed="false" data-bg="#f5f7fa" data-ink="#3a4450" data-acc="#6f8aa6"><span class="sw-dots"><i style="background:#f5f7fa"></i><i style="background:#6f8aa6"></i></span>Azul</button>
+            <button class="swatch" aria-pressed="false" data-bg="#1a1917" data-ink="#efe8dc" data-acc="#C5A059"><span class="sw-dots"><i style="background:#1a1917"></i><i style="background:#C5A059"></i></span>Noite</button>
+          </div>
+          <p class="ctrl-note">No painel, qualquer cor de fundo, texto e destaque.</p>
+        </div>
+        <div>
+          <span class="ctrl-label" id="lbl-fonte">Letra dos nomes</span>
+          <div class="fonts" role="group" aria-labelledby="lbl-fonte">
+            <button class="font-opt" aria-pressed="true" data-font="'Pinyon Script', cursive" style="font-family:'Pinyon Script'" aria-label="Pinyon Script">Lia</button>
+            <button class="font-opt" aria-pressed="false" data-font="'Great Vibes', cursive" style="font-family:'Great Vibes'" aria-label="Great Vibes">Lia</button>
+            <button class="font-opt" aria-pressed="false" data-font="'Alex Brush', cursive" style="font-family:'Alex Brush'" aria-label="Alex Brush">Lia</button>
+            <button class="font-opt" aria-pressed="false" data-font="'Corinthia', cursive" style="font-family:'Corinthia';font-size:32px" aria-label="Corinthia">Lia</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRESENÇA -->
+<section id="presenca" aria-labelledby="pr-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="pr-h">Lista de presença, <em>nome a nome</em>.</h2>
+      <p class="lead">Cadastrem cada convidado com o limite de acompanhantes, ou mandem um link único e cada pessoa escreve o próprio nome. As respostas chegam no painel na hora.</p>
+    </div>
+    <div class="app" aria-label="Painel de convidados da Celebraê">
+      <div class="app__bar"><i></i><i></i><i></i><span>Painel · Convidados</span></div>
+      <div class="app__body">
+        <nav class="app__side" aria-hidden="true">
+          <span class="mark">Celebra<span>ê</span></span>
+          <a><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Painel</a>
+          <a class="on"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c2 .7 3.2 2.5 3.6 5.2"/></svg>Convidados</a>
+          <a><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18"/></svg>Presentes</a>
+          <a><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>Mural</a>
+          <a><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</a>
+          <a><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>Configurações</a>
+        </nav>
+        <div class="app__main">
+          <div class="app__top">
+            <h3>Convidados</h3>
+            <div class="seg" role="group" aria-label="Modo do convite">
+              <button aria-pressed="true" data-mode="ind">Convites individuais</button>
+              <button aria-pressed="false" data-mode="link">Link único</button>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="stat"><small>Convidados</small><b>143</b></div><div class="stat"><small>Confirmados</small><b>92</b></div><div class="stat"><small>Pendentes</small><b>38</b></div><div class="stat"><small>Não vão</small><b>13</b></div>
+          </div>
+          <table class="table"><thead><tr><th id="col1">Convidado</th><th>Acompanhantes</th><th>Respondeu</th><th>Status</th></tr></thead><tbody id="rsvpRows"></tbody></table>
+        </div>
+      </div>
+    </div>
+    <div class="app-notes">
+      <div><h3>Painel a dois</h3><p>Os dois noivos entram com a própria conta e mexem no mesmo evento.</p></div>
+      <div><h3>E-mails prontos</h3><p>Modelos de mensagem para avisar os convidados, já com o link do convite.</p></div>
+      <div><h3>Acompanhantes no limite</h3><p>Cada convite aceita só quantas pessoas vocês liberaram.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRESENTES -->
+<section id="presentes" aria-labelledby="gi-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="gi-h">Lista de presentes <em>pelo Pix</em>.</h2>
+      <p class="lead">O convidado escolhe o presente, copia o código Pix e paga no app do banco. O valor vai direto para a conta de vocês.</p>
+    </div>
+    <div class="gift-grid">
+      <div class="gift-photo"><img src="https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=1000&q=75" alt="Duas alianças douradas sobre papel de seda e flores secas" loading="lazy"></div>
+      <div class="gift-cards">
+        <article class="card card--wide">
+          <div><h3>Paga em segundos pelo celular</h3><p style="margin-top:8px">QR Code para quem está no computador, código copia-e-cola para quem está no celular.</p></div>
+          <div class="ui pix">
+            <div class="qr" id="qr" aria-hidden="true"></div>
+            <div><div class="f-line">Jogo de taças de cristal</div><div class="f-sub">Presente para <span data-n1>Lia</span> &amp; <span data-n2>Tomás</span></div><button class="copy-btn" id="copyBtn">Copiar código Pix</button></div>
+          </div>
+        </article>
+        <article class="card">
+          <h3>Cotas da lua de mel</h3>
+          <div class="ui">
+            <div class="quota"><span>Passeio de barco</span><small>3 de 4</small></div><div class="quota-bar"><i style="--w:75%"></i></div>
+            <div class="quota"><span>Jantar especial</span><small>2 de 5</small></div><div class="quota-bar"><i style="--w:40%"></i></div>
+          </div>
+          <p>Dividam a viagem em partes e cada convidado leva uma.</p>
+        </article>
+        <article class="card">
+          <h3>Gravata do noivo</h3>
+          <div class="ui"><div class="f-line">Quanto você gostaria de contribuir?</div><div class="amounts" id="amounts"><span>R$ 20</span><span class="on">R$ 50</span><span>R$ 100</span><span>Outro</span></div></div>
+          <p>A tradição da festa, agora com um link: cada um escolhe o valor.</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MURAL -->
+<section id="mural" aria-labelledby="mu-h">
+  <div class="wrap mural-grid">
+    <div class="mural-copy">
+      <p class="eyebrow">Durante a festa</p>
+      <h2 id="mu-h">Mural de fotos e recados, <em>ao vivo</em>.</h2>
+      <p class="lead">Convidados mandam fotos e mensagens pelo celular. Vocês aprovam o que aparece.</p>
+      <div class="mural-list">
+        <div><span class="m-ico"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span><p><b>Modo TV para o telão</b><span>O mural se atualiza sozinho na tela da festa.</span></p></div>
+        <div><span class="m-ico"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4"/></svg></span><p><b>Story para o Instagram</b><span>Sete modelos de cartão para o convidado postar.</span></p></div>
+      </div>
+    </div>
+    <div class="wall">
+      <div class="tile t-a"><img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=72" alt="Noivos de mãos dadas diante dos convidados e de balões" loading="lazy"><span class="tv-badge"><i></i>Modo TV</span></div>
+      <div class="tile t-b"><img src="https://images.unsplash.com/photo-1525772764200-be829a350797?auto=format&fit=crop&w=500&q=70" alt="Mesa de recepção com flores rosadas e velas acesas" loading="lazy"></div>
+      <div class="tile t-c note"><p>“Que dia lindo. Obrigada por nos deixarem fazer parte.”</p><small>Recado de convidada</small></div>
+      <div class="tile t-d"><img src="https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=500&q=70" alt="Altar com cúpula decorado com flores num jardim" loading="lazy"></div>
+      <div class="tile t-e new"><img src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=500&q=70" alt="Mãos dos noivos com alianças sobre o buquê" loading="lazy"></div>
+      <div class="tile t-f"><img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=500&q=70" alt="Mesa longa da recepção com arranjos azuis e brancos" loading="lazy"></div>
+      <div class="tile t-g"><img src="https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=500&q=70" alt="Corredor da cerimônia com arranjos de rosas" loading="lazy"></div>
+      <div class="tile t-h"><img src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=500&q=70" alt="Duas cadeiras decoradas no gramado à beira do lago" loading="lazy"></div>
+    </div>
+  </div>
+</section>
+
+<!-- CLOSE -->
+<section class="close" aria-labelledby="cl-h">
+  <img src="https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=2000&q=75" alt="Noivos abraçados na praia com o véu ao vento" loading="lazy">
+  <div class="wrap">
+    <h2 id="cl-h">O convite de <span data-n1>Lia</span> &amp; <span data-n2>Tomás</span> já está quase pronto.</h2>
+    <p class="lead">Criar é grátis. Vocês ajustam fotos, cores e textos e veem tudo antes de mandar para alguém.</p>
+    <a href="/criar" class="btn btn--primary js-create">Criar meu convite <span class="arr" aria-hidden="true">→</span></a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot__brand"><span class="mark">Celebra<span>ê</span></span><p>Convites de casamento digitais, com site, lista de presença e presentes pelo Pix.</p></div>
+      <div class="foot__col"><h4>Produto</h4><a href="#aberturas">Aberturas</a><a href="#site">O site</a><a href="#presenca">Presença</a><a href="#presentes">Presentes</a><a href="#mural">Mural</a></div>
+      <div class="foot__col"><h4>Conta</h4><a href="/criar" class="js-create">Criar convite</a><a href="/admin/login">Entrar</a><a href="/inv/preview">Convite de exemplo</a></div>
+      <div class="foot__col"><h4>Legal</h4><!-- no app: abrem o modal do LegalFooter --><a href="#termos">Termos de uso</a><a href="#privacidade">Privacidade</a></div>
+    </div>
+    <div class="foot__base"><span>© 2026 Celebraê</span><span>Fotografias: Unsplash (Licença Unsplash). Vídeo de capa: acervo do projeto.</span></div>
+  </div>
+</footer>
+
+<div class="phone-bar" id="phoneBar"><a href="/criar" class="btn btn--primary js-create">Criar meu convite</a></div>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+  /* ---------- estado do casal ---------- */
+  const state = { n1: 'Lia', n2: 'Tomás', date: '2027-04-18' };
+  const fmtDate = iso => {
+    const d = new Date(iso + 'T12:00:00');
+    return isNaN(d) ? '' : d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+  };
+  const initials = () => (state.n1[0] || '') + (state.n2[0] || '');
+  const paint = () => {
+    $$('[data-n1]').forEach(e => e.textContent = state.n1 || 'Noiva');
+    $$('[data-n2]').forEach(e => e.textContent = state.n2 || 'Noivo');
+    $$('[data-date]').forEach(e => e.textContent = fmtDate(state.date));
+    const q = new URLSearchParams({ nome1: state.n1, nome2: state.n2, data: state.date });
+    $$('.js-create').forEach(a => a.href = '/criar?' + q); // sugestão: /criar pré-preenche com isso
+    tick();
+  };
+  const tick = () => {
+    const t = new Date(state.date + 'T16:00:00-03:00');
+    let s = Math.max(0, (t - Date.now()) / 1000 | 0);
+    const v = [s / 86400 | 0, (s % 86400) / 3600 | 0, (s % 3600) / 60 | 0, s % 60];
+    $$('[data-count]').forEach(c => $$('b', c).forEach((b, i) => b.textContent = i ? String(v[i]).padStart(2, '0') : v[i]));
+  };
+  setInterval(tick, 1000);
+  [['n1', 'n1'], ['n2', 'n2'], ['dt', 'date']].forEach(([id, k]) => $('#' + id).addEventListener('input', e => { state[k] = e.target.value.trim(); paint(); }));
+  paint();
+
+  /* ---------- nav ---------- */
+  const nav = $('#nav');
+  const onScroll = () => nav.classList.toggle('is-scrolled', scrollY > innerHeight * .6);
+  addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  const mb = $('.menu-btn'), menu = $('#menu');
+  mb.addEventListener('click', () => {
+    const open = mb.getAttribute('aria-expanded') !== 'true';
+    mb.setAttribute('aria-expanded', open); mb.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
+    menu.classList.toggle('open', open); nav.classList.toggle('is-scrolled', open || scrollY > innerHeight * .6);
+  });
+  $$('a', menu).forEach(a => a.addEventListener('click', () => mb.click()));
+  const bar = $('#phoneBar');
+  new IntersectionObserver(([e]) => bar.classList.toggle('on', !e.isIntersecting), { threshold: .1 }).observe($('#topo'));
+
+  /* folha do celular */
+  const sheet = $('#sheet'), tg = $('#sheetToggle');
+  tg.addEventListener('click', () => { const o = tg.getAttribute('aria-expanded') !== 'true'; tg.setAttribute('aria-expanded', o); sheet.classList.toggle('open', o); if (o) $('#n1').focus(); });
+
+  /* ---------- HERO: uma abertura sorteada a cada visita ---------- */
+  const hero = $('#topo'), wind = $('#wind');
+  const reveal = () => { hero.classList.remove('pre'); };
+  const OPENINGS = { trad: 'Tradicional', env: 'Envelope 3D', cine: 'Cinematic Spark', pet: 'Pétalas ao Vento', pet2: 'Pétalas ao Vento 2' };
+  // o tempo do convite segue o mesmo relógio das animações (nada de setTimeout fora de sincronia)
+  let clocks = [];
+  const clock = (ms, fn) => { const k = wind.animate([{ opacity: 1 }, { opacity: 1 }], { duration: ms }); k.onfinish = fn; clocks.push(k); return k; };
+  const el = (tag, cls, parent = wind) => { const e = document.createElement(tag); if (cls) e.className = cls; parent.appendChild(e); return e; };
+  const ease = { out: 'cubic-bezier(.22,1,.36,1)', inOut: 'cubic-bezier(.37,0,.63,1)' };
+  const names = () => `${state.n1 || 'Noiva'} &amp; ${state.n2 || 'Noivo'}`;
+  const finish = (D, revealAt, dimUntil) => {
+    hero.classList.add('blooming');
+    clock(dimUntil, () => hero.classList.remove('blooming'));
+    clock(revealAt, reveal);
+    clock(D + 100, () => wind.innerHTML = '');
+  };
+
+  const intros = {
+    /* Pétalas ao Vento: a flor desabrocha girando e o vento a desfaz */
+    pet() {
+      const W = hero.clientWidth, H = hero.clientHeight, small = W < 700;
+      const base = small ? 30 : 44, D = 4400;
+      const smooth = 'cubic-bezier(.37,0,.63,1)';
+      // anéis de dentro pra fora: quantidade, distância do centro, tamanho
+      const rings = [
+        { n: 5,  d: .10, s: .50, c: ['#e9a6a0', '#c9726b'] },
+        { n: 7,  d: .32, s: .72, c: ['#f2bfb6', '#d98c80'] },
+        { n: 9,  d: .58, s: .92, c: ['#f8d6cd', '#e4a596'] },
+        { n: 11, d: .86, s: 1.1, c: ['#fde9e2', '#efc0b2'] }
+      ];
+      const frag = document.createDocumentFragment();
+      // anel de fora entra primeiro no DOM (fica atrás)
+      [...rings].reverse().forEach((ring, ri) => {
+        const r = rings.length - 1 - ri; // 0 = miolo
+        for (let k = 0; k < ring.n; k++) {
+          const a = (360 / ring.n) * k + (r % 2 ? 360 / ring.n / 2 : 0) + (Math.random() - .5) * 6;
+          const [c1, c2] = ring.c;
+          const outer = document.createElement('b'), spin = document.createElement('u'), place = document.createElement('i'), shape = document.createElement('span');
+          shape.style.cssText = `--s:${base * ring.s * (.92 + Math.random() * .16)}px;--c1:${c1};--c2:${c2}`;
+          place.appendChild(shape); spin.appendChild(place); outer.appendChild(spin); frag.appendChild(outer);
+          const dist = base * ring.d;
+
+          // 1. a flor gira inteira, rápido no começo e desacelerando (igual para todas as pétalas)
+          spin.animate([{ transform: 'rotate(-160deg)' }, { transform: 'rotate(110deg)' }],
+            { duration: D, easing: 'cubic-bezier(.12,.55,.25,1)', fill: 'both' });
+
+          // 2. cada pétala desabrocha do miolo para fora, com o anel de dentro primeiro
+          place.animate([
+            { transform: `rotate(${a - 25}deg) translateY(0) scale(.1)`, opacity: 0 },
+            { transform: `rotate(${a}deg) translateY(${-dist}px) scale(1)`, opacity: 1 }
+          ], { duration: 1300, delay: 120 + r * 150 + Math.random() * 90, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'both' });
+
+          // 3. o vento solta as pétalas de fora primeiro e as leva em curva, sem tranco
+          const go = .44 + (rings.length - 1 - r) * .035 + Math.random() * .05;
+          const wx = W * (.45 + Math.random() * .55), wy = -H * (.08 + Math.random() * .32);
+          outer.animate([
+            { transform: 'translate(0,0)', opacity: 1 },
+            { transform: 'translate(0,0)', opacity: 1, offset: go, easing: 'cubic-bezier(.45,0,.75,.7)' },
+            { transform: `translate(${wx * .32}px,${wy * .2 + 18}px)`, opacity: 1, offset: go + (1 - go) * .45, easing: smooth },
+            { transform: `translate(${wx}px,${wy}px)`, opacity: 0 }
+          ], { duration: D, fill: 'both' });
+
+          // 4. ao sair, a pétala vira no ar devagar
+          shape.animate([
+            { transform: 'rotate(0) rotateX(0)' },
+            { transform: 'rotate(0) rotateX(0)', offset: go, easing: smooth },
+            { transform: `rotate(${120 + Math.random() * 220}deg) rotateX(${140 + Math.random() * 200}deg)` }
+          ], { duration: D, fill: 'both' });
+        }
+      });
+      // miolo
+      const co = document.createElement('b'), core = document.createElement('i'); core.className = 'core'; co.appendChild(core); frag.appendChild(co);
+      core.animate([{ transform: 'scale(0)', opacity: 0 }, { transform: 'scale(1)', opacity: 1, offset: .14 }, { transform: 'scale(1)', opacity: 1, offset: .46 }, { transform: 'scale(.4)', opacity: 0 }],
+        { duration: D, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'both' });
+      wind.appendChild(frag);
+      finish(D, D * .58, D * .5);
+    },
+
+    /* Pétalas ao Vento 2: folhas atravessam a tela em rajadas */
+    pet2() {
+      const W = hero.clientWidth, H = hero.clientHeight, N = W < 700 ? 34 : 64, D = 3800;
+      const tones = [['#f6ead1', '#d4b06a'], ['#efe2cb', '#c49a55'], ['#fbf3e3', '#e2c58c'], ['#ffffff', '#e6d6b8']];
+      for (let i = 0; i < N; i++) {
+        const o = el('b', 'leaf-o'), l = el('span', 'leaf-s', o), [c1, c2] = tones[i % 4], sz = (W < 700 ? 16 : 22) * (.7 + Math.random() * .8);
+        l.style.cssText = `--s:${sz}px;--c1:${c1};--c2:${c2}`;
+        const y = H * (.12 + Math.random() * .7), amp = 30 + Math.random() * 70, wave = Math.random() * 6.28, dur = 2000 + Math.random() * 1100, delay = Math.random() * 1300;
+        const pts = [0, .25, .5, .75, 1].map(k => ({ transform: `translate(${-60 + k * (W + 140)}px,${y + Math.sin(wave + k * 5) * amp - k * 60}px)`, opacity: (k === 0 || k === 1) ? 0 : 1 }));
+        o.animate(pts, { duration: dur, delay, easing: ease.inOut, fill: 'both' });
+        l.animate([{ transform: `rotate(${Math.random() * 360}deg) rotateX(0deg)` }, { transform: `rotate(${360 + Math.random() * 540}deg) rotateX(${180 + Math.random() * 360}deg)` }], { duration: dur, delay, easing: 'linear', fill: 'both' });
+      }
+      finish(D, 1500, 1400);
+    },
+
+    /* Envelope 3D: o envelope chega, o selo se solta, a aba abre e a carta sobe */
+    env() {
+      const D = 4200, box = el('div', 'h-env'), env = el('div', 'env', box);
+      env.innerHTML = `<div class="env__back"></div><div class="env__letter"><span class="s">Convite</span><span class="n">${names()}</span></div><div class="env__front"></div><div class="env__flap"></div><div class="env__seal">${initials()}</div>`;
+      const letter = $('.env__letter', env), flap = $('.env__flap', env), seal = $('.env__seal', env);
+      env.animate([{ transform: 'translateY(40px) rotateX(18deg) scale(.86)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 1100, easing: ease.out, fill: 'both' });
+      seal.animate([{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(1.12)', opacity: 1, offset: .4 }, { transform: 'scale(1.5) translateY(-6px)', opacity: 0 }], { duration: 700, delay: 1100, easing: ease.inOut, fill: 'both' });
+      flap.animate([{ transform: 'rotateX(0deg)', zIndex: 4 }, { transform: 'rotateX(180deg)', zIndex: 1 }], { duration: 1100, delay: 1500, easing: ease.inOut, fill: 'both' });
+      letter.animate([{ transform: 'translateY(0)', zIndex: 2 }, { transform: 'translateY(-62%)', zIndex: 2 }], { duration: 1200, delay: 2200, easing: ease.out, fill: 'both' });
+      box.animate([{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(1.08)', opacity: 0 }], { duration: 1000, delay: 3200, easing: ease.inOut, fill: 'both' });
+      finish(D, 3150, 3200);
+    },
+
+    /* Cinematic Spark: tela escura, um risco de luz e faíscas revelam o convite */
+    cine() {
+      const D = 4200, W = hero.clientWidth, black = el('div', 'h-black'), line = el('i', 'h-line');
+      black.animate([{ opacity: 1 }, { opacity: 1, offset: .55 }, { opacity: 0 }], { duration: 3600, easing: ease.inOut, fill: 'both' });
+      line.animate([{ width: '0px', opacity: 0 }, { width: `${W * .5}px`, opacity: 1, offset: .5 }, { width: `${W * 1.1}px`, opacity: 0 }], { duration: 1900, delay: 300, easing: ease.out, fill: 'both' });
+      for (let i = 0; i < (W < 700 ? 24 : 44); i++) {
+        const sp = el('i', 'h-spark'), a = Math.random() * 6.28, r = 80 + Math.random() * W * .28;
+        sp.animate([{ transform: 'translate(0px,0px) scale(1)', opacity: 0 }, { opacity: 1, offset: .1 }, { transform: `translate(${Math.cos(a) * r}px,${Math.sin(a) * r * .55}px) scale(.3)`, opacity: 0 }],
+          { duration: 1500 + Math.random() * 1100, delay: 700 + Math.random() * 500, easing: ease.out, fill: 'both' });
+      }
+      clock(1500, reveal);                         // os nomes aparecem ainda no escuro...
+      clock(D + 100, () => wind.innerHTML = '');   // ...e a foto surge por trás
+    },
+
+    /* Tradicional: o cartão sobe no papel e se abre no convite */
+    trad() {
+      const D = 3800, paper = el('div', 'h-paper'), card = el('div', 'h-card', paper);
+      document.body.classList.add('intro-light'); clock(2300, () => document.body.classList.remove('intro-light'));
+      card.innerHTML = `<span class="s">Com a bênção de Deus e de nossos pais</span><span class="n">${names()}</span><hr><span class="s">${fmtDate(state.date)}</span>`;
+      card.animate([
+        { transform: 'translateY(36px) scale(1)', opacity: 0 },
+        { transform: 'translateY(0px) scale(1)', opacity: 1, offset: .38 },
+        { transform: 'translateY(0px) scale(1)', opacity: 1, offset: .7 },
+        { transform: 'translateY(0px) scale(1.06)', opacity: 0 }
+      ], { duration: 3200, delay: 150, easing: ease.inOut, fill: 'both' });
+      paper.animate([{ opacity: 1 }, { opacity: 1, offset: .65 }, { opacity: 0 }], { duration: 3500, easing: ease.inOut, fill: 'both' });
+      clock(2500, reveal);
+      clock(D + 100, () => wind.innerHTML = '');
+    }
+  };
+
+  // sorteio: nunca repete a abertura da última visita; ?abertura=env força uma (para testar)
+  // por enquanto só as Pétalas ao Vento entram no sorteio; as outras (trad, env, cine) ficam prontas para a revisão
+  const keys = ['pet', 'pet2'];
+  let pick = new URLSearchParams(location.search).get('abertura');
+  if (!keys.includes(pick) && !OPENINGS[pick]) {
+    let last = null; try { last = localStorage.getItem('celebrae:abertura'); } catch (e) {}
+    const pool = keys.filter(k => k !== last);
+    pick = pool[Math.floor(Math.random() * pool.length)];
+  }
+  try { localStorage.setItem('celebrae:abertura', pick); } catch (e) {}
+  $('#openingName').textContent = OPENINGS[pick];
+
+  $('#skipIntro').onclick = () => { clocks.forEach(c => c.cancel()); wind.innerHTML = ''; hero.classList.remove('blooming'); document.body.classList.remove('intro-light'); reveal(); };
+  let started = false;
+  const start = () => { if (started) return; started = true; if (reduce) return reveal(); intros[pick](); };
+  requestAnimationFrame(() => requestAnimationFrame(start));
+  setTimeout(reveal, 5200);        // garantia: o convite aparece de qualquer jeito
+
+  /* crossfade das fotos do PC (HeroCarousel) */
+  const slides = $$('#topo .inv__bg img.desk'); let si = 0;
+  if (!reduce) setInterval(() => { slides[si].classList.remove('on'); si = (si + 1) % slides.length; slides[si].classList.add('on'); slides[si].style.animation = 'none'; slides[si].offsetWidth; slides[si].style.animation = ''; }, 7000);
+
+  /* ---------- ABERTURAS ---------- */
+  const demo = $('#demo');
+  const nm = () => `${state.n1 || 'Noiva'} &amp; ${state.n2 || 'Noivo'}`;
+  const finalCover = () => {
+    const f = document.createElement('div'); f.className = 'final';
+    f.innerHTML = `<div class="inv"><div class="inv__bg"><img src="https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&w=700&q=70" alt=""></div>
+      <p class="inv__names">${nm()}</p><p class="inv__date">${fmtDate(state.date)}</p>
+      <div class="inv__count" data-count><div><b>0</b><small>dias</small></div><div><b>0</b><small>horas</small></div><div><b>0</b><small>min</small></div><div><b>0</b><small>seg</small></div></div>
+      <p class="inv__tag">O nosso grande dia está chegando!</p>
+      <div class="inv__cta"><span class="inv__btn inv__btn--p">Confirmar presença</span><span class="inv__btn inv__btn--s">Lista de presentes</span></div></div>`;
+    demo.appendChild(f); tick(); return f;
+  };
+  let timers = [], raf = 0;
+  const later = (fn, ms) => timers.push(setTimeout(fn, reduce ? 0 : ms));
+  const clear = () => { timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf); demo.innerHTML = ''; };
+  const particles = (kind, n) => {
+    const els = [], H = demo.clientHeight, W = demo.clientWidth, t0 = performance.now();
+    for (let i = 0; i < n; i++) { const p = document.createElement('i'); p.className = kind; demo.appendChild(p); els.push({ el: p, x: Math.random(), d: Math.random() * 1600, s: .55 + Math.random() * .6, r: Math.random() * 360, w: Math.random() * 6.28 }); }
+    const step = t => {
+      const e = t - t0; let alive = false;
+      for (const p of els) {
+        const k = Math.max(0, e - p.d) / (2600 / p.s); if (k < 1) alive = true;
+        p.el.style.transform = kind === 'petal'
+          ? `translate(${p.x * W + Math.sin(k * 6 + p.w) * 26}px,${-30 + k * (H + 60)}px) rotate(${p.r + k * 400}deg) rotateX(${k * 540}deg)`
+          : `translate(${-30 + k * (W + 60)}px,${p.x * H * .9 + Math.sin(k * 5 + p.w) * 40 - k * 60}px) rotate(${p.r + k * 520}deg)`;
+        p.el.style.opacity = k >= 1 ? 0 : 1;
+      }
+      if (alive) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+  };
+  const sm = () => `<span class="s">${fmtDate(state.date)}</span>`;
+  const demos = {
+    trad() {
+      demo.innerHTML = `<div class="d-trad"><div class="d-card" style="opacity:0;transform:translateY(24px);transition:opacity 1.1s ease,transform 1.1s var(--ease)"><span class="s">Com a bênção de Deus e de nossos pais</span><span class="n">${nm()}</span><hr>${sm()}</div></div>`;
+      later(() => { const c = $('.d-card', demo); c.style.opacity = 1; c.style.transform = 'none'; }, 150);
+      const f = finalCover(); later(() => f.classList.add('show'), 3000);
+    },
+    env() {
+      demo.innerHTML = `<div class="d-env"><div class="env"><div class="env__back"></div><div class="env__letter"><span class="s">Convite</span><span class="n">${nm()}</span></div><div class="env__front"></div><div class="env__flap"></div><div class="env__seal">${initials()}</div></div></div>`;
+      const d = demo.firstChild; later(() => d.classList.add('open'), 700); later(() => d.classList.add('rise'), 1500);
+      const f = finalCover(); later(() => f.classList.add('show'), 3100);
+    },
+    cine() {
+      demo.innerHTML = `<div class="d-cine"><div class="cine-line"></div><div class="cine-text"><span class="n">${nm()}</span>${sm()}</div></div>`;
+      const d = demo.firstChild;
+      later(() => {
+        d.classList.add('go'); if (reduce) return;
+        for (let i = 0; i < 26; i++) { const s = document.createElement('i'); s.className = 'spark'; d.appendChild(s); const a = Math.random() * 6.28, r = 60 + Math.random() * 140;
+          s.animate([{ transform: 'translate(-50%,-50%)', opacity: 1 }, { transform: `translate(${Math.cos(a) * r}px,${Math.sin(a) * r * .6}px)`, opacity: 0 }], { duration: 1400 + Math.random() * 900, delay: 300 + Math.random() * 500, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'both' }); }
+      }, 300);
+      const f = finalCover(); later(() => f.classList.add('show'), 3800);
+    },
+    pet() {
+      demo.innerHTML = `<div class="d-pet"><div class="pet-text"><span class="n">${nm()}</span>${sm()}</div></div>`;
+      if (!reduce) particles('petal', 34); later(() => $('.pet-text', demo).classList.add('show'), 1400);
+      const f = finalCover(); later(() => f.classList.add('show'), 4000);
+    },
+    pet2() {
+      demo.innerHTML = `<div class="d-pet" style="background:linear-gradient(180deg,#fbf7ef,#f0e6d4)"><div class="pet-text"><span class="n">${nm()}</span>${sm()}</div></div>`;
+      if (!reduce) particles('leaf', 30); later(() => $('.pet-text', demo).classList.add('show'), 1400);
+      const f = finalCover(); later(() => f.classList.add('show'), 4000);
+    }
+  };
+  const tabs = $$('.tab'); let current = pick;
+  tabs.forEach(x => x.setAttribute('aria-selected', x.dataset.demo === pick));
+  const play = id => { clear(); current = id; demos[id](); };
+  tabs.forEach(t => t.addEventListener('click', () => { tabs.forEach(x => x.setAttribute('aria-selected', x === t)); play(t.dataset.demo); }));
+  $('#replay').addEventListener('click', () => play(current));
+  let played = false;
+  new IntersectionObserver(([e]) => { if (e.isIntersecting && !played) { played = true; play(current); } }, { threshold: .3 }).observe($('#aberturas'));
+  finalCover().classList.add('show');
+
+  /* ---------- SITE: cores e letra mudam o convite ---------- */
+  const scroller = $('#scroller'), hint = $('#scrollHint');
+  scroller.addEventListener('scroll', () => hint.classList.toggle('off', scroller.scrollTop > 20), { passive: true });
+  const onAccent = hex => { const n = parseInt(hex.slice(1), 16), r = n >> 16, g = n >> 8 & 255, b = n & 255; return (r * 299 + g * 587 + b * 114) / 1000 >= 128 ? '#111' : '#fff'; };
+  $$('.swatch').forEach(b => b.addEventListener('click', () => {
+    $$('.swatch').forEach(x => x.setAttribute('aria-pressed', x === b));
+    const root = document.documentElement.style;
+    root.setProperty('--bg-primary', b.dataset.bg); root.setProperty('--text-main', b.dataset.ink);
+    root.setProperty('--inv-accent', b.dataset.acc); root.setProperty('--text-on-accent', onAccent(b.dataset.acc));
+  }));
+  $$('.font-opt').forEach(b => b.addEventListener('click', () => {
+    $$('.font-opt').forEach(x => x.setAttribute('aria-pressed', x === b));
+    document.documentElement.style.setProperty('--font-cursive', b.dataset.font);
+  }));
+
+  /* ---------- PRESENÇA ---------- */
+  const rows = {
+    ind: [['Clara Mendes', '#1A1A1A', '2 de 2', 'há 4 min', 'yes'], ['Beto e Ana Lima', '#C98E77', '1 de 1', 'há 1 h', 'yes'], ['Lúcia Ferraz', '#B08A45', '0 de 2', '—', 'wait'], ['Rafael Souto', '#6B6B76', '1 de 1', 'ontem', 'yes'], ['Júlia Prado', '#9A4B3E', '0 de 1', 'ontem', 'no']],
+    link: [['Marcos Tavares', '#6B6B76', '1', 'há 2 min', 'yes'], ['Paula e Leo', '#1A1A1A', '1', 'há 20 min', 'yes'], ['Sônia Reis', '#C98E77', '0', 'há 1 h', 'no'], ['Dani Costa', '#B08A45', '2', 'hoje, 9h', 'yes'], ['Igor Nunes', '#9A4B3E', '0', 'ontem', 'yes']]
+  };
+  const lab = { yes: 'Confirmado', wait: 'Pendente', no: 'Não vai' };
+  const render = m => {
+    $('#col1').textContent = m === 'ind' ? 'Convidado' : 'Nome digitado pelo convidado';
+    $('#rsvpRows').innerHTML = rows[m].map(([n, c, a, t, s]) => `<tr><td class="who"><span class="avatar" style="background:${c}">${n[0]}</span>${n}</td><td>${a}</td><td>${t}</td><td><span class="chip chip--${s}">${lab[s]}</span></td></tr>`).join('');
+  };
+  render('ind');
+  $$('.seg button').forEach(b => b.addEventListener('click', () => { $$('.seg button').forEach(x => x.setAttribute('aria-pressed', x === b)); render(b.dataset.mode); }));
+
+  /* ---------- PRESENTES ---------- */
+  const qr = $('#qr'); let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  for (let y = 0; y < 13; y++) for (let x = 0; x < 13; x++) {
+    const i = document.createElement('i'), f = (x < 4 && y < 4) || (x > 8 && y < 4) || (x < 4 && y > 8);
+    if (f) { const fx = x > 8 ? x - 9 : x, fy = y > 8 ? y - 9 : y; i.className = (fx === 0 || fx === 3 || fy === 0 || fy === 3 || (fx > 0 && fx < 3 && fy > 0 && fy < 3)) ? '' : 'o'; }
+    else i.className = rnd() > .5 ? '' : 'o';
+    qr.appendChild(i);
+  }
+  const cb = $('#copyBtn'); cb.addEventListener('click', () => { cb.textContent = 'Código copiado'; setTimeout(() => cb.textContent = 'Copiar código Pix', 2200); });
+  $$('#amounts span').forEach(s => s.addEventListener('click', () => $$('#amounts span').forEach(x => x.classList.toggle('on', x === s))));
+})();
+</script>
+</body>
+</html>

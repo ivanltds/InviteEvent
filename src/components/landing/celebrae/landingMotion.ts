@@ -52,6 +52,32 @@ export function pickOpening(search: string): OpeningId {
   return pick;
 }
 
+type Tone = [string, string];
+type FlowerPalette = [Tone, Tone, Tone, Tone]; // do miolo para fora
+
+/** Cores da flor de "Pétalas ao Vento": uma é sorteada a cada carregamento. */
+const FLOWER_PALETTES: Record<string, FlowerPalette> = {
+  rosa: [['#e9a6a0', '#c9726b'], ['#f2bfb6', '#d98c80'], ['#f8d6cd', '#e4a596'], ['#fde9e2', '#efc0b2']],
+  champanhe: [['#e8cf9c', '#bf9550'], ['#f0dcb3', '#cfa96a'], ['#f6e8cc', '#dcbf8a'], ['#fcf4e4', '#e9d4ab']],
+  marfim: [['#efe6d6', '#cdbb9b'], ['#f5eee2', '#dbccb2'], ['#faf6ee', '#e6dbc8'], ['#ffffff', '#efe7da']],
+  pessego: [['#f2b694', '#d88660'], ['#f7caae', '#e39d7b'], ['#fadcc8', '#ebb699'], ['#fdede2', '#f2cdb6']],
+  vinho: [['#b5546a', '#7d2a3f'], ['#cb7486', '#9a4258'], ['#dd9aa7', '#b86578'], ['#efc6ce', '#d495a2']],
+  serenity: [['#a9bcd6', '#6f87ab'], ['#c0cfe3', '#8ea3c3'], ['#d6e1ee', '#adbfd7'], ['#ecf1f7', '#cbd7e6']],
+};
+const FLOWER_KEY = 'celebrae:flor';
+
+function pickFlowerPalette(search: string): FlowerPalette {
+  const forced = new URLSearchParams(search).get('flor');
+  if (forced && forced in FLOWER_PALETTES) return FLOWER_PALETTES[forced];
+  let last: string | null = null;
+  try { last = localStorage.getItem(FLOWER_KEY); } catch { /* modo privado */ }
+  const names = Object.keys(FLOWER_PALETTES);
+  const pool = names.filter(k => k !== last);
+  const pick = pool[Math.floor(Math.random() * pool.length)] ?? names[0];
+  try { localStorage.setItem(FLOWER_KEY, pick); } catch { /* modo privado */ }
+  return FLOWER_PALETTES[pick];
+}
+
 export function mountLanding(root: HTMLElement, getState: () => CoupleState, opening: OpeningId) {
   const $ = <T extends Element = HTMLElement>(s: string, r: ParentNode = root) => r.querySelector(s) as T | null;
   const $$ = <T extends Element = HTMLElement>(s: string, r: ParentNode = root) => Array.from(r.querySelectorAll<T>(s)) as T[];
@@ -159,11 +185,12 @@ export function mountLanding(root: HTMLElement, getState: () => CoupleState, ope
       const W = hero.clientWidth, H = hero.clientHeight;
       const base = W < 700 ? 30 : 44, D = 4400;
       const smooth = 'cubic-bezier(.37,0,.63,1)';
+      const palette = pickFlowerPalette(location.search);
       const rings = [
-        { n: 5, d: 0.1, s: 0.5, c: ['#e9a6a0', '#c9726b'] },
-        { n: 7, d: 0.32, s: 0.72, c: ['#f2bfb6', '#d98c80'] },
-        { n: 9, d: 0.58, s: 0.92, c: ['#f8d6cd', '#e4a596'] },
-        { n: 11, d: 0.86, s: 1.1, c: ['#fde9e2', '#efc0b2'] },
+        { n: 5, d: 0.1, s: 0.5, c: palette[0] },
+        { n: 7, d: 0.32, s: 0.72, c: palette[1] },
+        { n: 9, d: 0.58, s: 0.92, c: palette[2] },
+        { n: 11, d: 0.86, s: 1.1, c: palette[3] },
       ];
       const frag = document.createDocumentFragment();
       [...rings].reverse().forEach((ring, ri) => {
